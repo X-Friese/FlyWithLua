@@ -1,0 +1,622 @@
+%% Dokumentenvorspann für Aufgabenblatt Friesen Freitage
+%%
+%% (c) 2008 Carsten Lynker
+%%
+%% Abgeleitet aus einer früheren Klassenarbeitsvorlage
+%%
+%% Die einzelnen Aufgaben sind mit \aufgabe einzuleiten, die
+%% Aufzählungsumgebung enumerate hat die in Klassenarbeiten
+%% übliche Form a) ... b) ...
+%%
+
+\documentclass[11pt,parskip=half,a4paper]{scrartcl}
+%\usepackage{ngerman}
+\usepackage[latin9]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{pslatex}
+\usepackage{helvet}
+\usepackage{listings}
+\lstset{numbers=left, numberstyle=\tiny, numbersep=4pt, breaklines=true, frame=single, showstringspaces=false, basicstyle=\scriptsize}
+\include{lua.def}
+\lstset{language=lua}
+\usepackage[pdftitle={Wir basteln uns ein digitales Instrument},pdfstartview={FitH},colorlinks=true]{hyperref}
+\pdfcompresslevel=9
+\pdfimageresolution=72
+
+\usepackage{color}
+\definecolor{hellgrau}{gray}{0.85}
+\definecolor{dunkelgrau}{gray}{0.55}
+
+\newcommand{\hinweis}[2]{%
+\phantomsection\addcontentsline{toc}{section}{#1}
+\begin{center}
+\fcolorbox{dunkelgrau}{hellgrau}{\parbox{14cm}{\textbf{#1}#2}}
+\end{center}
+}
+
+\newcounter{aufg}
+\newcommand{\xsb}{XSquawkBox}
+\newcommand{\punkte}[1]{\marginpar{\fcolorbox{dunkelgrau}{hellgrau}{\parbox{4.5ex}{\sffamily\tiny#1}}}}
+
+\renewcommand{\labelenumi}{\alph{enumi})}
+
+\newcommand{\aufgabe}{\stepcounter{aufg}\vspace{0.75cm}\pagebreak[3]{\phantomsection\addcontentsline{toc}{section}{Aufgabe~\arabic{aufg}}\Large\sffamily Aufgabe~\arabic{aufg}}}
+\renewcommand{\labelenumi}{\alph{enumi})}
+
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+
+\setlength{\headheight}{2cm}
+%\chead{\includegraphics[width=14.0cm]{Friesenbanner.jpg}\\[0.5ex]}
+\cfoot{\footnotesize Seite \thepage\ von \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%% Ende des Vorspanns %%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\hyphenation{values-}
+
+\begin{document}
+
+\title{Wir basteln uns ein digitales Instrument}
+\author{Carsten Lynker}
+\date{\today\\[2cm]\includegraphics[width=14cm]{fertig.png}}
+\maketitle
+\newpage
+
+\section{Zusammenfassung}
+
+Dieses Dokument beschreibt den Vorgang ein digitales Instrument mit den Tool FlyWithLua zu erschaffen. Das Instrument soll dabei möglichst flexibel sein, um es später einfach in weiteren Projekten einsetzen zu können. Aus diesem Grund werden wir ein Lua-Modul \verb|instrument.lua| erstellen, in dem das digitale Instrument als Funktion hinterlegt ist.
+
+In diesem Beispiel wollen wir ein kombiniertes Instrument für den Ladedruck und die Propellerdrehzahl eines einmotorigen, kolbengetriebenen Kleinflugzeugs erstellen. Hier gibt es die Faustformel, dass der Ladedruck in inHg nicht ein Hundertstel der Drehzahl überschreiten soll. Dreht der Propeller also mit 2.300 U/min, so sollte man nicht mehr als 23 inHg an Ladedruck dem Motor abverlangen.
+
+Unser Instrument soll diese Eselsbrücke visualisieren, um dem Piloten beim Flug zu helfen, die Hebel für Leistung und  Drehzahl richtig zu bedienen. Aus diesem Grund werden wir beide Werte, also Ladedruck und Drehzahl, auf einem gemeinsamen Rundinstrument darstellen.
+
+Der Ladedruck wird mit einem weißen Zeiger dargestellt, die Drehzahl mit einem blauen Zeiger. Das ist willkürlich, nutzt aber die Tatsache, das der Drehzahlregler meistens einen blau gefärbten Griff hat. Der blaue Hebel beeinflusst den blauen Zeiger, der schwarze Hebel den weißen Zeiger.
+
+Überschreitet der Ladedruck den Faustformelwert um mehr als 5\%, so färben wir den Zeiger rot statt weiß. Überschreitet der Ladedruck den Faustformelwert um mehr als 10\%, so lassen wir ihn zusätzlich blinken.
+
+Zu allem Überfluss werden wir am Schluss das Instrument noch erweitern, um es für Flugzeuge mit zwei Propellern nutzbar zu machen.
+
+\newpage
+\section{Der Aufruf}
+
+Wir wollten das Instrument in einer Bibliothek oder auch Modul als Funktion hinterlegen. Damit wir aber nicht blind programmieren, beginnen wir mit einer Testdatei, die unser Instrument aufruft. Das kann dann wie folgt aussehen:
+
+\begin{lstlisting}
+require("instrument.lua")
+do_every_draw("instrument.manifold_pressure_and_propeller_speed(100, 300, 25, 2500)")
+\end{lstlisting}
+
+Wir nennen die Datei \verb|Instrumententest.lua| und erstellen sie im Unterordner \verb|Scripts|. Nach einen Reload von Lua wird sie automatisch ausgeführt, und noch meldet sie einen Fehler, da Lua das Modul nicht finden kann.
+
+In Zeile 1 laden wir das Modul \verb|instrument.lua| und in Zeile 2 rufen wir dann unsere noch zu erschaffende Funktion auf. Wir haben sie, ganz im Sinne der internationalen Luftfahrt, in Englischer Sprache benannt als \verb|manifold_pressure_and_propeller_speed()|. Weil sie aber nicht Teil unseres Scripts ist, sondern aus dem Modul \verb|instrument.lua| stammt, müssen wir den Namen des Moduls, gefolgt von einem Punkt, voran stellen.
+
+Die ersten beiden Parameter geben die linke untere Ecke an, mit der das Instrument auf dem Bildschirm positioniert werden soll. Dann folgen die Reichweiten der beiden Werte. Und ja, es folgen beide Reichweiten. So können wir Flugzeuge behandeln, bei denen das Faustformelverhältnis von 1:100 nicht gilt.
+
+Damit sind wir nun fertig mit dem Testscript.
+
+\section{Das Instrument}
+\subsection{Die Grundfläche}
+
+Wir starten nun die Entwicklung eines Moduls. Daher verlassen wir den Unterordner \verb|Scripts| und wechseln in den Unterordner \verb|lua52|. Hier, in der >>Area 52<<, legen wir alle Module ab, um sie von den Skripten zu trennen. Würden wir das nicht machen, so könnte Lua sie nicht von den Scripten unterscheiden (beide enden auf \verb|.lua|). Es gäbe Chaos, denn Lua würde versuchen die Module als Scripte auszuführen.
+
+Den Dateinamen haben wir bereits festgelegt durch den Befehl \verb|require()| in Zeile 1 des Testscripts. Wir erzeugen also eine Datei \verb|instrument.lua| im Unterordner \verb|lua52|. Dabei müssen wir die Groß- und Kleinschreibung beachten!
+
+Die Modul-Datei füttern wir nun mit diesem Code:
+
+\begin{lstlisting}
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- -- Lua module "instrument.lua" v1.0    -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+module(..., package.seeall);
+require("graphics")
+
+function manifold_pressure_and_propeller_speed(x, y, inHg_range, rpm_range)
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 100)
+    glColor3f(1, 1, 1)
+    graphics.draw_arc(x + 100, y + 100, -150, 150, 100)
+    draw_string(x + 90, y + 50, "inHg")
+    draw_string(x + 75, y + 30, "x100 rpm", "blue")
+end
+\end{lstlisting}
+
+Wir können nun zum ersten Mal sinnvoll auf Reload klicken, denn nun hat das Script ein Modul, was Lua laden kann. Das Ergebnis ist dies:
+
+\includegraphics[width= 12cm]{Instrumentenbasis.png}
+
+Gehen wir unseren Code einmal durch. Zu Beginn finden wir drei Zeilen mit einem Kommentar, den Lua durch >>\verb|-- |<< erkennt, also zwei Minuszeichen gefolgt von einem Leerzeichen. Kommentare können wir nach eigenen Vorlieben schreiben, Lua benötigt sie nicht.
+
+Wichtig hingegen die nächsten beiden Zeilen. Die Zeile 4 muss genau so geschrieben werden, sonst erkennt Lua nicht, dass es sich um ein Modul handelt, und alle Funktionen durch \verb|instrument.*| zur Verfügung gestellt werden sollen.
+
+In Zeile 5 teilen wir Lua mit, dass wir Elemente eines anderen Moduls verwenden wollen, hier \verb|graphics.lua|. Wichtig ist, dass wir die Dateiendung weglassen, sonst meckert Lua, es könne die Datei nicht finden.
+
+Ab Zeile 7 folgt nun unsere Funktion. Wir setzen die Farbe direkt mit \verb|glColor3f()|, einem OpenGL Befehl. Der erste Parameter ist der Rotanteil (von 0.0 bis 1.0), dann folgen Grün und Blau. Alle Werte sind 0, dadurch wird alles was nun folgt nicht farblos, sondern schwarz.
+
+In Zeile 8 nutzen wir eine Funktion des Moduls \verb|graphics.lua| um einen Kreis zu zeichnen. Der Kreis liegt auf dem Mittelpunkt \verb|x + 100|, \verb|y + 100| und hat den Radius \verb|100|.
+
+Bedingt durch Zeile 7 ist er schwarz gefüllt. Wir ändern nun die Farbe in Weiß (Zeile 9) und zeichnen einen Kreisbogen (Zeile 10).
+
+Der Kreisbogen reicht vom Winkel -150° bis +150°, umspannt also 300°. Im Lua Code lassen wir die Einheiten weg. 0° zeigt genau nach oben. Wir bekommen also eine Öffnung nach unten hin.
+
+Die Kreisbogenöffnung füllen wir mit Text. Da die Funktion \verb|draw_string()| direkt von FlyWithLua zur Verfügung gestellt wird, und nicht von dem Modul \verb|graphics.lua|, können wir die Farbe nicht durch einen voran gestellten \verb|glColor3f()| Befehl wählen. Wir geben sie, sofern wir nicht Weiß verlangen wollen, als zusätzlichen Parameter an.
+
+Der Eigensinn der Funktion \verb|draw_string()| wird uns noch öfter ärgern, wir nehmen es einfach hin.
+
+\subsection{Die Zeiger}
+
+Nun soll sich aber endlich etwas bewegen! Wir programmieren die beiden Zeiger hinzu.
+
+Um die Zeiger anzeigen zu können, benötigen wir die Werte des Ladedrucks und der Propellerdrehzahl. Beide Werte liefern uns DataRefs, die wir nun in unser Modul einbauen:
+
+\begin{lstlisting}[firstnumber=7]
+dataref("xp_MPR_in_hg0", "sim/cockpit2/engine/indicators/MPR_in_hg", "readonly", 0)
+dataref("xp_prop_speed_rpm0", "sim/cockpit2/engine/indicators/prop_speed_rpm", "readonly", 0)
+\end{lstlisting}
+
+Aus diesen DataRefs heraus können wir die Werte entnehmen, doch eigentlich benötigen wir Winkel statt Werten. Wir berechnen die Winkel gemäß der als Funktionsparameter erhaltenen Grenzen. Hier das Beispiel für den Ladedruck:
+
+\begin{lstlisting}[firstnumber=13]
+    local inHg
+    if xp_MPR_in_hg0 < inHg_range then
+        inHg = xp_MPR_in_hg0 / inHg_range * 300 - 150
+    else
+        inHg = 150
+    end
+\end{lstlisting}
+
+Der Wert für den Ladedruck ist erwartungsgemäß nicht negativ. Wir prüfen also nur gegen das obere Ende, da unsere Skala bei 0 beginnt. Da wir 300° umspannen, multiplizieren wir das Verhältnis zum Maximalwert unseres Anzeigebeireichs mit 300° und subtrahieren 150°, um den Pfeil in die richtige Richtung zu drehen (die Skala beginnt nicht bei 0° oben, sondern bei -150° schräg unten rechts).
+
+Nun müssen wir den Pfeil nur noch zeichnen:
+
+\begin{lstlisting}[firstnumber=39]
+    glColor3f(1, 1, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, inHg, 100, 20, 3)
+\end{lstlisting}
+
+Den Pfeil für den Ladedruck zeichnen wir in weiß (Zeile 39) und nutzen eine fertige Funktion um den Pfeil zu erzeugen (Zeile 40). Die Parameter sind die Koordinaten des Mittelpunktes, der Winkel, der Radius, die Größe der Pfeilspitze und die Breite des Pfeils.
+
+Das komplette Script sieht wie folgt aus. Ab Zeile 42 folgt noch etwas Schmuck für die Mitte des Instruments (eine runde Abdeckkappe).
+
+
+\begin{lstlisting}
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- -- Lua module "instrument.lua" v1.0    -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+module(..., package.seeall);
+require("graphics")
+
+dataref("xp_MPR_in_hg0", "sim/cockpit2/engine/indicators/MPR_in_hg", "readonly", 0)
+dataref("xp_prop_speed_rpm0", "sim/cockpit2/engine/indicators/prop_speed_rpm", "readonly", 0)
+
+function manifold_pressure_and_propeller_speed(x, y, inHg_range, rpm_range)
+    -- calculate the angles for the pointer
+    local rpm
+    local inHg
+    if xp_MPR_in_hg0 < inHg_range then
+        inHg = xp_MPR_in_hg0 / inHg_range * 300 - 150
+    else
+        inHg = 150
+    end
+    if xp_prop_speed_rpm0 < rpm_range then
+        rpm = xp_prop_speed_rpm0 / rpm_range * 300 - 150
+    else
+        rpm = 150
+    end
+    
+    -- draw the instruments base
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 100)
+    glColor3f(1, 1, 1)
+    graphics.draw_arc(x + 100, y + 100, -150, 150, 100)
+    draw_string(x + 90, y + 50, "inHg")
+    draw_string(x + 75, y + 30, "x100 rpm", "blue")
+    
+    -- redefine OpenGL state after drawing strings
+    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0)
+    
+    -- draw the pointer
+    glColor3f(0, 0, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, rpm, 100, 20, 3)
+    glColor3f(1, 1, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, inHg, 100, 20, 3)
+    
+    -- make the middle of the instrument more eye-candy
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 7.5)
+    glColor3f(1, 1, 1)
+    graphics.draw_circle(x + 100, y + 100, 7.5)
+end
+\end{lstlisting}
+
+Es wurde ja schon erwähnt, dass uns der Befehl \verb|draw_string()| ärgern wird. Um dies zu verhindern, sind Zeile 33 und 34 da.
+
+\begin{lstlisting}[firstnumber=33]
+    -- redefine OpenGL state after drawing strings
+    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0)
+\end{lstlisting}
+
+Da die Lua-Funktion \verb|draw_string()| die C-Funktion \verb|XPLMDrawString()| aus dem Plugin SDK aufruft, muss sie damit leben, dass der Zustand von OpenGL verändert wird.
+
+Mit \verb|XPLMSetGraphicsState()| setzen wir den Zustand zurück wie wir ihn benötigen. Wir müssen dies nicht so genau verstehen, es reicht zu wissen, dass man diese Zeile 34 nach jeder Benutzung von \verb|draw_string()| in seinen Code einfügt.
+
+FlyWithLua macht es nicht automatisch, da nicht bekannt ist, welchen OpenGL Zustand genau der Script Autor wünscht. Mit dieser Zeile 34, also alle Parameter 0, haben wir z. B. keine Möglichkeit mit Transparenz zu arbeiten.
+
+\includegraphics[width= 6cm]{Instrument_mit_Zeigern.png}
+
+
+\subsection{Skalenstriche}
+
+Das Instrument sieht ja schon ganz nett aus, und funktioniert anscheinend auch, jedoch kann man mit der Stellung der Pfeile noch wenig anfangen. Gut, man kann beurteilen, ob der weiße Pfeil den blauen Pfeil >>illegal überholt<<, aber man möchte schon gerne die Werte ablesen können.
+
+Die Bibliothek (das Modul) \verb|graphics.lua| hat hierfür eine passende Funktion parat. Wir können mit \verb|graphics.draw_tick_mark( x, y, angle, radius, length, width )| die Skalenstriche ohne nennenswerten Aufwand erzeugen.
+
+Mittelpunkt und Radius sind uns vorgegeben, Länge und Breite der Skalenstriche unterlegen dem Geschmack, der Winkel muss von uns berechnet werden. Wir erzeugen uns eine lokale Variable \verb|tick_angle|, um diese in einer \verb|for| Schleife zu berechnen.
+
+\newpage
+Der neue Code ist:
+
+\begin{lstlisting}[firstnumber=36]
+    -- draw tick marks
+    local tick_angle
+    for tick = 100, rpm_range, 100 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+\end{lstlisting}
+
+Die Berechnung kennen wir bereits von den Pfeilen. Das spannende ist, dass wir uns automatisch den übergebenen Maximalwerten anpassen. Allerdings sieht das Ergebnis noch recht simpel aus.
+
+\includegraphics[width= 6cm]{Erste_Skalenstriche.png}
+
+Wir fügen noch ein paar dickere Striche hinzu und zeichnen in blauer Farbe noch die Werte für die Drehzahl.
+
+Mit verändertem Aufruf, damit wir die blauen Striche sehen können, sieht das nun so aus:
+
+\begin{lstlisting}[firstnumber=2]
+do_every_draw("instrument.manifold_pressure_and_propeller_speed(100, 300, 25, 2150)")
+\end{lstlisting}
+
+
+\includegraphics[width= 6cm]{Beide_Skalen.png}
+
+\begin{lstlisting}[firstnumber=36]
+    -- draw tick marks
+    local tick_angle
+    -- small inHg ticks
+    glColor3f(1, 1, 1)
+    for tick = 1, inHg_range, 1 do
+        tick_angle = tick / inHg_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+    -- big inHg ticks
+    for tick = 5, inHg_range, 5 do
+        tick_angle = tick / inHg_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 20, 3)
+    end
+    -- small rpm ticks
+    glColor3f(0, 0, 1)
+    for tick = 100, rpm_range, 100 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+    -- big rpm ticks
+    for tick = 500, rpm_range, 500 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 20, 3)
+    end
+\end{lstlisting}
+
+\subsection{Beschriftung der Skala}
+
+Die Beschriftung erfolgt wieder mit der (eigenwilligen) Funktion \verb|draw_string|. Das >>Problem<< ist die richtige Positionierung der Werte. Dazu nehmen wir uns die Hilfsfunktion \verb|move_angle()| aus dem \verb|graphics.lua| Modul zu Hilfe. Sie gibt uns Koordinaten zurück, wenn wir ihr als Parameter den Mittelpunkt, einen Winkel und einen Radius übergeben.
+
+Das Ergebnis ist nun:
+
+\includegraphics[width= 6cm]{Mit_Zahlen.png}
+
+\newpage
+\begin{lstlisting}[firstnumber=61]
+    local x1
+    local y1
+
+    -- draw numbers to the big inHg tick marks
+    for tick = 5, inHg_range, 5 do
+        tick_angle = tick / inHg_range * 300 - 150
+        x1, y1 = graphics.move_angle(x + 100, y + 100, tick_angle, 65)
+        x1 = x1 - 5
+        y1 = y1 - 5
+        draw_string(x1, y1, tick, "white")
+    end
+\end{lstlisting}
+
+Wir subtrahieren noch 5 Pixel in jede Richtung, um die Nummer einigermaßen mittig unter den Skalenstrichen zu platzieren. Für die Beschriftung der Drehzahl gehen wir genauso vor. Das komplette Script ist nun:
+
+\begin{lstlisting}
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- -- Lua module "instrument.lua" v1.0    -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+module(..., package.seeall);
+require("graphics")
+
+dataref("xp_MPR_in_hg0", "sim/cockpit2/engine/indicators/MPR_in_hg", "readonly", 0)
+dataref("xp_prop_speed_rpm0", "sim/cockpit2/engine/indicators/prop_speed_rpm", "readonly", 0)
+
+function manifold_pressure_and_propeller_speed(x, y, inHg_range, rpm_range)
+    -- calculate the angles for the pointer
+    local rpm
+    local inHg
+    if xp_MPR_in_hg0 < inHg_range then
+        inHg = xp_MPR_in_hg0 / inHg_range * 300 - 150
+    else
+        inHg = 150
+    end
+    if xp_prop_speed_rpm0 < rpm_range then
+        rpm = xp_prop_speed_rpm0 / rpm_range * 300 - 150
+    else
+        rpm = 150
+    end
+    
+    -- draw the instruments base
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 100)
+    glColor3f(1, 1, 1)
+    graphics.draw_arc(x + 100, y + 100, -150, 150, 100)
+    draw_string(x + 90, y + 50, "inHg")
+    draw_string(x + 75, y + 30, "x100 rpm", "blue")
+    
+    -- redefine OpenGL state after drawing strings
+    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0)
+    
+    -- draw tick marks
+    local tick_angle
+    -- small inHg ticks
+    glColor3f(1, 1, 1)
+    for tick = 1, inHg_range, 1 do
+        tick_angle = tick / inHg_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+    -- big inHg ticks
+    for tick = 5, inHg_range, 5 do
+        tick_angle = tick / inHg_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 20, 3)
+    end
+    -- small rpm ticks
+    glColor3f(0, 0, 1)
+    for tick = 100, rpm_range, 100 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+    -- big rpm ticks
+    for tick = 500, rpm_range, 500 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 20, 3)
+    end
+    
+    local x1
+    local y1
+
+    -- draw numbers to the big inHg tick marks
+    for tick = 5, inHg_range, 5 do
+        tick_angle = tick / inHg_range * 300 - 150
+        x1, y1 = graphics.move_angle(x + 100, y + 100, tick_angle, 65)
+        x1 = x1 - 5
+        y1 = y1 - 5
+        draw_string(x1, y1, tick, "white")
+    end
+
+    -- draw numbers to the big rpm tick marks
+    for tick = 5, rpm_range / 100, 5 do
+        tick_angle = tick / rpm_range * 30000 - 150
+        x1, y1 = graphics.move_angle(x + 100, y + 100, tick_angle, 65)
+        x1 = x1 - 5
+        y1 = y1 - 5
+        draw_string(x1, y1, tick, "blue")
+    end
+    
+    -- redefine OpenGL state after drawing strings
+    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0)
+
+    -- draw the pointer
+    glColor3f(0, 0, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, rpm, 100, 20, 3)
+    glColor3f(1, 1, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, inHg, 100, 20, 3)
+    
+    -- make the middle of the instrument more eye-candy
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 7.5)
+    glColor3f(1, 1, 1)
+    graphics.draw_circle(x + 100, y + 100, 7.5)
+end
+\end{lstlisting}
+
+Bei der Beschriftung der Drehzahl-Skala lassen wir die Werte von 5 an in 5'er Schritten laufen, um das Instrument nicht mit Nullen zuzupflastern. So wie wir es von echten Instrumenten auch gewohnt sind. Allerdings erfordert es etwas andere Mathematik in Zeile 74 und 75. Statt \verb|*300*100| haben wir zu \verb|*30000| zusammengefasst, Das entspricht:
+
+\verb|tick_angle = tick / (rpm_range/100) * 300 - 150|
+
+\subsection{Einfärben des Zeigers}
+
+Wir wollten ja, dass der weiße Zeiger (er >>liegt oben<<) sich rot färbt, wenn er den blauen Zeiger um mehr als 5\% der Anzeigereichweite >>überholt<<.
+
+Die Berechnung kann hier relativ einfach erfolgen, 5\% von 300° sind 15°. Wir testen einfach gegen den Winkel, nicht gegen die Werte des Ladedrucks und der Drehzahl. Wie man einen Pfeil färbt wissen wir bereits. Relevant sind die Zeilen 89 bis 91.
+
+\begin{lstlisting}[firstnumber=85]
+    -- draw the pointer
+    glColor3f(0, 0, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, rpm, 100, 20, 3)
+    glColor3f(1, 1, 1)
+    if inHg > rpm + 30 then
+        glColor3f(1, 0, 0)
+    end
+    graphics.draw_angle_arrow(x + 100, y + 100, inHg, 100, 20, 3)
+\end{lstlisting}
+
+Wir stellen den Aufruf wieder zurück und sehen uns das Ergebnis erschreckt an. Die blauen Werte überlagern die weißen, wir wollen es jedoch umgekehrt. Nach einer Umstrukturierung des Scripts ist die Welt wieder in Ordnung. Das folgende Bild zeigt das Instrument bei ausgeschaltetem Motor (Luftdruck um die 30 inHg).
+
+\begin{lstlisting}[firstnumber=2]
+do_every_draw("instrument.manifold_pressure_and_propeller_speed(100, 300, 25, 2150)")
+\end{lstlisting}
+
+\includegraphics[width= 14.5cm]{fast_fertig.png}
+
+Im Bild auch zu sehen ist das Plugin \href{http://wiki.x-plane.com/DataRefEditor}{DataRefEditor}, ein äußerst nützlicher Helfer.
+
+Das Blinken des Zeigers erreichen wir, indem wir mit \verb|os.clock()| die Sekunden seit dem Start von Lua abfragen und diesen Fließkommawert mit der Sinusfunktion zu einem hübschen Schwingen des Rotwertes der RGB-Farbe nutzen.
+
+Das schaut dann so aus:
+
+\begin{lstlisting}[firstnumber=85]
+    -- draw the pointer
+    glColor3f(0, 0, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, rpm, 100, 20, 3)
+    glColor3f(1, 1, 1)
+    if inHg > rpm + 15 then
+        glColor3f(1, 0, 0)
+    end
+    if inHg > rpm + 30 then
+        glColor3f(math.abs(math.sin(os.clock()*5)), 0, 0)
+    end
+    graphics.draw_angle_arrow(x + 100, y + 100, inHg, 100, 20, 3)
+\end{lstlisting}
+
+\subsection{Feintuning am Aufrufer}
+
+Nachdem wir es geschafft haben, können wir den Aufrufer noch etwas verbessern. Wir wollen das Instrument immer oben rechts anzeigen, aber nur, wenn wir uns außerhalb des Cockpits befinden.
+
+Dazu nutzen wir ein weiteres DataRef.
+
+\begin{lstlisting}
+require("instrument")
+
+dataref("xp_view_is_external", "sim/graphics/view/view_is_external")
+
+function show_a_little_instrument()
+    if xp_view_is_external > 0 then
+        instrument.manifold_pressure_and_propeller_speed(SCREEN_WIDTH - 210, SCREEN_HIGHT - 220, 25, 2500)
+    end
+end
+
+do_every_draw("show_a_little_instrument()")
+\end{lstlisting}
+
+Damit es nicht ganz so am Rand >>klebt<< gönnen wir dem Instrument noch 20 Pixel Anstand zum oberen Rand und 10 Pixel zur Seite.
+
+\newpage
+\section{Anhang}
+
+Zum Schluss noch das komplette Script:
+
+\begin{lstlisting}
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- -- Lua module "instrument.lua" v1.0    -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+module(..., package.seeall);
+require("graphics")
+
+dataref("xp_MPR_in_hg0", "sim/cockpit2/engine/indicators/MPR_in_hg", "readonly", 0)
+dataref("xp_prop_speed_rpm0", "sim/cockpit2/engine/indicators/prop_speed_rpm", "readonly", 0)
+
+function manifold_pressure_and_propeller_speed(x, y, inHg_range, rpm_range)
+    -- calculate the angles for the pointer
+    local rpm
+    local inHg
+    if xp_MPR_in_hg0 < inHg_range then
+        inHg = xp_MPR_in_hg0 / inHg_range * 300 - 150
+    else
+        inHg = 150
+    end
+    if xp_prop_speed_rpm0 < rpm_range then
+        rpm = xp_prop_speed_rpm0 / rpm_range * 300 - 150
+    else
+        rpm = 150
+    end
+    
+    -- draw the instruments base
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 100)
+    glColor3f(1, 1, 1)
+    graphics.draw_arc(x + 100, y + 100, -150, 150, 100)
+    draw_string(x + 90, y + 50, "inHg")
+    draw_string(x + 75, y + 30, "x100 rpm", "blue")
+    
+    -- redefine OpenGL state after drawing strings
+    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0)
+    
+    -- draw tick marks
+    local tick_angle
+    -- small rpm ticks
+    glColor3f(0, 0, 1)
+    for tick = 100, rpm_range, 100 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+    -- big rpm ticks
+    for tick = 500, rpm_range, 500 do
+        tick_angle = tick / rpm_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 20, 3)
+    end
+    -- small inHg ticks
+    glColor3f(1, 1, 1)
+    for tick = 1, inHg_range, 1 do
+        tick_angle = tick / inHg_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 10, 1)
+    end
+    -- big inHg ticks
+    for tick = 5, inHg_range, 5 do
+        tick_angle = tick / inHg_range * 300 - 150
+        graphics.draw_tick_mark(x + 100, y + 100, tick_angle, 100, 20, 3)
+    end
+    
+    local x1
+    local y1
+
+    -- draw numbers to the big rpm tick marks
+    for tick = 5, rpm_range / 100, 5 do
+        tick_angle = tick / rpm_range * 30000 - 150
+        x1, y1 = graphics.move_angle(x + 100, y + 100, tick_angle, 65)
+        x1 = x1 - 5
+        y1 = y1 - 5
+        draw_string(x1, y1, tick, "blue")
+    end
+    
+    -- draw numbers to the big inHg tick marks
+    for tick = 5, inHg_range, 5 do
+        tick_angle = tick / inHg_range * 300 - 150
+        x1, y1 = graphics.move_angle(x + 100, y + 100, tick_angle, 65)
+        x1 = x1 - 5
+        y1 = y1 - 5
+        draw_string(x1, y1, tick, "white")
+    end
+
+    -- redefine OpenGL state after drawing strings
+    XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0)
+
+    -- draw the pointer
+    glColor3f(0, 0, 1)
+    graphics.draw_angle_arrow(x + 100, y + 100, rpm, 100, 20, 3)
+    glColor3f(1, 1, 1)
+    if inHg > rpm + 15 then
+        glColor3f(1, 0, 0)
+    end
+    if inHg > rpm + 30 then
+        glColor3f(math.abs(math.sin(os.clock()*5)), 0, 0)
+    end
+    graphics.draw_angle_arrow(x + 100, y + 100, inHg, 100, 20, 3)
+    
+    -- make the middle of the instrument more eye-candy
+    glColor3f(0, 0, 0)
+    graphics.draw_filled_circle(x + 100, y + 100, 7.5)
+    glColor3f(1, 1, 1)
+    graphics.draw_circle(x + 100, y + 100, 7.5)
+end
+\end{lstlisting}
+
+\end{document}
+\endinput

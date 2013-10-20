@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="FlyWithLua Version 2.2.3" />
+		<Option compiler="gcc" />
+		<Option show_notes="0">
+			<notes>
+				<![CDATA[Remember to make it fat!]]>
+			</notes>
+		</Option>
+		<Build>
+			<Target title="Win32 SDK200">
+				<Option output="FlyWithLua/XP9/win.xpl" prefix_auto="0" extension_auto="0" />
+				<Option object_output="Release200" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Wshadow" />
+					<Add option="-Wfloat-equal" />
+					<Add option="-pedantic" />
+					<Add option="-Wextra" />
+					<Add option="-Wall" />
+					<Add option="-W" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-D_USRDLL" />
+					<Add option="-DCustomCommands_EXPORTS" />
+					<Add option="-DSIMDATA_EXPORTS" />
+					<Add option="-DIBM=1" />
+					<Add option="-DXPLM200=1" />
+					<Add directory="include" />
+					<Add directory="../SDK201/CHeaders/XPLM" />
+					<Add directory="../SDK201/CHeaders/Wrappers" />
+					<Add directory="../SDK201/CHeaders/Widgets" />
+					<Add directory="GLUT_for_Windows" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="Opengl32" />
+					<Add library="XPLM" />
+					<Add library="XPWidgets" />
+					<Add library="GLUT_for_Windows\gl\glut32.lib" />
+					<Add directory="include" />
+					<Add directory="../SDK201/Libraries/Win" />
+					<Add directory="GLUT_for_Windows" />
+				</Linker>
+			</Target>
+			<Target title="Win32 SDK212">
+				<Option output="FlyWithLua/32/win.xpl" prefix_auto="0" extension_auto="0" />
+				<Option object_output="Release212" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Wshadow" />
+					<Add option="-Wfloat-equal" />
+					<Add option="-pedantic" />
+					<Add option="-Wextra" />
+					<Add option="-Wall" />
+					<Add option="-W" />
+					<Add option="-fexceptions" />
+					<Add option="-DWIN32" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-D_USRDLL" />
+					<Add option="-DCustomCommands_EXPORTS" />
+					<Add option="-DSIMDATA_EXPORTS" />
+					<Add option="-DIBM=1" />
+					<Add option="-DXPLM200=1" />
+					<Add option="-DXPLM210=1" />
+					<Add directory="include" />
+					<Add directory="../SDK212/SDK/CHeaders/XPLM" />
+					<Add directory="../SDK212/SDK/CHeaders/Wrappers" />
+					<Add directory="../SDK212/SDK/CHeaders/Widgets" />
+					<Add directory="GLUT_for_Windows" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add library="Opengl32" />
+					<Add library="XPLM" />
+					<Add library="XPWidgets" />
+					<Add library="GLUT_for_Windows\gl\glut32.lib" />
+					<Add directory="include" />
+					<Add directory="../SDK212/SDK/Libraries/Win" />
+					<Add directory="GLUT_for_Windows" />
+				</Linker>
+			</Target>
+			<Target title="Win64 SDK212">
+				<Option output="FlyWithLua/64/win.xpl" prefix_auto="0" extension_auto="0" />
+				<Option object_output="Release212_64" />
+				<Option type="3" />
+				<Option compiler="gcc64" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Wshadow" />
+					<Add option="-Wfloat-equal" />
+					<Add option="-pedantic" />
+					<Add option="-std=c++11" />
+					<Add option="-Wextra" />
+					<Add option="-Wall" />
+					<Add option="-m64" />
+					<Add option="-W" />
+					<Add option="-fexceptions" />
+					<Add option="-fpermissive" />
+					<Add option="-DWIN64" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-D_USRDLL" />
+					<Add option="-DCustomCommands_EXPORTS" />
+					<Add option="-DSIMDATA_EXPORTS" />
+					<Add option="-DIBM=1" />
+					<Add option="-DXPLM200=1" />
+					<Add option="-DXPLM210=1" />
+					<Add option="-DUSE_EXTERNAL_ALLOCATOR" />
+					<Add directory="include64" />
+					<Add directory="../SDK212/SDK/CHeaders/XPLM" />
+					<Add directory="../SDK212/SDK/CHeaders/Wrappers" />
+					<Add directory="../SDK212/SDK/CHeaders/Widgets" />
+					<Add directory="GLUT_for_Windows" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-static-libgcc -static-libstdc++" />
+					<Add library="Opengl32" />
+					<Add library="XPLM_64" />
+					<Add library="XPWidgets_64" />
+					<Add library="GLUT_for_Windows\gl\glut64.lib" />
+					<Add directory="include64" />
+					<Add directory="../SDK212/SDK/Libraries/Win" />
+					<Add directory="GLUT_for_Windows" />
+				</Linker>
+				<ExtraCommands>
+					<Add after='xcopy /Y FlyWithLua\32\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
+					<Add after='xcopy /Y FlyWithLua\64\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after="C:\Programme\7-Zip\7z.exe u FlyWithLua\sourcecode.zip *.cpp *.cbp *.tex include\*.* include64\*.* GLUT_for_Windows\gl\*.* *.PNG *.JPG" />
+					<Add after='xcopy /Y &quot;*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
+					<Add after='xcopy /Y &quot;..\FWL_Docs\*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Scripts\*.lua&quot; &quot;FlyWithLua\Scripts (disabled)\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Scripts\*.txt&quot; &quot;FlyWithLua\Scripts\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Internals\*.*&quot; &quot;FlyWithLua\Internals\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
+					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after="xcopy /Y include64\lua51.dll FlyWithLua\64" />
+					<Add after='xcopy /Y include\lua51.dll &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
+					<Add after="xcopy /Y include\lua51.dll FlyWithLua\32" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
+					<Mode after="always" />
+				</ExtraCommands>
+			</Target>
+		</Build>
+		<Linker>
+			<Add library="lua51" />
+			<Add library="setupapi" />
+		</Linker>
+		<Unit filename="FlyWithLua.cpp" />
+		<Unit filename="include/XSBComDefs.h" />
+		<Unit filename="include/hid.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="include/hidapi.h" />
+		<Unit filename="include/lauxlib.h" />
+		<Unit filename="include/lua.h" />
+		<Unit filename="include/lua.hpp" />
+		<Unit filename="include/luaconf.h" />
+		<Unit filename="include/luajit.h" />
+		<Unit filename="include/lualib.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+			<envvars />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
