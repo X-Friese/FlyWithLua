@@ -1,0 +1,2 @@
+logMsg("FlyWithLua Debug: FlyWithLua is loading 64-bit files!")
+print("FlyWithLua is loading 64-bit files!")

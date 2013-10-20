@@ -1,0 +1,27 @@
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- --                                                                                                 -- --
+-- --      D               ''  T                    D    II    T      !!                              -- --
+-- --      D               ''  T           EE       D          T      !!                              -- --
+-- --    DDD   OO   N NN      TTT         E  E    DDD    II   TTT     !!                              -- --
+-- --   D  D  O  O  NN  N      T          EEE    D  D     I    T      !!                              -- --
+-- --   D  D  O  O  N   N      T          E      D  D     I    T                                      -- --
+-- --    DDD   OO   N   N       TT         EEE    DDD      I    TT    !!                              -- --
+-- --                                                                                                 -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+
+-- FlyWithLua.exit version 2.0.8 build 2012-10-20
+
+logMsg("FlyWithLua Info: Load exit file.")
+
+-- nothing to do, let the user do his work
+if SYSTEM == "IBM" then
+    dofile("Resources\\plugins\\FlyWithLua\\user.exit")
+    
+    -- if SYSTEM == "LIN" then
+else 
+    dofile("Resources/plugins/FlyWithLua/user.exit")
+-- else
+--    dofile("Resources:plugins:FlyWithLua:user.exit")
+end

@@ -1,0 +1,88 @@
+------------------------------------------------------------------------------------------------
+-- This checklist was copied from the manual of the AW139 made and is (c) by X-Rotors         --
+-- You can find this excellent model at: http://www.x-rotors.com                              --
+--                                                                                            --
+-- Your are not allowed to copy, modify or publish this file without permission from X-Rotors --
+------------------------------------------------------------------------------------------------
+
+
+PRE-FLIGHT
+----------
+Overhead panel
+GENERATOR 1             ON
+GENERATOR 2             ON
+MASTER SWITCH           ON
+MAIN BATTERY            ON
+AUX BATTERY             ON
+EXT POWER               OFF
+POWER LEVERS            FLIGHT
+ANTI COLLISION LIGHTS   ON
+NAV LIGHTS              ON
+STROBE LIGHTS           OFF
+LDG LT                  OFF
+UTILITY LIGHTS          OFF
+ROTOR BRAKE             OFF
+ 
+Interseat panel
+FUEL PUMP 1             ON
+FUEL PUMP 2             ON
+FUEL FEED               CLOSED
+FUEL VALVE 1            ON
+FUEL VALVE 2            ON
+HYDRAULIC PUMP          ON
+FASTEN SEATBELTS SIGN   ON
+NO SMOKING SIGN         ON
+ 
+Flight controls
+CYCLIC STICK            CENTERED
+COLLECTIVE LEVER        FULLY LOWERED
+COLLECTIVE GOV 1        ON
+COLLECTIVE GOV 2        ON
+PARK BRAKES             APPLIED
+ 
+Cabin
+ALL DOORS               CLOSED
+ 
+Outside
+ROTOR BLADES            FREE
+GROUND PERSONNEL        SAVE DISTANCE
+WHEEL BLOCKS            REMOVED
+
+START-UP
+--------
+Interseat panel
+PMS 1                   PRESS IDLE 8 SEC
+PMS 2                   PRESS IDLE 8 SEC
+ 
+Overhead panel
+STROBE LIGHTS           ON
+LDG LT                  ON
+
+TAXI
+----
+Interseat panel
+PMS 1                   FLT
+PMS 2                   FLT
+ 
+Flight controls
+PARK BRAKES             RELEASED
+COLLECTIVE LEVER        RAISE GENTLY UP 20% TQ
+CYCLIC STICK            PUSH GENTLY FWD
+STEERING                RUDDER/PEDALS
+MAX SPEED               12 KTS
+
+SHUT-DOWN
+---------
+Interseat panel
+PMS 1                   IDLE THEN PRESS OFF 8 SEC
+PMS 2                   IDLE THEN PRESS OFF 8 SEC
+ 
+Overhead panel
+POWER LEVERS            OFF
+EXT POWER               ON
+MAIN BATTERY            OFF
+ROTOR BRAKE             ON
+ 
+Flight controls
+COLLECTIVE LEVER        FULLY LOWERED
+PARK BRAKES             APPLIED

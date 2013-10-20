@@ -1,0 +1,68 @@
+--------------------------------------------------------------
+-- This Checklist will be added to every plane's clist.txt. --
+--                                                          --
+-- Just separate the pages by at least a single empty line. --
+--                                                          --
+-- If a line contains at least one character, it is not     --
+-- empty. So create blank lines in checklist pages by       --
+-- filling them with one (or more) spaces.                  --
+--                                                          --
+-- Start with the title of the page.                        --
+--                                                          --
+-- The title line can be followed by a line of - (minus).   --
+-- Every line containing two or more minus will be ignored. --
+--                                                          --
+-- The first time in a line you use two or more spaces,     --
+-- the Lua script will automatically format a tabstop.      --
+--                                                          --
+-- Read the manual to the script "display clist.lua".       --
+--------------------------------------------------------------
+
+>require("radio")
+
+Transponder Codes
+-----------------
+VFR in North American airspace      1200
+VFR standard squawk code            7000
+VFR circuit traffic code in the UK  7010
+Radio Failure                       7600
+Emergency (ICAO, worldwide)         7700
+ 
+>CCTMODE = {"OFF", "STANDBY", "ACTIVE", "TEST"}
+Your transponder is set to			%%SQUAWK%%
+Your transponder mode is			%%CCTMODE[TRANSPONDER_MODE+1]%%
+
+ITIPAR Initial Call
+-------------------
+Identification		D-ESAG
+Type of Aircraft	Cessna 172
+Intention			VFR to Hamburg
+Position			position 5 minutes to Sierra 1
+Altitude			altitude 1500 feet
+Request				for landing
+
+Plane Data
+----------
+ICAO code			"$PLANE_ICAO$"
+Tailnumber			"$PLANE_TAILNUMBER$"
+	
+Vso					$get("sim/aircraft/view/acf_Vso")$
+Vs					$get("sim/aircraft/view/acf_Vs")$
+Vfe					$get("sim/aircraft/view/acf_Vfe")$
+Vno					$get("sim/aircraft/view/acf_Vno")$
+Vne					$get("sim/aircraft/view/acf_Vne")$
+ 
+Aircraft empty weight		$string.format("%6.1f",get("sim/aircraft/weight/acf_m_empty"))$ kg
+Payload total				$string.format("%6.1f",get("sim/flightmodel/weight/m_fixed"))$ kg
+Fuel total					$string.format("%6.1f",get("sim/aircraft/weight/acf_m_fuel_tot"))$ kg
+Aircraft total				$string.format("%6.1f",get("sim/flightmodel/weight/m_total"))$ kg
+MTOW						$string.format("%6.1f",get("sim/aircraft/weight/acf_m_max"))$ kg
+ 
+>CLFF = dataref_table("sim/flightmodel/engine/ENGN_FF_")
+>CLFTOT = dataref_table("sim/aircraft/weight/acf_m_fuel_tot")
+Fuel Flow Engine 1			%%string.format("%5.1f",CLFF[0]*3600)%% kg/h
+Fuel Flow Engine 2			%%string.format("%5.1f",CLFF[1]*3600)%% kg/h
+Fuel Flow Engine 3			%%string.format("%5.1f",CLFF[2]*3600)%% kg/h
+Fuel Flow Engine 4			%%string.format("%5.1f",CLFF[3]*3600)%% kg/h
+Fuel Flow total 1-4			%%string.format("%5.1f",(CLFF[0]+CLFF[1]+CLFF[2]+CLFF[3])*3600)%% kg/h
+Fuel remaining				%%CLFR = CLFTOT[0]/((CLFF[0]+CLFF[1]+CLFF[2]+CLFF[3])*3600); return math.floor(CLFR)%% h %%return string.format("%02.f",CLFR*60-math.floor(CLFR)*60)%% min
