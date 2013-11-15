@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-#define PLUGIN_VERSION "2.2.3 nightly build " __DATE__ " " __TIME__
-// #define PLUGIN_VERSION "2.2.2"
+// #define PLUGIN_VERSION "2.2.5 nightly build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.2.4"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -4513,6 +4513,30 @@ void ResetLuaEngine( void )
     // clean up HID connections
     CloseAllOpenHIDDevices();
     hid_exit();
+
+    // init the XSB connection
+    XSBPluginId = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
+    XSBInputUsrMsgXDataRef = XPLMFindDataRef(XSB_INPUT_USER_MSG);
+    XSBInputStringXDataRef = XPLMFindDataRef(XSB_INPUT_STRING);
+    XSBDestinationXDataRef = XPLMFindDataRef(XSB_FP_ARRIVAL_AIRPORT);
+    XSBAlternativeXDataRef = XPLMFindDataRef(XSB_FP_ALTERNATE_AIRPORT);
+    XSBStartAirportXDataRef = XPLMFindDataRef(XSB_FP_DEPARTURE_AIRPORT);
+    XSBATCFreqXDataRef = XPLMFindDataRef(XSB_ATC_FREQ);
+    XSBATCCallsignXDataRef = XPLMFindDataRef(XSB_ATC_CALLSIGN);
+    if (XSBPluginId != XPLM_NO_PLUGIN_ID)
+    {
+        WeHaveXSB = true;
+        XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_SUBSCRIBE, (void *) XSB_TEXT);
+        XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_SUBSCRIBE, (void *) XSB_WEATHER);
+        logMsg(logToAll,    PLUGIN_NAME " V" PLUGIN_VERSION " succesfully connected to XSquawkBox.");
+        logMsg(logToSqkBox, "Type in \">helpme\" to learn about using Lua code in XSB.");
+    }
+    else
+    {
+        WeHaveXSB = false;
+    }
+
+
 
 
     luaL_openlibs(FWLLua);
