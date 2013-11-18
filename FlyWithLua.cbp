@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="FlyWithLua Version 2.2.3" />
+		<Option title="FlyWithLua Version 2.2.4" />
 		<Option compiler="gcc" />
 		<Option show_notes="0">
 			<notes>
@@ -50,9 +50,9 @@
 					<Add directory="GLUT_for_Windows" />
 				</Linker>
 			</Target>
-			<Target title="Win32 SDK212">
+			<Target title="Win32 SDK213">
 				<Option output="FlyWithLua/32/win.xpl" prefix_auto="0" extension_auto="0" />
-				<Option object_output="Release212" />
+				<Option object_output="Release213" />
 				<Option type="3" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -75,9 +75,9 @@
 					<Add option="-DXPLM200=1" />
 					<Add option="-DXPLM210=1" />
 					<Add directory="include" />
-					<Add directory="../SDK212/SDK/CHeaders/XPLM" />
-					<Add directory="../SDK212/SDK/CHeaders/Wrappers" />
-					<Add directory="../SDK212/SDK/CHeaders/Widgets" />
+					<Add directory="../SDK213/SDK/CHeaders/XPLM" />
+					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
+					<Add directory="../SDK213/SDK/CHeaders/Widgets" />
 					<Add directory="GLUT_for_Windows" />
 				</Compiler>
 				<Linker>
@@ -91,7 +91,7 @@
 					<Add directory="GLUT_for_Windows" />
 				</Linker>
 			</Target>
-			<Target title="Win64 SDK212">
+			<Target title="Win64 SDK213">
 				<Option output="FlyWithLua/64/win.xpl" prefix_auto="0" extension_auto="0" />
 				<Option object_output="Release212_64" />
 				<Option type="3" />
@@ -120,9 +120,9 @@
 					<Add option="-DXPLM210=1" />
 					<Add option="-DUSE_EXTERNAL_ALLOCATOR" />
 					<Add directory="include64" />
-					<Add directory="../SDK212/SDK/CHeaders/XPLM" />
-					<Add directory="../SDK212/SDK/CHeaders/Wrappers" />
-					<Add directory="../SDK212/SDK/CHeaders/Widgets" />
+					<Add directory="../SDK213/SDK/CHeaders/XPLM" />
+					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
+					<Add directory="../SDK213/SDK/CHeaders/Widgets" />
 					<Add directory="GLUT_for_Windows" />
 				</Compiler>
 				<Linker>
