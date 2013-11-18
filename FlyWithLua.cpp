@@ -133,7 +133,7 @@
  *     You may want to erase all of them, as they didn't fit your paths.
  */
 
-#ifdef IBM
+#if IBM
 #include <windows.h>
 BOOL APIENTRY DllMain( HANDLE hModule,
                        DWORD  ul_reason_for_call,
@@ -180,11 +180,11 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include "XSBComDefs.h"
 
 // include OpenGL
-#ifdef IBM
+#if IBM
 #include <gl/GL.h>
 #include <gl/glut.h>
 #else
-#ifdef LIN
+#if LIN
 #define TRUE 1
 #define FALSE 0
 #include <GL/gl.h>
@@ -3532,10 +3532,10 @@ static int      LuaXPLMGetFMSEntryInfo(lua_State *L)
     XPLMNavType         outType = xplm_Nav_Unknown;
     char                outID[256] = "";
     XPLMNavRef          outRef = XPLM_NAV_NOT_FOUND;
-#ifdef XPLM210
+#if XPLM210
     int                 outAltitude = 0;
 #else
-    long                outAltitude = 0;
+    intptr_t            outAltitude = 0;
 #endif
     float               outLat = 0;
     float               outLon = 0;
@@ -3983,12 +3983,12 @@ static int      Luadirectory_to_table(lua_State *L)
     char            DirectoryPath[LONGSTRING] = "";
     int    k;
     char            FilesInFolder[15000];
-#ifdef XPLM210
+#if XPLM210
     int             NumberOfFiles;
     int             TotalNumberOfFiles;
 #else
-    long            NumberOfFiles;
-    long            TotalNumberOfFiles;
+    intptr_t        NumberOfFiles;
+    intptr_t        TotalNumberOfFiles;
 #endif
     char*           FileIndex[500];
 
@@ -4670,12 +4670,12 @@ bool ReadAllScriptFiles(void)
     char            PlaneTailNumber[SHORTSRTING] = "";
     int    k;
     char            FilesInFolder[5000];
-#ifdef XPLM210
+#if XPLM210
     int             NumberOfFiles;
     int             TotalNumberOfFiles;
 #else
-    long            NumberOfFiles;
-    long            TotalNumberOfFiles;
+    intptr_t        NumberOfFiles;
+    intptr_t        TotalNumberOfFiles;
 #endif
     char*           FileIndex[250];
 
@@ -5091,7 +5091,7 @@ PLUGIN_API int XPluginEnable(void)
     return 1;
 }
 
-#ifdef XPLM210
+#if XPLM210
 PLUGIN_API void XPluginReceiveMessage(
     XPLMPluginID    inFromWho,
     intptr_t        inMessage,
@@ -5099,7 +5099,7 @@ PLUGIN_API void XPluginReceiveMessage(
 #else
 PLUGIN_API void XPluginReceiveMessage(
     XPLMPluginID    inFromWho,
-    long            inMessage,
+    intptr_t        inMessage,
     void *          inParam)
 #endif
 {
