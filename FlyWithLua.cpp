@@ -3532,7 +3532,9 @@ static int      LuaXPLMGetFMSEntryInfo(lua_State *L)
     XPLMNavType         outType = xplm_Nav_Unknown;
     char                outID[256] = "";
     XPLMNavRef          outRef = XPLM_NAV_NOT_FOUND;
-#if XPLM210
+#if XPLM200 and not XPLM210
+    long                outAltitude = 0;
+#elif WIN64
     int                 outAltitude = 0;
 #else
     intptr_t            outAltitude = 0;
@@ -3983,7 +3985,10 @@ static int      Luadirectory_to_table(lua_State *L)
     char            DirectoryPath[LONGSTRING] = "";
     int    k;
     char            FilesInFolder[15000];
-#if XPLM210
+#if XPLM200 and not XPLM210
+    long            NumberOfFiles;
+    long            TotalNumberOfFiles;
+#elif WIN64
     int             NumberOfFiles;
     int             TotalNumberOfFiles;
 #else
@@ -4670,7 +4675,10 @@ bool ReadAllScriptFiles(void)
     char            PlaneTailNumber[SHORTSRTING] = "";
     int    k;
     char            FilesInFolder[5000];
-#if XPLM210
+#if XPLM200 and not XPLM210
+    long            NumberOfFiles;
+    long            TotalNumberOfFiles;
+#elif WIN64
     int             NumberOfFiles;
     int             TotalNumberOfFiles;
 #else

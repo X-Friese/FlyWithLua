@@ -139,7 +139,6 @@
 				<ExtraCommands>
 					<Add after='xcopy /Y FlyWithLua\32\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
 					<Add after='xcopy /Y FlyWithLua\64\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\64&quot;' />
-					<Add after="C:\Programme\7-Zip\7z.exe u FlyWithLua\sourcecode.zip *.cpp *.cbp *.tex include\*.* include64\*.* GLUT_for_Windows\gl\*.* *.PNG *.JPG" />
 					<Add after='xcopy /Y &quot;*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
 					<Add after='xcopy /Y &quot;..\FWL_Docs\*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
 					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Scripts\*.lua&quot; &quot;FlyWithLua\Scripts (disabled)\&quot;' />
