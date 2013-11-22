@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 // #define PLUGIN_VERSION "2.2.5 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.2.4"
+#define PLUGIN_VERSION "2.2.4.1"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -3537,12 +3537,13 @@ static int      LuaXPLMGetFMSEntryInfo(lua_State *L)
 #elif WIN64
     int                 outAltitude = 0;
 #else
-    intptr_t            outAltitude = 0;
+//    intptr_t            outAltitude = 0;
+    int                 outAltitude = 0; // modified by saar
 #endif
     float               outLat = 0;
     float               outLon = 0;
 
-    XPLMGetFMSEntryInfo(lua_tointeger(L, 1), &outType, outID, &outRef, &outAltitude, &outLat, &outLon);
+    XPLMGetFMSEntryInfo(lua_tointeger(L, 1), &outType, outID, &outRef, &outAltitude, &outLat, &outLon); // disabled by saar for debug
 
     lua_pushnumber(L, outType);
     lua_pushstring(L, outID);
@@ -3992,8 +3993,11 @@ static int      Luadirectory_to_table(lua_State *L)
     int             NumberOfFiles;
     int             TotalNumberOfFiles;
 #else
-    intptr_t        NumberOfFiles;
-    intptr_t        TotalNumberOfFiles;
+//    intptr_t        NumberOfFiles;
+//    intptr_t        TotalNumberOfFiles;
+    int        NumberOfFiles; // modified by saar -- debug
+    int        TotalNumberOfFiles; // modified by saar -- debug
+
 #endif
     char*           FileIndex[500];
 
@@ -4682,8 +4686,10 @@ bool ReadAllScriptFiles(void)
     int             NumberOfFiles;
     int             TotalNumberOfFiles;
 #else
-    intptr_t        NumberOfFiles;
-    intptr_t        TotalNumberOfFiles;
+//    intptr_t        NumberOfFiles;
+//    intptr_t        TotalNumberOfFiles;
+    int        NumberOfFiles; // modified by saar
+    int        TotalNumberOfFiles; // modified by saar
 #endif
     char*           FileIndex[250];
 
