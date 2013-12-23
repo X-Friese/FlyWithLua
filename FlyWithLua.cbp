@@ -150,6 +150,8 @@
 					<Add after='xcopy /Y include\lua51.dll &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
 					<Add after="xcopy /Y include\lua51.dll FlyWithLua\32" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.epub" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.pdf" />
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>

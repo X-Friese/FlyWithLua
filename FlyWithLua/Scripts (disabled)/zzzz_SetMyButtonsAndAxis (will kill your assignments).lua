@@ -201,7 +201,7 @@ if PLANE_ICAO == "B105" then
     set_helicopter_assignments()
 end
 -- Carenado C208B
-if PLANE_ICAO == "C208" then
+if PLANE_TAILNUMBER == "N2476D" then
     autopilot_helper_vvi = 800
     plane_has_reverser = true
 end
