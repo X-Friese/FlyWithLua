@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-// #define PLUGIN_VERSION "2.2.5 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.2.4.1"
+#define PLUGIN_VERSION "2.2.5 nightly build " __DATE__ " " __TIME__
+// #define PLUGIN_VERSION "2.2.4.1"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -2458,7 +2458,7 @@ static int LuaDataRef(lua_State *L)
                     // everything is fine?
                     if (IndexWanted != DataRefTable[i].Index)
                     {
-                        logMsg(logToAll, string("FlyWithLua Error: The variable ").append(VariableWanted).append("\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\", but the index is different."));
+                        logMsg(logToAll, string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\", but the index is different."));
                         LuaIsRunning = false;
                         return 0;
                     }
@@ -2484,7 +2484,7 @@ static int LuaDataRef(lua_State *L)
         {
             if ((strcmp(DataRefTable[i].DataRefName, DataRefWanted) == 0) && (DataRefTable[i].Index == IndexWanted))
             {
-                logMsg(logToDevCon, string("FlyWithLua Info: The DataRef ") + DataRefWanted + string(" is already handled in variable ") + DataRefTable[i].LuaVariable + string(", you want to use it with ") + VariableWanted);
+                logMsg(logToDevCon, string("FlyWithLua Info: The DataRef \"") + DataRefWanted + string("\" is already handled in variable \"") + DataRefTable[i].LuaVariable + string("\", you want to use it with \"") + VariableWanted + "\".");
                 logMsg(logToDevCon, "FlyWithLua Info: As long as only one variable wants writable access to the DataRef, it is okay (but you loose performance).");
                 if (ReadOnlyWanted == false && DataRefTable[i].IsReadOnly == false)
                 {
@@ -2509,7 +2509,7 @@ static int LuaDataRef(lua_State *L)
     {
         if (!lua_isnumber(L, 4))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append("\" should have an index. I set it to 0."));
         }
     }
     if ((int)DataRefTypeIdWanted == 6) DataRefTypeIdWanted = xplmType_Double;
