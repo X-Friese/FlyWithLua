@@ -319,6 +319,12 @@ function my_radios_mouse_wheel_events()
    RESUME_MOUSE_WHEEL = true
   end
 
+  -- mouse wheel action for element 'ALT'
+  if MOUSE_X >= SCREEN_WIDTH+(-81) and MOUSE_X <= SCREEN_WIDTH+(-1) and MOUSE_Y >= 246 and MOUSE_Y <= 281 then
+     autopilot_helper_set_VVI()
+   RESUME_MOUSE_WHEEL = true
+  end
+
   -- mouse wheel action for element 'VVI'
   if MOUSE_X >= SCREEN_WIDTH+(-81) and MOUSE_X <= SCREEN_WIDTH+(-1) and MOUSE_Y >= 211 and MOUSE_Y <= 246 then
      VVI = math.floor(VVI / 100 + MOUSE_WHEEL_CLICKS) * 100

@@ -1009,7 +1009,107 @@ To use the Bit module, simply start your script with:
 \verb|require("bit")|
 
 \newpage
-\section{OpenGL}
+\section{OpenAL sound}
+
+Since version 2.3 FlyWithLua supports OpenAL sound. The OpenAL sound system is part of X-Plane, so no additional library or module is needed. But before you play a sound, you must understand how the sound system works.
+
+\subsection{Buffers, Sounds and Listeners}
+
+If you are familiar with OpenAL, you know that the sound system uses tree parts, buffers, sounds and listeners. FlyWithLua combines these different parts into one table, where all the sound stuff is stored. So forget everything you know about OpenAL and think about sound as system represented by only one big table. If you force FlyWithLua to write a debug file, you will see the sound system table (if it contains sounds).
+
+\subsection{Loading and defining sounds}
+
+To use the sound system, you first have to load a sound file into memory. At the moment, only WAV files are allowed, no MP3 or OGG files.
+
+You fill the sound system table by loading a WAV file and remembering the position inside the table. The first sound you load gets number 0 (zero), as this is typical for C++ plugins (FlyWithLua is written in C/C++).
+
+\subsubsection{\emph{table position} = load\_WAV\_file( \emph{filename} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your file is stored into the sound system table. Index values starts from 0 (Zero).
+	\item \emph{filename} = The name of the WAV file to load.
+\end{enumerate}
+
+This function loads a WAV file into the sound system table and gives back the index value. This is an example:
+
+
+\begin{lstlisting}
+rotate_sound = load_WAV_file(SCRIPT_DIRECTORY .. "sounds/rotate.wav")
+\end{lstlisting}
+
+After you have loaded a sound file, you can define some parameters to the sound, like the loop, pitch and gain value. By default, a sound is only played once (loop = \verb|false|), with normal pitch (pitch = 1.0) and full gain (gain = 1.0). If you want other than the default values, modify them with these functions:
+
+\subsubsection{ let\_sound\_loop( \emph{table position}, \emph{boolean value} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your file is stored into the sound system table. Index values starts from 0 (Zero).
+	\item \emph{boolean value} = This has to be \verb|true|, if the sound should loop, else \verb|false|.
+\end{enumerate}
+
+\subsubsection{ set\_sound\_pitch( \emph{table position}, \emph{float value} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your file is stored into the sound system table. Index values starts from 0 (Zero).
+	\item \emph{float value} = The value for the pitch. The default value is 1.0 for an unmodified, normal pitch.
+\end{enumerate}
+
+\subsubsection{ set\_sound\_gain( \emph{table position}, \emph{float value} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your file is stored into the sound system table. Index values starts from 0 (Zero).
+	\item \emph{float value} = The value for the gain. The default value is 1.0 for full gain.
+\end{enumerate}
+
+Here is an example:
+
+\begin{lstlisting}
+-- load sound "cabin crew, prepare for landing"
+cc_prepare_landing_sound = load_WAV_file(SCRIPT_DIRECTORY .. "sounds/ccprepland.wav")
+-- fast speaking, helium breathing pilot whispering
+set_sound_pitch(cc_prepare_landing_sound, 1.8)
+set_sound_gain(cc_prepare_landing_sound, 0.25)
+\end{lstlisting}
+
+\newpage
+\subsection{Using the sounds from the sound table}
+
+After you filled the sound system table with WAV files and all parameters are defined, you can use the sounds by using these functions:
+
+\subsubsection{ play\_sound( \emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This functions starts playing the sound at the given index. If the loop parameter is set to \verb|false| (the dafault value), playing will stop automatically, else it will restart from the beginning until you stop the sound.
+
+\subsubsection{ stop\_sound( \emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This functions stops the sound at the given index. This is especially useful, if the sound is forced to loop. FlyWithLua will \emph{not} remember the position (duration) where you stop the sound.
+
+\subsubsection{ pause\_sound( \emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This functions pause the sound at the given index. This is especially useful, if the sound is forced to loop. FlyWithLua will remember the position (duration) where you pause the sound. When you call the \verb|play_sound()| function the next time, it will continue at this position (duration).
+
+\subsubsection{ rewind\_sound( \emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This functions rewinds the sound at the given index. In other words, the sound will continue at the beginning position, if you restart playing.
+
+
+\newpage
+\section{OpenGL graphics}
 
 If you want to draw more than text, you can get directly access to a few OpenGL functions.
 

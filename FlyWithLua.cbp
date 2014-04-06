@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="FlyWithLua Version 2.2.4" />
+		<Option title="FlyWithLua Version 2.3" />
 		<Option compiler="gcc" />
 		<Option show_notes="0">
 			<notes>
@@ -45,6 +45,7 @@
 					<Add library="XPLM" />
 					<Add library="XPWidgets" />
 					<Add library="GLUT_for_Windows\gl\glut32.lib" />
+					<Add library="C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib" />
 					<Add directory="include" />
 					<Add directory="../SDK201/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />
@@ -86,6 +87,7 @@
 					<Add library="XPLM" />
 					<Add library="XPWidgets" />
 					<Add library="GLUT_for_Windows\gl\glut32.lib" />
+					<Add library="C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib" />
 					<Add directory="include" />
 					<Add directory="../SDK212/SDK/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />
@@ -132,6 +134,7 @@
 					<Add library="XPLM_64" />
 					<Add library="XPWidgets_64" />
 					<Add library="GLUT_for_Windows\gl\glut64.lib" />
+					<Add library="C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win64\OpenAL32.lib" />
 					<Add directory="include64" />
 					<Add directory="../SDK212/SDK/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />

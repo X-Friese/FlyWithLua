@@ -53,7 +53,7 @@ end
 create_command( "FlyWithLua/autopilot/activate_autopilot", "activate autopilot and set actual heading and altitude",
                 "activate_autopilot_tweak()", "", "" )
 
-create_command( "FlyWithLua/autopilot/set_autopilot_off", "activate autopilot and set actual heading and altitude",
+create_command( "FlyWithLua/autopilot/set_autopilot_off", "deactivate autopilot tweak and get back normal steeringe",
                 "stop_autopilot_tweak()", "", "" )
 
 -- use a switch

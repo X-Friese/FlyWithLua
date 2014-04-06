@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1385139293 source:m:\github\flywithlua\flywithlua.cpp
+1396776358 source:m:\github\flywithlua\flywithlua.cpp
 	<windows.h>
 	<unistd.h>
 	"XPLMPlugin.h"
@@ -34,90 +34,92 @@
 	<glu.h>
 	<glut.h>
 	<Carbon/Carbon.h>
+	"OpenAL/al.h"
+	"OpenAL/alc.h"
 	<hidapi.h>
 	<lua.hpp>
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmplugin.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmplugin.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmdefs.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmdefs.h
 	<windows.h>
 	<stdint.h>
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmdisplay.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmdisplay.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmgraphics.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmgraphics.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmprocessing.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmprocessing.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmdataaccess.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmdataaccess.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmmenus.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmmenus.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmutilities.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmutilities.h
 	"XPLMDefs.h"
 
-1384799733 m:\github\sdk213\sdk\cheaders\widgets\xpwidgets.h
+1384803333 m:\github\sdk213\sdk\cheaders\widgets\xpwidgets.h
 	"XPWidgetDefs.h"
 
-1384799733 m:\github\sdk213\sdk\cheaders\widgets\xpwidgetdefs.h
+1384803333 m:\github\sdk213\sdk\cheaders\widgets\xpwidgetdefs.h
 	"XPLMDefs.h"
 
-1384799733 m:\github\sdk213\sdk\cheaders\widgets\xpstandardwidgets.h
+1384803333 m:\github\sdk213\sdk\cheaders\widgets\xpstandardwidgets.h
 	"XPWidgetDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmscenery.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmscenery.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmnavigation.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmnavigation.h
 	"XPLMDefs.h"
 
-1384799734 m:\github\sdk213\sdk\cheaders\xplm\xplmplanes.h
+1384803334 m:\github\sdk213\sdk\cheaders\xplm\xplmplanes.h
 	"XPLMDefs.h"
 
-1299568728 m:\github\flywithlua\include64\xsbcomdefs.h
+1299572328 m:\github\flywithlua\include64\xsbcomdefs.h
 
-1360927798 m:\github\flywithlua\glut_for_windows\gl\glut.h
+1360931398 m:\github\flywithlua\glut_for_windows\gl\glut.h
 	<windows.h>
 	<GL/gl.h>
 	<GL/glu.h>
 
-1349801048 m:\github\flywithlua\include64\hidapi.h
+1349804648 m:\github\flywithlua\include64\hidapi.h
 	<wchar.h>
 
-1353172287 m:\github\flywithlua\include64\lua.hpp
+1353175887 m:\github\flywithlua\include64\lua.hpp
 	"lua.h"
 	"lauxlib.h"
 	"lualib.h"
 	"luajit.h"
 
-1353172287 m:\github\flywithlua\include64\lua.h
+1353175887 m:\github\flywithlua\include64\lua.h
 	<stdarg.h>
 	<stddef.h>
 	"luaconf.h"
 
-1353172287 m:\github\flywithlua\include64\luaconf.h
+1353175887 m:\github\flywithlua\include64\luaconf.h
 	<limits.h>
 	<stddef.h>
 	<assert.h>
 
-1353172283 m:\github\flywithlua\include64\lauxlib.h
+1353175883 m:\github\flywithlua\include64\lauxlib.h
 	<stddef.h>
 	<stdio.h>
 	"lua.h"
 
-1353172287 m:\github\flywithlua\include64\lualib.h
+1353175887 m:\github\flywithlua\include64\lualib.h
 	"lua.h"
 
-1353172287 m:\github\flywithlua\include64\luajit.h
+1353175887 m:\github\flywithlua\include64\luajit.h
 	"lua.h"
 
-1349800037 source:m:\github\flywithlua\include\hid.c
+1349803637 source:m:\github\flywithlua\include\hid.c
 	<windows.h>
 	<ntdef.h>
 	<winbase.h>
@@ -129,6 +131,81 @@
 	<stdlib.h>
 	"hidapi.h"
 
-1349801048 m:\github\flywithlua\include\hidapi.h
+1349804648 m:\github\flywithlua\include\hidapi.h
 	<wchar.h>
+
+1165591858 m:\github\flywithlua\openal\al.h
+
+1176476568 m:\github\flywithlua\openal\alc.h
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmplugin.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmdefs.h
+	<windows.h>
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmdisplay.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmgraphics.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmprocessing.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmdataaccess.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmmenus.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmutilities.h
+	"XPLMDefs.h"
+
+1347271903 m:\github\sdk201\cheaders\widgets\xpwidgets.h
+	"XPWidgetDefs.h"
+
+1347271903 m:\github\sdk201\cheaders\widgets\xpwidgetdefs.h
+	"XPLMDefs.h"
+
+1347271903 m:\github\sdk201\cheaders\widgets\xpstandardwidgets.h
+	"XPWidgetDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmscenery.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmnavigation.h
+	"XPLMDefs.h"
+
+1347271904 m:\github\sdk201\cheaders\xplm\xplmplanes.h
+	"XPLMDefs.h"
+
+1299572328 m:\github\flywithlua\include\xsbcomdefs.h
+
+1349675506 m:\github\flywithlua\include\lua.hpp
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+	"luajit.h"
+
+1350809792 m:\github\flywithlua\include\lua.h
+	<stdarg.h>
+	<stddef.h>
+	"luaconf.h"
+
+1350809792 m:\github\flywithlua\include\luaconf.h
+	<limits.h>
+	<stddef.h>
+	<assert.h>
+
+1350809791 m:\github\flywithlua\include\lauxlib.h
+	<stddef.h>
+	<stdio.h>
+	"lua.h"
+
+1350809790 m:\github\flywithlua\include\lualib.h
+	"lua.h"
+
+1350809789 m:\github\flywithlua\include\luajit.h
+	"lua.h"
 

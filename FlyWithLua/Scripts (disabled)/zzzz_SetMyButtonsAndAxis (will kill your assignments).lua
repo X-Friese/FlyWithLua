@@ -68,7 +68,7 @@ set( "sim/joystick/joystick_pitch_sensitivity",    0.2 )
 set( "sim/joystick/joystick_roll_sensitivity",     0.2 )
 set( "sim/joystick/joystick_heading_sensitivity",  0.2 )
 
-set( "sim/graphics/view/field_of_view_deg",   72.5 )
+set( "sim/graphics/view/field_of_view_deg",   92.5 )
 
 -- and do all the every frame stuff
 function B2D_update()
@@ -219,6 +219,16 @@ end
 -- Carenado Bonanza
 if PLANE_ICAO == "BE33" then
     set( "sim/graphics/view/field_of_view_deg",   65.0 )
+end
+
+-- Harrenssor PIPISTREL Panthera
+if PLANE_ICAO == "PIPA" then
+    set( "sim/graphics/view/field_of_view_deg",   95.0 )
+end
+
+-- Harrenssor Diamond Aircraft TwinStar DA42
+if PLANE_ICAO == "DA42" then
+    set( "sim/graphics/view/field_of_view_deg",   90.0 )
 end
 
 -- Cessna C172

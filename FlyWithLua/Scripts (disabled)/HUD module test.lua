@@ -12,6 +12,9 @@ dataref("xp_autopilot_airspeed", "sim/cockpit/autopilot/airspeed", "writable")
 dataref("xp_autothrottle_enabled", "sim/cockpit2/autopilot/autothrottle_enabled", "writable")
 dataref("QNH_Pilot", "sim/cockpit2/gauges/actuators/barometer_setting_in_hg_pilot", "writable")
 
+-- define a global variable to be used in other scripts (shared with another script)
+autopilot_helper_vvi = 600
+
 -- init the HUD
 HUD.begin_HUD( -81, 1, 80, 315, "my_radios", "always")
 
@@ -37,6 +40,7 @@ HUD.draw_string(5, 23, 10, "ALT")
 HUD.draw_fstring(15, 5, 18, "%05i", "ALT")
 HUD.create_wheel_action( 0, 0, 35, 35, "ALT = math.floor(ALT / 100 + MOUSE_WHEEL_CLICKS * 10) * 100")
 HUD.create_wheel_action(36, 0, 40, 35, "ALT = math.floor(ALT / 100 + MOUSE_WHEEL_CLICKS) * 100")
+HUD.create_wheel_action( 0, 0, 80, 35, "autopilot_helper_set_VVI()")
 HUD.create_backlight_indicator( 70, 0, 10, 35, "bit.band(AP_STATE, 32) > 0", 1, 0, 0, 1)
 HUD.create_backlight_indicator( 70, 0, 10, 35, "bit.band(AP_STATE, 16384) > 0", 0, 1, 0, 1)
 HUD.create_click_action(0, 0, 80, 35, 'command_once("sim/autopilot/altitude_hold")')
@@ -123,6 +127,44 @@ HUD.create_click_action(0, 0, 80, 35, 'QNH_Pilot = 29.92')
 
 -- finish the HUD
 HUD.end_HUD()
+
+-- define a function uesed by the HUD
+function autopilot_helper_set_VVI()
+    if ALT > ELEVATION*3.2808399 then
+        if bit.band(AP_STATE, 16) == 0 then command_once( "sim/autopilot/vertical_speed" ) end
+        VVI = autopilot_helper_vvi
+    end
+    if ALT < ELEVATION*3.2808399 then
+        if bit.band(AP_STATE, 16) == 0 then command_once( "sim/autopilot/vertical_speed" ) end
+        VVI = -autopilot_helper_vvi
+    end
+end
+
+-- define some functions taken from another script
+plane_PSI =  dataref_table("sim/flightmodel/position/psi")
+autopilot_mode = dataref_table("sim/cockpit/autopilot/autopilot_mode")
+
+function activate_autopilot_tweak()
+	HDG = plane_PSI[0]
+	command_once( "sim/autopilot/reentry" )
+	command_once( "sim/autopilot/heading" )
+	command_once( "sim/autopilot/altitude_hold" )
+	ALT = ELEVATION*3.2808399
+	autopilot_mode[0] = 2
+end
+
+function stop_autopilot_tweak()
+	autopilot_mode[0] = 0
+	xp_autothrottle_enabled = 0
+end
+
+-- provide a custom command to activate it
+create_command( "FlyWithLua/autopilot/activate_autopilot", "activate autopilot and set actual heading and altitude",
+                "activate_autopilot_tweak()", "", "" )
+
+create_command( "FlyWithLua/autopilot/set_autopilot_off", "deactivate autopilot tweak and get back normal steering",
+                "stop_autopilot_tweak()", "", "" )
+
 
 -- do some corrections
 function radio_limiter()
