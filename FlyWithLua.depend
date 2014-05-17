@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1396776358 source:m:\github\flywithlua\flywithlua.cpp
+1400347415 source:m:\github\flywithlua\flywithlua.cpp
 	<windows.h>
 	<unistd.h>
 	"XPLMPlugin.h"

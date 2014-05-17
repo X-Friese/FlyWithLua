@@ -890,6 +890,47 @@ There is a demo script >>\verb|test command.lua|<<, showing how to use this powe
 
 Will return a simple table containing all filenames in alphabetical order. Only the filenames are returned, without the path.
 
+\subsubsection{place\_aircraft\_at( "\emph{ICAO}" )}
+
+\begin{enumerate}
+	\item \emph{ICAO} = A string with the ICAO code of the airport you want to place the user to.
+\end{enumerate}
+
+Lua will be stopped for a moment and the plane will be replaced. This can take some time, so please be patient. Please remember that all Lua scripts will be reloaded after this action!
+
+\subsubsection{load\_aircraft( "\emph{path and full filename}" )}
+
+\begin{enumerate}
+	\item \emph{path and full filename} = A string with the path of your file. The path can be written in Unix stile, independent from the OS FlyWithLua is running on. You will need the full filename including the ending.
+\end{enumerate}
+
+Lua will be stopped for a moment and the plane will be changed. This can take some time, so please be patient. Please remember that all Lua scripts will be reloaded after this action!
+
+This is an example:
+\begin{lstlisting}
+load_aircraft("Aircraft/General Aviation/Cessna 172SP/Cessna_172SP.acf")
+\end{lstlisting}
+
+\subsubsection{load\_situation( "\emph{path and full filename}" )}
+
+\begin{enumerate}
+	\item \emph{path and full filename} = A string with the path of your file. The path can be written in Unix stile, independent from the OS FlyWithLua is running on. You will need the full filename including the ending.
+\end{enumerate}
+
+Lua will be stopped for a moment and the situation file will be loaded. This can take some time, so please be patient. Please remember that all Lua scripts will be reloaded after this action!
+
+This does the same as the menu item "File" -> "Load Situation".
+
+\subsubsection{save\_situation( "\emph{path and full filename}" )}
+
+\begin{enumerate}
+	\item \emph{path and full filename} = A string with the path of your file. The path can be written in Unix stile, independent from the OS FlyWithLua is running on. You will need the full filename including the ending.
+\end{enumerate}
+
+The current situation is written into a file. You will have to use the ending ".sit" for situation files, to make sure that you can load them with X-Plane's menu.
+
+This does the same as the menu item "File" -> "Save Situation".
+
 \subsubsection{crash\_the\_sim()}
 
 Believe me, you will never ever want to know what this function does to your simulator.

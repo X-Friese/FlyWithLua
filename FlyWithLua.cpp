@@ -373,6 +373,11 @@ bool            CrashReportDisplayed = false;
 static int      LuaResetCount = 0;
 
 
+bool            UserWantsANewPlane = false;
+bool            UserWantsToLoadASituation = false;
+bool            UserWantsToReplaceAircraft = false;
+char            UserWantedFilename[LONGSTRING];
+
 void EraseDataRefTable( void )
 {
     XPLMDataRef     DoNothing = XPLMFindDataRef("sim/none/none");
@@ -1746,6 +1751,71 @@ void PushDataRefToLuaVariable(  char*           VariableWantedCString,
 }
 
 // define the core C functions to use them inside the Lua state
+
+static int LuaPlaceUserAtAirport(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToSqkBox, "FlyWithLua Error: No airport ICAO code to replace the plane."); //fallback to DevCon
+        LuaIsRunning = false;
+        return 0;
+    }
+    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    logMsg(logToSqkBox, string("FlyWithLua Info: Placing user's aircraft at ").append(UserWantedFilename)); //fallback to DevCon
+    UserWantsANewPlane = false;
+    UserWantsToLoadASituation = false;
+    UserWantsToReplaceAircraft = true;
+    LuaIsRunning = false;
+    return 0;
+}
+
+static int LuaLoadAircraft(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToSqkBox, "FlyWithLua Error: No aircraft filename to load."); //fallback to DevCon
+        LuaIsRunning = false;
+        return 0;
+    }
+    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    logMsg(logToSqkBox, string("FlyWithLua Info: Loading aircraft ").append(UserWantedFilename)); //fallback to DevCon
+    UserWantsANewPlane = true;
+    UserWantsToLoadASituation = false;
+    UserWantsToReplaceAircraft = false;
+    LuaIsRunning = false;
+    return 0;
+}
+
+static int LuaLoadSituation(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToSqkBox, "FlyWithLua Error: No situation filename to load."); //fallback to DevCon
+        LuaIsRunning = false;
+        return 0;
+    }
+    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    logMsg(logToSqkBox, string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
+    UserWantsANewPlane = false;
+    UserWantsToLoadASituation = true;
+    UserWantsToReplaceAircraft = false;
+    LuaIsRunning = false;
+    return 0;
+}
+
+static int LuaSaveSituation(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToSqkBox, "FlyWithLua Error: No situation filename to save to."); //fallback to DevCon
+        LuaIsRunning = false;
+        return 0;
+    }
+    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    logMsg(logToSqkBox, string("FlyWithLua Info: Saving situation ").append(UserWantedFilename)); //fallback to DevCon
+    XPLMSaveDataFile(xplm_DataFile_Situation, UserWantedFilename);
+    return 0;
+}
 
 static int LuaXSBSpeakString(lua_State *L)
 {
@@ -4704,6 +4774,10 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "poke", Luapoke);
     lua_register(L, "set_pilots_head", LuaSetPilotsHead);
     lua_register(L, "get_pilots_head", LuaGetPilotsHead);
+    lua_register(L, "place_aircraft_at", LuaPlaceUserAtAirport);
+    lua_register(L, "load_situation", LuaLoadSituation);
+    lua_register(L, "save_situation", LuaSaveSituation);
+    lua_register(L, "load_aircraft", LuaLoadAircraft);
 
     // function to access HID devices (new since FWL2.1)
     lua_register(L, "create_HID_table", Luacreate_HID_table);
@@ -5151,8 +5225,9 @@ void ResetLuaEngine( void )
         WeHaveXSB = false;
     }
 
-
-
+    UserWantsANewPlane = false;
+    UserWantsToLoadASituation = false;
+    UserWantsToReplaceAircraft = false;
 
     luaL_openlibs(FWLLua);
 
@@ -5821,6 +5896,35 @@ float	MyFastLoopCallback(
     {
         logMsg(logToAll, "FlyWithLua Debug Info: Stack overflow, more than 100 elements on stack.");
         LuaIsRunning = false;
+    }
+    if (UserWantsANewPlane)
+    {
+        UserWantsANewPlane = false;
+        UserWantsToLoadASituation = false;
+        UserWantsToReplaceAircraft = false;
+        LuaIsRunning = false;
+        XPLMSetUsersAircraft(UserWantedFilename);
+        return TimeBetweenCallbacks;
+    }
+    if (UserWantsToReplaceAircraft)
+    {
+        UserWantsANewPlane = false;
+        UserWantsToLoadASituation = false;
+        UserWantsToReplaceAircraft = false;
+        LuaIsRunning = false;
+        XPLMPlaceUserAtAirport(UserWantedFilename);
+        return TimeBetweenCallbacks;
+    }
+    if (UserWantsToLoadASituation)
+    {
+        UserWantsANewPlane = false;
+        UserWantsToLoadASituation = false;
+        UserWantsToReplaceAircraft = false;
+        LuaIsRunning = false;
+        XPLMLoadDataFile(xplm_DataFile_Situation, UserWantedFilename);
+        logMsg(logToDevCon, "FlyWithLua: A situation file was loaded. Script files have to be reloaded.");
+        ReadAllScriptFiles();
+        return TimeBetweenCallbacks;
     }
     if ((CallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
