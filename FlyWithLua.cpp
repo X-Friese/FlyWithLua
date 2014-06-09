@@ -378,6 +378,8 @@ bool            UserWantsToLoadASituation = false;
 bool            UserWantsToReplaceAircraft = false;
 char            UserWantedFilename[LONGSTRING];
 
+bool            WeAreNotInDrawingState = true;
+
 void EraseDataRefTable( void )
 {
     XPLMDataRef     DoNothing = XPLMFindDataRef("sim/none/none");
@@ -1102,12 +1104,14 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
                          0,  // enables per pixel depth testing, as in glEnable(GL_DEPTH_TEST);
                          0); // enables writing back of depth information to the depth bufffer, as in glDepthMask(GL_TRUE);
 
+    WeAreNotInDrawingState = false;
     if (luaL_dostring(FWLLua, LuaDrawCommand.c_str()))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Can't execute window draw callback command string. The string who failed is:");
         logMsg(logToDevCon, LuaDrawCommand);
         LuaIsRunning = false;
     }
+    WeAreNotInDrawingState = true;
 
     return 1;
 };
@@ -1923,6 +1927,13 @@ static int LuaDrawString(lua_State *L)
     // or         int x_pos, int y_pos, string string_to_print
     //            (uses default color = white)
 
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: draw_string() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
         logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string().");
@@ -1969,11 +1980,18 @@ static int LuaDrawString(lua_State *L)
 
 static int LuaDrawStringHelv18(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: draw_string_Helvetica_18() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     // arguments: int x_pos, int y_pos, string string_to_print
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helv18().");
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_18().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2000,11 +2018,18 @@ static int LuaDrawStringHelv18(lua_State *L)
 
 static int LuaDrawStringHelv12(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: draw_string_Helvetica_12() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     // arguments: int x_pos, int y_pos, string string_to_print
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helv18().");
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_12().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2031,11 +2056,18 @@ static int LuaDrawStringHelv12(lua_State *L)
 
 static int LuaDrawStringHelv10(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: draw_string_Helvetica_10() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     // arguments: int x_pos, int y_pos, string string_to_print
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helv18().");
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_10().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2062,11 +2094,18 @@ static int LuaDrawStringHelv10(lua_State *L)
 
 static int LuaDrawStringTimes10(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: draw_string_Times_Roman_10() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     // arguments: int x_pos, int y_pos, string string_to_print
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helv18().");
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Times_Roman_10().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2093,11 +2132,18 @@ static int LuaDrawStringTimes10(lua_State *L)
 
 static int LuaDrawStringTimes24(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: draw_string_Times_Roman_24() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     // arguments: int x_pos, int y_pos, string string_to_print
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helv18().");
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Times_Roman_24().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2128,7 +2174,7 @@ static int LuaMeasureString(lua_State *L)
     // output:     float:  length of string in screen pixel
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguemtns given to measure_string().");
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to measure_string().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3523,6 +3569,13 @@ static int LuaGetPilotsHead(lua_State *L)
 
 static int LuaXPLMSetGraphicsState(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: XPLMSetGraphicsState() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5) && lua_isnumber(L, 6) && lua_isnumber(L, 7) ))
     {
         logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetGraphicsState.");
@@ -3538,72 +3591,156 @@ static int LuaXPLMSetGraphicsState(lua_State *L)
 
 static int LuaglBegin_POINTS(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_POINTS);
     return 0;
 }
 
 static int LuaglBegin_LINES(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_LINES);
     return 0;
 }
 
 static int LuaglBegin_LINE_STRIP(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_LINE_STRIP);
     return 0;
 }
 
 static int LuaglBegin_LINE_LOOP(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_LINE_LOOP);
     return 0;
 }
 
 static int LuaglBegin_POLYGON(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_POLYGON);
     return 0;
 }
 
 static int LuaglBegin_TRIANGLES(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_TRIANGLES);
     return 0;
 }
 
 static int LuaglBegin_TRIANGLE_STRIP(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_TRIANGLE_STRIP);
     return 0;
 }
 
 static int LuaglBegin_TRIANGLE_FAN(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_TRIANGLE_FAN);
     return 0;
 }
 
 static int LuaglBegin_QUADS(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_QUADS);
     return 0;
 }
 
 static int LuaglBegin_QUAD_STRIP(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glBegin(GL_QUAD_STRIP);
     return 0;
 }
 
 static int LuaglEnd(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     glEnd();
     return 0;
 }
 
 static int LuaglVertex2f(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     float x = lua_tonumber(L, 1);
     float y = lua_tonumber(L, 2);
     glVertex2f(x, y);
@@ -3612,6 +3749,13 @@ static int LuaglVertex2f(lua_State *L)
 
 static int LuaglVertex3f(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     float x = lua_tonumber(L, 1);
     float y = lua_tonumber(L, 2);
     float z = lua_tonumber(L, 3);
@@ -3621,6 +3765,13 @@ static int LuaglVertex3f(lua_State *L)
 
 static int LuaglLineWidth(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     float width = lua_tonumber(L, 1);
     glLineWidth(width);
     return 0;
@@ -3628,6 +3779,13 @@ static int LuaglLineWidth(lua_State *L)
 
 static int LuaglColor3f(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     float red = lua_tonumber(L, 1);
     float green = lua_tonumber(L, 2);
     float blue = lua_tonumber(L, 3);
@@ -3637,6 +3795,13 @@ static int LuaglColor3f(lua_State *L)
 
 static int LuaglColor4f(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     float red = lua_tonumber(L, 1);
     float green = lua_tonumber(L, 2);
     float blue = lua_tonumber(L, 3);
@@ -3647,6 +3812,13 @@ static int LuaglColor4f(lua_State *L)
 
 static int LuaglRectf(lua_State *L)
 {
+    if (WeAreNotInDrawingState)
+    {
+        logMsg(logToAll, "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
     float x1 = lua_tonumber(L, 1);
     float y1 = lua_tonumber(L, 2);
     float x2 = lua_tonumber(L, 3);
