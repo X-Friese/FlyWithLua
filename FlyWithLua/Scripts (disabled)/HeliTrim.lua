@@ -1,8 +1,8 @@
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Script:  HeliTrim
 -- Author:  Carsten Lynker
--- Version: 1.0
--- Build:   2012-12-15
+-- Version: 1.1
+-- Build:   2014-06-15
 -- Licence: Same as FlyWithLua (MIT licence)
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Description:
@@ -92,19 +92,29 @@ function heli_trim_init()
 	local axis_function_type_is = 0
 	local i
 	
+	-- preset all axis
+	local found_elv = 0
+	local found_ail = 0
+	local found_rud = 0
+	
 	-- take a look where the right axis are
 	for i = 0, 99 do
 		axis_function_type_is = get("sim/joystick/joystick_axis_assignments", i)
 		if axis_function_type_is == 1 then
-			DataRef("std_elv_value", "sim/joystick/joystick_axis_values", "readonly", i)
+			found_elv = i
 		end
 		if axis_function_type_is == 2 then
-			DataRef("std_ail_value", "sim/joystick/joystick_axis_values", "readonly", i)
+			found_ail = i
 		end
 		if axis_function_type_is == 3 then
-			DataRef("std_rud_value", "sim/joystick/joystick_axis_values", "readonly", i)
+			found_rud = i
 		end
 	end
+	
+	-- set the DataRefs
+	DataRef("std_elv_value", "sim/joystick/joystick_axis_values", "readonly", found_elv)
+	DataRef("std_ail_value", "sim/joystick/joystick_axis_values", "readonly", found_ail)
+	DataRef("std_rud_value", "sim/joystick/joystick_axis_values", "readonly", found_rud)
 end
 
 -- and we have to run the init function one time
