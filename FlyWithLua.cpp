@@ -5736,6 +5736,13 @@ PLUGIN_API int XPluginStart(
     ATCMenuItem = -1;
     MacroMenuItem = -1;
 
+#if LIN
+    // init glut to prevent error on Linux
+    int fwl_argc;
+    char *fwl_argv[20];
+    glutInit(&fwl_argc, fwl_argv);
+#endif
+
     return 1;
 }
 
