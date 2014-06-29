@@ -1148,6 +1148,10 @@ int FWLKeySniffer(
     lua_setglobal(FWLLua, "CKEY");
     lua_pushboolean(FWLLua, (inFlags & xplm_ShiftFlag));
     lua_setglobal(FWLLua, "SHIFT_KEY");
+    lua_pushboolean(FWLLua, (inFlags & xplm_OptionAltFlag));
+    lua_setglobal(FWLLua, "OPTION_KEY");
+    lua_pushboolean(FWLLua, (inFlags & xplm_ControlFlag));
+    lua_setglobal(FWLLua, "CONTROL_KEY");
     if (inFlags & xplm_DownFlag)
     {
         lua_pushstring(FWLLua, "pressed");

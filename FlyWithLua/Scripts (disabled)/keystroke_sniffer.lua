@@ -4,9 +4,19 @@ keystroke_sniffer_active = false
 function keystroke_sniffer_event_handler()
 	if keystroke_sniffer_active then
 		if SHIFT_KEY then
-			keystroke_debug_string = "Key no. " .. VKEY .. " was pressed (shifted), KEY_ACTION = " .. KEY_ACTION
+			keystroke_debug_string = "Key no. " .. VKEY .. " was pressed (shifted, "
 		else
-			keystroke_debug_string = "Key no. " .. VKEY .. " was pressed (unshifted), KEY_ACTION = " .. KEY_ACTION
+			keystroke_debug_string = "Key no. " .. VKEY .. " was pressed (unshifted, "
+		end
+		if OPTION_KEY then
+			keystroke_debug_string = keystroke_debug_string .. "with option key down and "
+		else
+			keystroke_debug_string = keystroke_debug_string .. "with option key up and "
+		end
+		if CONTROL_KEY then
+			keystroke_debug_string = keystroke_debug_string .. "control key down), KEY_ACTION = " .. KEY_ACTION
+		else
+			keystroke_debug_string = keystroke_debug_string .. "control key up), KEY_ACTION = " .. KEY_ACTION
 		end
 		RESUME_KEY = true
 	end

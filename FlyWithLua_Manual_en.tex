@@ -684,6 +684,8 @@ When the user (pilot) presses or releases a key, a keystroke event starts your L
 	\item \emph{VKEY} = An integer value representing the key you pressed. Play around with this value a little bit, it is not the ASCII value.
 	\item \emph{CKEY} = The key as a char (string with a single letter).
 	\item \emph{SHIFT\_KEY} = A boolean value, representing the state of the shift key. If a shift key is pressed, the value is \verb|true|, else \verb|false|.
+	\item \emph{OPTION\_KEY} = A boolean value, representing the state of the option or alt key. If an option or alt key is pressed, the value is \verb|true|, else \verb|false|.
+	\item \emph{CONTROL\_KEY} = A boolean value, representing the state of the control key. If a control key is pressed, the value is \verb|true|, else \verb|false|.
 	\item \emph{KEY\_ACTION} = A string either resulting in \verb|"pressed"| or \verb|"released"|, depending on the user action.
 	\item \emph{RESUME\_KEY} = A boolean value. If it is set to \verb|true| your script will resume the keystroke and X-Plane will not recognize it. Default value is \verb|false|, to not disturb X-Plane or other plugins.
 \end{enumerate}
