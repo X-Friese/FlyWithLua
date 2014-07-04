@@ -194,9 +194,9 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 // #include <libudev.h>
 
 #else
-#include <gl.h>
-#include <glu.h>
-#include <glut.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <GLUT/glut.h>
 #include <Carbon/Carbon.h>
 #endif
 
