@@ -62,8 +62,9 @@ function load_clist( filename )
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- a modification for Mac OSX by fatroom http://forums.x-plane.org/index.php?showuser=281414
 	-- see http://forums.x-plane.org/index.php?app=downloads&showfile=17468&st=30#commentsStart
+	-- and http://forums.x-plane.org/index.php?showtopic=79097&p=842262
 	if SYSTEM == "APL" then
-		filename = "/Volumes/" .. filename.gsub(":", "/")
+		filename = "/Volumes/" .. string.gsub(filename, ":", "/")
 	end
 	-- end of modification
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -108,8 +109,9 @@ function load_checklist( filename )
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 	-- a modification for Mac OSX by fatroom http://forums.x-plane.org/index.php?showuser=281414
 	-- see http://forums.x-plane.org/index.php?app=downloads&showfile=17468&st=30#commentsStart
+	-- and http://forums.x-plane.org/index.php?showtopic=79097&p=842262
 	if SYSTEM == "APL" then
-		filename = "/Volumes/" .. filename.gsub(":", "/")
+		filename = "/Volumes/" .. string.gsub(filename, ":", "/")
 	end
 	-- end of modification
 	-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
