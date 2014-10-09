@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1400347415 source:m:\github\flywithlua\flywithlua.cpp
+1411649948 source:m:\github\flywithlua\flywithlua.cpp
 	<windows.h>
 	<unistd.h>
 	"XPLMPlugin.h"
@@ -30,9 +30,9 @@
 	<GL/gl.h>
 	<GL/glu.h>
 	<GL/glut.h>
-	<gl.h>
-	<glu.h>
-	<glut.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GLUT/glut.h>
 	<Carbon/Carbon.h>
 	"OpenAL/al.h"
 	"OpenAL/alc.h"

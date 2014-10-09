@@ -130,11 +130,124 @@ Now we use the Lua function os.clock() to get the time in seconds the simulator 
 
 As we didn't know if an other script set's the OpenGL graphic state wrong for our output, we set it to the default value with the XPLMSetGraphicsState() function. If not, it can end in some strange behavior, if am other script disables alpha for example.
 
-# Smoothing an axis
+## Understanding custom commands
+
+A very important feature of FlyWithLua are custom commands. Commands are procedures offered by X-Plane or additional elements like a plane you are using.
+
+Commands have unique names. All commands offered by X-Plane starts with `sim/` and they are visible in the joystick or keyboard configuration menu by default. Just click on `Settings` -> `Joysticks & Equipment` and choose the tab `Buttons: Adv`. Then press a joystick button, that is not assigned to a command. You can see, that it is impossible to have no assignment. Instead the button is assigned to `sim/none/none`, as you can check in the little dark info area in the middle of the window and top right in a textbox, where you can copy&paste the command's name (but you can't edit it's name).
+
+If you want access a command not starting with `sim/`, you will have to click on the little transparent square left of the textbox. Then you can choose the *first path element* -- if you understand a command's name as a name with path, like a filename.
+
+Every command has a unique name and a (not forced unique) description. The description is shown in the dark info area beneeth the command's name.
+
+All commands provided by other software will have to use a different beginning than `sim/`. These commands are called custom commands. Many free or payware addons like additional planes deliver custom commands.
+
+### Creating a custom command
+
+Now we will create a custom command to increase the OBS direction. Let's write a little script and name it `Custom_Command_Test.lua`.
+
+```lua
+require("radio")
+
+create_command("FlyWithLua/testing/increase_OBS",
+               "This command increases the OBS value by one degree.",
+               "OBS1 = OBS1 + 1",
+               "",
+               "")
+```
+
+This is working, but it still has a lot of disadvantage in it.
+
+We will examine the code first. In line no. 1 the script loads the module *radio*, if it isn't present (otherwise it will do nothing). This will define some DataRef variables like OBS1 we need here.
+
+Much more important are line 3 to 7, the `create_command()` function provided by FlyWithLua. This function needs five arguments. All arguments need to be strings (Text surrounded by quotes).
+
+The first argument is the unique command name. in this example, we name it `FlyWithLua/testing/increase_OBS`. Be aware of nameming it `sim/...` or FlyWithLua will stop with an error message.
+
+The second argument is the description of the command. Make sure to provide a short and precise description, as the user will only have these descrition (and the name) to guess what the command is doing.
+
+The third argument is a string containing Lua code. This code is executed once, when the command starts. You can see that the example command will increase the value by one every time you press the assigned button.
+
+The fourth and fifth argument are strings containing Lua code, that is executed while the button (or key) is hold down (fourth argument), or when the command ends (button or key is released). In this first example both are empty. You must give empty strings to the function, if you want to do nothing, or you will get an error message about missing arguments.
+
+The last two arguments are more important as you might guess. Let's play around with the example in deep. If you press the assigned button again and again, you will get higher values than 360°. This is not what you want. If you reach 360°, it should swap to 0° to make a clean run around the OBS instrument. Values above 360° are not usefull.
+
+So we can use the last argument, to clean up when the command stops.
+
+```lua
+require("radio")
+
+create_command("FlyWithLua/testing/increase_OBS",
+               "This command increases the OBS value by one degree.",
+               "OBS1 = OBS1 + 1",
+               "",
+               "OBS1 = OBS1 % 360")
+```
+
+The `%` does a modulo division and gives back the rest of the division, so 360° will result in 0° and the next turn around the instrument can start.
+
+Okay -- so far so cool, but what about clicking and clicking and clicking when changing bigger values. The first idea could be using the fourth argument. It will be executed every frame as long as the assigned button or key is hold down. So try this:
+
+```lua
+require("radio")
+
+create_command("FlyWithLua/testing/increase_OBS",
+               "This command increases the OBS value by one degree.",
+               "",
+               "OBS1 = OBS1 + 1",
+               "OBS1 = OBS1 % 360")
+```
+
+Is this super clever? No!
+
+You loose the ability to make small steps, as you can't press as short as only one frame. You will have to implement a better solution.
+
+```lua
+require("radio")
+local obs_up_time = 1
+local ops_up_value = 1
+
+create_command("FlyWithLua/testing/increase_OBS",
+               "This command increases the OBS value by one degree.",
+               "obs_up_time = os.clock()\n
+			    obs_up_value = OBS1",
+               "OBS1 = 5 * (os.clock() - obs_up_time) + obs_up_value",
+               "OBS1 = OBS1 % 360")
+```
+
+Wow, what's that? First we define two local variables. This makes a script more fast and less conflicty to other scripts. We use 1 as a random value, as a value is necassary, but not known at this moment.
+
+Then we use the Lua function [os.clock()](http://www.lua.org/manual/5.1/manual.html#pdf-os.clock) (yes, it's pure Lua, not FlyWithLua). The function `os.clock()` gives back the time in seconds the Lua engine is running.
+
+When the command starts, we will store the actual value and the time into the local variables. Please note the special character backslash with n inside the string. It will make a new line character to seperate the two lines of code. If you let it away, FlyWithLua will promt an error message and stop working.
+
+Then, with every frame the button or key is hold down, we will increase the value of OBS by the time in seconds multiplied by 5. You can change the value of 5 to make it fit your own needs.
+
+Five per second is too slow? It can get even better:
+
+```lua
+require("radio")
+local obs_up_time = 1
+local ops_up_value = 1
+
+create_command("FlyWithLua/testing/increase_OBS",
+               "This command increases the OBS value by one degree.",
+               "obs_up_time = os.clock() + 2\n
+			    obs_up_value = OBS1\n
+				OBS1 = obs_up_value + 1",
+               "if os.clock() > obs_up_time then\n
+			      OBS1 = 10 * (os.clock() - obs_up_time) + obs_up_value\n
+				end",
+               "OBS1 = OBS1 % 360")
+```
+
+Now we have an if statement to check if two seconds are passed. If so, we will increase with a value multiplier of 10 (or whatever you want). The two seconds are added when the command starts (the third argument). This helps to reduce the math needed.
+
+## Smoothing an axis
 
 If you have an axis that delivers jumping values, it may disturb your X-Plane experience. So it's time to smooth the input. Let's see how.
 
-## Looking for the real values
+### Looking for the real values
 
 First we want to see the real values coming from the hardware. Say we have an axis that is jumping. The axis no. is 12 (see X-Plane's menu for joystick configuration to get the right axis no.).
 
@@ -147,7 +260,7 @@ We will use this code to display the real values. A visible string position is m
 
 In the code we position the text to an x-value of 0 up to 1500, as the values delivered by X-Plane are float values from 0.0 to 1.0. You may change the value of 1500 depending on your X-Plane window's width.
 
-## Simple Moving Avarage
+### Simple Moving Avarage
 
 To smooth the signals coming from the axis, we use a [simple moving avarage](http://en.wikipedia.org/wiki/Moving_average) calculation. The following code should be added:
 
@@ -174,7 +287,7 @@ To smooth the signals coming from the axis, we use a [simple moving avarage](htt
 
 On the screen we see a more stable text "smoothed value", as it's position is calculated as the mean of the last 10 values. If you use one pysics calc run on one graphical run, then this is about half a secound when FPS is 20. If you choose more physic calculations or use a faster hardware (CPU/GPU), then the time period for the mean calculation may be shorter.
 
-### Creating a helper module
+#### Creating a helper module
 
 As the method above isn't very smart code, we now create a module to be used by a script. The module file must start with this line:
 

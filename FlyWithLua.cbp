@@ -99,13 +99,11 @@
 				<Option type="3" />
 				<Option compiler="gcc64" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
 					<Add option="-Wshadow" />
 					<Add option="-Wfloat-equal" />
 					<Add option="-pedantic" />
 					<Add option="-std=c++11" />
-					<Add option="-Wextra" />
-					<Add option="-Wall" />
 					<Add option="-m64" />
 					<Add option="-W" />
 					<Add option="-fexceptions" />
