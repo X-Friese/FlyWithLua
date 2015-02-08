@@ -5299,6 +5299,16 @@ void DebugLua( void )
                 sprintf(WhatToSay, "The button %i switches %s[%i] to %f (if off) or to %f (if on).\n",
                         SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index, SwitchTable[i].off_float, SwitchTable[i].on_float);
             }
+            if (SwitchTable[i].SwitchType == PositiveFlip)
+            {
+                sprintf(WhatToSay, "The positive edge of button %i flips %s[%i] between %f and %f.\n",
+                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index, SwitchTable[i].off_float, SwitchTable[i].on_float);
+            }
+            if (SwitchTable[i].SwitchType == NegativeFlip)
+            {
+                sprintf(WhatToSay, "The negative edge of button %i flips %s[%i] between %f and %f.\n",
+                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index, SwitchTable[i].off_float, SwitchTable[i].on_float);
+            }
             if (SwitchTable[i].SwitchType == PositiveEdge)
             {
                 sprintf(WhatToSay, "The positive edge of button %i sets %s[%i] to %f.\n",
