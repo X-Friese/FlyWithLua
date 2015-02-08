@@ -453,6 +453,39 @@ The last three arguments are optional. If you leave them away, Lua will guess 0 
 
 \verb|>create_switch(15, "sim/cockpit/electrical/battery_on")|
 
+\subsubsection{create\_positive\_edge\_flip( \emph{button number}, \emph{DataRef name}, \emph{index}, \emph{first value}, \emph{second value} )}
+
+\begin{enumerate}
+	\item \emph{button number} = Number of the button, starting at 0 (zero).
+	\item \emph{DataRef name} = Name of the DataRef. Look at the \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{listing of all DataRefs}.
+	\item \emph{index} = The index of an array DataRef, else 0.
+	\item \emph{first value} = Value to be set when button is just pressed (positive edge detecttion).
+	\item \emph{second value} = Value to be set when button is just pressed but the DataRef's value is equal to the first value.
+\end{enumerate}
+
+This is similar to the \verb|create_switch()| function, but it will flip between the two values, given as the last two arguments, every time a positive edge was detected (when the button is pressed just in that moment).
+
+The last three arguments are optional. If you leave them away, Lua will guess 0 for the index and the first value and 1 for the second value. So this will be fine to let button no.~15 control the battery and flip it every time it is pressed:
+
+\verb|>create_positive_edge_flip(15, "sim/cockpit/electrical/battery_on")|
+
+Lua will automatically handle it like this:
+
+\verb|>create_positive_edge_flip(15, "sim/cockpit/electrical/battery_on", 0, 0, 1)|
+
+
+\subsubsection{create\_negative\_edge\_flip( \emph{button number}, \emph{DataRef name}, \emph{index}, \emph{first value}, \emph{second value} )}
+
+\begin{enumerate}
+	\item \emph{button number} = Number of the button, starting at 0 (zero).
+	\item \emph{DataRef name} = Name of the DataRef. Look at the \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{listing of all DataRefs}.
+	\item \emph{index} = The index of an array DataRef, else 0.
+	\item \emph{first value} = Value to be set when button is just released (positive edge detecttion).
+	\item \emph{second value} = Value to be set when button is just released but the DataRef's value is equal to the first value.
+\end{enumerate}
+
+Nearly the same as the function \verb|create_positive_edge_flip()|, but it will react when the button is released. For an engeneer, this is the negative edge of the button's signal.
+
 \subsubsection{create\_positive\_edge\_trigger( \emph{button number}, \emph{DataRef name}, \emph{index}, \emph{value} )}
 
 \begin{enumerate}
@@ -462,7 +495,7 @@ The last three arguments are optional. If you leave them away, Lua will guess 0 
 	\item \emph{value} = Value to be set in the moment when button is pressed down (positive signal edge).
 \end{enumerate}
 
-This will set the DataRef to the given value on in the moment, when the button is pressed down, not during hold. In engineer's words it's a positive edge detection.
+This will set the DataRef to the given value in the moment, when the button is pressed down, not during hold. In engineer's words it's a positive edge detection.
 
 \subsubsection{create\_negative\_edge\_trigger( \emph{button number}, \emph{DataRef name}, \emph{index}, \emph{value} )}
 
@@ -473,7 +506,7 @@ This will set the DataRef to the given value on in the moment, when the button i
 	\item \emph{value} = Value to be set in the moment when button is released (negative signal edge).
 \end{enumerate}
 
-This will set the DataRef to the given value on in the moment, when the button is pressed down, not during hold. In engineer's words it's a positive edge detection.
+This will set the DataRef to the given value in the moment, when the button is released. In engineer's words it's a negative edge detection.
 
 
 \subsubsection{create\_positive\_edge\_increment( \emph{button number}, \emph{DataRef name}, \emph{index}, \emph{stepping}, \emph{limit}, \emph{rounding} )}

@@ -70,6 +70,8 @@ set( "sim/joystick/joystick_heading_sensitivity",  0.2 )
 
 set( "sim/graphics/view/field_of_view_deg",   92.5 )
 
+local use_2D_view = false
+
 -- and do all the every frame stuff
 function B2D_update()
 	local Thrustmaster = 0
@@ -91,7 +93,7 @@ function B2D_update()
 		set_button_assignment( Thrustmaster + 22, "sim/general/left_fast" )
 		set_button_assignment( Thrustmaster + 18, "sim/general/right_fast" )
 		set_button_assignment( Thrustmaster + 2, "sim/view/forward_with_hud" )
-		set_button_assignment( Thrustmaster + 3, "sim/view/3d_cockpit_cmnd_look" )
+        set_button_assignment( Thrustmaster + 3, "sim/view/3d_cockpit_cmnd_look" )
 		set_button_assignment( Thrustmaster + 4, "sim/general/backward" )
 		set_button_assignment( Thrustmaster + 5, "sim/general/forward" )
 	end
@@ -242,4 +244,11 @@ if PLANE_TAILNUMBER == "T7-BLK" then
 	set( "sim/flightmodel/weight/m_fixed", 125.0 )
 	set( "sim/flightmodel/weight/m_fuel1", 25,0 )
 	set( "sim/flightmodel/weight/m_fuel2", 25,0 )
+end
+
+-- STMA Sherpa
+if PLANE_ICAO == "SHRP" then
+    set( "sim/graphics/view/field_of_view_deg",   105.0 )
+    plane_has_reverser = true
+    set_button_assignment(Quadrant + 6, "sim/engines/thrust_reverse_hold")
 end

@@ -133,10 +133,12 @@ function autopilot_helper_set_VVI()
     if ALT > ELEVATION*3.2808399 then
         if bit.band(AP_STATE, 16) == 0 then command_once( "sim/autopilot/vertical_speed" ) end
         VVI = autopilot_helper_vvi
+        if bit.band(AP_STATE, 32) == 0 then command_once("sim/autopilot/altitude_arm") end
     end
     if ALT < ELEVATION*3.2808399 then
         if bit.band(AP_STATE, 16) == 0 then command_once( "sim/autopilot/vertical_speed" ) end
         VVI = -autopilot_helper_vvi
+        if bit.band(AP_STATE, 32) == 0 then command_once("sim/autopilot/altitude_arm") end
     end
 end
 

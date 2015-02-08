@@ -1,7 +1,7 @@
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Script:  anti rollover brake
--- Version: 1.0
--- Build:   2012-10-18
+-- Version: 1.1
+-- Build:   2015-02-01
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Description:
 -- Providing a custom command to use the brakes: FlyWithLua/flight_controls/ARB
@@ -19,6 +19,7 @@
    plane_has_speedbrakes = false
    plane_has_reverser = false
    plane_has_flaps = true
+   plane_is_taildragger = false
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 -- DataRefs we need
@@ -68,10 +69,14 @@ function do_ARB()
         end
     end
     
-    -- full brake power calculation
     local full_brake_power = 1 + pitch_moment[0]/acf_weight[0]
     if full_brake_power > 1 then full_brake_power = 1 end
     if full_brake_power < 0 then full_brake_power = 0 end
+    if plane_is_taildragger then
+        if full_brake_power > 0.5 then
+            full_brake_power = 0.5
+        end
+    end
     
     -- left and right brake power calculation
     local left_brake_power

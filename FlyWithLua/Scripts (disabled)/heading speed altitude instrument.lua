@@ -1,6 +1,6 @@
 -- Heading Altitude and Speed Instrument (HASI)
--- V1.1 by Carsten Lynker
--- build 2012-10-13
+-- V1.2 by Carsten Lynker
+-- build 2015-02-01
 
 require("graphics")
 
@@ -137,6 +137,10 @@ function show_hasi(x, y, r, ms, colored)
     else
         glColor4f(math.abs(math.sin(os.clock()*5)), 0, 0, 1)
         graphics.draw_circle(x+r, y+r, xp_acf_Vfe/ms*r, 3)
+        glColor4f(1, 1, 1, 0.25)
+        graphics.draw_filled_arc(x+1.5*r+20, y+2*r+15, 90, 135, r*0.5)
+        glColor4f(1, 1, 1, 0.75)
+        graphics.draw_filled_arc(x+1.5*r+20, y+2*r+15, 90, 90 + 45*xp_flap1_deploy_ratio, r*0.5)        
     end
     
     if colored ~= "yes" then

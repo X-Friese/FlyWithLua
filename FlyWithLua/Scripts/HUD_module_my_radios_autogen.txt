@@ -207,7 +207,7 @@ function draw_my_radios()
   draw_string_Helvetica_18(SCREEN_WIDTH+(-54), 41, string.format("%04i", SQUAWK))
   graphics.set_color(1,1,1,1)
   draw_string_Helvetica_10(SCREEN_WIDTH+(-76), 24, "BARO")
-  draw_string_Helvetica_18(SCREEN_WIDTH+(-56), 6, string.format("%2.2f", QNH_Pilot))
+  draw_string_Helvetica_18(SCREEN_WIDTH+(-56), 6, string.format("%4.0f", QNH_Pilot * 33.86531))
 end
 
 do_every_draw("draw_my_radios()")
