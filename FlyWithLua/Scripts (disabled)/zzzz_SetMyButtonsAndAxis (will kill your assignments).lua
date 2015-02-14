@@ -234,8 +234,8 @@ if PLANE_ICAO == "DA42" then
 end
 
 -- Cessna C172
-if PLANE_ICAO == "C172" then
-    set( "sim/graphics/view/field_of_view_deg",   75.0 )
+if PLANE_ICAO == "C172" or PLANE_TAILNUMBER == "N399CK" then
+    set( "sim/graphics/view/field_of_view_deg",   100.0 )
     show_MPPS_instrument = true
 end
 

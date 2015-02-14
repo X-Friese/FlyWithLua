@@ -2,6 +2,7 @@ if PLANE_ICAO == "C172"
 or PLANE_ICAO == "M20J"
 or PLANE_ICAO == "BE33"
 or PLANE_ICAO == "PA28"
+or PLANE_TAILNUMBER == "N399CK"
 then
 	dataref("xp_mixture_ratio_all", "sim/cockpit2/engine/actuators/mixture_ratio_all", "writable")
 	

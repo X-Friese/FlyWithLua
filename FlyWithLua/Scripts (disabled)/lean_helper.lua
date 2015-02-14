@@ -118,7 +118,7 @@ function show_EGT_or_not()
 	end
 end
 
-if PLANE_ICAO == "C172" or PLANE_ICAO == "BE58" then
+if PLANE_ICAO == "C172" or PLANE_ICAO == "BE58" or PLANE_TAILNUMBER == "N399CK" then
     do_every_draw("draw_egt()")
     do_often("show_EGT_or_not()")
 end
