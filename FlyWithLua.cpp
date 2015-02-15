@@ -5922,8 +5922,8 @@ PLUGIN_API int XPluginStart(
 
 #if LIN
     // init glut to prevent error on Linux
-    int fwl_argc;
-    char *fwl_argv[20];
+    int fwl_argc=1;
+    char *fwl_argv[1] = {(char*)"FlyWithLua"};
     glutInit(&fwl_argc, fwl_argv);
 #endif
 
