@@ -127,7 +127,6 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-static-libgcc -static-libstdc++" />
 					<Add library="Opengl32" />
 					<Add library="XPLM_64" />
 					<Add library="XPWidgets_64" />
