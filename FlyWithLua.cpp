@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 // #define PLUGIN_VERSION "2.3.2 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.3.2.1"
+#define PLUGIN_VERSION "2.3.2.2"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 

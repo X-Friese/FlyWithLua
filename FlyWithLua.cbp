@@ -104,8 +104,8 @@
 					<Add option="-Wfloat-equal" />
 					<Add option="-pedantic" />
 					<Add option="-std=c++11" />
+					<Add option="-w" />
 					<Add option="-m64" />
-					<Add option="-W" />
 					<Add option="-fexceptions" />
 					<Add option="-fpermissive" />
 					<Add option="-DWIN64" />
@@ -124,9 +124,11 @@
 					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
 					<Add directory="../SDK213/SDK/CHeaders/Widgets" />
 					<Add directory="GLUT_for_Windows" />
+					<Add directory="C:/Program Files/mingw-builds/x64-4.8.1-posix-seh-rev5/mingw64/bin" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic" />
 					<Add library="Opengl32" />
 					<Add library="XPLM_64" />
 					<Add library="XPWidgets_64" />
@@ -135,6 +137,7 @@
 					<Add directory="include64" />
 					<Add directory="../SDK212/SDK/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />
+					<Add directory="C:/Program Files/mingw-builds/x64-4.8.1-posix-seh-rev5/mingw64/bin" />
 				</Linker>
 				<ExtraCommands>
 					<Add after='xcopy /Y FlyWithLua\32\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
