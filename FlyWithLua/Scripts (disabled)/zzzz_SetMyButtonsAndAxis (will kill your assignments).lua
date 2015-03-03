@@ -3,7 +3,7 @@ local Thrustmaster = 0
 local Quadrant = 160
 local XBox = 320
 
-last_view_type = 0
+local last_view_type = 0
 
 -- define the DataRef we want to use
 DataRef( "view_type", "sim/graphics/view/view_type" )
@@ -38,9 +38,9 @@ set_button_assignment( Thrustmaster + 10, "FlyWithLua/debugging/enter_code" )
 set_button_assignment( Thrustmaster + 11, "FlyWithLua/debugging/reload_scripts" )
 set_button_assignment( Thrustmaster + 13, "FlyWithLua/Ingo/SetQNH" )
 set_button_assignment( Thrustmaster + 16, "sim/general/up" )
-set_button_assignment( Thrustmaster + 18, "sim/view/night_vision_toggle" )
+set_button_assignment( Thrustmaster + 18, "sim/general/right_fast" )
 set_button_assignment( Thrustmaster + 20, "sim/general/down" )
-set_button_assignment( Thrustmaster + 22, "FlyWithLua/cockpit/toggle_HASI" )
+set_button_assignment( Thrustmaster + 22, "sim/general/left_fast" )
 set_button_assignment( XBox + 0,  "sim/lights/nav_lights_toggle" )
 set_button_assignment( XBox + 1,  "sim/lights/beacon_lights_toggle" )
 set_button_assignment( XBox + 3,  "sim/lights/strobe_lights_toggle" )
@@ -82,8 +82,10 @@ function B2D_update()
 	-- type 1026 is the inside 3d view, type 1023 the HUD
 	if (( view_type == 1026 ) and ( last_view_type ~= 1026 )) 
 		or (( view_type == 1023 ) and ( last_view_type ~= 1023 )) then
-		set_button_assignment( Thrustmaster + 22, "FlyWithLua/cockpit/toggle_HASI" )
-		set_button_assignment( Thrustmaster + 18, "sim/view/night_vision_toggle" )
+		set_button_assignment( Thrustmaster + 22, "FlyWithLua/pilots_head/look_left" )
+		set_button_assignment( Thrustmaster + 18, "FlyWithLua/pilots_head/look_right" )
+		set_button_assignment( Thrustmaster + 16, "FlyWithLua/pilots_head/look_on_instruments" )
+        set_button_assignment( Thrustmaster + 20, "FlyWithLua/cockpit/toggle_HASI" )
 		set_button_assignment( Thrustmaster + 2, "sim/view/chase" )
 		set_button_assignment( Thrustmaster + 3, "sim/view/chase" )
 	end
@@ -92,6 +94,8 @@ function B2D_update()
 	if ( view_type == 1017 ) and ( last_view_type ~= 1017 ) then
 		set_button_assignment( Thrustmaster + 22, "sim/general/left_fast" )
 		set_button_assignment( Thrustmaster + 18, "sim/general/right_fast" )
+        set_button_assignment( Thrustmaster + 16, "sim/general/up" )
+        set_button_assignment( Thrustmaster + 20, "sim/general/down" )
 		set_button_assignment( Thrustmaster + 2, "sim/view/forward_with_hud" )
         set_button_assignment( Thrustmaster + 3, "sim/view/3d_cockpit_cmnd_look" )
 		set_button_assignment( Thrustmaster + 4, "sim/general/backward" )
@@ -234,9 +238,19 @@ if PLANE_ICAO == "DA42" then
 end
 
 -- Cessna C172
-if PLANE_ICAO == "C172" or PLANE_TAILNUMBER == "N399CK" then
+if PLANE_ICAO == "C172" then
     set( "sim/graphics/view/field_of_view_deg",   100.0 )
     show_MPPS_instrument = true
+end
+
+-- Carenado C172SP
+if PLANE_TAILNUMBER == "N399CK" then
+    set( "sim/graphics/view/field_of_view_deg",   100.0 )
+    show_MPPS_instrument = true
+    set_default_looking_head(-0.07, 0.68, 0, 0.56, -6.85)
+    set_left_looking_head(-0.18, 0.61, -0.09, 277, -10.63)
+    set_right_looking_head(0, 0.6, -0.09, 85.5, -9)
+    set_instrument_looking_head(-0.05, 0.37, -0.26, 0, 0)
 end
 
 -- Blackshape Prime
