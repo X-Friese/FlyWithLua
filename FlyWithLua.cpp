@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 // #define PLUGIN_VERSION "2.3.2 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.3.2.3"
+#define PLUGIN_VERSION "2.3.2.4"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -5895,6 +5895,9 @@ PLUGIN_API int XPluginStart(
     strcpy(outName, PLUGIN_NAME " " PLUGIN_VERSION);
     strcpy(outSig, "CarstenLynker." PLUGIN_NAME);
     strcpy(outDesc, PLUGIN_DESCRIPTION);
+
+    // use posix path on Mac OSX
+    XPLMEnableFeature("XPLM_USE_NATIVE_PATHS",1);
 
     initPluginDirectory(); // snagar
 
