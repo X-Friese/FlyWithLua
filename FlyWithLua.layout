@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Win64 SDK213" />
-	<File name="FlyWithLua.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="1146" zoom_1="0" zoom_2="0">
+	<File name="include\hid.c" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="269" topLine="0" />
+			<Cursor1 position="6526" topLine="207" />
+		</Cursor>
+	</File>
+	<File name="include\hidapi.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4976" topLine="340" />
+		</Cursor>
+	</File>
+	<File name="FlyWithLua.cpp" open="1" top="1" tabpos="1" split="2" active="1" splitpos="1173" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="49893" topLine="1419" />
+			<Cursor2 position="12552" topLine="284" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

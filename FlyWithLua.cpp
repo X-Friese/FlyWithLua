@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-// #define PLUGIN_VERSION "2.3.2 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.3.2.4"
+#define PLUGIN_VERSION "2.3.3 nightly build " __DATE__ " " __TIME__
+// #define PLUGIN_VERSION "2.3.2.4"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -5684,6 +5684,18 @@ void ResetLuaEngine( void )
             LuaResetCount, VersionSDK, VersionXP, lua_tostring(FWLLua, -1), HostID);
     logMsg(logToDevCon, success_cstring);
     lua_settop(FWLLua, 0);
+
+    // restart the HID device API
+    int hid_checker = 0;
+    hid_checker = hid_init();
+    if (hid_checker == 0)
+    {
+        logMsg(logToDevCon, "FlyWithLua Info: HID access initialized.");
+    }
+    else
+    {
+        logMsg(logToDevCon, "FlyWithLua error: Can't initialize HIDAPI.");
+    }
 }
 
 bool ReadScriptFile(char *FileNameToRead)

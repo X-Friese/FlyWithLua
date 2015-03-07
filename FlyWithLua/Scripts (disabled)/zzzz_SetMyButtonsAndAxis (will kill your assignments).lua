@@ -210,6 +210,11 @@ end
 if PLANE_TAILNUMBER == "N2476D" then
     autopilot_helper_vvi = 800
     plane_has_reverser = true
+    set( "sim/graphics/view/field_of_view_deg",   105.0 )
+    set_default_looking_head(-0.2, 0.734, -1.18, 0, -19)
+    set_left_looking_head(-0.18, 0.61, -0.09, 277, -10.63)
+    set_right_looking_head(0, 0.6, -0.09, 85.5, -9)
+    set_instrument_looking_head(-0.05, 0.37, -0.26, 0, 0)
 end
 
 -- S-BACH 300
