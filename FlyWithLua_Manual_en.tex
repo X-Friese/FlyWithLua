@@ -1807,6 +1807,18 @@ hid_close( my_first_BIP )
 
 As you can see, we ignored the return value ot the function \verb|hid_sent_feature_report()|. This is allowed, and we control the function by observing the panel brightness with our eyes.
 
+\subsubsection{nobw = hid\_send\_filled\_feature\_report( device, report~ID, nobts, value, ... )}
+
+\begin{enumerate}
+\item \emph{nobw} = The number of bytes written by the function. Use it to control, if the function completes it's job as expected. The number of bytes should be equal to the number of values plus one for the report~ID. In case of an error, it will return -1.
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\item \emph{report~ID} = The report~ID you want to write. For devices which only support a single report, this must be set to 0 (zero).
+\item \emph{nobts} = The number of bytes to send. If you give too less values, it will be filled up with zeros.
+\item \emph{value, ...} = A set of integer values (range 0 to 255) to be written.
+\end{enumerate}
+
+This function sends a feature report to the HID device like the one above. The only difference is, that it can fill up the data to send with zeros to a given lenght of data.
+
 \subsubsection{nobr, report~ID, variable, ... = hid\_get\_feature\_report( device, novw )}
 
 \begin{enumerate}

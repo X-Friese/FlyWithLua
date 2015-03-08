@@ -8,7 +8,7 @@
  8/22/2009
 
  Copyright 2009, All Rights Reserved.
- 
+
  At the discretion of the user of this library,
  this software may be licensed under the terms of the
  GNU General Public License v3, a BSD-Style license, or the
@@ -174,7 +174,7 @@ static void register_error(hid_device *device, const char *op)
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPVOID)&msg, 0/*sz*/,
 		NULL);
-	
+
 	/* Get rid of the CR and LF that FormatMessage() sticks at the
 	   end of the message. Thanks Microsoft! */
 	ptr = msg;
@@ -221,6 +221,7 @@ static int lookup_functions()
 static HANDLE open_device(const char *path, BOOL enumerate)
 {
 	HANDLE handle;
+
 	DWORD desired_access = (enumerate)? 0: (GENERIC_WRITE | GENERIC_READ);
 	DWORD share_mode = (enumerate)?
 	                      FILE_SHARE_READ|FILE_SHARE_WRITE:
@@ -233,6 +234,18 @@ static HANDLE open_device(const char *path, BOOL enumerate)
 		OPEN_EXISTING,
 		FILE_FLAG_OVERLAPPED,/*FILE_ATTRIBUTE_NORMAL,*/
 		0);
+
+	// if the device can't be opened, try another way to get the handle
+	if (handle == INVALID_HANDLE_VALUE)
+    {
+        handle = CreateFileA(path,
+            0,
+            (FILE_SHARE_READ|FILE_SHARE_WRITE),
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_OVERLAPPED,/*FILE_ATTRIBUTE_NORMAL,*/
+            0);
+    }
 
 	return handle;
 }
@@ -287,9 +300,9 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 	/* Get information for all the devices belonging to the HID class. */
 	device_info_set = SetupDiGetClassDevsA(&InterfaceClassGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-	
+
 	/* Iterate over each device in the HID class, looking for the right one. */
-	
+
 	for (;;) {
 		HANDLE write_handle = INVALID_HANDLE_VALUE;
 		DWORD required_size = 0;
@@ -300,7 +313,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			&InterfaceClassGuid,
 			device_index,
 			&device_interface_data);
-		
+
 		if (!res) {
 			/* A return of FALSE from this function means that
 			   there are no more devices. */
@@ -372,7 +385,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			/* Unable to open the device. */
 			//register_error(dev, "CreateFile");
 			goto cont_close;
-		}		
+		}
 
 
 		/* Get the Vendor ID and Product ID for this device. */
@@ -416,7 +429,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 				HidD_FreePreparsedData(pp_data);
 			}
-			
+
 			/* Fill out the record */
 			cur_dev->next = NULL;
 			str = device_interface_detail_data->DevicePath;
@@ -516,7 +529,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 	struct hid_device_info *devs, *cur_dev;
 	const char *path_to_open = NULL;
 	hid_device *handle = NULL;
-	
+
 	devs = hid_enumerate(vendor_id, product_id);
 	cur_dev = devs;
 	while (cur_dev) {
@@ -542,7 +555,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 	}
 
 	hid_free_enumeration(devs);
-	
+
 	return handle;
 }
 
@@ -585,7 +598,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 	}
 	nt_res = HidP_GetCaps(pp_data, &caps);
 	if (nt_res != HIDP_STATUS_SUCCESS) {
-		register_error(dev, "HidP_GetCaps");	
+		register_error(dev, "HidP_GetCaps");
 		goto err_pp_data;
 	}
 	dev->output_report_length = caps.OutputReportByteLength;
@@ -598,7 +611,7 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)
 
 err_pp_data:
 		HidD_FreePreparsedData(pp_data);
-err:	
+err:
 		free_hid_device(dev);
 		return NULL;
 }
@@ -631,7 +644,7 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 	}
 
 	res = WriteFile(dev->device_handle, buf, length, NULL, &ol);
-	
+
 	if (!res) {
 		if (GetLastError() != ERROR_IO_PENDING) {
 			/* WriteFile() failed. Return error. */
@@ -674,7 +687,7 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 		memset(dev->read_buf, 0, dev->input_report_length);
 		ResetEvent(ev);
 		res = ReadFile(dev->device_handle, dev->read_buf, dev->input_report_length, &bytes_read, &dev->ol);
-		
+
 		if (!res) {
 			if (GetLastError() != ERROR_IO_PENDING) {
 				/* ReadFile() has failed.
@@ -700,7 +713,7 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 	   we are in non-blocking mode. Get the number of bytes read. The actual
 	   data has been copied to the data[] array which was passed to ReadFile(). */
 	res = GetOverlappedResult(dev->device_handle, &dev->ol, &bytes_read, TRUE/*wait*/);
-	
+
 	/* Set pending back to false, even if GetOverlappedResult() returned error. */
 	dev->read_pending = FALSE;
 
@@ -720,13 +733,13 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 			memcpy(data, dev->read_buf, copy_len);
 		}
 	}
-	
+
 end_of_function:
 	if (!res) {
 		register_error(dev, "GetOverlappedResult");
 		return -1;
 	}
-	
+
 	return copy_len;
 }
 
@@ -871,7 +884,7 @@ HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 /*#define PICPGM*/
 /*#define S11*/
 #define P32
-#ifdef S11 
+#ifdef S11
   unsigned short VendorID = 0xa0a0;
 	unsigned short ProductID = 0x0001;
 #endif
@@ -901,7 +914,7 @@ int __cdecl main(int argc, char* argv[])
 	memset(buf,0x00,sizeof(buf));
 	buf[0] = 0;
 	buf[1] = 0x81;
-	
+
 
 	/* Open the device. */
 	int handle = open(VendorID, ProductID, L"12345");

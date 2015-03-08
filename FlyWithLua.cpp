@@ -1618,6 +1618,8 @@ static int      Luahid_send_feature_report(lua_State *L)
     // usage: number_of_values_written = hid_send_feature_report( device_pointer, int, int, int, ... )
 
     unsigned char       BlockToWrite[USB_STR_MAXLEN];
+    // cleanup the memory
+    memset(BlockToWrite, 0, sizeof(BlockToWrite));
 
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
@@ -1650,11 +1652,52 @@ static int      Luahid_send_feature_report(lua_State *L)
     return 1;
 }
 
+static int      Luahid_send_filled_feature_report(lua_State *L)
+{
+    // usage: number_of_values_written = hid_send_feature_report( device_pointer, int, int, int, ... )
+
+    unsigned char       BlockToWrite[USB_STR_MAXLEN];
+    // cleanup the memory
+    memset(BlockToWrite, 0, sizeof(BlockToWrite));
+
+    // check minimum arguments
+    if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
+    {
+        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_send_feature_report().");
+        LuaIsRunning = false;
+        return 0;
+    }
+    // check max number of arguments
+    int noa = lua_gettop(L);  // number of arguments
+    if ((noa-1 > USB_STR_MAXLEN) || (luaL_checknumber(L, 3) > USB_STR_MAXLEN))
+    {
+        logMsg(logToAll, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
+        LuaIsRunning = false;
+        return 0;
+    }
+    // collect values to write
+    for (int i = 3; i <= noa; i++)
+    {
+        BlockToWrite[i-3] = luaL_checknumber(L, i);
+    }
+    // write values to HID device
+    int result = hid_send_feature_report((hid_device *) lua_touserdata(L, 1), BlockToWrite, luaL_checknumber(L, 3));
+    if (result == -1)
+    {
+        logMsg(logToAll, "FlyWithLua Error: hid_send_feature_report() failed.");
+        LuaIsRunning = false;
+    }
+    lua_pushnumber(L, result);
+    return 1;
+}
+
 static int      Luahid_get_feature_report(lua_State *L)
 {
     // usage: number_of_values_read, value, value, value, ... = hid_get_feature_report( device_pointer, number_of_values )
 
     unsigned char       BlockToRead[USB_STR_MAXLEN];
+    // cleanup the memory
+    memset(BlockToRead, 0, sizeof(BlockToRead));
 
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
@@ -5135,6 +5178,7 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "hid_read", Luahid_read);
     lua_register(L, "hid_set_nonblocking", Luahid_set_nonblocking);
     lua_register(L, "hid_send_feature_report", Luahid_send_feature_report);
+    lua_register(L, "hid_send_filled_feature_report", Luahid_send_filled_feature_report);
     lua_register(L, "hid_get_feature_report", Luahid_get_feature_report);
 
     // function to access OpenAL sound
