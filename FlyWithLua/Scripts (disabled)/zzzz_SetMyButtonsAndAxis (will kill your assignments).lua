@@ -263,6 +263,11 @@ if PLANE_TAILNUMBER == "T7-BLK" then
 	set( "sim/flightmodel/weight/m_fixed", 125.0 )
 	set( "sim/flightmodel/weight/m_fuel1", 25,0 )
 	set( "sim/flightmodel/weight/m_fuel2", 25,0 )
+    set( "sim/graphics/view/field_of_view_deg",   100.0 )
+    set_default_looking_head(0, 0.68, 0, 0.56, -6.85)
+    set_left_looking_head(0, 0.68, 0, 270, 0)
+    set_right_looking_head(0, 0.68, 0, 90, 0)
+    set_instrument_looking_head(0, 0.45, -0.2, 0, -15)
 end
 
 -- STMA Sherpa

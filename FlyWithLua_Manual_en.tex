@@ -1833,6 +1833,183 @@ Never confuse the number of bytes with the number of values. If you want to rece
 
 \verb|novr, report_id, one, two, three, four = hid_get_feature_report(my_device, 4)|
 
+\subsection{The Arcaze USB module}
+
+If you want to build your own home cockpit, but you don't like the prebuild systems, why not building your own design. With a little USB board you are able to communicate with FlyWithLua using USB HID feature reports. I will demonstrate this with an example using the Arcaze USB board and his additional display driver board. Both are relative cheap hardware and you can order it here:
+
+\url{http://simple-solutions.de}
+
+Of course this will work with every other hardware too, so why should you use the Arcaze USB device? Because it's very well documented:
+
+\url{http://wiki.simple-solutions.de/en/products/Arcaze/Arcaze-USB/Arcaze-USB_SDK/Feature_Report_Protocol}
+
+In FlyWithLua there is a module to access the Arcaze device via USB HID feature reports. Even if you have absolutely no idea of feature reports, it's very easy to use the Arcase with the included module. The first thing to do is loading the module, if you want to get access to it.
+
+\verb|require "arcaze"|
+ 
+Start your script with this line, to load the module.
+
+Then you will have to connect to the device. Let's say you have only one Arcaze connected, so we can do this:
+
+\verb|my_arcaze = arcaze.open_first_device()|
+
+Please remember to start all commands from a module with the name of the module and a dot between the name and the command.
+
+After that, the variable \verb|my_arcase| will contain a handle to the device. If you have more than one device, this is the way you identify them.
+
+If the pins A1 and A2 are connected to a rotary encoder, we can read it's relative position value.
+
+\verb|encoder_value = arcaze.read_encoders( my_arcaze )|
+
+Now we want to show the value of the encoder on the seven-segment-display. We connect a six element display to the display driver 32 board at channel >>2A<<. First we init the display driver:
+
+\verb|arcaze.init_display( my_arcaze, "2A", 15, 6)|
+
+
+This little line of code shows the value:
+
+\verb|arcaze.show(my_first_arcaze, "2A", 0xff, encoder_value)|
+
+Repeat the reading and writing every frame to play around with the little Arcaze board.
+
+Here are all functions the arcaze module provides:
+
+\subsubsection{device = arcaze.open\_first\_device()}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, or -1 if it fails to open the Arcaze USB.
+\end{enumerate}
+
+This will open the first Arcaze USB board FlyWithLua will find. If there is no Arcaze to open, the function will return -1 instead of the device handler.
+
+\subsubsection{A1, A2, A3, ..., B19, B20 = arcaze.read\_pins( device )}
+
+\begin{enumerate}
+\item \emph{A1, A2, A3, ..., B19, B20} = The variables to be filled with the pins values (0 or 1).
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\end{enumerate}
+
+This will fill up to 40 variables with the value 0 (zero) or 1 (one), depending on the input pins on the Arcaze Board. The first variable will be filled depending on the two pins labled \verb|A1|, the second depending on \verb|A2| and so on. If the pin pair is connected (closed), than a value of 1 is returned, else the value is 0 (and the pin pair isn't connected or open).
+
+Use the underscore to skip a value. If the pin pairs \verb|A3| and \verb|A4| are connected to a rotary encoder, and \verb|A1|, \verb|A2| and \verb|A5| should control battery, avoinics and generator switch, than you can write a little script like this:
+
+\begin{lstlisting}[firstnumber=1]
+require "arcaze"
+
+-- open the device
+my_arcaze = arcaze.open_first_device()
+
+-- use DataRefs to control the sim
+DataRef("battery", "sim/cockpit/electrical/battery_on", "writable")
+DataRef("avoinics", "sim/cockpit/electrical/avionics_on", "writable")
+DataRef("generator", "sim/cockpit/electrical/generator_on", "writable", 0)
+
+-- set the DataRefs by reading pin pairs A1, A2 and A5
+do_every_frame("battery, avoinics, _, _, generator = arcaze.read_pins( my_arcaze )")
+\end{lstlisting}
+
+
+\subsubsection{ADC1, ADC2, ADC3, ADC4, ADC5, ADC6 = arcaze.read\_ADCs( device )}
+
+\begin{enumerate}
+\item \emph{ADC1, ADC2, ADC3, ADC4, ADC5, ADC6} = The variables to be filled with the six ADC values (range 0 to 4095).
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\end{enumerate}
+
+Read out the six analog values as 12-bit integer values. This is used to connect potis to X-Plane.
+
+
+\subsubsection{E1, E2, E3, ..., E19, E20 = arcaze.read\_encoders( device )}
+
+\begin{enumerate}
+\item \emph{E1, E2, E3, ..., E19, E20} = The variables to be filled with the encoder values (range 0 to 65535).
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\end{enumerate}
+
+Encoders must be connected to pairs of pin pairs. The first encoder \verb|E1| must be connected to the pin pairs \verb|A1| and \verb|A2|, the last encoder \verb|E20| must be connected to the pin pairs \verb|B19| and \verb|B20|.
+
+The rotary encoder logic of the Arcaze USB board will produce a relative value between 0x0000 and 0xffff. It will count all positive and negative edges of both channels, so normally it makes 4 steps for each turn. The values can start whereever they want, so don't expect 0x0000 when the device is pluged into the USB port. See the example script \verb|little arcaze radio.lua| to see the usage of rotary encoders in detail.
+
+
+\subsubsection{arcaze.set\_all\_pins\_for\_input( device )}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\end{enumerate}
+
+All 40 pin pairs can be used as inputs or outputs. This function will set all pin pairs to input mode. Use it before defining the output pins, to make tabula rasa.
+
+
+\subsubsection{arcaze.set\_pin\_direction( device, pin, direction )}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\item \emph{pin} = The number of the pin pair to be set. Pin pair \verb|A1| is 0, \verb|B20| is 39.
+\item \emph{direction} = The direction to be set. Can be "input" or 0 for input direction, else use "output" or 1 for output direction.
+\end{enumerate}
+
+This will set the direction of a pin pair. Please remember that the number starts with 0, similar to X-Plane's joystick button numbers, as this is the standard counting of pure C code. You are operating really low level here!
+
+
+\subsubsection{arcaze.set\_pin( device, pin, value )}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\item \emph{pin} = The number of the pin pair to be set. Pin pair \verb|A1| is 0, \verb|B20| is 39.
+\item \emph{value} = The value to be set. Can be "off" or 0 to open the output, else use "on" or 1 to close the output pins.
+\end{enumerate}
+
+This will set a pin pair. Please remember that the number starts with 0, similar to X-Plane's joystick button numbers, as this is the standard counting of pure C code. You should never set a pin that is defined as an input pin!
+
+
+\subsubsection{arcaze.init\_display( device, address, intensity, scan\_limit )}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\item \emph{address} = The address where the display unit is connected to, for example "1a" (range "1a" to "4b", a string value). The address is printed onto the display driver board.
+\item \emph{intensity} = The value for the LED intensity (range 0 to 15).
+\item \emph{scan\_limit} = The number of digits to be filled (range 4 to 8).
+\end{enumerate}
+
+Use this once to initialize the display driver.
+
+\subsubsection{arcaze.init\_display( device, address )}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\item \emph{address} = The address where the display unit is connected to, for example "1a" (range "1a" to "4b", a string value). The address is printed onto the display driver board.
+\end{enumerate}
+
+If you let the intensity and scan limit away, FlyWithLua will guess an intensity of 15 (full) and 8 digits.
+
+The display will show some nonsense data until you use this function:
+
+
+\subsubsection{arcaze.show( device, address, mask, value\_string )}
+
+\begin{enumerate}
+\item \emph{device} = The pointer to the devices, given by the opening function.
+\item \emph{address} = The address where the display unit is connected to, for example "1a" (range "1a" to "4b", a string value). The address is printed onto the display driver board.
+\item \emph{mask} = A bit mask of the digits to be set (range 0x00 to 0xff). If unsure, use 0xff.
+\item \emph{value\_string} = The string to be displayed.
+\end{enumerate}
+
+The mask will define the digits to be manipulated as a bit mask. If you say 0xff as the mask, all eight digits will be set.
+
+The value string is a string containing a numeric value. A decimal point "." can be used and the negative sign "-". A space will left the digit blank.
+
+All ports "1a", "2a", "3a" and "4a" are filled from right to left, so you can do this:
+
+\verb|arcaze.show( my_arcaze, "1a", 0xff, "-4")|
+
+But on the left-filled ports, you should write a code like this:
+
+\verb|arcaze.show( my_arcaze, "1b", 0xff, "      -4")|
+
+This code has six spaces in front of the substring "-4", to be shown on the right side of the display.
+
+See the example script \verb|little arcaze radio.lua| to see the usage of seven segment displays.
+
 \newpage
 \section{Classic and modern mode}
 
