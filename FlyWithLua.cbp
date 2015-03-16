@@ -145,7 +145,6 @@
 					<Add after='xcopy /Y &quot;*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
 					<Add after='xcopy /Y &quot;..\FWL_Docs\*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
 					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Scripts\*.lua&quot; &quot;FlyWithLua\Scripts (disabled)\&quot;' />
-					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Scripts\*.txt&quot; &quot;FlyWithLua\Scripts\&quot;' />
 					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Internals\*.*&quot; &quot;FlyWithLua\Internals\&quot;' />
 					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
 					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\64&quot;' />

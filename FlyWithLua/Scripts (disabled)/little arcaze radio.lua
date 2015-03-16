@@ -110,7 +110,7 @@ if not (my_arcaze == nil) then
             wheel_diff = wheel_diff / 4
 
             -- change the value of COM1_STDBY in 10 kHz steps
-            COM1_STDBY = COM1_STDBY + wheel_diff
+            COM1_STDBY = COM1_STDBY + wheel_diff * 2.5
             
             -- fix the value of COM1_STDBY
             if COM1_STDBY < 11800 then COM1_STDBY = 13697 end
@@ -123,8 +123,20 @@ if not (my_arcaze == nil) then
         last_small_radio_wheel = small_radio_wheel
         
         -- show the COM1 frequencies
-        arcaze.show( my_arcaze, "1b", 0xff, string.format( "  %.3f", COM1/100 ) )
-        arcaze.show( my_arcaze, "3a", 0xff, string.format( "%.3f", COM1_STDBY/100 ) )
+        -- As the internal storage is an integer DataRef in 10 kHz values, we will
+        -- have to program the 25 kHz steps of real aviation into the display.
+        local number_to_display = string.format( "  %.2f", COM1/100 )
+        if string.sub(number_to_display, -1) == "2" or string.sub(number_to_display, -1) == "7" then
+            arcaze.show( my_arcaze, "1b", 0xff, number_to_display.."5" ) 
+        else
+            arcaze.show( my_arcaze, "1b", 0xff, number_to_display.."0" ) 
+        end
+        number_to_display = string.format( "  %.2f", COM1_STDBY/100 )
+        if string.sub(number_to_display, -1) == "2" or string.sub(number_to_display, -1) == "7" then
+            arcaze.show( my_arcaze, "3a", 0xff, number_to_display.."5" ) 
+        else
+            arcaze.show( my_arcaze, "3a", 0xff, number_to_display.."0" ) 
+        end
         
         -- adjust the brightness if changes have occurred
         if not (last_instrument_brightness == INSTRUMENT_BRIGHTNESS) then
