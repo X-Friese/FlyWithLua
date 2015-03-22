@@ -371,6 +371,36 @@ The full path to your aircraft file, ending with a directory separator.
 
 The name of the ACF aircraft file, including the endian "\verb|.acf|".
 
+\subsubsection{DO\_EVERY\_FRAME\_TIME\_SEC}
+
+The duration time in seconds of the every frame loop.
+
+\subsubsection{DO\_EVERY\_DRAW\_TIME\_SEC}
+
+The duration time in seconds of the drawing loop.
+
+\subsubsection{DO\_SOMETIMES\_TIME\_SEC}
+
+The duration time in seconds of the loop to be executed sometimes.
+
+\subsubsection{DO\_OFTEN\_TIME\_SEC}
+
+The duration time in seconds of the often executed loop.
+
+\subsubsection{SCRIPTS\_LOADING\_TIME\_SEC}
+
+The time it takes to load all scripts.
+
+\subsubsection{CLOCKS\_PER\_SEC}
+
+The number of clock ticks in one second, a C value depending on your system.
+
+$\frac{1}{CLOCKS\_PER\_SEC}$ is the ninimal time that can be maesured.
+
+\subsubsection{LUA\_MEMORY\_USAGE\_KB}
+
+The memory usage of the Lua environment in kB. This is not the complete memory consumption of your scripts, as some objects like wave files are not stored into Lua, but are allocated in C by the plugin FlyWithLua.
+
 \newpage
 \subsection{Lua functions}
 

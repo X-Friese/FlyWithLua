@@ -53,7 +53,15 @@ function DrawFLyWithLuaInputLine()
 				elseif type(v) == "table" then
 					bubble_y = bubble(20, bubble_y, "table", tostring(n) .. " = " .. tostring(v))
 				else
-					bubble_y = bubble(20, bubble_y, "variable", n .. " = " .. tostring(v))
+					if type(v) == "number" then
+                        bubble_y = bubble(20, bubble_y, "number", n .. " = " .. tostring(v))
+                    elseif type(v) == "string" then
+                        bubble_y = bubble(20, bubble_y, "string", n .. " = " .. string.format("%q",v))
+                    elseif type(v) == "boolean" then
+                        bubble_y = bubble(20, bubble_y, "boolean", n .. " = " .. tostring(v))
+                    else
+                        bubble_y = bubble(20, bubble_y, "variable", n .. " = " .. tostring(v))
+                    end
 					-- does it binds to a DataRef?
 					local DREF_name
 					local DREF_index

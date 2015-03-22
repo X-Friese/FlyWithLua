@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-// #define PLUGIN_VERSION "2.3.4 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.3.3"
+#define PLUGIN_VERSION "2.3.4 nightly build " __DATE__ " " __TIME__
+// #define PLUGIN_VERSION "2.3.3"
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -1027,6 +1027,9 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
                           int                  inIsBefore,
                           void *               inRefcon)
 {
+    // get time before execution
+    clock_t time_start = clock();
+
     char buffer[LONGSTRING] = {"Lua stopped!"};
     //sprintf(buffer, "%.255s", "Lua stopped!");
 
@@ -1113,6 +1116,16 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
         LuaIsRunning = false;
     }
     WeAreNotInDrawingState = true;
+
+    // get time after execution
+    clock_t time_end = clock();
+
+    // write time difference and memory usage into global variables
+    if (LuaIsRunning == true)
+    {
+        lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
+        lua_setglobal(FWLLua, "DO_EVERY_DRAW_TIME_SEC");
+    }
 
     return 1;
 };
@@ -5787,6 +5800,9 @@ bool ReadAllScriptFiles(void)
 #endif
     char*           FileIndex[250];
 
+    // get starting time
+    clock_t time_start = clock();
+
     // starting the engine
     LuaIsRunning = true;
     CrashReportDisplayed = false;
@@ -5904,7 +5920,22 @@ bool ReadAllScriptFiles(void)
         return false;
     }
 
-    if (LuaIsRunning) logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
+    // get time after execution
+    clock_t time_end = clock();
+
+    // write time difference and memory usage into global variables
+    if (LuaIsRunning == true)
+    {
+        lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
+        lua_setglobal(FWLLua, "SCRIPTS_LOADING_TIME_SEC");
+        lua_pushnumber(FWLLua, CLOCKS_PER_SEC);
+        lua_setglobal(FWLLua, "CLOCKS_PER_SEC");
+        logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
+    }
+
+    char            report_loding_time[1014];
+    sprintf(report_loding_time, "FlyWithLua Info: Loading time for all scripts is %3.6g sec.", (double)(time_end - time_start) / CLOCKS_PER_SEC );
+    logMsg(logToDevCon, report_loding_time);
 
     return true; // snagar
 }
@@ -6300,10 +6331,24 @@ float	MySlowLoopCallback(
     int                  inCounter,
     void *               inRefcon)
 {
+    // get time before execution
+    clock_t time_start = clock();
+
     if ((LongTimeCallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
         RunLuaString(LongTimeCallbackCommand);
     }
+
+    // get time after execution
+    clock_t time_end = clock();
+
+    // write time difference and memory usage into global variables
+    if (LuaIsRunning == true)
+    {
+        lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
+        lua_setglobal(FWLLua, "DO_SOMETIMES_TIME_SEC");
+    }
+
     return LongTimeBetweenCallbacks;
 }
 
@@ -6314,6 +6359,9 @@ float	MyFastLoopCallback(
     int                  inCounter,
     void *               inRefcon)
 {
+    // get time before execution
+    clock_t time_start = clock();
+
     // stack overflow? pull the emergency brake!
     if ((lua_gettop(FWLLua) > 100) && (LuaIsRunning == true))
     {
@@ -6375,6 +6423,17 @@ float	MyFastLoopCallback(
         DebugLua();
         luaL_dostring(FWLLua, "FLYWITHLUA_DEBUG()");
     }
+
+    // get time after execution
+    clock_t time_end = clock();
+
+    // write time difference and memory usage into global variables
+    if (LuaIsRunning == true)
+    {
+        lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
+        lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
+    }
+
     return TimeBetweenCallbacks;
 }
 
@@ -6624,6 +6683,9 @@ float	MyEveryFrameLoopCallback(
     int                  inCounter,
     void *               inRefcon)
 {
+    // get time before execution
+    clock_t time_start = clock();
+
     // catching the buttons (only relevant in this callback)
     XPLMGetDatavi(gJoystickButtonValues, JoystickButtonValues, 0, MAXJOYSTICKBUTTONS);
 
@@ -6631,6 +6693,7 @@ float	MyEveryFrameLoopCallback(
 
     if ((EveryFrameCallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
+        // execute the Lua code
         RunLuaString(EveryFrameCallbackCommand);
     }
 
@@ -6645,11 +6708,22 @@ float	MyEveryFrameLoopCallback(
         }
     }
 
-
     // store the joystick buttons for state analysis
     for (int i=0; i<MAXJOYSTICKBUTTONS; i++)
     {
         JoystickButtonLastValues[i] = JoystickButtonValues[i];
+    }
+
+    // get time after execution
+    clock_t time_end = clock();
+
+    // write time difference and memory usage into global variables
+    if (LuaIsRunning == true)
+    {
+        lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
+        lua_setglobal(FWLLua, "DO_EVERY_FRAME_TIME_SEC");
+        lua_pushnumber(FWLLua, lua_gc(FWLLua, LUA_GCCOUNT, 0));
+        lua_setglobal(FWLLua, "LUA_MEMORY_USAGE_KB");
     }
 
     return -1;  // -1 will set callback to every frame
