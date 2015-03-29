@@ -13,6 +13,9 @@
 DataRef( "view_type", "sim/graphics/view/view_type" )
 local last_view_type = 0
 
+-- a switch to turn it on
+local use_3D_head_positioning = false
+
 -- define the initial settings (for the standard C172)
 local store_heading   = {}
 local default_head    = {x=-0.1, y=0.4, z=0.06, heading=0.3, pitch=5}
@@ -23,9 +26,17 @@ local instrument_view = {x=-0.076, y=0.23, z=-0.2, heading=0, pitch=0.2}
 function set_default_3d_position()
 	-- type 1026 is the inside 3d view
 	if (( view_type == 1026 ) and ( last_view_type ~= 1026 )) then
-        set_pilots_head(default_head.x, default_head.y, default_head.z, default_head.heading, default_head.pitch)
+        -- does it have a position stored?
+        if use_3D_head_positioning then
+            set_pilots_head(default_head.x, default_head.y, default_head.z, default_head.heading, default_head.pitch)
+        else
+            -- if a plane has no individual configuration, use the default one
+            default_head.x, default_head.y, default_head.z, default_head.heading, default_head.pitch = get_pilots_head()
+            set_left_looking_head()
+            set_right_looking_head()
+            set_instrument_looking_head()
+        end
 	end
-
 	-- remember some last values for next frame
 	last_view_type = view_type
 end
@@ -65,6 +76,7 @@ function set_default_looking_head(x, y, z, heading, pitch)
     default_head.z = z or 0
     default_head.heading = heading or 0
     default_head.pitch = pitch or 0
+    use_3D_head_positioning = true
 end
 
 function set_left_looking_head(x, y, z, heading, pitch)
@@ -79,7 +91,7 @@ function set_right_looking_head(x, y, z, heading, pitch)
     right_head.x = x or default_head.x
     right_head.y = y or default_head.y
     right_head.z = z or default_head.z
-    right_head.heading = heading or 270
+    right_head.heading = heading or 90
     right_head.pitch = pitch or default_head.pitch
 end
 
@@ -87,6 +99,7 @@ function set_instrument_looking_head(x, y, z, heading, pitch)
     instrument_view.x = x or default_head.x
     instrument_view.y = y or default_head.y
     instrument_view.z = z or default_head.z
-    instrument_view.heading = heading or 270
+    instrument_view.heading = heading or 0
     instrument_view.pitch = pitch or default_head.pitch
 end
+

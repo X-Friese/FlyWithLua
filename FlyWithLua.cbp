@@ -154,6 +154,7 @@
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.epub" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.pdf" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\Ein_Arcaze_USB_ansteuern.md -o FlyWithLua\Documentation\Ein_Arcaze_USB_ansteuern.epub" />
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>

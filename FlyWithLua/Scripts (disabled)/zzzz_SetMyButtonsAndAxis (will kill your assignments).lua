@@ -145,7 +145,7 @@ end
 -- AW139 X-Rotors (A139)
 if PLANE_ICAO == "A139" then
     set_helicopter_assignments()
-    set( "sim/graphics/view/field_of_view_deg",   85 )
+    set( "sim/graphics/view/field_of_view_deg",   100 )
     set( "sim/flightmodel/controls/parkbrake", 1.0 )
 end
 
