@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1411649948 source:m:\github\flywithlua\flywithlua.cpp
+1427055232 source:m:\github\flywithlua\flywithlua.cpp
 	<windows.h>
 	<unistd.h>
 	"XPLMPlugin.h"
@@ -89,7 +89,7 @@
 	<GL/gl.h>
 	<GL/glu.h>
 
-1349804648 m:\github\flywithlua\include64\hidapi.h
+1425557313 m:\github\flywithlua\include64\hidapi.h
 	<wchar.h>
 
 1353175887 m:\github\flywithlua\include64\lua.hpp
@@ -119,7 +119,7 @@
 1353175887 m:\github\flywithlua\include64\luajit.h
 	"lua.h"
 
-1349803637 source:m:\github\flywithlua\include\hid.c
+1425843726 source:m:\github\flywithlua\include\hid.c
 	<windows.h>
 	<ntdef.h>
 	<winbase.h>
@@ -131,7 +131,7 @@
 	<stdlib.h>
 	"hidapi.h"
 
-1349804648 m:\github\flywithlua\include\hidapi.h
+1425557313 m:\github\flywithlua\include\hidapi.h
 	<wchar.h>
 
 1165591858 m:\github\flywithlua\openal\al.h

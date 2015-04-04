@@ -258,6 +258,99 @@ Eine weitere Besonderheit ist nämlich, dass der Treiber 1a und 1b aus einem gem
 
 Wie man das umgeht und alle acht Ausgänge verwendet, das verrät das Handbuch. Für eine Einführung geht es zu weit, man merke sich einfach, solange genug Plätze vorhanden sind, nimmt man die "a" Plätze zum Aufstecken.
 
+## Mehrere Arcaze USB Platinen verwenden
+
+Solange man nur eine Arcaze USB Platine verwendet ist die Nutzung relativ einfach, schwierig wird es erst wenn man mehrere Platinen ansteuern möchte. Denn dann hilft die Funktion arcaze.open_first_device() nicht mehr weiter. Wir müssen die einzelnen Arcaze Platinen trennen.
+
+Hilfreich hierbei ist die HID Tabelle, die FlyWithLua uns bereitstellt. Sie ist eine vordefinierte Tabelle und kann mit einer for-Schleife durchsucht werden. Stoßen wir dabei auf eine der Arcaze Platinen, so können wir diese gezielt zuordnen.
+
+Als erste Maßnahme lassen wir FlyWithLua eine Debug-Datei erstellen (Menü *Plugins* -> *FlyWithLua* -> *Write Debug file*). Wir finden die Datei danach im Hauptverzeichnis von X-Plane, dort wo auch die X-Plane eigene Datei *Log.txt* liegt. Wir suchen nach *FlyWithLua_Debug.txt*. In ihr finden wir auch alle HID Geräte. Hier die Meldung für ein frisch ausgepacktes Arcaze USB:
+
+	ALL_HID_DEVICES[13].vendor_id         = 5776 (0x1690)
+	ALL_HID_DEVICES[13].product_id          = 65043 (0xfe13)
+	ALL_HID_DEVICES[13].release_number      = 1381 (0x565)
+	ALL_HID_DEVICES[13].interface_number    = -1 (0xffffffff)
+	ALL_HID_DEVICES[13].usage_page          = 1 (0x1) Generic Desktop Controls
+	ALL_HID_DEVICES[13].usage               = 6 (0x6) Keyboard
+	ALL_HID_DEVICES[13].path                = \\?\hid#vid_1690&pid_fe13#6&1126067e&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+	ALL_HID_DEVICES[13].serial_number       = 000472300000
+	ALL_HID_DEVICES[13].manufacturer_string = Simple Solutions    
+	ALL_HID_DEVICES[13].product_string      = Arcaze V5.65
+	ALL_HID_DEVICES[13] can be opened by FlyWithLua.
+
+In diesem Beispiel ist es Eintrag 13, der auf das Arcaze USB zeigt. Das könnten wir jetzt ausnutzen:
+
+	my_radio_panel = hid_open_path(ALL_HID_DEVICES[13].path)
+
+Es wäre jedoch eine katastrophale Situation, wenn unser Script immer das 13. Gerät öffnen würde, denn dabei handelt es sich nicht zwangsläufig um das Arcaze, die Position kann sich schon ändern, wenn man einen USB Speicherstick einstöpselt und das Betriebssystem neu mischt. Daher durchsuchen wir die Tabelle aller HID Geräte nach unserer Platine:
+
+	for i, dev in ipairs(ALL_HID_DEVICES) do
+		if (dev.vendor_id == 5776) and (dev.product_id == 65043) then
+			if my_first_arcaze == nil then
+				my_first_arcaze = hid_open_path(dev.path)
+			else
+				my_second_arcaze = hid_open_path(dev.path)
+			end
+		end
+	end
+
+Damit könnte man nun zwei Arcaze auseinander halten. Komfortable ist die Auswahl dennoch nicht, denn uns interessiert ja nicht, welches in der Liste als erstes genannt wird. Daher nutzen wir die Konfigurationssoftware des Arcaze, sie sieht so aus:
+
+![Arcaze Config Tool](pics/Arcaze_config_01.jpg)
+
+Das Bild zeigt ein Arcaze wie es frisch geliefert wird, oder wie es sich darstellt wenn wir eine neue Firmware gerade frisch aufgespielt haben. Es gibt keine Konfiguration (keine Makros, keine weiteren Geräte). Hier greifen wir nun ein und benennen die Konfiguration für das Arcaze Modul, dass wir ausgewählt haben. Nennen wir die Konfiguration also für unser Radio einfach "Radio Panel". Danach schreiben wir die Konfiguration auf das Arcaze zurück. Wir wählen das Menü "USB -> Konfiguration in Arcaze schreiben".
+
+![Writing Config to Arcaze](pics/Arcaze_config_02.jpg)
+
+Jetzt können wir das Arcaze neu auswählen, statt "Arcaze V5.65" heißt es nun "Radio Panel".
+
+![Arcaze renamed](pics/Arcaze_config_03.jpg)
+
+Auch für unser Lua Script ist dies ersichtlich, der Eintrag des Arcaze in der HID Tabelle lautet nun:
+
+	ALL_HID_DEVICES[13].vendor_id         = 5776 (0x1690)
+	ALL_HID_DEVICES[13].product_id          = 65043 (0xfe13)
+	ALL_HID_DEVICES[13].release_number      = 1381 (0x565)
+	ALL_HID_DEVICES[13].interface_number    = -1 (0xffffffff)
+	ALL_HID_DEVICES[13].usage_page          = 1 (0x1) Generic Desktop Controls
+	ALL_HID_DEVICES[13].usage               = 6 (0x6) Keyboard
+	ALL_HID_DEVICES[13].path                = \\?\hid#vid_1690&pid_fe13#6&1126067e&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+	ALL_HID_DEVICES[13].serial_number       = 000472300000
+	ALL_HID_DEVICES[13].manufacturer_string = Simple Solutions    
+	ALL_HID_DEVICES[13].product_string      = Radio Panel
+	ALL_HID_DEVICES[13] can be opened by FlyWithLua.
+
+Also nutzen wir zur Identifizierung des Moduls den *product_string*. Hier ein Beispiel, wo wir ein Radio Panel mit einem Arcaze umsetzen wollen, ein Board mit Sicherungen aber an einem anderen Arcaze USB.
+
+	-- load the arcaze Lua module
+	require "arcaze"
+	
+	-- identify all my Arcazes
+	for i, dev in ipairs(ALL_HID_DEVICES) do
+		if (dev.vendor_id == 5776) and (dev.product_id == 65043) then
+			if dev.product_string == "Radio Panel" then
+				my_radio_arcaze = hid_open_path(dev.path)
+			elseif dev.product_string == "Fuse Box" then
+				my_fuse_arcaze = hid_open_path(dev.path)
+			else
+				logMsg("FlyWithLua Warning: Unknown Arcaze device found!")
+			end
+		end
+	end
+	
+	-- verify if all Arcazes are connected
+	if (my_radio_arcaze == nil) or (my_fuse_arcaze == nil) then
+		logMsg("FlyWithLua Error: One of the Arcaze devices is missing!")
+	else
+		-- here comes the script ...
+	end
+
+Im eigentlichen Script werden dann die beiden Zeiger *my_radio_arcaze* und *my_fuse_arcaze* genutzt, um das jeweils passende Arcaze Modul anzusprechen. Wie man leicht erkennt müssen wir das zweite Modul *"Fuse Box"* nennen, sonst bekommen wir erst eine Warnung und direkt danach eine Fehlermeldung von unserem Script in das Log.txt gescrhrieben.
+
+### Alternative Lösung für Mac OS X oder Linux Nutzer
+
+Wer keinen Zugang zu einem Windows PC hat, der kann die Konfigurationssoftware des Arcaze nicht nutzen. Dennoch brauchen Linux oder Mac OS X Nutzer nicht zu verzweifeln. Die Seriennummer der Arcaze Module ist durch die Produktion festgelegt und verändert sich nicht. Es gibt keine zwei Module mit einer identischen Seriennummer. Statt *product_string* zu vergleichen nutzt man einfach *serial_number*.
+
 # Anhang
 
 Hier zum Schluss noch das komplette Script:
