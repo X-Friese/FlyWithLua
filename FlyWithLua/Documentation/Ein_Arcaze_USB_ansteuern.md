@@ -96,7 +96,7 @@ Es gibt nur eine Problematik. Wenn gar kein Arcaze USB angeschlossen ist, dann l
 
 	local my_arcaze = arcaze.open_first_device()
 	
-	if my_device == nil then
+	if my_arcaze == nil then
 		logMsg("FlyWithLua Error: Kein Arcaze USB gefunden!")
 	else
 		dataref("battery", "sim/cockpit/electrical/battery_on", "writable")
@@ -128,7 +128,7 @@ Beginnen wir unser Script mit dem Taster des Drehgebers. Den Code sollten wir be
 
 	local my_arcaze = arcaze.open_first_device()
 	
-	if my_device == nil then
+	if my_arcaze == nil then
 		logMsg("FlyWithLua Error: Kein Arcaze USB gefunden!")
 	else
 		-- wir verwenden zwei DataRefs und einen lokalen Merker
