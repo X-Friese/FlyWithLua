@@ -777,6 +777,7 @@ bool RunLuaString(string LuaCommandString);
 void CopyDataRefsToLua( void );
 void CopyDataRefsToXPlane( void );
 bool ReadScriptFile(char *FileNameToRead);
+bool RunLuaChunk(const char *ChunkName);
 
 // new way to handle classic and modern DataRaf access
 void update_Lua_dataref_variables(XPLMDataRef DataRefID, int Index, float Value);
@@ -907,7 +908,7 @@ int	FWLMouseEventWindowMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseSta
     lua_setglobal(FWLLua, "MOUSE_STATUS");
 
     // let Lua do it's work
-    RunLuaString(LuaMouseClickCommand);
+    RunLuaChunk("DO_ON_MOUSE_CLICK_CHUNK");
 
     // should we resume the mouse click?
     lua_getglobal(FWLLua, "RESUME_MOUSE_CLICK");
@@ -945,7 +946,7 @@ int	FWLMouseEventWindowMouseWheel(XPLMWindowID	inWindowID,
     lua_setglobal(FWLLua, "MOUSE_WHEEL_CLICKS");
 
     // let Lua do it's work
-    RunLuaString(LuaMouseWheelCommand);
+    RunLuaChunk("DO_ON_MOUSE_WHEEL_CHUNK");
 
     // should we resume the mouse wheel?
     lua_getglobal(FWLLua, "RESUME_MOUSE_WHEEL");
@@ -1109,11 +1110,14 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
                          0); // enables writing back of depth information to the depth bufffer, as in glDepthMask(GL_TRUE);
 
     WeAreNotInDrawingState = false;
-    if (luaL_dostring(FWLLua, LuaDrawCommand.c_str()))
+    if (LuaDrawCommand.length())
     {
-        logMsg(logToDevCon, "FlyWithLua Error: Can't execute window draw callback command string. The string who failed is:");
-        logMsg(logToDevCon, LuaDrawCommand);
-        LuaIsRunning = false;
+        lua_getglobal(FWLLua, "DO_EVERY_DRAW_CHUNK");
+        if (lua_pcall(FWLLua, 0, LUA_MULTRET, 0))
+        {
+            logMsg(logToDevCon, "FlyWithLua Error: Can't execute window draw callback chunk.");
+            LuaIsRunning = false;
+        }
     }
     WeAreNotInDrawingState = true;
 
@@ -1177,7 +1181,7 @@ int FWLKeySniffer(
     lua_setglobal(FWLLua, "KEY_ACTION");
 
     // let Lua do it's work
-    RunLuaString(KeyEventCommand);
+    RunLuaChunk("DO_ON_KEYSTROKE_CHUNK");
 
     // should we resume the keystroke?
     lua_getglobal(FWLLua, "RESUME_KEY");
@@ -2428,6 +2432,18 @@ static int LuaDeactivateMacro(lua_State *L)
     return 0;
 }
 
+bool StoreLuaChunk(std::string LuaCommandString, const char *ChunkName)
+{
+    if (LuaIsRunning == false) return false;
+    if (luaL_loadstring(FWLLua, LuaCommandString.c_str()))
+    {
+        logMsg(logToDevCon, string("FlyWithLua Error: Can't store command string into a Lua chunk. The string should be stored into: ").append(ChunkName));
+        logMsg(logToDevCon, LuaCommandString);
+        LuaIsRunning = false;
+    }
+    lua_setglobal(FWLLua, ChunkName);
+}
+
 static int LuaDoEveryKeystroke(lua_State *L)
 {
     if (!lua_isstring(L, 1))
@@ -2437,6 +2453,7 @@ static int LuaDoEveryKeystroke(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     KeyEventCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(KeyEventCommand, "DO_ON_KEYSTROKE_CHUNK");
     return 0;
 }
 
@@ -2449,6 +2466,7 @@ static int LuaDoEveryMouseClick(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     LuaMouseClickCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(LuaMouseClickCommand, "DO_ON_MOUSE_CLICK_CHUNK");
     return 0;
 }
 
@@ -2461,6 +2479,7 @@ static int LuaDoEveryMouseWheel(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     LuaMouseWheelCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(LuaMouseWheelCommand, "DO_ON_MOUSE_WHEEL_CHUNK");
     return 0;
 }
 
@@ -2473,6 +2492,7 @@ static int LuaDoEveryDrawCallback(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     LuaDrawCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(LuaDrawCommand, "DO_EVERY_DRAW_CHUNK");
     return 0;
 }
 
@@ -2485,6 +2505,7 @@ static int LuaDoEveryMETARCallback(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     NewMetarCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(NewMetarCommand, "DO_ON_NEW_METAR_CHUNK");
     return 0;
 }
 
@@ -2497,6 +2518,7 @@ static int LuaDoEveryFrame(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     EveryFrameCallbackCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(EveryFrameCallbackCommand, "DO_EVERY_FRAME_CHUNK");
     return 0;
 }
 
@@ -2509,6 +2531,7 @@ static int LuaDoOften(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     CallbackCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(CallbackCommand, "DO_OFTEN_CHUNK");
     return 0;
 }
 
@@ -2521,6 +2544,7 @@ static int LuaDoSometimes(lua_State *L)
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
     LongTimeCallbackCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(LongTimeCallbackCommand, "DO_SOMETIMES_CHUNK");
     return 0;
 }
 
@@ -5545,6 +5569,21 @@ bool RunLuaString(std::string LuaCommandString)
     return true;
 }
 
+bool RunLuaChunk(const char *ChunkName)
+{
+    if (LuaIsRunning == false) return false;
+    CopyDataRefsToLua();
+    lua_getglobal(FWLLua, ChunkName);
+    if (lua_pcall(FWLLua, 0, LUA_MULTRET, 0))
+    {
+        logMsg(logToDevCon, std::string("FlyWithLua Error: Can't execute Lua chunk. The chunk who failed is: ").append(ChunkName));
+        LuaIsRunning = false;
+    }
+    CopyDataRefsToXPlane();
+    return true;
+}
+
+
 void ResetLuaEngine( void )
 {
     char    success_cstring[NORMALSTRING];
@@ -5612,6 +5651,16 @@ void ResetLuaEngine( void )
     KeyEventCommand.clear();
     LuaMouseClickCommand.clear();
     LuaMouseWheelCommand.clear();
+
+    // create empty chunks (functions)
+    StoreLuaChunk(LuaDrawCommand, "DO_EVERY_DRAW_CHUNK");
+    StoreLuaChunk(EveryFrameCallbackCommand, "DO_EVERY_FRAME_CHUNK");
+    StoreLuaChunk(CallbackCommand, "DO_OFTEN_CHUNK");
+    StoreLuaChunk(LongTimeCallbackCommand, "DO_SOMETIMES_CHUNK");
+    StoreLuaChunk(NewMetarCommand, "DO_ON_NEW_METAR_CHUNK");
+    StoreLuaChunk(KeyEventCommand, "DO_ON_KEYSTROKE_CHUNK");
+    StoreLuaChunk(LuaMouseClickCommand, "DO_ON_MOUSE_CLICK_CHUNK");
+    StoreLuaChunk(LuaMouseWheelCommand, "DO_ON_MOUSE_WHEEL_CHUNK");
 
     // clean up HID connections
     CloseAllOpenHIDDevices();
@@ -6336,7 +6385,7 @@ float	MySlowLoopCallback(
 
     if ((LongTimeCallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
-        RunLuaString(LongTimeCallbackCommand);
+        RunLuaChunk("DO_SOMETIMES_CHUNK");
     }
 
     // get time after execution
@@ -6399,7 +6448,7 @@ float	MyFastLoopCallback(
     }
     if ((CallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
-        RunLuaString(CallbackCommand);
+        RunLuaChunk("DO_OFTEN_CHUNK");
     }
     if ((LuaIsRunning == false) && (CrashReportDisplayed == false))
     {
@@ -6694,18 +6743,13 @@ float	MyEveryFrameLoopCallback(
     if ((EveryFrameCallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
         // execute the Lua code
-        RunLuaString(EveryFrameCallbackCommand);
+        RunLuaChunk("DO_EVERY_FRAME_CHUNK");
     }
 
     // do the new metar command string?
     if ((NewMetarCountdown++ == 2) && (LuaIsRunning == true))
     {
-        if (luaL_dostring(FWLLua, NewMetarCommand.c_str()))
-        {
-            logMsg(logToDevCon, "FlyWithLua Error: Can't execute command string. The string who failed is:");
-            logMsg(logToDevCon, NewMetarCommand);
-            LuaIsRunning = false;
-        }
+        RunLuaChunk("DO_ON_NEW_METAR_CHUNK");
     }
 
     // store the joystick buttons for state analysis
