@@ -5577,8 +5577,13 @@ bool RunLuaString(std::string LuaCommandString)
 bool RunLuaChunk(const char *ChunkName)
 {
     if (LuaIsRunning == false) return false;
-    CopyDataRefsToLua();
     lua_getglobal(FWLLua, ChunkName);
+    if (lua_isnil(FWLLua, 0))
+    {
+        // no chunk -> nothing to do
+        return false;
+    }
+    CopyDataRefsToLua();
     if (lua_pcall(FWLLua, 0, LUA_MULTRET, 0))
     {
         logMsg(logToDevCon, std::string("FlyWithLua Error: Can't execute Lua chunk. The chunk who failed is: ").append(ChunkName));
