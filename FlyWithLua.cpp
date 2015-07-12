@@ -239,42 +239,47 @@ using namespace std; // snagar
 
 
 
-//Code from Ben Supnik Regarding Luajit in 64bit build
-struct lua_alloc_request_t
-{
-    void *	ud;
-    void *	ptr;
-    size_t	osize;
-    size_t	nsize;
+// Code from Ben Supnik Regarding Luajit in 64bit build
+// last update for X-Plane 10.40 on July 12th 2015
+// taken from: http://www.xsquawkbox.net/xpsdk/mediawiki/LuaJIT
+struct lua_alloc_request_t {
+			void *	ud;
+			void *	ptr;
+			size_t	osize;
+			size_t	nsize;
 };
 
 #define		ALLOC_OPEN		0x00A110C1
 #define		ALLOC_REALLOC	0x00A110C2
 #define		ALLOC_CLOSE		0x00A110C3
+/* new in X-Plane 10.40 */
+#define		ALLOC_LOCK		0x00A110C4
+#define		ALLOC_UNLOCK		0x00A110C5
+#define		ALLOC_LOCK_RO		0x00A110C6
 
 static void *lj_alloc_create(void)
 {
-    struct lua_alloc_request_t r = { 0 };
-    XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_OPEN,&r);
-    return r.ud;
+	struct lua_alloc_request_t r = { 0 };
+	XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_OPEN,&r);
+	return r.ud;
 }
 
 static void  lj_alloc_destroy(void *msp)
 {
-    struct lua_alloc_request_t r = { 0 };
-    r.ud = msp;
-    XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_CLOSE,&r);
+	struct lua_alloc_request_t r = { 0 };
+	r.ud = msp;
+	XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_CLOSE,&r);
 }
 
 static void *lj_alloc_f(void *msp, void *ptr, size_t osize, size_t nsize)
 {
-    struct lua_alloc_request_t r = { 0 };
-    r.ud = msp;
-    r.ptr = ptr;
-    r.osize = osize;
-    r.nsize = nsize;
-    XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_REALLOC,&r);
-    return r.ptr;
+	struct lua_alloc_request_t r = { 0 };
+	r.ud = msp;
+	r.ptr = ptr;
+	r.osize = osize;
+	r.nsize = nsize;
+	XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_REALLOC,&r);
+	return r.ptr;
 }
 
 
@@ -5623,10 +5628,15 @@ void ResetLuaEngine( void )
     }
     OpenALTableLastElement = -1;
 
-    lua_close(FWLLua);
-    lj_alloc_destroy(ud);
-
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
+    // close Lua environment
+    lua_close(FWLLua);
+    if(lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
+    {
+        lj_alloc_destroy(ud);
+    }
+
+    // (re)open Lua
     if(lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
     {
         /* X-Plane has an allocator for us - we _must_ use it. */
@@ -6396,6 +6406,11 @@ float	MySlowLoopCallback(
     {
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_SOMETIMES_TIME_SEC");
+    }
+    else if (LuaResetCount < 5)
+    {
+        logMsg(logToAll, "FlyWithLua Debug Info: The Lua engine is down. Try to restart Lua.");
+        ReadAllScriptFiles();
     }
 
     return LongTimeBetweenCallbacks;
