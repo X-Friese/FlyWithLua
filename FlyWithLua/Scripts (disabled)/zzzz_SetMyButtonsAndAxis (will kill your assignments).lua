@@ -54,8 +54,8 @@ set_button_assignment( Quadrant + 0, "sim/flight_controls/flaps_up" )
 set_button_assignment( Quadrant + 1, "sim/flight_controls/flaps_down" )
 set_button_assignment( Quadrant + 2, "sim/flight_controls/speed_brakes_up_all" )
 set_button_assignment( Quadrant + 3, "sim/flight_controls/speed_brakes_down_all" )
-set_button_assignment( Quadrant + 4, "FlyWithLua/HeliTrim/save_settings" )
-set_button_assignment( Quadrant + 5, "FlyWithLua/HeliTrim/load_settings" )
+set_button_assignment( Quadrant + 4, "sim/starters/engage_starter_1" )
+set_button_assignment( Quadrant + 5, "sim/starters/engage_starter_2" )
 set_button_assignment( Quadrant + 6, "FlyWithLua/flight_controls/ARB" )
 
 set( "sim/joystick/joystick_pitch_nullzone",       0.0 )
@@ -275,4 +275,14 @@ if PLANE_ICAO == "SHRP" then
     set( "sim/graphics/view/field_of_view_deg",   105.0 )
     plane_has_reverser = true
     set_button_assignment(Quadrant + 6, "sim/engines/thrust_reverse_hold")
+end
+
+-- Carenado CT210M Centurion
+if PLANE_TAILNUMBER == "N3888Y" then
+    set( "sim/graphics/view/field_of_view_deg",   100.0 )
+    set_default_looking_head(-0.2, 0.48, -0.2, 0, -10)
+    set_left_looking_head(-0.25, 0.42, -0.26, 272, -20)
+    set_right_looking_head(0, 0.4, -0.26, 100, -16)
+    set_instrument_looking_head(-0.16, 0.11, -0.23, 0, -5)
+    set_button_assignment( Quadrant + 6, "sim/flight_controls/brakes_regular" )
 end
