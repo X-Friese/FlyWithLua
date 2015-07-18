@@ -252,6 +252,12 @@ struct lua_alloc_request_t
 #define		ALLOC_REALLOC	0x00A110C2
 #define		ALLOC_CLOSE		0x00A110C3
 
+/* new in X-Plane 10.40 */
+/* but totally unused in FlyWithLua at the moment */
+#define		ALLOC_LOCK		0x00A110C4
+#define		ALLOC_UNLOCK	0x00A110C5
+#define		ALLOC_LOCK_RO	0x00A110C6
+
 static void *lj_alloc_create(void)
 {
     struct lua_alloc_request_t r = { 0 };
