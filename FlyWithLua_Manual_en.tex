@@ -577,6 +577,17 @@ An other example (the radio frequency is an integer DataRef):
 
 What the hell could this does? ;)
 
+\subsubsection{create\_axis\_median( \emph{axis number}, \emph{variable name} )}
+
+\begin{enumerate}
+	\item \emph{axis number} = Number of the axis, starting at 0 (zero).
+	\item \emph{variable name} = Name of the variable to be filled with the median value of the axis.
+\end{enumerate}
+
+Calculates a median value of the last five values from an axis and puts it into a Lua variable. This is an example how to store the median value of axis no. 3 (the fourth axis shown in X-Plane, as we start counting with zero) into the variable \emph{median\_throttle}:
+
+\verb|>create_axis_median(3, "median_throttle")|
+
 \subsubsection{get( "\emph{DataRef name}" )}
 
 \begin{enumerate}

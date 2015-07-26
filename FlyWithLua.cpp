@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-// #define PLUGIN_VERSION "2.3.4 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.4.0 stable build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.4.1 nightly build " __DATE__ " " __TIME__
+// #define PLUGIN_VERSION "2.4.0 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -346,7 +346,7 @@ struct  MacroTableStructure
 static MacroTableStructure     MacroTable[MAXMACROS];
 static int                     MacroTableLastElement = -1;
 
-enum    SwitchTypes     {Switch, PositiveEdge, NegativeEdge, PositiveIncrement, NegativeIncrement, PositiveDecrement, NegativeDecrement, ABCEncoder, PositiveFlip, NegativeFlip};
+enum    SwitchTypes     {Switch, PositiveEdge, NegativeEdge, PositiveIncrement, NegativeIncrement, PositiveDecrement, NegativeDecrement, ABCEncoder, PositiveFlip, NegativeFlip, AxisMedian};
 
 struct  SwitchTableStructure
 {
@@ -834,6 +834,7 @@ XPLMDataRef     gJoystickButtonAssignments;
 XPLMDataRef     gJoystickButtonValues;
 XPLMDataRef     gJoystickAxisAssignments;
 XPLMDataRef     gJoystickAxisReverse;
+XPLMDataRef     gJoystickAxisValues;
 XPLMDataRef     gPlaneICAO;
 XPLMDataRef     gPlaneTailNumber;
 
@@ -3137,6 +3138,46 @@ static int LuaCreateSwitch(lua_State *L)
     return 0;
 }
 
+static int LuaCreateAxisMedian(lua_State *L)
+{
+    char    DataRefWanted[NORMALSTRING];
+    int     IndexWanted = 0;
+
+    if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
+    {
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_axis_median().");
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    strcpy(DataRefWanted, lua_tostring(L, 2));
+    IndexWanted = lua_tointeger(L, 1);
+
+    // get the actual value of the axis
+    float axis_value;
+    XPLMGetDatavf(gJoystickAxisValues, &axis_value, IndexWanted, 1);
+
+    // add it to the table
+    if (++SwitchTableLastElement >= MAXDATAREFS)
+    {
+        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        LuaIsRunning = false;
+        SwitchTableLastElement = MAXDATAREFS-1;
+    }
+    else
+    {
+        SwitchTable[SwitchTableLastElement].SwitchType = AxisMedian;
+        SwitchTable[SwitchTableLastElement].DataRefName = DataRefWanted;
+        SwitchTable[SwitchTableLastElement].index = IndexWanted;
+        SwitchTable[SwitchTableLastElement].on_float = axis_value;
+        SwitchTable[SwitchTableLastElement].off_float = axis_value;
+        SwitchTable[SwitchTableLastElement].upper_limit_float = axis_value;
+        SwitchTable[SwitchTableLastElement].lower_limit_float = axis_value;
+        SwitchTable[SwitchTableLastElement].stepping_float = axis_value;
+    }
+    return 0;
+}
+
 static int LuaCreatePositiveEdgeTrigger(lua_State *L)
 {
     char    DataRefWanted[NORMALSTRING];
@@ -5115,6 +5156,7 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "get_dataref_binding", LuaGetDataRefBinding);
     lua_register(L, "get_DataRef_binding", LuaGetDataRefBinding);
     lua_register(L, "create_switch", LuaCreateSwitch);
+    lua_register(L, "create_axis_median", LuaCreateAxisMedian);
     lua_register(L, "create_positive_edge_trigger", LuaCreatePositiveEdgeTrigger);
     lua_register(L, "create_negative_edge_trigger", LuaCreateNegativeEdgeTrigger);
     lua_register(L, "create_positive_edge_increment", LuaCreatePositiveEdgeIncrement);
@@ -6059,6 +6101,7 @@ PLUGIN_API int XPluginStart(
     gJoystickAxisAssignments = XPLMFindDataRef("sim/joystick/joystick_axis_assignments");
     gJoystickButtonAssignments = XPLMFindDataRef("sim/joystick/joystick_button_assignments");
     gJoystickAxisReverse = XPLMFindDataRef("sim/joystick/joystick_axis_reverse");
+    gJoystickAxisValues = XPLMFindDataRef("sim/joystick/joystick_axis_values");
     gJoystickButtonValues = XPLMFindDataRef("sim/joystick/joystick_button_values");
     gPlaneICAO = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
     gPlaneTailNumber = XPLMFindDataRef("sim/aircraft/view/acf_tailnum");
@@ -6497,6 +6540,16 @@ float	MyFastLoopCallback(
     return TimeBetweenCallbacks;
 }
 
+// calculate the median of three values
+float CalculateMedianOfThree(float a, float b, float c)
+{
+    if (((a>=b)&&(a<=c))||((a<=b)&&(a>=c)))
+        return a;
+    if (((b>=a)&&(b<=c))||((b<=a)&&(b>=c)))
+        return b;
+    return c;
+}
+
 // switch some DataRefs
 void ExecuteSwitches( void )
 {
@@ -6525,6 +6578,20 @@ void ExecuteSwitches( void )
                 if (SwitchTable[i].DataRefType == xplmType_IntArray) XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].on_int, SwitchTable[i].index, 1);
                 if (SwitchTable[i].DataRefType == xplmType_FloatArray) XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
             }
+        }
+        if (SwitchTable[i].SwitchType == AxisMedian)
+        {
+            // catch a new axis value and shift all old values
+            SwitchTable[i].on_float = SwitchTable[i].off_float;
+            SwitchTable[i].off_float = SwitchTable[i].upper_limit_float;
+            SwitchTable[i].upper_limit_float = SwitchTable[i].lower_limit_float;
+            SwitchTable[i].lower_limit_float = SwitchTable[i].stepping_float;
+            XPLMGetDatavf(gJoystickAxisValues, &SwitchTable[i].stepping_float, SwitchTable[i].index, 1);
+            // calculate the median
+            float median = CalculateMedianOfThree(SwitchTable[i].on_float, SwitchTable[i].upper_limit_float, SwitchTable[i].stepping_float);
+            // push it into a Lua variable
+            lua_pushnumber(FWLLua, median);
+            lua_setglobal(FWLLua, SwitchTable[i].DataRefName.c_str());
         }
         if ((SwitchTable[i].SwitchType == PositiveEdge) && (JoystickButtonValues[SwitchTable[i].button] == 1) && (JoystickButtonLastValues[SwitchTable[i].button] == 0))
         {
