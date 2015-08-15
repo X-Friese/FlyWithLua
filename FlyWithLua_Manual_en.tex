@@ -270,6 +270,18 @@ add_macro("Automatically set Transponder", "transponder_help = true", "transpond
 
 All predefined variables are readonly. If you change them, X-Plane will not recognize it.
 
+\subsubsection{LONGITUDE}
+
+Gives the actual longitude value in decimal as a double float value (remember Lua didn't know float but only number). As X-Plane uses the data type \verb|double|, but the numbers in Lua are only \verb|float|, you will get an approximation.
+
+The value is readonly, like all predefined variables. So it isn't possible to replace the plane in it's position by changing the value.
+
+Positive values in LONGITUDE are east, negative values are west.
+
+\subsubsection{LATITUDE}
+
+This gives the latitude value of the plane's position as a decimal value. So for example seven degree thirty minutes north is represented as 7.5 (a positive value, negative values are south).
+
 \subsubsection{PLANE\_ICAO}
 
 A string holding the plane's ICAO code in it.

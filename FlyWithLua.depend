@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1431770826 source:m:\github\flywithlua\flywithlua.cpp
+1437932715 source:m:\github\flywithlua\flywithlua.cpp
 	<windows.h>
 	<unistd.h>
 	"XPLMPlugin.h"
@@ -92,31 +92,31 @@
 1425557313 m:\github\flywithlua\include64\hidapi.h
 	<wchar.h>
 
-1353175887 m:\github\flywithlua\include64\lua.hpp
+1436711401 m:\github\flywithlua\include64\lua.hpp
 	"lua.h"
 	"lauxlib.h"
 	"lualib.h"
 	"luajit.h"
 
-1353175887 m:\github\flywithlua\include64\lua.h
+1436711401 m:\github\flywithlua\include64\lua.h
 	<stdarg.h>
 	<stddef.h>
 	"luaconf.h"
 
-1353175887 m:\github\flywithlua\include64\luaconf.h
+1436711401 m:\github\flywithlua\include64\luaconf.h
 	<limits.h>
 	<stddef.h>
 	<assert.h>
 
-1353175883 m:\github\flywithlua\include64\lauxlib.h
+1436711401 m:\github\flywithlua\include64\lauxlib.h
 	<stddef.h>
 	<stdio.h>
 	"lua.h"
 
-1353175887 m:\github\flywithlua\include64\lualib.h
+1436711401 m:\github\flywithlua\include64\lualib.h
 	"lua.h"
 
-1353175887 m:\github\flywithlua\include64\luajit.h
+1436711401 m:\github\flywithlua\include64\luajit.h
 	"lua.h"
 
 1425843726 source:m:\github\flywithlua\include\hid.c
@@ -208,4 +208,16 @@
 
 1350809789 m:\github\flywithlua\include\luajit.h
 	"lua.h"
+
+1425557314 source:m:\github\flywithlua\include64\hid.c
+	<windows.h>
+	<ntdef.h>
+	<winbase.h>
+	<ntdef.h>
+	<setupapi.h>
+	<winioctl.h>
+	<hidsdi.h>
+	<stdio.h>
+	<stdlib.h>
+	"hidapi.h"
 
