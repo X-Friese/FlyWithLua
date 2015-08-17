@@ -1119,6 +1119,14 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
     WeAreNotInDrawingState = false;
     if (LuaDrawCommand.length())
     {
+        // check if DataRef to variable transfer is done
+        if (EveryFrameCallbackCommand.length())
+        {
+            // transfer DataRefs into variables
+            CopyDataRefsToLua();
+        }
+
+        // execute the chunk
         lua_getglobal(FWLLua, "DO_EVERY_DRAW_CHUNK");
         if (lua_pcall(FWLLua, 0, LUA_MULTRET, 0))
         {
