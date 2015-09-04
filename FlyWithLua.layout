@@ -11,14 +11,14 @@
 			<Cursor1 position="1142" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="FlyWithLua.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="683" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="40026" topLine="1099" />
-		</Cursor>
-	</File>
 	<File name="include\hidapi.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="4976" topLine="340" />
+		</Cursor>
+	</File>
+	<File name="FlyWithLua.cpp" open="1" top="1" tabpos="1" split="0" active="1" splitpos="683" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="299" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
