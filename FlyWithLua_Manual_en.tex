@@ -813,6 +813,14 @@ When the user (pilot) presses, holds or releases the primary mouse button, an ev
 
 This is called by a XSquawkBox event. You can read out the predefined variable \verb|XSB_METAR|, or do whatever you like when XSquawkBox sends a new METAR (changes the weather).
 
+\subsubsection{do\_on\_exit( "\emph{Lua code string}" )}
+
+\begin{enumerate}
+	\item \emph{Lua code string} = A string containing Lua code you want to be executed when Lua stops. The will be executed only on normal stops, like changing the airport or aircraft or shutting down X-Plane. The code can/will not be execuded on errors.
+\end{enumerate}
+
+Use this function to collect code that is executed when Lua stops working because of a script reload. This is not for error handling, but can be usefull if you want to store values to disk for the next time you start Lua.
+
 \subsubsection{draw\_string( \emph{x}, \emph{y}, "\emph{string}" )}
 
 \begin{enumerate}

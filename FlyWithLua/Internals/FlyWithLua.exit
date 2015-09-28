@@ -15,6 +15,9 @@
 
 logMsg("FlyWithLua Info: Load exit file.")
 
+-- execute the code collected by the function do_on_exit()
+assert(loadstring(DO_ON_EXIT_LUA_CODE))()
+
 -- nothing to do, let the user do his work
 if SYSTEM == "IBM" then
     dofile("Resources\\plugins\\FlyWithLua\\user.exit")

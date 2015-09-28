@@ -76,29 +76,30 @@
 \contentsline {subsubsection}{\numberline {2.2.36}do\_on\_mouse\_wheel( "\emph {Lua code string}" )}{31}{subsubsection.2.2.36}
 \contentsline {subsubsection}{\numberline {2.2.37}do\_on\_mouse\_click( "\emph {Lua code string}" )}{31}{subsubsection.2.2.37}
 \contentsline {subsubsection}{\numberline {2.2.38}do\_on\_new\_metar( "\emph {Lua code string}" )}{31}{subsubsection.2.2.38}
-\contentsline {subsubsection}{\numberline {2.2.39}draw\_string( \emph {x}, \emph {y}, "\emph {string}" )}{32}{subsubsection.2.2.39}
-\contentsline {subsubsection}{\numberline {2.2.40}draw\_string( \emph {x}, \emph {y}, "\emph {string}", "\emph {color}" )}{32}{subsubsection.2.2.40}
-\contentsline {subsubsection}{\numberline {2.2.41}draw\_string( \emph {x}, \emph {y}, "\emph {string}", \emph {red}, \emph {green}, \emph {blue} )}{32}{subsubsection.2.2.41}
-\contentsline {subsubsection}{\numberline {2.2.42}draw\_string\_Helvetica\_10( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.42}
-\contentsline {subsubsection}{\numberline {2.2.43}draw\_string\_Helvetica\_12( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.43}
-\contentsline {subsubsection}{\numberline {2.2.44}draw\_string\_Helvetica\_18( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.44}
-\contentsline {subsubsection}{\numberline {2.2.45}draw\_string\_Times\_Roman\_10( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.45}
-\contentsline {subsubsection}{\numberline {2.2.46}draw\_string\_Times\_Roman\_24( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.46}
-\contentsline {subsubsection}{\numberline {2.2.47}measure\_string( "\emph {string}" )}{33}{subsubsection.2.2.47}
-\contentsline {subsubsection}{\numberline {2.2.48}measure\_string( "\emph {string}", "\emph {font name}" )}{34}{subsubsection.2.2.48}
-\contentsline {subsubsection}{\numberline {2.2.49}\emph {hight}, \emph {width} = bubble( \emph {x}, \emph {y}, "\emph {title}", $\dots $ )}{34}{subsubsection.2.2.49}
-\contentsline {subsubsection}{\numberline {2.2.50}\emph {hight}, \emph {width} = big\_bubble( \emph {x}, \emph {y}, "\emph {title}", $\dots $ )}{34}{subsubsection.2.2.50}
-\contentsline {subsubsection}{\numberline {2.2.51}\emph {hight}, \emph {width} = huge\_bubble( \emph {x}, \emph {y}, "\emph {title}", $\dots $ )}{34}{subsubsection.2.2.51}
-\contentsline {subsubsection}{\numberline {2.2.52}add\_macro( "\emph {macro name}", "\emph {Lua code string}" )}{35}{subsubsection.2.2.52}
-\contentsline {subsubsection}{\numberline {2.2.53}add\_ATC\_macro( "\emph {macro name}", "\emph {Lua code string}" )}{35}{subsubsection.2.2.53}
-\contentsline {subsubsection}{\numberline {2.2.54}add\_macro( "\emph {macro name}", "\emph {activation code string}", "\emph {deactivation code string}", "\emph {default state}" )}{35}{subsubsection.2.2.54}
-\contentsline {subsubsection}{\numberline {2.2.55}create\_command( "\emph {command name}", "\emph {command description}", "\emph {begin code string}", "\emph {continue code string}", "\emph {end code string}" )}{36}{subsubsection.2.2.55}
-\contentsline {subsubsection}{\numberline {2.2.56}\emph {table} = directory\_to\_table( "\emph {path}" )}{36}{subsubsection.2.2.56}
-\contentsline {subsubsection}{\numberline {2.2.57}place\_aircraft\_at( "\emph {ICAO}" )}{37}{subsubsection.2.2.57}
-\contentsline {subsubsection}{\numberline {2.2.58}load\_aircraft( "\emph {path and full filename}" )}{37}{subsubsection.2.2.58}
-\contentsline {subsubsection}{\numberline {2.2.59}load\_situation( "\emph {path and full filename}" )}{37}{subsubsection.2.2.59}
-\contentsline {subsubsection}{\numberline {2.2.60}save\_situation( "\emph {path and full filename}" )}{37}{subsubsection.2.2.60}
-\contentsline {subsubsection}{\numberline {2.2.61}crash\_the\_sim()}{38}{subsubsection.2.2.61}
+\contentsline {subsubsection}{\numberline {2.2.39}do\_on\_exit( "\emph {Lua code string}" )}{32}{subsubsection.2.2.39}
+\contentsline {subsubsection}{\numberline {2.2.40}draw\_string( \emph {x}, \emph {y}, "\emph {string}" )}{32}{subsubsection.2.2.40}
+\contentsline {subsubsection}{\numberline {2.2.41}draw\_string( \emph {x}, \emph {y}, "\emph {string}", "\emph {color}" )}{32}{subsubsection.2.2.41}
+\contentsline {subsubsection}{\numberline {2.2.42}draw\_string( \emph {x}, \emph {y}, "\emph {string}", \emph {red}, \emph {green}, \emph {blue} )}{33}{subsubsection.2.2.42}
+\contentsline {subsubsection}{\numberline {2.2.43}draw\_string\_Helvetica\_10( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.43}
+\contentsline {subsubsection}{\numberline {2.2.44}draw\_string\_Helvetica\_12( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.44}
+\contentsline {subsubsection}{\numberline {2.2.45}draw\_string\_Helvetica\_18( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.45}
+\contentsline {subsubsection}{\numberline {2.2.46}draw\_string\_Times\_Roman\_10( \emph {x}, \emph {y}, "\emph {string}" )}{33}{subsubsection.2.2.46}
+\contentsline {subsubsection}{\numberline {2.2.47}draw\_string\_Times\_Roman\_24( \emph {x}, \emph {y}, "\emph {string}" )}{34}{subsubsection.2.2.47}
+\contentsline {subsubsection}{\numberline {2.2.48}measure\_string( "\emph {string}" )}{34}{subsubsection.2.2.48}
+\contentsline {subsubsection}{\numberline {2.2.49}measure\_string( "\emph {string}", "\emph {font name}" )}{34}{subsubsection.2.2.49}
+\contentsline {subsubsection}{\numberline {2.2.50}\emph {hight}, \emph {width} = bubble( \emph {x}, \emph {y}, "\emph {title}", $\dots $ )}{34}{subsubsection.2.2.50}
+\contentsline {subsubsection}{\numberline {2.2.51}\emph {hight}, \emph {width} = big\_bubble( \emph {x}, \emph {y}, "\emph {title}", $\dots $ )}{34}{subsubsection.2.2.51}
+\contentsline {subsubsection}{\numberline {2.2.52}\emph {hight}, \emph {width} = huge\_bubble( \emph {x}, \emph {y}, "\emph {title}", $\dots $ )}{35}{subsubsection.2.2.52}
+\contentsline {subsubsection}{\numberline {2.2.53}add\_macro( "\emph {macro name}", "\emph {Lua code string}" )}{35}{subsubsection.2.2.53}
+\contentsline {subsubsection}{\numberline {2.2.54}add\_ATC\_macro( "\emph {macro name}", "\emph {Lua code string}" )}{35}{subsubsection.2.2.54}
+\contentsline {subsubsection}{\numberline {2.2.55}add\_macro( "\emph {macro name}", "\emph {activation code string}", "\emph {deactivation code string}", "\emph {default state}" )}{35}{subsubsection.2.2.55}
+\contentsline {subsubsection}{\numberline {2.2.56}create\_command( "\emph {command name}", "\emph {command description}", "\emph {begin code string}", "\emph {continue code string}", "\emph {end code string}" )}{36}{subsubsection.2.2.56}
+\contentsline {subsubsection}{\numberline {2.2.57}\emph {table} = directory\_to\_table( "\emph {path}" )}{36}{subsubsection.2.2.57}
+\contentsline {subsubsection}{\numberline {2.2.58}place\_aircraft\_at( "\emph {ICAO}" )}{37}{subsubsection.2.2.58}
+\contentsline {subsubsection}{\numberline {2.2.59}load\_aircraft( "\emph {path and full filename}" )}{37}{subsubsection.2.2.59}
+\contentsline {subsubsection}{\numberline {2.2.60}load\_situation( "\emph {path and full filename}" )}{37}{subsubsection.2.2.60}
+\contentsline {subsubsection}{\numberline {2.2.61}save\_situation( "\emph {path and full filename}" )}{37}{subsubsection.2.2.61}
+\contentsline {subsubsection}{\numberline {2.2.62}crash\_the\_sim()}{38}{subsubsection.2.2.62}
 \contentsline {section}{\numberline {3}Modules}{39}{section.3}
 \contentsline {subsection}{\numberline {3.1}The Radio Module}{39}{subsection.3.1}
 \contentsline {subsection}{\numberline {3.2}The XSquawkBox Module}{40}{subsection.3.2}
