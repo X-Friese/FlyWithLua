@@ -18,26 +18,26 @@ module(..., package.seeall);
 -- Usage: Instead of defining the DataRefs, just insert a line >>require("radio")<<
 -- -- -- -- 8< -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-dataref("COM1", "sim/cockpit/radios/com1_freq_hz", "writable")
-dataref("COM2", "sim/cockpit/radios/com2_freq_hz", "writable")
-dataref("COM1_STDBY", "sim/cockpit/radios/com1_stdby_freq_hz", "writable")
-dataref("COM2_STDBY", "sim/cockpit/radios/com2_stdby_freq_hz", "writable")
+dataref("COM1", "sim/cockpit2/radios/actuators/com1_frequency_hz", "writable")
+dataref("COM2", "sim/cockpit2/radios/actuators/com2_frequency_hz", "writable")
+dataref("COM1_STDBY", "sim/cockpit2/radios/actuators/com1_standby_frequency_hz", "writable")
+dataref("COM2_STDBY", "sim/cockpit2/radios/actuators/com2_standby_frequency_hz", "writable")
 
-dataref("NAV1", "sim/cockpit/radios/nav1_freq_hz", "writable")
-dataref("NAV2", "sim/cockpit/radios/nav2_freq_hz", "writable")
-dataref("NAV1_STDBY", "sim/cockpit/radios/nav1_stdby_freq_hz", "writable")
-dataref("NAV2_STDBY", "sim/cockpit/radios/nav2_stdby_freq_hz", "writable")
+dataref("NAV1", "sim/cockpit2/radios/actuators/nav1_frequency_hz", "writable")
+dataref("NAV2", "sim/cockpit2/radios/actuators/nav2_frequency_hz", "writable")
+dataref("NAV1_STDBY", "sim/cockpit2/radios/actuators/nav1_standby_frequency_hz", "writable")
+dataref("NAV2_STDBY", "sim/cockpit2/radios/actuators/nav2_standby_frequency_hz", "writable")
 
-dataref("ADF1", "sim/cockpit/radios/adf1_freq_hz", "writable")
-dataref("ADF2", "sim/cockpit/radios/adf2_freq_hz", "writable")
-dataref("ADF1_STDBY", "sim/cockpit/radios/adf1_stdby_freq_hz", "writable")
-dataref("ADF2_STDBY", "sim/cockpit/radios/adf2_stdby_freq_hz", "writable")
+dataref("ADF1", "sim/cockpit2/radios/actuators/adf1_frequency_hz", "writable")
+dataref("ADF2", "sim/cockpit2/radios/actuators/adf2_frequency_hz", "writable")
+dataref("ADF1_STDBY", "sim/cockpit2/radios/actuators/adf1_standby_frequency_hz", "writable")
+dataref("ADF2_STDBY", "sim/cockpit2/radios/actuators/adf2_standby_frequency_hz", "writable")
 
-dataref("DME", "sim/cockpit/radios/dme_freq_hz", "writable")
-dataref("DME_STDBY", "sim/cockpit/radios/dme_stdby_freq_hz", "writable")
+dataref("DME", "sim/cockpit2/radios/actuators/dme_frequency_hz", "writable")
+dataref("DME_STDBY", "sim/cockpit2/radios/actuators/dme_standby_frequency_hz", "writable")
 
-dataref("OBS1", "sim/cockpit/radios/nav1_obs_degt", "writable")
-dataref("OBS2", "sim/cockpit/radios/nav2_obs_degt", "writable")
+dataref("OBS1", "sim/cockpit2/radios/actuators/nav1_obs_deg_mag_pilot", "writable")
+dataref("OBS2", "sim/cockpit2/radios/actuators/nav2_obs_deg_mag_pilot", "writable")
 
 dataref("SQUAWK", "sim/cockpit/radios/transponder_code", "writable")
 dataref("TRANSPONDER_MODE", "sim/cockpit/radios/transponder_mode", "writable")
