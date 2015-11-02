@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-//#define PLUGIN_VERSION "2.4.1 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.4.1 stable build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.4.2 nightly build " __DATE__ " " __TIME__
+//#define PLUGIN_VERSION "2.4.1 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -72,6 +72,7 @@
  *          [added] new functions set_pilots_head() and get_pilots_head()
  *  v2.3.0  [added] OpenAL sound support!
  *  v2.3.3  [added] Support for Arcaze USB hardware.
+ *  v2.4.2  [changed] More sound files can be loaded into memory
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -235,7 +236,7 @@ using namespace std; // snagar
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 1600  // this value is set by the length of DataRef sim/joystick/joystick_button_values
-#define MAXSOUNDS 250   // the number of OpelAL sound buffers
+#define MAXSOUNDS 512            // the number of OpelAL sound buffers
 
 
 

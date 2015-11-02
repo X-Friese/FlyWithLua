@@ -85,7 +85,7 @@ function B2D_update()
 		set_button_assignment( Thrustmaster + 22, "FlyWithLua/pilots_head/look_left" )
 		set_button_assignment( Thrustmaster + 18, "FlyWithLua/pilots_head/look_right" )
 		set_button_assignment( Thrustmaster + 16, "FlyWithLua/pilots_head/look_on_instruments" )
-        set_button_assignment( Thrustmaster + 20, "FlyWithLua/cockpit/toggle_HASI" )
+        set_button_assignment( Thrustmaster + 20, "sim/view/night_vision" )
 		set_button_assignment( Thrustmaster + 2, "sim/view/chase" )
 		set_button_assignment( Thrustmaster + 3, "sim/view/chase" )
 	end
