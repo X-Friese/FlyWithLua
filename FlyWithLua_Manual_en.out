@@ -117,156 +117,158 @@
 \BOOKMARK [3][-]{subsubsection.4.2.2}{let\137sound\137loop\( table position, boolean value \)}{subsection.4.2}% 117
 \BOOKMARK [3][-]{subsubsection.4.2.3}{set\137sound\137pitch\( table position, float value \)}{subsection.4.2}% 118
 \BOOKMARK [3][-]{subsubsection.4.2.4}{set\137sound\137gain\( table position, float value \)}{subsection.4.2}% 119
-\BOOKMARK [2][-]{subsection.4.3}{Using the sounds from the sound table}{section.4}% 120
-\BOOKMARK [3][-]{subsubsection.4.3.1}{play\137sound\( table position \)}{subsection.4.3}% 121
-\BOOKMARK [3][-]{subsubsection.4.3.2}{stop\137sound\( table position \)}{subsection.4.3}% 122
-\BOOKMARK [3][-]{subsubsection.4.3.3}{pause\137sound\( table position \)}{subsection.4.3}% 123
-\BOOKMARK [3][-]{subsubsection.4.3.4}{rewind\137sound\( table position \)}{subsection.4.3}% 124
-\BOOKMARK [1][-]{section.5}{OpenGL graphics}{}% 125
-\BOOKMARK [2][-]{subsection.5.1}{Functions of OpenGL}{section.5}% 126
-\BOOKMARK [3][-]{subsubsection.5.1.1}{glBegin\137POINTS\(\)}{subsection.5.1}% 127
-\BOOKMARK [3][-]{subsubsection.5.1.2}{glBegin\137LINES\(\)}{subsection.5.1}% 128
-\BOOKMARK [3][-]{subsubsection.5.1.3}{glBegin\137LINE\137STRIP\(\)}{subsection.5.1}% 129
-\BOOKMARK [3][-]{subsubsection.5.1.4}{glBegin\137LINE\137LOOP\(\)}{subsection.5.1}% 130
-\BOOKMARK [3][-]{subsubsection.5.1.5}{glBegin\137POLYGON\(\)}{subsection.5.1}% 131
-\BOOKMARK [3][-]{subsubsection.5.1.6}{glBegin\137TRIANGLES\(\)}{subsection.5.1}% 132
-\BOOKMARK [3][-]{subsubsection.5.1.7}{glBegin\137TRIANGLE\137STRIP\(\)}{subsection.5.1}% 133
-\BOOKMARK [3][-]{subsubsection.5.1.8}{glBegin\137TRIANGLE\137FAN\(\)}{subsection.5.1}% 134
-\BOOKMARK [3][-]{subsubsection.5.1.9}{glBegin\137QUADS\(\)}{subsection.5.1}% 135
-\BOOKMARK [3][-]{subsubsection.5.1.10}{glBegin\137QUAD\137STRIP\(\)}{subsection.5.1}% 136
-\BOOKMARK [3][-]{subsubsection.5.1.11}{glEnd\(\)}{subsection.5.1}% 137
-\BOOKMARK [3][-]{subsubsection.5.1.12}{glVertex2f\(x, y\)}{subsection.5.1}% 138
-\BOOKMARK [3][-]{subsubsection.5.1.13}{glVertex3f\(x, y, z\)}{subsection.5.1}% 139
-\BOOKMARK [3][-]{subsubsection.5.1.14}{glLineWidth\(width\)}{subsection.5.1}% 140
-\BOOKMARK [3][-]{subsubsection.5.1.15}{glColor3f\(red, green, blue\)}{subsection.5.1}% 141
-\BOOKMARK [3][-]{subsubsection.5.1.16}{glColor4f\(red, green, blue, alpha\)}{subsection.5.1}% 142
-\BOOKMARK [3][-]{subsubsection.5.1.17}{glRectf\(x1, y1, x2, y2\)}{subsection.5.1}% 143
-\BOOKMARK [3][-]{subsubsection.5.1.18}{XPLMSetGraphicsState\(EnableFog, NumberTexUnits, EnableLighting, EnableAlphaTesting, EnableAlphaBlending, EnableDepthTesting, EnableDepthWriting\)}{subsection.5.1}% 144
-\BOOKMARK [1][-]{section.6}{The graphics module}{}% 145
-\BOOKMARK [2][-]{subsection.6.1}{Functions of graphics module}{section.6}% 146
-\BOOKMARK [3][-]{subsubsection.6.1.1}{x\137result, y\137result = graphics.move\137angle\( x, y, angle, length \)}{subsection.6.1}% 147
-\BOOKMARK [3][-]{subsubsection.6.1.2}{graphics.draw\137line\( x1, y1, x2, y2 \)}{subsection.6.1}% 148
-\BOOKMARK [3][-]{subsubsection.6.1.3}{graphics.draw\137rectangle\( x1, y1, x2, y2 \)}{subsection.6.1}% 149
-\BOOKMARK [3][-]{subsubsection.6.1.4}{graphics.draw\137triangle\( x1, y1, x2, y2, x3, y3 \)}{subsection.6.1}% 150
-\BOOKMARK [3][-]{subsubsection.6.1.5}{graphics.set\137color\( red, green, blue, alpha \)}{subsection.6.1}% 151
-\BOOKMARK [3][-]{subsubsection.6.1.6}{graphics.set\137width\( width \)}{subsection.6.1}% 152
-\BOOKMARK [3][-]{subsubsection.6.1.7}{graphics.draw\137angle\137line\( x, y, angle, length \)}{subsection.6.1}% 153
-\BOOKMARK [3][-]{subsubsection.6.1.8}{graphics.draw\137angle\137arrow\( x, y, angle, length, arrowhead's length, line width \)}{subsection.6.1}% 154
-\BOOKMARK [3][-]{subsubsection.6.1.9}{graphics.draw\137circle\( x, y, radius, line width \)}{subsection.6.1}% 155
-\BOOKMARK [3][-]{subsubsection.6.1.10}{graphics.draw\137filled\137circle\( x, y, radius \)}{subsection.6.1}% 156
-\BOOKMARK [3][-]{subsubsection.6.1.11}{graphics.draw\137arc\( x, y, start angle, end angle, radius, line width \)}{subsection.6.1}% 157
-\BOOKMARK [3][-]{subsubsection.6.1.12}{graphics.draw\137filled\137arc\( x, y, start angle, end angle, radius \)}{subsection.6.1}% 158
-\BOOKMARK [3][-]{subsubsection.6.1.13}{graphics.draw\137tick\137mark\( x, y, angle, radius, length, width \)}{subsection.6.1}% 159
-\BOOKMARK [3][-]{subsubsection.6.1.14}{graphics.draw\137outer\137tracer\( x, y, angle, radius, size \)}{subsection.6.1}% 160
-\BOOKMARK [3][-]{subsubsection.6.1.15}{graphics.draw\137inner\137tracer\( x, y, angle, radius, size \)}{subsection.6.1}% 161
-\BOOKMARK [1][-]{section.7}{HUD module}{}% 162
-\BOOKMARK [2][-]{subsection.7.1}{An Interactive HUD}{section.7}% 163
-\BOOKMARK [2][-]{subsection.7.2}{An Example}{section.7}% 164
-\BOOKMARK [2][-]{subsection.7.3}{Functions from HUD module}{section.7}% 165
-\BOOKMARK [3][-]{subsubsection.7.3.1}{HUD.begin\137HUD\( x, y, width, hight, "name", "always" \)}{subsection.7.3}% 166
-\BOOKMARK [3][-]{subsubsection.7.3.2}{HUD.end\137HUD\( \)}{subsection.7.3}% 167
-\BOOKMARK [3][-]{subsubsection.7.3.3}{HUD.create\137element\( "name", x, y, width, hight, red, green, blue, alpha \)}{subsection.7.3}% 168
-\BOOKMARK [3][-]{subsubsection.7.3.4}{HUD.draw\137string\( x, y, fontsize, "string", red, green, blue, alpha \)}{subsection.7.3}% 169
-\BOOKMARK [3][-]{subsubsection.7.3.5}{HUD.draw\137fstring\( x, y, fontsize, "format", "expression", red, green, blue, alpha \)}{subsection.7.3}% 170
-\BOOKMARK [3][-]{subsubsection.7.3.6}{HUD.create\137backlight\137indicator\( x, y, width, hight, "condition", red, green, blue, alpha \)}{subsection.7.3}% 171
-\BOOKMARK [3][-]{subsubsection.7.3.7}{HUD.create\137click\137action\( x, y, width, hight, "action" \)}{subsection.7.3}% 172
-\BOOKMARK [3][-]{subsubsection.7.3.8}{HUD.create\137click\137switch\( x, y, width, hight, "variable", value, alternative value \)}{subsection.7.3}% 173
-\BOOKMARK [3][-]{subsubsection.7.3.9}{HUD.create\137wheel\137action\( x, y, width, hight, "action" \)}{subsection.7.3}% 174
-\BOOKMARK [1][-]{section.8}{XPLMNavigation}{}% 175
-\BOOKMARK [2][-]{subsection.8.1}{Functions from XPLMNavigation}{section.8}% 176
-\BOOKMARK [3][-]{subsubsection.8.1.1}{nav\137reference = XPLMGetFirstNavAid\(\)}{subsection.8.1}% 177
-\BOOKMARK [3][-]{subsubsection.8.1.2}{next\137nav\137reference = XPLMGetNextNavAid\( inNavAidRef \)}{subsection.8.1}% 178
-\BOOKMARK [3][-]{subsubsection.8.1.3}{first\137nav\137reference = XPLMFindFirstNavAidOfType\( inType \)}{subsection.8.1}% 179
-\BOOKMARK [3][-]{subsubsection.8.1.4}{last\137nav\137reference = XPLMFindLastNavAidOfType\( inType \)}{subsection.8.1}% 180
-\BOOKMARK [3][-]{subsubsection.8.1.5}{nav\137reference = XPLMFindNavAid\( inNameFragment, inIDFragment, inLat, inLon, inFrequency, inType\)}{subsection.8.1}% 181
-\BOOKMARK [3][-]{subsubsection.8.1.6}{outType, outLatitude, outLongitude, outHeight, outFrequency, outHeading, outID, outName = XPLMGetNavAidInfo\( inRef \)}{subsection.8.1}% 182
-\BOOKMARK [3][-]{subsubsection.8.1.7}{index\137count = XPLMCountFMSEntries\(\)}{subsection.8.1}% 183
-\BOOKMARK [3][-]{subsubsection.8.1.8}{index = XPLMGetDisplayedFMSEntry\(\)}{subsection.8.1}% 184
-\BOOKMARK [3][-]{subsubsection.8.1.9}{index = XPLMGetDestinationFMSEntry\(\)}{subsection.8.1}% 185
-\BOOKMARK [3][-]{subsubsection.8.1.10}{XPLMSetDisplayedFMSEntry\( inIndex \)}{subsection.8.1}% 186
-\BOOKMARK [3][-]{subsubsection.8.1.11}{XPLMSetDestinationFMSEntry\( inIndex \)}{subsection.8.1}% 187
-\BOOKMARK [3][-]{subsubsection.8.1.12}{outType, outID, outRef, outAltitude, outLat, outLon = XPLMGetFMSEntryInfo\( inIndex \)}{subsection.8.1}% 188
-\BOOKMARK [3][-]{subsubsection.8.1.13}{XPLMSetFMSEntryInfo\( inIndex, inRef, inAltitude\)}{subsection.8.1}% 189
-\BOOKMARK [3][-]{subsubsection.8.1.14}{XPLMSetFMSEntryLatLon\( inIndex, inLat, inLon, inAltitude\)}{subsection.8.1}% 190
-\BOOKMARK [3][-]{subsubsection.8.1.15}{XPLMClearFMSEntry\( inIndex \)}{subsection.8.1}% 191
-\BOOKMARK [1][-]{section.9}{Access HID devices}{}% 192
-\BOOKMARK [2][-]{subsection.9.1}{Pre-defined variables}{section.9}% 193
-\BOOKMARK [3][-]{subsubsection.9.1.1}{NUMBER\137OF\137HID\137DEVICES}{subsection.9.1}% 194
-\BOOKMARK [3][-]{subsubsection.9.1.2}{ALL\137HID\137DEVICES}{subsection.9.1}% 195
-\BOOKMARK [2][-]{subsection.9.2}{HID related functions}{section.9}% 196
-\BOOKMARK [3][-]{subsubsection.9.2.1}{table, number = create\137HID\137table\(\)}{subsection.9.2}% 197
-\BOOKMARK [3][-]{subsubsection.9.2.2}{device = hid\137open\( vendor\137ID, product\137ID \)}{subsection.9.2}% 198
-\BOOKMARK [3][-]{subsubsection.9.2.3}{device = hid\137open\137path\( path \)}{subsection.9.2}% 199
-\BOOKMARK [3][-]{subsubsection.9.2.4}{hid\137close\( device \)}{subsection.9.2}% 200
-\BOOKMARK [3][-]{subsubsection.9.2.5}{hid\137write\( device, report ID, value, ... \)}{subsection.9.2}% 201
-\BOOKMARK [3][-]{subsubsection.9.2.6}{nov, variable, ... = hid\137read\137timeout\( device, nov wanted, milliseconds \)}{subsection.9.2}% 202
-\BOOKMARK [3][-]{subsubsection.9.2.7}{nov, variable, ... = hid\137read\137timeout\( device, nov wanted \)}{subsection.9.2}% 203
-\BOOKMARK [3][-]{subsubsection.9.2.8}{success = hid\137set\137nonblocking\( device, nonblock \)}{subsection.9.2}% 204
-\BOOKMARK [3][-]{subsubsection.9.2.9}{nobw = hid\137send\137feature\137report\( device, report ID, value, ... \)}{subsection.9.2}% 205
-\BOOKMARK [3][-]{subsubsection.9.2.10}{nobw = hid\137send\137filled\137feature\137report\( device, report ID, nobts, value, ... \)}{subsection.9.2}% 206
-\BOOKMARK [3][-]{subsubsection.9.2.11}{nobr, report ID, variable, ... = hid\137get\137feature\137report\( device, novw \)}{subsection.9.2}% 207
-\BOOKMARK [2][-]{subsection.9.3}{The Arcaze USB module}{section.9}% 208
-\BOOKMARK [3][-]{subsubsection.9.3.1}{device = arcaze.open\137first\137device\(\)}{subsection.9.3}% 209
-\BOOKMARK [3][-]{subsubsection.9.3.2}{A1, A2, A3, ..., B19, B20 = arcaze.read\137pins\( device \)}{subsection.9.3}% 210
-\BOOKMARK [3][-]{subsubsection.9.3.3}{ADC1, ADC2, ADC3, ADC4, ADC5, ADC6 = arcaze.read\137ADCs\( device \)}{subsection.9.3}% 211
-\BOOKMARK [3][-]{subsubsection.9.3.4}{E1, E2, E3, ..., E19, E20 = arcaze.read\137encoders\( device \)}{subsection.9.3}% 212
-\BOOKMARK [3][-]{subsubsection.9.3.5}{arcaze.set\137all\137pins\137for\137input\( device \)}{subsection.9.3}% 213
-\BOOKMARK [3][-]{subsubsection.9.3.6}{arcaze.set\137pin\137direction\( device, pin, direction \)}{subsection.9.3}% 214
-\BOOKMARK [3][-]{subsubsection.9.3.7}{arcaze.set\137pin\( device, pin, value \)}{subsection.9.3}% 215
-\BOOKMARK [3][-]{subsubsection.9.3.8}{arcaze.init\137display\( device, address, intensity, scan\137limit \)}{subsection.9.3}% 216
-\BOOKMARK [3][-]{subsubsection.9.3.9}{arcaze.init\137display\( device, address \)}{subsection.9.3}% 217
-\BOOKMARK [3][-]{subsubsection.9.3.10}{arcaze.show\( device, address, mask, value\137string \)}{subsection.9.3}% 218
-\BOOKMARK [1][-]{section.10}{Classic and modern mode}{}% 219
-\BOOKMARK [2][-]{subsection.10.1}{Reading classic functions}{section.10}% 220
-\BOOKMARK [3][-]{subsubsection.10.1.1}{variable = XPLMGetDatai\( DataRef \)}{subsection.10.1}% 221
-\BOOKMARK [3][-]{subsubsection.10.1.2}{variable = XPLMGetDataf\( DataRef \)}{subsection.10.1}% 222
-\BOOKMARK [3][-]{subsubsection.10.1.3}{variable = XPLMGetDatad\( DataRef \)}{subsection.10.1}% 223
-\BOOKMARK [3][-]{subsubsection.10.1.4}{table = XPLMGetDatavi\( DataRef, inIndex, inMax \)}{subsection.10.1}% 224
-\BOOKMARK [3][-]{subsubsection.10.1.5}{table = XPLMGetDatavf\( DataRef \)}{subsection.10.1}% 225
-\BOOKMARK [3][-]{subsubsection.10.1.6}{userdata variable = XPLMFindDataRef\( DataRef Name \)}{subsection.10.1}% 226
-\BOOKMARK [3][-]{subsubsection.10.1.7}{datatype variable = XPLMGetDataRefTypes\( DataRef reference \)}{subsection.10.1}% 227
-\BOOKMARK [2][-]{subsection.10.2}{Writing classic functions}{section.10}% 228
-\BOOKMARK [3][-]{subsubsection.10.2.1}{XPLMSetDatai\( DataRef, variable or value\)}{subsection.10.2}% 229
-\BOOKMARK [3][-]{subsubsection.10.2.2}{XPLMSetDataf\( DataRef, variable or value\)}{subsection.10.2}% 230
-\BOOKMARK [3][-]{subsubsection.10.2.3}{XPLMSetDatad\( DataRef, variable or value\)}{subsection.10.2}% 231
-\BOOKMARK [3][-]{subsubsection.10.2.4}{XPLMSetDatavi\( DataRef, table, inIndex, inMax \)}{subsection.10.2}% 232
-\BOOKMARK [3][-]{subsubsection.10.2.5}{XPLMSetDatavf\( DataRef, table, inIndex, inMax \)}{subsection.10.2}% 233
-\BOOKMARK [1][-]{section.11}{The Lua way to access DataRefs}{}% 234
-\BOOKMARK [2][-]{subsection.11.1}{A magic metatable}{section.11}% 235
-\BOOKMARK [3][-]{subsubsection.11.1.1}{table = dataref\137table\( DataRef \)}{subsection.11.1}% 236
-\BOOKMARK [1][-]{section.12}{Manage your joysticks}{}% 237
-\BOOKMARK [2][-]{subsection.12.1}{Get a basic configuration}{section.12}% 238
-\BOOKMARK [2][-]{subsection.12.2}{Define your sticks}{section.12}% 239
-\BOOKMARK [2][-]{subsection.12.3}{Define type specific assignments}{section.12}% 240
-\BOOKMARK [2][-]{subsection.12.4}{Lua for cockpit builders}{section.12}% 241
-\BOOKMARK [1][-]{section.13}{Understanding PLCs}{}% 242
-\BOOKMARK [1][-]{section.14}{Basic knowledge about DataRefs}{}% 243
-\BOOKMARK [2][-]{subsection.14.1}{What are DataRefs?}{section.14}% 244
-\BOOKMARK [2][-]{subsection.14.2}{Find the right DataRefs}{section.14}% 245
-\BOOKMARK [2][-]{subsection.14.3}{Accessing DataRefs}{section.14}% 246
-\BOOKMARK [2][-]{subsection.14.4}{Observe the DataRef}{section.14}% 247
-\BOOKMARK [1][-]{section.15}{Take Lua into consideration}{}% 248
-\BOOKMARK [2][-]{subsection.15.1}{Strings inside of strings}{section.15}% 249
-\BOOKMARK [2][-]{subsection.15.2}{Multiple line strings}{section.15}% 250
-\BOOKMARK [2][-]{subsection.15.3}{Global or local variables?}{section.15}% 251
-\BOOKMARK [2][-]{subsection.15.4}{Tables are tables}{section.15}% 252
-\BOOKMARK [1][-]{section.16}{Debugging}{}% 253
-\BOOKMARK [1][-]{section.17}{Integrate foreign libraries}{}% 254
-\BOOKMARK [1][-]{section.18}{The new 64-bit architecture}{}% 255
-\BOOKMARK [2][-]{subsection.18.1}{Architecture exclusive script loading}{section.18}% 256
-\BOOKMARK [2][-]{subsection.18.2}{Checking architecture inside a script}{section.18}% 257
-\BOOKMARK [2][-]{subsection.18.3}{64-bit DLLs}{section.18}% 258
-\BOOKMARK [1][-]{section.19}{Q\046A}{}% 259
-\BOOKMARK [2][-]{subsection.19.1}{My script doesn't work. What can I do?}{section.19}% 260
-\BOOKMARK [3][-]{subsubsection.19.1.1}{Check the debug info file and Log.txt}{subsection.19.1}% 261
-\BOOKMARK [3][-]{subsubsection.19.1.2}{Check for conflicts to other scripts}{subsection.19.1}% 262
-\BOOKMARK [3][-]{subsubsection.19.1.3}{I really can't solve it!}{subsection.19.1}% 263
-\BOOKMARK [2][-]{subsection.19.2}{How to ask the developer of FlyWithLua for help?}{section.19}% 264
-\BOOKMARK [2][-]{subsection.19.3}{Is the debug file privacy safe?}{section.19}% 265
-\BOOKMARK [2][-]{subsection.19.4}{Where are the Splines?}{section.19}% 266
-\BOOKMARK [2][-]{subsection.19.5}{Feature requests}{section.19}% 267
-\BOOKMARK [2][-]{subsection.19.6}{Can I store Lua files inside the aircraft's folder?}{section.19}% 268
-\BOOKMARK [2][-]{subsection.19.7}{I want full access to X-Plane's plugin SDK!}{section.19}% 269
-\BOOKMARK [2][-]{subsection.19.8}{Using Lua For Windows}{section.19}% 270
-\BOOKMARK [1][-]{section.20}{Credits}{}% 271
-\BOOKMARK [1][-]{section.21}{License}{}% 272
+\BOOKMARK [3][-]{subsubsection.4.2.5}{unload\137all\137sounds\( \)}{subsection.4.2}% 120
+\BOOKMARK [3][-]{subsubsection.4.2.6}{= replace\137WAV\137file\(table position, filename \)}{subsection.4.2}% 121
+\BOOKMARK [2][-]{subsection.4.3}{Using the sounds from the sound table}{section.4}% 122
+\BOOKMARK [3][-]{subsubsection.4.3.1}{play\137sound\( table position \)}{subsection.4.3}% 123
+\BOOKMARK [3][-]{subsubsection.4.3.2}{stop\137sound\( table position \)}{subsection.4.3}% 124
+\BOOKMARK [3][-]{subsubsection.4.3.3}{pause\137sound\( table position \)}{subsection.4.3}% 125
+\BOOKMARK [3][-]{subsubsection.4.3.4}{rewind\137sound\( table position \)}{subsection.4.3}% 126
+\BOOKMARK [1][-]{section.5}{OpenGL graphics}{}% 127
+\BOOKMARK [2][-]{subsection.5.1}{Functions of OpenGL}{section.5}% 128
+\BOOKMARK [3][-]{subsubsection.5.1.1}{glBegin\137POINTS\(\)}{subsection.5.1}% 129
+\BOOKMARK [3][-]{subsubsection.5.1.2}{glBegin\137LINES\(\)}{subsection.5.1}% 130
+\BOOKMARK [3][-]{subsubsection.5.1.3}{glBegin\137LINE\137STRIP\(\)}{subsection.5.1}% 131
+\BOOKMARK [3][-]{subsubsection.5.1.4}{glBegin\137LINE\137LOOP\(\)}{subsection.5.1}% 132
+\BOOKMARK [3][-]{subsubsection.5.1.5}{glBegin\137POLYGON\(\)}{subsection.5.1}% 133
+\BOOKMARK [3][-]{subsubsection.5.1.6}{glBegin\137TRIANGLES\(\)}{subsection.5.1}% 134
+\BOOKMARK [3][-]{subsubsection.5.1.7}{glBegin\137TRIANGLE\137STRIP\(\)}{subsection.5.1}% 135
+\BOOKMARK [3][-]{subsubsection.5.1.8}{glBegin\137TRIANGLE\137FAN\(\)}{subsection.5.1}% 136
+\BOOKMARK [3][-]{subsubsection.5.1.9}{glBegin\137QUADS\(\)}{subsection.5.1}% 137
+\BOOKMARK [3][-]{subsubsection.5.1.10}{glBegin\137QUAD\137STRIP\(\)}{subsection.5.1}% 138
+\BOOKMARK [3][-]{subsubsection.5.1.11}{glEnd\(\)}{subsection.5.1}% 139
+\BOOKMARK [3][-]{subsubsection.5.1.12}{glVertex2f\(x, y\)}{subsection.5.1}% 140
+\BOOKMARK [3][-]{subsubsection.5.1.13}{glVertex3f\(x, y, z\)}{subsection.5.1}% 141
+\BOOKMARK [3][-]{subsubsection.5.1.14}{glLineWidth\(width\)}{subsection.5.1}% 142
+\BOOKMARK [3][-]{subsubsection.5.1.15}{glColor3f\(red, green, blue\)}{subsection.5.1}% 143
+\BOOKMARK [3][-]{subsubsection.5.1.16}{glColor4f\(red, green, blue, alpha\)}{subsection.5.1}% 144
+\BOOKMARK [3][-]{subsubsection.5.1.17}{glRectf\(x1, y1, x2, y2\)}{subsection.5.1}% 145
+\BOOKMARK [3][-]{subsubsection.5.1.18}{XPLMSetGraphicsState\(EnableFog, NumberTexUnits, EnableLighting, EnableAlphaTesting, EnableAlphaBlending, EnableDepthTesting, EnableDepthWriting\)}{subsection.5.1}% 146
+\BOOKMARK [1][-]{section.6}{The graphics module}{}% 147
+\BOOKMARK [2][-]{subsection.6.1}{Functions of graphics module}{section.6}% 148
+\BOOKMARK [3][-]{subsubsection.6.1.1}{x\137result, y\137result = graphics.move\137angle\( x, y, angle, length \)}{subsection.6.1}% 149
+\BOOKMARK [3][-]{subsubsection.6.1.2}{graphics.draw\137line\( x1, y1, x2, y2 \)}{subsection.6.1}% 150
+\BOOKMARK [3][-]{subsubsection.6.1.3}{graphics.draw\137rectangle\( x1, y1, x2, y2 \)}{subsection.6.1}% 151
+\BOOKMARK [3][-]{subsubsection.6.1.4}{graphics.draw\137triangle\( x1, y1, x2, y2, x3, y3 \)}{subsection.6.1}% 152
+\BOOKMARK [3][-]{subsubsection.6.1.5}{graphics.set\137color\( red, green, blue, alpha \)}{subsection.6.1}% 153
+\BOOKMARK [3][-]{subsubsection.6.1.6}{graphics.set\137width\( width \)}{subsection.6.1}% 154
+\BOOKMARK [3][-]{subsubsection.6.1.7}{graphics.draw\137angle\137line\( x, y, angle, length \)}{subsection.6.1}% 155
+\BOOKMARK [3][-]{subsubsection.6.1.8}{graphics.draw\137angle\137arrow\( x, y, angle, length, arrowhead's length, line width \)}{subsection.6.1}% 156
+\BOOKMARK [3][-]{subsubsection.6.1.9}{graphics.draw\137circle\( x, y, radius, line width \)}{subsection.6.1}% 157
+\BOOKMARK [3][-]{subsubsection.6.1.10}{graphics.draw\137filled\137circle\( x, y, radius \)}{subsection.6.1}% 158
+\BOOKMARK [3][-]{subsubsection.6.1.11}{graphics.draw\137arc\( x, y, start angle, end angle, radius, line width \)}{subsection.6.1}% 159
+\BOOKMARK [3][-]{subsubsection.6.1.12}{graphics.draw\137filled\137arc\( x, y, start angle, end angle, radius \)}{subsection.6.1}% 160
+\BOOKMARK [3][-]{subsubsection.6.1.13}{graphics.draw\137tick\137mark\( x, y, angle, radius, length, width \)}{subsection.6.1}% 161
+\BOOKMARK [3][-]{subsubsection.6.1.14}{graphics.draw\137outer\137tracer\( x, y, angle, radius, size \)}{subsection.6.1}% 162
+\BOOKMARK [3][-]{subsubsection.6.1.15}{graphics.draw\137inner\137tracer\( x, y, angle, radius, size \)}{subsection.6.1}% 163
+\BOOKMARK [1][-]{section.7}{HUD module}{}% 164
+\BOOKMARK [2][-]{subsection.7.1}{An Interactive HUD}{section.7}% 165
+\BOOKMARK [2][-]{subsection.7.2}{An Example}{section.7}% 166
+\BOOKMARK [2][-]{subsection.7.3}{Functions from HUD module}{section.7}% 167
+\BOOKMARK [3][-]{subsubsection.7.3.1}{HUD.begin\137HUD\( x, y, width, hight, "name", "always" \)}{subsection.7.3}% 168
+\BOOKMARK [3][-]{subsubsection.7.3.2}{HUD.end\137HUD\( \)}{subsection.7.3}% 169
+\BOOKMARK [3][-]{subsubsection.7.3.3}{HUD.create\137element\( "name", x, y, width, hight, red, green, blue, alpha \)}{subsection.7.3}% 170
+\BOOKMARK [3][-]{subsubsection.7.3.4}{HUD.draw\137string\( x, y, fontsize, "string", red, green, blue, alpha \)}{subsection.7.3}% 171
+\BOOKMARK [3][-]{subsubsection.7.3.5}{HUD.draw\137fstring\( x, y, fontsize, "format", "expression", red, green, blue, alpha \)}{subsection.7.3}% 172
+\BOOKMARK [3][-]{subsubsection.7.3.6}{HUD.create\137backlight\137indicator\( x, y, width, hight, "condition", red, green, blue, alpha \)}{subsection.7.3}% 173
+\BOOKMARK [3][-]{subsubsection.7.3.7}{HUD.create\137click\137action\( x, y, width, hight, "action" \)}{subsection.7.3}% 174
+\BOOKMARK [3][-]{subsubsection.7.3.8}{HUD.create\137click\137switch\( x, y, width, hight, "variable", value, alternative value \)}{subsection.7.3}% 175
+\BOOKMARK [3][-]{subsubsection.7.3.9}{HUD.create\137wheel\137action\( x, y, width, hight, "action" \)}{subsection.7.3}% 176
+\BOOKMARK [1][-]{section.8}{XPLMNavigation}{}% 177
+\BOOKMARK [2][-]{subsection.8.1}{Functions from XPLMNavigation}{section.8}% 178
+\BOOKMARK [3][-]{subsubsection.8.1.1}{nav\137reference = XPLMGetFirstNavAid\(\)}{subsection.8.1}% 179
+\BOOKMARK [3][-]{subsubsection.8.1.2}{next\137nav\137reference = XPLMGetNextNavAid\( inNavAidRef \)}{subsection.8.1}% 180
+\BOOKMARK [3][-]{subsubsection.8.1.3}{first\137nav\137reference = XPLMFindFirstNavAidOfType\( inType \)}{subsection.8.1}% 181
+\BOOKMARK [3][-]{subsubsection.8.1.4}{last\137nav\137reference = XPLMFindLastNavAidOfType\( inType \)}{subsection.8.1}% 182
+\BOOKMARK [3][-]{subsubsection.8.1.5}{nav\137reference = XPLMFindNavAid\( inNameFragment, inIDFragment, inLat, inLon, inFrequency, inType\)}{subsection.8.1}% 183
+\BOOKMARK [3][-]{subsubsection.8.1.6}{outType, outLatitude, outLongitude, outHeight, outFrequency, outHeading, outID, outName = XPLMGetNavAidInfo\( inRef \)}{subsection.8.1}% 184
+\BOOKMARK [3][-]{subsubsection.8.1.7}{index\137count = XPLMCountFMSEntries\(\)}{subsection.8.1}% 185
+\BOOKMARK [3][-]{subsubsection.8.1.8}{index = XPLMGetDisplayedFMSEntry\(\)}{subsection.8.1}% 186
+\BOOKMARK [3][-]{subsubsection.8.1.9}{index = XPLMGetDestinationFMSEntry\(\)}{subsection.8.1}% 187
+\BOOKMARK [3][-]{subsubsection.8.1.10}{XPLMSetDisplayedFMSEntry\( inIndex \)}{subsection.8.1}% 188
+\BOOKMARK [3][-]{subsubsection.8.1.11}{XPLMSetDestinationFMSEntry\( inIndex \)}{subsection.8.1}% 189
+\BOOKMARK [3][-]{subsubsection.8.1.12}{outType, outID, outRef, outAltitude, outLat, outLon = XPLMGetFMSEntryInfo\( inIndex \)}{subsection.8.1}% 190
+\BOOKMARK [3][-]{subsubsection.8.1.13}{XPLMSetFMSEntryInfo\( inIndex, inRef, inAltitude\)}{subsection.8.1}% 191
+\BOOKMARK [3][-]{subsubsection.8.1.14}{XPLMSetFMSEntryLatLon\( inIndex, inLat, inLon, inAltitude\)}{subsection.8.1}% 192
+\BOOKMARK [3][-]{subsubsection.8.1.15}{XPLMClearFMSEntry\( inIndex \)}{subsection.8.1}% 193
+\BOOKMARK [1][-]{section.9}{Access HID devices}{}% 194
+\BOOKMARK [2][-]{subsection.9.1}{Pre-defined variables}{section.9}% 195
+\BOOKMARK [3][-]{subsubsection.9.1.1}{NUMBER\137OF\137HID\137DEVICES}{subsection.9.1}% 196
+\BOOKMARK [3][-]{subsubsection.9.1.2}{ALL\137HID\137DEVICES}{subsection.9.1}% 197
+\BOOKMARK [2][-]{subsection.9.2}{HID related functions}{section.9}% 198
+\BOOKMARK [3][-]{subsubsection.9.2.1}{table, number = create\137HID\137table\(\)}{subsection.9.2}% 199
+\BOOKMARK [3][-]{subsubsection.9.2.2}{device = hid\137open\( vendor\137ID, product\137ID \)}{subsection.9.2}% 200
+\BOOKMARK [3][-]{subsubsection.9.2.3}{device = hid\137open\137path\( path \)}{subsection.9.2}% 201
+\BOOKMARK [3][-]{subsubsection.9.2.4}{hid\137close\( device \)}{subsection.9.2}% 202
+\BOOKMARK [3][-]{subsubsection.9.2.5}{hid\137write\( device, report ID, value, ... \)}{subsection.9.2}% 203
+\BOOKMARK [3][-]{subsubsection.9.2.6}{nov, variable, ... = hid\137read\137timeout\( device, nov wanted, milliseconds \)}{subsection.9.2}% 204
+\BOOKMARK [3][-]{subsubsection.9.2.7}{nov, variable, ... = hid\137read\137timeout\( device, nov wanted \)}{subsection.9.2}% 205
+\BOOKMARK [3][-]{subsubsection.9.2.8}{success = hid\137set\137nonblocking\( device, nonblock \)}{subsection.9.2}% 206
+\BOOKMARK [3][-]{subsubsection.9.2.9}{nobw = hid\137send\137feature\137report\( device, report ID, value, ... \)}{subsection.9.2}% 207
+\BOOKMARK [3][-]{subsubsection.9.2.10}{nobw = hid\137send\137filled\137feature\137report\( device, report ID, nobts, value, ... \)}{subsection.9.2}% 208
+\BOOKMARK [3][-]{subsubsection.9.2.11}{nobr, report ID, variable, ... = hid\137get\137feature\137report\( device, novw \)}{subsection.9.2}% 209
+\BOOKMARK [2][-]{subsection.9.3}{The Arcaze USB module}{section.9}% 210
+\BOOKMARK [3][-]{subsubsection.9.3.1}{device = arcaze.open\137first\137device\(\)}{subsection.9.3}% 211
+\BOOKMARK [3][-]{subsubsection.9.3.2}{A1, A2, A3, ..., B19, B20 = arcaze.read\137pins\( device \)}{subsection.9.3}% 212
+\BOOKMARK [3][-]{subsubsection.9.3.3}{ADC1, ADC2, ADC3, ADC4, ADC5, ADC6 = arcaze.read\137ADCs\( device \)}{subsection.9.3}% 213
+\BOOKMARK [3][-]{subsubsection.9.3.4}{E1, E2, E3, ..., E19, E20 = arcaze.read\137encoders\( device \)}{subsection.9.3}% 214
+\BOOKMARK [3][-]{subsubsection.9.3.5}{arcaze.set\137all\137pins\137for\137input\( device \)}{subsection.9.3}% 215
+\BOOKMARK [3][-]{subsubsection.9.3.6}{arcaze.set\137pin\137direction\( device, pin, direction \)}{subsection.9.3}% 216
+\BOOKMARK [3][-]{subsubsection.9.3.7}{arcaze.set\137pin\( device, pin, value \)}{subsection.9.3}% 217
+\BOOKMARK [3][-]{subsubsection.9.3.8}{arcaze.init\137display\( device, address, intensity, scan\137limit \)}{subsection.9.3}% 218
+\BOOKMARK [3][-]{subsubsection.9.3.9}{arcaze.init\137display\( device, address \)}{subsection.9.3}% 219
+\BOOKMARK [3][-]{subsubsection.9.3.10}{arcaze.show\( device, address, mask, value\137string \)}{subsection.9.3}% 220
+\BOOKMARK [1][-]{section.10}{Classic and modern mode}{}% 221
+\BOOKMARK [2][-]{subsection.10.1}{Reading classic functions}{section.10}% 222
+\BOOKMARK [3][-]{subsubsection.10.1.1}{variable = XPLMGetDatai\( DataRef \)}{subsection.10.1}% 223
+\BOOKMARK [3][-]{subsubsection.10.1.2}{variable = XPLMGetDataf\( DataRef \)}{subsection.10.1}% 224
+\BOOKMARK [3][-]{subsubsection.10.1.3}{variable = XPLMGetDatad\( DataRef \)}{subsection.10.1}% 225
+\BOOKMARK [3][-]{subsubsection.10.1.4}{table = XPLMGetDatavi\( DataRef, inIndex, inMax \)}{subsection.10.1}% 226
+\BOOKMARK [3][-]{subsubsection.10.1.5}{table = XPLMGetDatavf\( DataRef \)}{subsection.10.1}% 227
+\BOOKMARK [3][-]{subsubsection.10.1.6}{userdata variable = XPLMFindDataRef\( DataRef Name \)}{subsection.10.1}% 228
+\BOOKMARK [3][-]{subsubsection.10.1.7}{datatype variable = XPLMGetDataRefTypes\( DataRef reference \)}{subsection.10.1}% 229
+\BOOKMARK [2][-]{subsection.10.2}{Writing classic functions}{section.10}% 230
+\BOOKMARK [3][-]{subsubsection.10.2.1}{XPLMSetDatai\( DataRef, variable or value\)}{subsection.10.2}% 231
+\BOOKMARK [3][-]{subsubsection.10.2.2}{XPLMSetDataf\( DataRef, variable or value\)}{subsection.10.2}% 232
+\BOOKMARK [3][-]{subsubsection.10.2.3}{XPLMSetDatad\( DataRef, variable or value\)}{subsection.10.2}% 233
+\BOOKMARK [3][-]{subsubsection.10.2.4}{XPLMSetDatavi\( DataRef, table, inIndex, inMax \)}{subsection.10.2}% 234
+\BOOKMARK [3][-]{subsubsection.10.2.5}{XPLMSetDatavf\( DataRef, table, inIndex, inMax \)}{subsection.10.2}% 235
+\BOOKMARK [1][-]{section.11}{The Lua way to access DataRefs}{}% 236
+\BOOKMARK [2][-]{subsection.11.1}{A magic metatable}{section.11}% 237
+\BOOKMARK [3][-]{subsubsection.11.1.1}{table = dataref\137table\( DataRef \)}{subsection.11.1}% 238
+\BOOKMARK [1][-]{section.12}{Manage your joysticks}{}% 239
+\BOOKMARK [2][-]{subsection.12.1}{Get a basic configuration}{section.12}% 240
+\BOOKMARK [2][-]{subsection.12.2}{Define your sticks}{section.12}% 241
+\BOOKMARK [2][-]{subsection.12.3}{Define type specific assignments}{section.12}% 242
+\BOOKMARK [2][-]{subsection.12.4}{Lua for cockpit builders}{section.12}% 243
+\BOOKMARK [1][-]{section.13}{Understanding PLCs}{}% 244
+\BOOKMARK [1][-]{section.14}{Basic knowledge about DataRefs}{}% 245
+\BOOKMARK [2][-]{subsection.14.1}{What are DataRefs?}{section.14}% 246
+\BOOKMARK [2][-]{subsection.14.2}{Find the right DataRefs}{section.14}% 247
+\BOOKMARK [2][-]{subsection.14.3}{Accessing DataRefs}{section.14}% 248
+\BOOKMARK [2][-]{subsection.14.4}{Observe the DataRef}{section.14}% 249
+\BOOKMARK [1][-]{section.15}{Take Lua into consideration}{}% 250
+\BOOKMARK [2][-]{subsection.15.1}{Strings inside of strings}{section.15}% 251
+\BOOKMARK [2][-]{subsection.15.2}{Multiple line strings}{section.15}% 252
+\BOOKMARK [2][-]{subsection.15.3}{Global or local variables?}{section.15}% 253
+\BOOKMARK [2][-]{subsection.15.4}{Tables are tables}{section.15}% 254
+\BOOKMARK [1][-]{section.16}{Debugging}{}% 255
+\BOOKMARK [1][-]{section.17}{Integrate foreign libraries}{}% 256
+\BOOKMARK [1][-]{section.18}{The new 64-bit architecture}{}% 257
+\BOOKMARK [2][-]{subsection.18.1}{Architecture exclusive script loading}{section.18}% 258
+\BOOKMARK [2][-]{subsection.18.2}{Checking architecture inside a script}{section.18}% 259
+\BOOKMARK [2][-]{subsection.18.3}{64-bit DLLs}{section.18}% 260
+\BOOKMARK [1][-]{section.19}{Q\046A}{}% 261
+\BOOKMARK [2][-]{subsection.19.1}{My script doesn't work. What can I do?}{section.19}% 262
+\BOOKMARK [3][-]{subsubsection.19.1.1}{Check the debug info file and Log.txt}{subsection.19.1}% 263
+\BOOKMARK [3][-]{subsubsection.19.1.2}{Check for conflicts to other scripts}{subsection.19.1}% 264
+\BOOKMARK [3][-]{subsubsection.19.1.3}{I really can't solve it!}{subsection.19.1}% 265
+\BOOKMARK [2][-]{subsection.19.2}{How to ask the developer of FlyWithLua for help?}{section.19}% 266
+\BOOKMARK [2][-]{subsection.19.3}{Is the debug file privacy safe?}{section.19}% 267
+\BOOKMARK [2][-]{subsection.19.4}{Where are the Splines?}{section.19}% 268
+\BOOKMARK [2][-]{subsection.19.5}{Feature requests}{section.19}% 269
+\BOOKMARK [2][-]{subsection.19.6}{Can I store Lua files inside the aircraft's folder?}{section.19}% 270
+\BOOKMARK [2][-]{subsection.19.7}{I want full access to X-Plane's plugin SDK!}{section.19}% 271
+\BOOKMARK [2][-]{subsection.19.8}{Using Lua For Windows}{section.19}% 272
+\BOOKMARK [1][-]{section.20}{Credits}{}% 273
+\BOOKMARK [1][-]{section.21}{License}{}% 274

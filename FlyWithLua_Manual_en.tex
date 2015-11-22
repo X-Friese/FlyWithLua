@@ -1207,6 +1207,39 @@ set_sound_pitch(cc_prepare_landing_sound, 1.8)
 set_sound_gain(cc_prepare_landing_sound, 0.25)
 \end{lstlisting}
 
+\subsubsection{ unload\_all\_sounds( )}
+
+This will unload all sounds from memory. After this the sound system table is enpty and all your stored index values are useless.
+
+FlyWithLua uses this function to clean up the memory before reloading all scripts. You should avoid to directly access this cleanup, if you want to share your script, or other scripts of the users can be crashed by killing there sounds.
+
+\subsubsection{ = replace\_WAV\_file(\emph{table position}, \emph{filename} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your file is stored into the sound system table. Index values starts from 0 (Zero).
+	\item \emph{filename} = The name of the WAV file to load.
+\end{enumerate}
+
+This function loads a WAV file into a given position of the sound system table. The position must contain a sound file, as this function only replaces the WAV buffer in memory. You can't create a new element in the sound system table.
+
+You can use this to adjust the content of sounds. This is an example:
+
+\begin{lstlisting}
+...
+
+-- load sound "Good morning Sir"
+welcome_sound = load_WAV_file(SCRIPT_DIRECTORY .. "sounds/goodmorning.wav")
+
+...
+
+function teach_copilot_Frisian()
+    replace_WAV_file(welcome_sound, SCRIPT_DIRECTORY .. "sounds/moinmoin.wav")
+end
+\end{lstlisting}
+
+
+
+
 \newpage
 \subsection{Using the sounds from the sound table}
 

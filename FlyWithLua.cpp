@@ -236,7 +236,7 @@ using namespace std; // snagar
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 1600  // this value is set by the length of DataRef sim/joystick/joystick_button_values
-#define MAXSOUNDS 512            // the number of OpelAL sound buffers
+#define MAXSOUNDS 100            // the number of OpelAL sound buffers
 
 
 
@@ -2313,7 +2313,7 @@ static int LuaMeasureString(lua_State *L)
 
 static int LuaCrashTheSim(lua_State *L)
 {
-    XPLMSpeakString("Oh, no! Please replace the user. This one is too stupid! Do you really think we crash the simulater? Killing your joysticks instead.");
+    XPLMSpeakString("Oh, no! Please replace the user. This one is too stupid! Do you really think we crash the simulator? Killing your joysticks instead.");
     int EveryThingIsZero[1600] = {0};
     XPLMSetDatavi(gJoystickButtonAssignments, EveryThingIsZero, 0, 1600);
     XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 100);
@@ -5148,6 +5148,77 @@ static int LuaSetSoundGain(lua_State *L)
     return 0;
 }
 
+static int LuaUnloadAllSounds(lua_State *L)
+{
+    // release memory for OpenAL buffers
+    if (OpenALTableLastElement > -1)
+    {
+        for (int i = 0; i <= OpenALTableLastElement; i++)
+        {
+            alDeleteSources(1, &OpenALSources[i]);
+            alDeleteBuffers(1, &OpenALBuffers[i]);
+        }
+    }
+    OpenALTableLastElement = -1;
+    return 0;
+}
+
+static int LuaReplaceWAVFile(lua_State *L)
+{
+    int             SourceNo;
+
+    if (!lua_isnumber(L, 1))
+    {
+        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        LuaIsRunning = false;
+        return 0;
+    }
+    SourceNo = lua_tointeger(L, 1);
+    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    {
+        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        LuaIsRunning = false;
+        return 0;
+    }
+    if (!lua_isstring(L, 2))
+    {
+        logMsg(logToAll, "FlyWithLua Error: Missing filename of WAV file to load. You will have to give a string.");
+        LuaIsRunning = false;
+        return 0;
+    }
+    char FileNameToLoad[NORMALSTRING];
+    strcpy(FileNameToLoad, lua_tostring(L, 2));
+    if (++OpenALTableLastElement >= MAXSOUNDS)
+
+    // free memory
+    alDeleteSources(1, &OpenALSources[SourceNo]);
+    alDeleteBuffers(1, &OpenALBuffers[SourceNo]);
+
+    // fill the debug table with information
+    OpenALTable[SourceNo].filename = FileNameToLoad;
+
+    // the following code comes from the SDK example
+    ALfloat	zero[3] = { 0 } ;
+
+	// Generate source and load a buffer of audio.
+	alGenSources(1, &OpenALSources[SourceNo]);
+	OpenALBuffers[SourceNo] = load_wave(FileNameToLoad);
+	logMsg(logToDevCon, string("FlyWithLua: Replaced sound by new file \"").append(FileNameToLoad).append("\"."));
+	CHECK_ERR();
+
+	// Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
+	// sound parameters. This doesn't play the sound - it's just one-time initialization.
+	alSourcei(OpenALSources[SourceNo],AL_BUFFER,OpenALBuffers[SourceNo]);
+	alSourcef(OpenALSources[SourceNo],AL_PITCH,OpenALTable[SourceNo].pitch);
+	alSourcef(OpenALSources[SourceNo],AL_GAIN,OpenALTable[SourceNo].gain);
+	alSourcei(OpenALSources[SourceNo],AL_LOOPING,OpenALTable[SourceNo].loop);
+	alSourcefv(OpenALSources[SourceNo],AL_POSITION, zero);
+	alSourcefv(OpenALSources[SourceNo],AL_VELOCITY, zero);
+	CHECK_ERR();
+
+    return 0;
+}
+
 
 void RegisterCoreCFunctionsToLua(lua_State *L)
 {
@@ -5285,6 +5356,8 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "let_sound_loop", LuaLetSoundLoop);
     lua_register(L, "set_sound_pitch", LuaSetSoundPitch);
     lua_register(L, "set_sound_gain", LuaSetSoundGain);
+    lua_register(L, "unload_all_sounds", LuaUnloadAllSounds);
+    lua_register(L, "replace_WAV_file", LuaReplaceWAVFile);
 }
 
 // sort DataRefTable by name and index of the DataRef
