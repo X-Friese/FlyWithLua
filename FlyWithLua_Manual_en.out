@@ -118,7 +118,7 @@
 \BOOKMARK [3][-]{subsubsection.4.2.3}{set\137sound\137pitch\( table position, float value \)}{subsection.4.2}% 118
 \BOOKMARK [3][-]{subsubsection.4.2.4}{set\137sound\137gain\( table position, float value \)}{subsection.4.2}% 119
 \BOOKMARK [3][-]{subsubsection.4.2.5}{unload\137all\137sounds\( \)}{subsection.4.2}% 120
-\BOOKMARK [3][-]{subsubsection.4.2.6}{= replace\137WAV\137file\(table position, filename \)}{subsection.4.2}% 121
+\BOOKMARK [3][-]{subsubsection.4.2.6}{replace\137WAV\137file\(table position, filename \)}{subsection.4.2}% 121
 \BOOKMARK [2][-]{subsection.4.3}{Using the sounds from the sound table}{section.4}% 122
 \BOOKMARK [3][-]{subsubsection.4.3.1}{play\137sound\( table position \)}{subsection.4.3}% 123
 \BOOKMARK [3][-]{subsubsection.4.3.2}{stop\137sound\( table position \)}{subsection.4.3}% 124

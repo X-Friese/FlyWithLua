@@ -118,7 +118,7 @@
 \contentsline {subsubsection}{\numberline {4.2.3}set\_sound\_pitch( \emph {table position}, \emph {float value} )}{43}{subsubsection.4.2.3}
 \contentsline {subsubsection}{\numberline {4.2.4}set\_sound\_gain( \emph {table position}, \emph {float value} )}{43}{subsubsection.4.2.4}
 \contentsline {subsubsection}{\numberline {4.2.5}unload\_all\_sounds( )}{43}{subsubsection.4.2.5}
-\contentsline {subsubsection}{\numberline {4.2.6}= replace\_WAV\_file(\emph {table position}, \emph {filename} )}{44}{subsubsection.4.2.6}
+\contentsline {subsubsection}{\numberline {4.2.6}replace\_WAV\_file(\emph {table position}, \emph {filename} )}{44}{subsubsection.4.2.6}
 \contentsline {subsection}{\numberline {4.3}Using the sounds from the sound table}{45}{subsection.4.3}
 \contentsline {subsubsection}{\numberline {4.3.1}play\_sound( \emph {table position} )}{45}{subsubsection.4.3.1}
 \contentsline {subsubsection}{\numberline {4.3.2}stop\_sound( \emph {table position} )}{45}{subsubsection.4.3.2}
