@@ -4849,6 +4849,22 @@ static int      LuaCreateCommand(lua_State *L)
     return 0;
 }
 
+static int      LuaExecuteCommand(lua_State *L)
+{
+    // usage: execute_command( "name" )
+    if (!(lua_isstring(L, 1) ))
+    {
+        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function execute_command().");
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    XPLMCommandRef ref = XPLMFindCommand( lua_tostring(L, 1) );
+    XPLMCommandOnce(ref);
+
+    return 0;
+}
+
 static int      Luadirectory_to_table(lua_State *L)
 {
     char            DirectoryPath[LONGSTRING] = "";
@@ -5325,6 +5341,7 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "XPLMSetDatavf", LuaXPLMSetDatavf);
     lua_register(L, "XPLMGetDataRefTypes", LuaXPLMGetDataRefTypes);
     lua_register(L, "create_command", LuaCreateCommand);
+    lua_register(L, "execute_command", LuaExecuteCommand);
     lua_register(L, "directory_to_table", Luadirectory_to_table);
     lua_register(L, "peek", Luapeek);
     lua_register(L, "poke", Luapoke);
