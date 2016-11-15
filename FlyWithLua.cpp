@@ -3,7 +3,7 @@
 // --------------------------------------------------
 
 //#define PLUGIN_VERSION "2.4.2 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.4.3 stable build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.4.4 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -74,6 +74,7 @@
  *  v2.3.3  [added] Support for Arcaze USB hardware.
  *  v2.4.2  [changed] More sound files can be loaded into memory
  *  v2.4.3  [added] sounds can be replaced in memory
+ *  v2.4.4  [changed] new axis assignments in X-Plane 10.5x added to function set_axis_assignment()
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -2718,6 +2719,17 @@ static int LuaSetAxisAssignment(lua_State *L)
         CommandRefIdWanted = 42;
     if (CommandWanted == "view zoom")
         CommandRefIdWanted = 43;
+    if (CommandWanted == "camera left/right")
+        CommandRefIdWanted = 44;
+    if (CommandWanted == "camera up/down")
+        CommandRefIdWanted = 45;
+    if (CommandWanted == "camera zoom")
+        CommandRefIdWanted = 46;
+    if (CommandWanted == "gun/bomb left/right")
+        CommandRefIdWanted = 47;
+    if (CommandWanted == "gun/bomb up/down")
+        CommandRefIdWanted = 48;
+
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 
