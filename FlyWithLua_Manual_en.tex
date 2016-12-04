@@ -708,7 +708,6 @@ Execute a simulator given command only one time.
 
 Write a string into the \verb|Log.txt| file in X-Plane's main directory. You can take a look into the log file by assigning a button to the simulator function \verb|"sim/operation/dev_console"|. Or you choose the viewing toggle from the specials menu.
 
-\newpage
 \subsubsection{XSBSpeakString( "\emph{string}" )}
 
 \begin{enumerate}
@@ -717,6 +716,15 @@ Write a string into the \verb|Log.txt| file in X-Plane's main directory. You can
 
 Write a string into the XSquawkBox. The string will not be send to other pilots or controllers when connected to VATSIM. Only to give you an easy way to print notes on the screen.
 
+\subsubsection{XPLMSpeakString( "\emph{string}" )}
+
+\begin{enumerate}
+	\item \emph{string} = What you want to say.
+\end{enumerate}
+
+Write a string onto the screen for a few seconds and speaks the string if text-to-speak is enabled. This function will return immediately, the string will be spoken asynchronously. If you fire up multiple strings at once, you will get a confusing mix. So take care of timing.
+
+\newpage
 \subsubsection{print( "\emph{string}" )}
 
 \begin{enumerate}
