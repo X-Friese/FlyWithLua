@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-//#define PLUGIN_VERSION "2.4.2 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.4.4 stable build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.5.0 nightly build " __DATE__ " " __TIME__
+//#define PLUGIN_VERSION "2.4.4 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -1831,6 +1831,26 @@ void PushDataRefToLuaVariable(  char*           VariableWantedCString,
         lua_setglobal(FWLLua, VariableWantedCString);
         return;
     }
+
+    // we have a new mixed DataRef type "number" since X-Plane 11
+    if (DataRefTypeIdWanted == (xplmType_Int | xplmType_Double | xplmType_Float))
+    {
+        float ValueOfDataRef = XPLMGetDataf(DataRefIdWanted);
+        lua_pushnumber(FWLLua, ValueOfDataRef);
+        lua_setglobal(FWLLua, VariableWantedCString);
+        return;
+    }
+
+
+    if (DataRefTypeIdWanted == (xplmType_FloatArray | xplmType_IntArray))
+    {
+        float ValueOfDataRef;
+        XPLMGetDatavf(DataRefIdWanted, &ValueOfDataRef, IndexWanted, 1);
+        lua_pushnumber(FWLLua, ValueOfDataRef);
+        lua_setglobal(FWLLua, VariableWantedCString);
+        return;
+    }
+
 
     logMsg(logToAll, string("FlyWithLua Error: The type of the DataRef variable \"").append(VariableWantedCString).append("\" is unknown or impossible."));
     LuaIsRunning = false;
@@ -5497,6 +5517,14 @@ void DebugLua( void )
             else if (DataRefTable[i].DataRefTypeId == xplmType_Data)
             {
                 DebugFile << "string).\n";
+            }
+            else if (DataRefTable[i].DataRefTypeId == (xplmType_Int | xplmType_Float | xplmType_Double))
+            {
+                DebugFile << "number).\n";
+            }
+            else if (DataRefTable[i].DataRefTypeId == (xplmType_IntArray | xplmType_FloatArray))
+            {
+                DebugFile << "number array, index = " << DataRefTable[i].Index << ").\n";
             }
             else
             {
