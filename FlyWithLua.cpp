@@ -2595,8 +2595,20 @@ static int LuaClearAllButtonAssignments(lua_State *L)
 
 static int LuaClearAllAxisAssignments(lua_State *L)
 {
-    int EveryThingIsZero[100] = {0};
-    XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 100);
+    int                         VersionXP, VersionSDK;
+    XPLMHostApplicationID       HostID;
+    XPLMGetVersions(&VersionXP, &VersionSDK, &HostID);
+
+    if (VersionXP < 11000)
+    {
+        int EveryThingIsZero[100] = {0};
+        XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 100);
+    }
+    else
+    {
+        int EveryThingIsZero[250] = {0};
+        XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 250);
+    }
     return 0;
 }
 
