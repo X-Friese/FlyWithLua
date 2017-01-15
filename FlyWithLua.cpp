@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-#define PLUGIN_VERSION "2.5.0 nightly build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.5.1 nightly build " __DATE__ " " __TIME__
 //#define PLUGIN_VERSION "2.4.4 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
