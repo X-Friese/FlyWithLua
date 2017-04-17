@@ -1,7 +1,7 @@
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Script:  anti rollover brake
--- Version: 1.1
--- Build:   2015-02-01
+-- Version: 1.2
+-- Build:   2017-04-16
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Description:
 -- Providing a custom command to use the brakes: FlyWithLua/flight_controls/ARB
@@ -36,7 +36,7 @@ local acf_num_engines = dataref_table("sim/aircraft/engine/acf_num_engines")
 local yoke_heading_ratio = dataref_table("sim/joystick/yoke_heading_ratio")  -- range: -1.0 .. +1.0
 
 -- ground steering helper variables
-local ARB_is_braking = false
+ARB_is_braking = false
 ground_steering_helper_is_on = true
 
 -- number of engines
@@ -46,12 +46,12 @@ local noe = acf_num_engines[0] - 1
 function start_ARB()
     -- let other scripts know you are braking
     ARB_is_braking = true
-    -- don't act when slower than 20m/s
-    if groundspeed[0] < 20 then return end
-    -- deploy speedbrakes full
-    if plane_has_speedbrakes then sbrkrqst[0] = 1 end
     -- retract flaps
     if plane_has_flaps then flaprqst[0] = 0 end
+    -- don't act when slower than 15m/s
+    if groundspeed[0] < 15 then return end
+    -- deploy speedbrakes full
+    if plane_has_speedbrakes then sbrkrqst[0] = 1 end
 end
 
 -- continue braking
@@ -78,25 +78,8 @@ function do_ARB()
         end
     end
     
-    -- left and right brake power calculation
-    local left_brake_power
-    local right_brake_power
-    if yoke_heading_ratio[0] < 0 then
-        left_brake_power = -yoke_heading_ratio[0] + full_brake_power
-        if left_brake_power > 1 then left_brake_power = 1 end
-        right_brake_power = full_brake_power
-    else
-        left_brake_power = full_brake_power
-        right_brake_power = yoke_heading_ratio[0] + full_brake_power
-        if right_brake_power > 1 then right_brake_power = 1 end
-    end
-
-    -- we brake left/right and do not use the parkbrake
-    parkbrake[0] = 0
-
-    -- brake!!!
-    l_brake_add[0] = left_brake_power
-    r_brake_add[0] = right_brake_power
+    -- we brake using the parkbrake DataRef
+    parkbrake[0] = full_brake_power * 0.5
 end
 
 function stop_ARB()
@@ -109,14 +92,13 @@ function stop_ARB()
         end
     end
     -- release brakes
-    l_brake_add[0] = 0
-    r_brake_add[0] = 0
+    parkbrake[0] = 0
     -- say goodby to brakes
     ARB_is_braking = false
 end
 
 -- create the command
-create_command("FlyWithLua/flight_controls/ARB", "anti roll brake assistance", "start_ARB()", "do_ARB()", "stop_ARB()")
+create_command("FlyWithLua/flight_controls/ARB", "anti rollover brake assistance", "start_ARB()", "do_ARB()", "stop_ARB()")
 
 function draw_brakes()
     -- should we draw the info?

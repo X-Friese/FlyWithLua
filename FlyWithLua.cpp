@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
 // --------------------------------------------------
 
-#define PLUGIN_VERSION "2.5.1 nightly build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.5.3 nightly build " __DATE__ " " __TIME__
 //#define PLUGIN_VERSION "2.4.4 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
@@ -6400,20 +6400,23 @@ PLUGIN_API int XPluginEnable(void)
 
     XPLMRegisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void *) "FWLWindowDrawer");
 
-    // create the plugin menu
+    // create the FlyWithLua menu inside the plugin menu
     if (FlyWithLuaMenuItem < 0) FlyWithLuaMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "FlyWithLua", NULL, 1);
     FlyWithLuaMenuId = XPLMCreateMenu("FlyWithLua", XPLMFindPluginsMenu(), FlyWithLuaMenuItem, FlyWithLuaMenuHandler, NULL);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Reload all Lua script files", (void *)"Reload", 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+
+    // create the macro and ATC menus inside the FlyWithLua menu
+    if (MacroMenuItem < 0) MacroMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua Macros", NULL, 1);
+    MacroMenuId = XPLMCreateMenu("FlyWithLua Macros", FlyWithLuaMenuId, MacroMenuItem, MacroMenuHandler, NULL);
+    if (ATCMenuItem < 0) ATCMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua ATC", NULL, 1);
+    ATCMenuId = XPLMCreateMenu("FlyWithLua ATC", FlyWithLuaMenuId, ATCMenuItem, MacroMenuHandler, NULL);
+
+    // add some diagnostic menu items
+    XPLMAppendMenuSeparator(FlyWithLuaMenuId);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Write Debug file", (void *)"Debug", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Stop the Lua engine", (void *)"Stop", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Try to resume Lua engine (not recommended)", (void *)"Resume", 1);
-
-    // create the macro and ATC menus
-    if (MacroMenuItem < 0) MacroMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "FlyWithLua Macros", NULL, 1);
-    MacroMenuId = XPLMCreateMenu("FlyWithLua Macros", XPLMFindPluginsMenu(), MacroMenuItem, MacroMenuHandler, NULL);
-    if (ATCMenuItem < 0) ATCMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "FlyWithLua ATC", NULL, 1);
-    ATCMenuId = XPLMCreateMenu("FlyWithLua ATC", XPLMFindPluginsMenu(), ATCMenuItem, MacroMenuHandler, NULL);
 
     // init the XSB connection
     XSBPluginId = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");

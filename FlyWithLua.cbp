@@ -44,8 +44,8 @@
 					<Add library="Opengl32" />
 					<Add library="XPLM" />
 					<Add library="XPWidgets" />
-					<Add library="GLUT_for_Windows\gl\glut32.lib" />
-					<Add library="C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib" />
+					<Add library="GLUT_for_Windows/gl/glut32.lib" />
+					<Add library="C:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win32/OpenAL32.lib" />
 					<Add directory="include" />
 					<Add directory="../SDK201/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />
@@ -86,10 +86,10 @@
 					<Add library="Opengl32" />
 					<Add library="XPLM" />
 					<Add library="XPWidgets" />
-					<Add library="GLUT_for_Windows\gl\glut32.lib" />
-					<Add library="C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib" />
+					<Add library="GLUT_for_Windows/gl/glut32.lib" />
+					<Add library="C:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win32/OpenAL32.lib" />
 					<Add directory="include" />
-					<Add directory="../SDK212/SDK/Libraries/Win" />
+					<Add directory="../SDK213/SDK/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />
 				</Linker>
 			</Target>
@@ -97,14 +97,14 @@
 				<Option output="FlyWithLua/64/win.xpl" prefix_auto="0" extension_auto="0" />
 				<Option object_output="Release213_64" />
 				<Option type="3" />
-				<Option compiler="gcc64" />
+				<Option compiler="gnu_gcc_64_compiler" />
 				<Compiler>
 					<Add option="-O3" />
 					<Add option="-Wshadow" />
 					<Add option="-Wfloat-equal" />
 					<Add option="-pedantic" />
-					<Add option="-std=c++11" />
 					<Add option="-w" />
+					<Add option="-std=c++11" />
 					<Add option="-m64" />
 					<Add option="-fexceptions" />
 					<Add option="-fpermissive" />
@@ -124,32 +124,33 @@
 					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
 					<Add directory="../SDK213/SDK/CHeaders/Widgets" />
 					<Add directory="GLUT_for_Windows" />
-					<Add directory="C:/Program Files/mingw-builds/x64-4.8.1-posix-seh-rev5/mingw64/bin" />
+					<Add directory="C:/Program Files/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/bin" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-m64" />
 					<Add option="-static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic" />
 					<Add library="Opengl32" />
 					<Add library="XPLM_64" />
 					<Add library="XPWidgets_64" />
-					<Add library="GLUT_for_Windows\gl\glut64.lib" />
-					<Add library="C:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win64\OpenAL32.lib" />
+					<Add library="GLUT_for_Windows/gl/glut64.lib" />
+					<Add library="C:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win64/OpenAL32.lib" />
 					<Add directory="include64" />
-					<Add directory="../SDK212/SDK/Libraries/Win" />
+					<Add directory="../SDK213/SDK/Libraries/Win" />
 					<Add directory="GLUT_for_Windows" />
-					<Add directory="C:/Program Files/mingw-builds/x64-4.8.1-posix-seh-rev5/mingw64/bin" />
+					<Add directory="C:/Program Files/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/bin" />
 				</Linker>
 				<ExtraCommands>
-					<Add after='xcopy /Y FlyWithLua\32\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
-					<Add after='xcopy /Y FlyWithLua\64\win.xpl &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after='xcopy /Y FlyWithLua\32\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\32&quot;' />
+					<Add after='xcopy /Y FlyWithLua\64\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
 					<Add after='xcopy /Y &quot;*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
 					<Add after='xcopy /Y &quot;..\FWL_Docs\*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
-					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Scripts\*.lua&quot; &quot;FlyWithLua\Scripts (disabled)\&quot;' />
-					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Internals\*.*&quot; &quot;FlyWithLua\Internals\&quot;' />
-					<Add after='xcopy /Y &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
-					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Scripts\*.lua&quot; &quot;FlyWithLua\Scripts (disabled)\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Internals\*.*&quot; &quot;FlyWithLua\Internals\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
+					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
 					<Add after="xcopy /Y include64\lua51.dll FlyWithLua\64" />
-					<Add after='xcopy /Y include\lua51.dll &quot;S:\X-Plane 10\Resources\plugins\FlyWithLua\32&quot;' />
+					<Add after='xcopy /Y include\lua51.dll &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\32&quot;' />
 					<Add after="xcopy /Y include\lua51.dll FlyWithLua\32" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.epub" />

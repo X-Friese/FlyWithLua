@@ -221,3 +221,139 @@
 	<stdlib.h>
 	"hidapi.h"
 
+1490636351 source:s:\development\github\flywithlua\flywithlua.cpp
+	<windows.h>
+	<unistd.h>
+	"XPLMPlugin.h"
+	"XPLMDisplay.h"
+	"XPLMGraphics.h"
+	"XPLMProcessing.h"
+	"XPLMDataAccess.h"
+	"XPLMMenus.h"
+	"XPLMUtilities.h"
+	"XPWidgets.h"
+	"XPStandardWidgets.h"
+	"XPLMScenery.h"
+	"XPLMNavigation.h"
+	"XPLMPlanes.h"
+	<iostream>
+	<fstream>
+	<sstream>
+	<string>
+	<string.h>
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<time.h>
+	<wchar.h>
+	"XSBComDefs.h"
+	<gl/GL.h>
+	<gl/glut.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<GL/glut.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GLUT/glut.h>
+	<Carbon/Carbon.h>
+	"OpenAL/al.h"
+	"OpenAL/alc.h"
+	<hidapi.h>
+	<lua.hpp>
+
+1490636731 s:\development\github\sdk213\sdk\cheaders\xplm\xplmplugin.h
+	"XPLMDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\xplm\xplmdefs.h
+	<windows.h>
+	<stdint.h>
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\xplm\xplmdisplay.h
+	"XPLMDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\xplm\xplmgraphics.h
+	"XPLMDefs.h"
+
+1490636731 s:\development\github\sdk213\sdk\cheaders\xplm\xplmprocessing.h
+	"XPLMDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\xplm\xplmdataaccess.h
+	"XPLMDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\xplm\xplmmenus.h
+	"XPLMDefs.h"
+
+1490636731 s:\development\github\sdk213\sdk\cheaders\xplm\xplmutilities.h
+	"XPLMDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\widgets\xpwidgets.h
+	"XPWidgetDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\widgets\xpwidgetdefs.h
+	"XPLMDefs.h"
+
+1490636730 s:\development\github\sdk213\sdk\cheaders\widgets\xpstandardwidgets.h
+	"XPWidgetDefs.h"
+
+1490636731 s:\development\github\sdk213\sdk\cheaders\xplm\xplmscenery.h
+	"XPLMDefs.h"
+
+1490636731 s:\development\github\sdk213\sdk\cheaders\xplm\xplmnavigation.h
+	"XPLMDefs.h"
+
+1490636731 s:\development\github\sdk213\sdk\cheaders\xplm\xplmplanes.h
+	"XPLMDefs.h"
+
+1490636352 s:\development\github\flywithlua\include64\xsbcomdefs.h
+
+1490636352 s:\development\github\flywithlua\glut_for_windows\gl\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
+1490636352 s:\development\github\flywithlua\openal\al.h
+
+1490636352 s:\development\github\flywithlua\openal\alc.h
+
+1490636352 s:\development\github\flywithlua\include64\hidapi.h
+	<wchar.h>
+
+1490636352 s:\development\github\flywithlua\include64\lua.hpp
+	"lua.h"
+	"lauxlib.h"
+	"lualib.h"
+	"luajit.h"
+
+1490636352 s:\development\github\flywithlua\include64\lua.h
+	<stdarg.h>
+	<stddef.h>
+	"luaconf.h"
+
+1490636352 s:\development\github\flywithlua\include64\luaconf.h
+	<limits.h>
+	<stddef.h>
+	<assert.h>
+
+1490636352 s:\development\github\flywithlua\include64\lauxlib.h
+	<stddef.h>
+	<stdio.h>
+	"lua.h"
+
+1490636352 s:\development\github\flywithlua\include64\lualib.h
+	"lua.h"
+
+1490636352 s:\development\github\flywithlua\include64\luajit.h
+	"lua.h"
+
+1490636352 source:s:\development\github\flywithlua\include64\hid.c
+	<windows.h>
+	<ntdef.h>
+	<winbase.h>
+	<ntdef.h>
+	<setupapi.h>
+	<winioctl.h>
+	<hidsdi.h>
+	<stdio.h>
+	<stdlib.h>
+	"hidapi.h"
+
