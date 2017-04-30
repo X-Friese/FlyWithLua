@@ -2650,6 +2650,10 @@ static int reverse_yes = 1;
 
 static int LuaSetAxisAssignment(lua_State *L)
 {
+    int                         VersionXP, VersionSDK;
+    XPLMHostApplicationID       HostID;
+    XPLMGetVersions(&VersionXP, &VersionSDK, &HostID);
+
     int CommandRefIdWanted = 0;
     if (!(lua_isstring(L, 3) && lua_isstring(L, 2) && lua_isnumber(FWLLua, 1)))
     {
@@ -2657,9 +2661,15 @@ static int LuaSetAxisAssignment(lua_State *L)
         return 0;
     }
     int AxisNumber = lua_tointeger(L, 1);
-    if (AxisNumber < 0 || AxisNumber > 99)
+
+    if ((AxisNumber < 0 || AxisNumber > 99) && (VersionXP < 11000))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Axis number has to be from 0 to 99.");
+        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Before X-Plane 11 axis number has to be from 0 to 99.");
+        return 0;
+    }
+    else if (AxisNumber < 0 || AxisNumber > 249)
+    {
+        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Since X-Plane 11 axis number has to be from 0 to 249.");
         return 0;
     }
     string CommandWanted = lua_tostring(L, 2);
