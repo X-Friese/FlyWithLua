@@ -19,6 +19,10 @@ function bubble(x, y, title, ...)
 	x = x - 10
 	y = y + 10
 	title = title or "FlyWithLua"
+
+	-- negative values are not allowed
+	if x < 0 then x = 0 end
+	if y < 0 then y = 0 end
 	
 	-- measure the bubble
 	local bubble_hight = 35 + select("#", ...) * 12
@@ -78,6 +82,10 @@ function big_bubble(x, y, title, ...)
 	y = y + 10
 	title = title or "FlyWithLua"
 	
+	-- negative values are not allowed
+	if x < 0 then x = 0 end
+	if y < 0 then y = 0 end
+	
 	-- measure the bubble
 	local bubble_hight = 40 + select("#", ...) * 15
 	local bubble_width = measure_string(title, "Helvetica_18")
@@ -136,6 +144,10 @@ function huge_bubble(x, y, title, ...)
 	x = x - 10
 	y = y + 10
 	title = title or "FlyWithLua"
+	
+	-- negative values are not allowed
+	if x < 0 then x = 0 end
+	if y < 0 then y = 0 end
 	
 	-- measure the bubble
 	local bubble_hight = 50 + select("#", ...) * 20
