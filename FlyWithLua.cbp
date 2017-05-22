@@ -10,90 +10,7 @@
 			</notes>
 		</Option>
 		<Build>
-			<Target title="Win32 SDK200">
-				<Option output="FlyWithLua/XP9/win.xpl" prefix_auto="0" extension_auto="0" />
-				<Option object_output="Release200" />
-				<Option type="3" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-O2" />
-					<Add option="-Wshadow" />
-					<Add option="-Wfloat-equal" />
-					<Add option="-pedantic" />
-					<Add option="-Wextra" />
-					<Add option="-Wall" />
-					<Add option="-W" />
-					<Add option="-fexceptions" />
-					<Add option="-DWIN32" />
-					<Add option="-DNDEBUG" />
-					<Add option="-D_WINDOWS" />
-					<Add option="-D_MBCS" />
-					<Add option="-D_USRDLL" />
-					<Add option="-DCustomCommands_EXPORTS" />
-					<Add option="-DSIMDATA_EXPORTS" />
-					<Add option="-DIBM=1" />
-					<Add option="-DXPLM200=1" />
-					<Add directory="include" />
-					<Add directory="../SDK201/CHeaders/XPLM" />
-					<Add directory="../SDK201/CHeaders/Wrappers" />
-					<Add directory="../SDK201/CHeaders/Widgets" />
-					<Add directory="GLUT_for_Windows" />
-				</Compiler>
-				<Linker>
-					<Add option="-s" />
-					<Add library="Opengl32" />
-					<Add library="XPLM" />
-					<Add library="XPWidgets" />
-					<Add library="GLUT_for_Windows/gl/glut32.lib" />
-					<Add library="C:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win32/OpenAL32.lib" />
-					<Add directory="include" />
-					<Add directory="../SDK201/Libraries/Win" />
-					<Add directory="GLUT_for_Windows" />
-				</Linker>
-			</Target>
-			<Target title="Win32 SDK213">
-				<Option output="FlyWithLua/32/win.xpl" prefix_auto="0" extension_auto="0" />
-				<Option object_output="Release213" />
-				<Option type="3" />
-				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-O2" />
-					<Add option="-Wshadow" />
-					<Add option="-Wfloat-equal" />
-					<Add option="-pedantic" />
-					<Add option="-Wextra" />
-					<Add option="-Wall" />
-					<Add option="-W" />
-					<Add option="-fexceptions" />
-					<Add option="-DWIN32" />
-					<Add option="-DNDEBUG" />
-					<Add option="-D_WINDOWS" />
-					<Add option="-D_MBCS" />
-					<Add option="-D_USRDLL" />
-					<Add option="-DCustomCommands_EXPORTS" />
-					<Add option="-DSIMDATA_EXPORTS" />
-					<Add option="-DIBM=1" />
-					<Add option="-DXPLM200=1" />
-					<Add option="-DXPLM210=1" />
-					<Add directory="include" />
-					<Add directory="../SDK213/SDK/CHeaders/XPLM" />
-					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
-					<Add directory="../SDK213/SDK/CHeaders/Widgets" />
-					<Add directory="GLUT_for_Windows" />
-				</Compiler>
-				<Linker>
-					<Add option="-s" />
-					<Add library="Opengl32" />
-					<Add library="XPLM" />
-					<Add library="XPWidgets" />
-					<Add library="GLUT_for_Windows/gl/glut32.lib" />
-					<Add library="C:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win32/OpenAL32.lib" />
-					<Add directory="include" />
-					<Add directory="../SDK213/SDK/Libraries/Win" />
-					<Add directory="GLUT_for_Windows" />
-				</Linker>
-			</Target>
-			<Target title="Win64 SDK213">
+			<Target title="X-Plane 11">
 				<Option output="FlyWithLua/64/win.xpl" prefix_auto="0" extension_auto="0" />
 				<Option object_output="Release213_64" />
 				<Option type="3" />
@@ -141,7 +58,6 @@
 					<Add directory="C:/Program Files/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/bin" />
 				</Linker>
 				<ExtraCommands>
-					<Add after='xcopy /Y FlyWithLua\32\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\32&quot;' />
 					<Add after='xcopy /Y FlyWithLua\64\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
 					<Add after='xcopy /Y &quot;*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
 					<Add after='xcopy /Y &quot;..\FWL_Docs\*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
@@ -150,8 +66,6 @@
 					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
 					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
 					<Add after="xcopy /Y include64\lua51.dll FlyWithLua\64" />
-					<Add after='xcopy /Y include\lua51.dll &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\32&quot;' />
-					<Add after="xcopy /Y include\lua51.dll FlyWithLua\32" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.epub" />
 					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.pdf" />
@@ -165,76 +79,46 @@
 			<Add library="setupapi" />
 		</Linker>
 		<Unit filename="FlyWithLua.cpp" />
-		<Unit filename="include64/XSBComDefs.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/glut64.lib">
-			<Option target="Win64 SDK213" />
-		</Unit>
+		<Unit filename="include64/XSBComDefs.h" />
+		<Unit filename="include64/glut64.lib" />
 		<Unit filename="include64/hid.c">
 			<Option compilerVar="CC" />
-			<Option target="Win64 SDK213" />
 		</Unit>
-		<Unit filename="include64/hidapi.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/lauxlib.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/lua.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/lua.hpp">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/lua51.dll">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/luaconf.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/luajit.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
-		<Unit filename="include64/lualib.h">
-			<Option target="Win64 SDK213" />
-		</Unit>
+		<Unit filename="include64/hidapi.h" />
+		<Unit filename="include64/lauxlib.h" />
+		<Unit filename="include64/lua.h" />
+		<Unit filename="include64/lua.hpp" />
+		<Unit filename="include64/lua51.dll" />
+		<Unit filename="include64/luaconf.h" />
+		<Unit filename="include64/luajit.h" />
+		<Unit filename="include64/lualib.h" />
 		<Unit filename="include/XSBComDefs.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/hid.c">
 			<Option compilerVar="CC" />
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/hidapi.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/lauxlib.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/lua.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/lua.hpp">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/luaconf.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/luajit.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="include/lualib.h">
-			<Option target="Win32 SDK200" />
-			<Option target="Win32 SDK213" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Extensions>
 			<code_completion />

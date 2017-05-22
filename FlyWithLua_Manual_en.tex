@@ -446,7 +446,71 @@ Binds a Lua variable to a DataRef. The connection will be writealbe if you say \
 	\item \emph{index} = The index of an array DataRef.
 \end{enumerate}
 
-Binds a Lua variable to a DataRef. The connection will be writalbe if you say \verb|"writable"| as the third argument and if the DataRef is writable. For array DataRefs use a fourth argument, the index starting at 0 (Zero). It will bind the element at the given index. It will not bind an array as a Lua table. Maybe you can bind Lua tables to array DataRefs in later versions of this plugin.
+Binds a Lua variable to a DataRef. The connection will be writalbe if you say \verb|"writable"| as the third argument and if the DataRef is writable. For array DataRefs use a fourth argument, the index starting at 0 (Zero). It will bind the element at the given index. It will not bind an array as a Lua table.
+
+
+\subsubsection{\emph{table} = dataref\_table( "\emph{DataRef name}")}
+
+\begin{enumerate}
+	\item \emph{table} = Name of the Lua variable representing the DataRef. The variable will be a Lua table, access it like an anrray with index starting at 0 (Zero). 
+	\item \emph{DataRef name} = Name of the DataRef. Look at the \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{listing of all DataRefs}.
+\end{enumerate}
+
+This function will create a table variable to access a DataRef. You can use it for any type of DataRef, no matter if the DataRef is an array or not. Here are some examples:
+
+\begin{lstlisting}
+-- the battery DataRef is an array of up to 8 battery switches
+battery = dataref_table("sim/cockpit2/electrical/battery_on")
+
+-- now we turn on the first battery of the plane
+battery[0] = 1
+
+-- but it will work on non-array DataRefs too
+COM1FREQ = dataref_table("sim/cockpit/radios/com1_freq_hz")
+
+-- switch it to UNICOM
+COM1FREQ[0] = 12280
+\end{lstlisting}
+
+\subsubsection{define\_shared\_DataRef("\emph{DataRef name}", "\emph{DataRef type}")}
+
+\begin{enumerate}
+	\item \emph{DataRef name} = Name of the DataRef. Look at the \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{listing of all DataRefs}.
+	\item \emph{DataRef type} = Type of the DataRef. This type is a string argument and can be\\ \verb|"Int"|, \verb|"Float"|, \verb|"IntArray"|, \verb|"FloatArray"|, \verb|"Double"| or \verb|"Data"|.
+\end{enumerate}
+
+With this function you will create a DataRef of the given type if it does not exist. If it exist and the type is different, you will get an error message. If it still exists with the same type, this command will do nothing. Shared DataRefs should help you interacting with other plugins.
+
+
+\subsubsection{\emph{table} = create\_dataref\_table( "\emph{DataRef name}", "\emph{DataRef type}")}
+
+\begin{enumerate}
+	\item \emph{table} = Name of the Lua variable representing the DataRef. The variable will be a Lua table, access it like an anrray with index starting at 0 (Zero). 
+	\item \emph{DataRef name} = Name of the DataRef. Look at the \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{listing of all DataRefs}.
+	\item \emph{DataRef type} = Type of the DataRef. This type is a string argument and can be\\ \verb|"Int"|, \verb|"Float"|, \verb|"IntArray"|, \verb|"FloatArray"|, \verb|"Double"| or \verb|"Data"|.
+\end{enumerate}
+
+Here you have the best way to create a new DataRef and connect it to a table variable inside Lua.
+
+This is an example:
+
+\begin{lstlisting}
+-- A string must be created as a "Data" type
+my_welcome_string = create_dataref_table("FlyWithLua/useless_samples/welcome", "Data")
+
+-- no matter if it looks like a table, just index the first element to fill it
+my_welcome_string[0] = "Hello World!"
+
+-- another example, now we create an integer value
+the_answer = create_dataref_table("FlyWithLua/useless_samples/the_answer", "Int")
+the_answer[0] = 42
+
+-- in times of alternative facts, we can have multiple answers
+all_answers = create_dataref_table("FlyWithLua/useless_samples/answers", "IntArray")
+all_answers[0] = 42
+all_answers[1] = 2017
+\end{lstlisting}
+
 
 \subsubsection{\emph{DataRef name}, \emph{Index}, \emph{readonly}, \emph{DataRef type}, \emph{DataRef ID} = get\_DataRef\_binding( "\emph{variable name}" )}
 

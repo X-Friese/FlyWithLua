@@ -34,3 +34,5 @@ end
 
 -- this function has to be executed every frame
 do_every_frame("set_ignition_key_for_single_piston_aircraft()")
+
+create_switch(13, "sim/cockpit2/electrical/battery_on")

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="http://fl95.de/">
+<rte>
+	<name>FL95_EDDN_NACH_EDDL</name>
+	<rtept lat="49.498333333315" lon="11.078333333327">
+		<ele>318.82</ele>
+		<name>A_EDDN</name>
+		<cmt>NURNBERG</cmt>
+	</rtept>
+	<rtept lat="49.586666666652" lon="10.960000000024">
+		<name>B_N</name>
+		<cmt>NOVEMBER</cmt>
+	</rtept>
+	<rtept lat="49.778333333333" lon="10.101666666667">
+		<name>C_AK A</name>
+		<cmt>AK A3 A7</cmt>
+	</rtept>
+	<rtept lat="50.161666666667" lon="9.9883333333333">
+		<name>D_ENTL</name>
+		<cmt>ENTLANG A7</cmt>
+	</rtept>
+	<rtept lat="50.308333333333" lon="9.7383333333333">
+		<name>E_ENTL</name>
+		<cmt>ENTLANG A7</cmt>
+	</rtept>
+	<rtept lat="50.592455555556" lon="9.5721694444444">
+		<name>F_FUL</name>
+		<cmt>FUL VOR DME</cmt>
+	</rtept>
+	<rtept lat="50.873333333319" lon="8.8133333333085">
+		<ele>253.9</ele>
+		<name>G_EDFN</name>
+		<cmt>MARBURG</cmt>
+	</rtept>
+	<rtept lat="51.169999999971" lon="7.8916666666541">
+		<name>H_GMH</name>
+		<cmt>GMH VOR DME</cmt>
+	</rtept>
+	<rtept lat="51.19166666668" lon="6.941666666651">
+		<name>I_E</name>
+		<cmt>ECHO</cmt>
+	</rtept>
+	<rtept lat="51.281666666692" lon="6.7566666666619">
+		<ele>44.81</ele>
+		<name>J_EDDL</name>
+		<cmt>DUSSELDORF</cmt>
+	</rtept>
+</rte>
+</gpx>

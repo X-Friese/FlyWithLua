@@ -1,9 +1,9 @@
-// --------------------------------------------------
-//  FlyWithLua Plugin for X-Plane 10 (and X-Plane 9)
-// --------------------------------------------------
+// ----------------------------------
+//  FlyWithLua Plugin for X-Plane 11
+// ----------------------------------
 
-#define PLUGIN_VERSION "2.5.3 nightly build " __DATE__ " " __TIME__
-//#define PLUGIN_VERSION "2.4.4 stable build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.0 nightly build " __DATE__ " " __TIME__
+//#define PLUGIN_VERSION "2.6.0 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -75,6 +75,8 @@
  *  v2.4.2  [changed] More sound files can be loaded into memory
  *  v2.4.3  [added] sounds can be replaced in memory
  *  v2.4.4  [changed] new axis assignments in X-Plane 10.5x added to function set_axis_assignment()
+ *  v2.6.0  [added] now we can create custom DataRefs
+ *          [changed] from version 2.6.0 this plugin will only support X-Plane 11
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -239,6 +241,18 @@ using namespace std; // snagar
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 1600  // this value is set by the length of DataRef sim/joystick/joystick_button_values
 #define MAXSOUNDS 100            // the number of OpelAL sound buffers
+
+
+// Do we want to access a forbidden DataRef?
+#define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) if (strncmp(DataRefWanted, "sim/private/", 12)==0) \
+    { \
+        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" can not be accessed from FlyWithLua, as it is a private DataRef. Reading or writing private DataRefs is prohibited by Laminar Research.")); \
+        logMsg(logToAll, string("FlyWithLua Info: Ben Subnik told us this:    (Please see http://developer.x-plane.com/2014/05/art-controls-are-an-active-volcano/ for more details.)")); \
+        logMsg(logToAll, string("FlyWithLua Info: The art controls are not a public interface to make X-Plane add-ons. They are an internal development tool. They are unsupported, undocumented, unsafe, and most importantly subject to change with every patch of X-Plane.")); \
+        logMsg(logToAll, string("FlyWithLua Info: If you create an add-on that requires reading or writing the art controls, you can expect that your add-on will stop working when X-Plane is updated. When your add-on breaks, please do not complain or file a bug.")); \
+        LuaIsRunning = false; \
+        return 0; \
+    }
 
 
 
@@ -861,6 +875,7 @@ static XPLMDataRef	FWLPilotsHeadZ = XPLMFindDataRef("sim/graphics/view/pilots_he
 static XPLMDataRef	FWLPilotsHeadHeading = XPLMFindDataRef("sim/graphics/view/pilots_head_psi");
 static XPLMDataRef	FWLPilotsHeadPitch = XPLMFindDataRef("sim/graphics/view/pilots_head_the");
 static XPLMDataRef	FWLViewType = XPLMFindDataRef("sim/graphics/view/view_type");
+
 
 // Don't want to use buttons? Here is a nice little menu
 void         FlyWithLuaMenuHandler(void *, void *);
@@ -2823,6 +2838,8 @@ static int LuaGet(lua_State *L)
         return 0;
     }
     strcpy(DataRefWanted, lua_tostring(L, 1));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
@@ -2894,6 +2911,8 @@ static int LuaSet(lua_State *L)
         return 0;
     }
     strcpy(DataRefWanted, lua_tostring(L, 1));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
@@ -2937,6 +2956,9 @@ static int LuaSetArray(lua_State *L)
         return 0;
     }
     strcpy(DataRefWanted, lua_tostring(L, 1));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
+
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
@@ -2992,6 +3014,81 @@ static int LuaGetDataRefBinding(lua_State *L)
     return 0;
 }
 
+static int LuaDefineSharedDataRef(lua_State *L)
+{
+    char                DataRefNameWanted[NORMALSTRING];
+    char                DataRefTypeWanted[NORMALSTRING];
+    XPLMDataTypeID      XPLMDataRefTypeWanted;
+
+    if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
+    {
+        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function define_shared_DataRef().");
+        LuaIsRunning = false;
+        return 0;
+    }
+    strcpy(DataRefNameWanted, lua_tostring(L, 1));
+    strcpy(DataRefTypeWanted, lua_tostring(L, 2));
+
+    // check if the name is okay
+    if (strncmp(DataRefNameWanted, "sim/", 4) == 0)
+    {
+        logMsg(logToAll, "FlyWithLua Error: You are not allowed to define a shared DataRef starting with \"sim/\".");
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    // check the type
+    if (strcmp(DataRefTypeWanted, "Int") == 0)
+    {
+        XPLMDataRefTypeWanted = xplmType_Int;
+    }
+    else if (strcmp(DataRefTypeWanted, "IntArray") == 0)
+    {
+        XPLMDataRefTypeWanted = xplmType_IntArray;
+    }
+    else if (strcmp(DataRefTypeWanted, "Float") == 0)
+    {
+        XPLMDataRefTypeWanted = xplmType_Float;
+    }
+    else if (strcmp(DataRefTypeWanted, "FloatArray") == 0)
+    {
+        XPLMDataRefTypeWanted = xplmType_FloatArray;
+    }
+    else if (strcmp(DataRefTypeWanted, "Double") == 0)
+    {
+        XPLMDataRefTypeWanted = xplmType_Double;
+    }
+    else if (strcmp(DataRefTypeWanted, "Data") == 0)
+    {
+        XPLMDataRefTypeWanted = xplmType_Data;
+    }
+    else
+    {
+        logMsg(logToAll, string("FlyWithLua Error: Unknown type for the shared DataRef \"").append(DataRefNameWanted).append("\"."));
+        logMsg(logToAll, string("FlyWithLua Error: We do not know what \"").append(DataRefTypeWanted).append("\" is."));
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    // share the data
+    if (XPLMShareData(DataRefNameWanted, XPLMDataRefTypeWanted, NULL, NULL) == 0)
+    {
+        logMsg(logToAll, string("FlyWithLua Error: Wrong type for the existing shared DataRef \"").append(DataRefNameWanted).append("\"."));
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    // publish the new shared DataRef to the DataRefEditor
+    #define MSG_ADD_DATAREF 0x01000000
+    XPLMPluginID DREPluginID = XPLMFindPluginBySignature("xplanesdk.examples.DataRefEditor");
+	if (DREPluginID != XPLM_NO_PLUGIN_ID)
+    {
+		XPLMSendMessageToPlugin(DREPluginID, MSG_ADD_DATAREF, DataRefNameWanted);
+	}
+
+    return 0;
+}
+
 static int LuaDataRef(lua_State *L)
 {
     char    VariableWanted[NORMALSTRING];
@@ -3033,6 +3130,9 @@ static int LuaDataRef(lua_State *L)
     {
         IndexWanted = lua_tointeger(L, 4);
     }
+
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     // Did we already know the variable?
     if (DataRefTableLastElement >= 0)
@@ -3143,6 +3243,8 @@ static int LuaCreateSwitch(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3215,6 +3317,9 @@ static int LuaCreateAxisMedian(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
+
     IndexWanted = lua_tointeger(L, 1);
 
     // get the actual value of the axis
@@ -3255,6 +3360,8 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3321,6 +3428,8 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3387,6 +3496,8 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3471,6 +3582,8 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3555,6 +3668,8 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3643,6 +3758,8 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3731,6 +3848,8 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3819,6 +3938,8 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
     }
 
     strcpy(DataRefWanted, lua_tostring(L, 2));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -4483,6 +4604,9 @@ static int      LuaXPLMFindDataRef(lua_State *L)
     XPLMDataRef     DataRefID;
 
     strcpy(DataRefWanted, luaL_checkstring(L, 1));
+    // Do we want to access a forbidden DataRef?
+    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
+
     DataRefID = XPLMFindDataRef(DataRefWanted);
     if (DataRefID != NULL)
     {
@@ -5243,7 +5367,6 @@ static int LuaReplaceWAVFile(lua_State *L)
     }
     char FileNameToLoad[NORMALSTRING];
     strcpy(FileNameToLoad, lua_tostring(L, 2));
-    if (++OpenALTableLastElement >= MAXSOUNDS)
 
     // free memory
     alDeleteSources(1, &OpenALSources[SourceNo]);
@@ -5288,6 +5411,8 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "XPLMSpeakString", LuaSpeakString);
     lua_register(L, "DataRef", LuaDataRef);
     lua_register(L, "dataref", LuaDataRef);
+    lua_register(L, "define_shared_DataRef", LuaDefineSharedDataRef);
+    lua_register(L, "define_shared_dataref", LuaDefineSharedDataRef);
     lua_register(L, "get_dataref_binding", LuaGetDataRefBinding);
     lua_register(L, "get_DataRef_binding", LuaGetDataRefBinding);
     lua_register(L, "create_switch", LuaCreateSwitch);
@@ -6411,15 +6536,15 @@ PLUGIN_API int XPluginEnable(void)
     XPLMRegisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void *) "FWLWindowDrawer");
 
     // create the FlyWithLua menu inside the plugin menu
-    if (FlyWithLuaMenuItem < 0) FlyWithLuaMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "FlyWithLua", NULL, 1);
+    if (FlyWithLuaMenuItem < 0) FlyWithLuaMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "FlyWithLua", (void *)"None", 1);
     FlyWithLuaMenuId = XPLMCreateMenu("FlyWithLua", XPLMFindPluginsMenu(), FlyWithLuaMenuItem, FlyWithLuaMenuHandler, NULL);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Reload all Lua script files", (void *)"Reload", 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
 
     // create the macro and ATC menus inside the FlyWithLua menu
-    if (MacroMenuItem < 0) MacroMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua Macros", NULL, 1);
+    if (MacroMenuItem < 0) MacroMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua Macros", (void *)"None", 1);
     MacroMenuId = XPLMCreateMenu("FlyWithLua Macros", FlyWithLuaMenuId, MacroMenuItem, MacroMenuHandler, NULL);
-    if (ATCMenuItem < 0) ATCMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua ATC", NULL, 1);
+    if (ATCMenuItem < 0) ATCMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua ATC", (void *)"None", 1);
     ATCMenuId = XPLMCreateMenu("FlyWithLua ATC", FlyWithLuaMenuId, ATCMenuItem, MacroMenuHandler, NULL);
 
     // add some diagnostic menu items
@@ -7016,6 +7141,11 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef       inCommand,
 
 void MacroMenuHandler(void * mRef, void * iRef)
 {
+    if (!strcmp((char *) iRef, "None"))
+    {
+        logMsg(logToDevCon, "FlyWithLua: User clicked on a menu item with no function defined.");
+        return;
+    }
     int MacroIndex = (std::size_t) iRef; // snagar
     if (MacroTable[MacroIndex].IsSwitch)
     {

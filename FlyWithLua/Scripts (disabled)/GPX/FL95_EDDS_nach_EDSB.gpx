@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="http://fl95.de/">
+<rte>
+	<name>FL95_EDDS_NACH_EDSB</name>
+	<rtept lat="48.689999999998" lon="9.2216666666813">
+		<ele>388.92</ele>
+		<name>A_EDDS</name>
+		<cmt>STUTTGART</cmt>
+	</rtept>
+	<rtept lat="48.613333333323" lon="9.2316666666699">
+		<name>B_S</name>
+		<cmt>SIERRA</cmt>
+	</rtept>
+	<rtept lat="48.381586111111" lon="8.6448361111111">
+		<name>C_SUL</name>
+		<cmt>SUL VOR</cmt>
+	</rtept>
+	<rtept lat="48.696666666695" lon="8.098333333352">
+		<name>D_B</name>
+		<cmt>BRAVO</cmt>
+	</rtept>
+	<rtept lat="48.78000000001" lon="8.0799999999919">
+		<ele>124.66</ele>
+		<name>E_EDSB</name>
+		<cmt>KARLSRUHE BADEN BADEN</cmt>
+	</rtept>
+</rte>
+</gpx>

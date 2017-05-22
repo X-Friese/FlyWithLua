@@ -1,0 +1,7 @@
+<gpx version="1.1" creator="VFRnav"><rte>
+<rtept lat="51.099998474121094" lon="7.59945011138916"><name>Meinerzhagen</name><desc>EDKZ</desc><type>airport</type><sym>A</sym></rtept>
+<rtept lat="51.361551951337624" lon="7.514755725860596"><name>WP-51-7</name><desc>51° 21,69312' N / 7° 30,88534' E</desc><type></type><sym></sym></rtept>
+<rtept lat="51.43355778089743" lon="7.519111633300781"><name>WP-51-7</name><desc>51° 26,01347' N / 7° 31,1467' E</desc><type></type><sym></sym></rtept>
+<rtept lat="51.45166778564453" lon="7.628333568572998"><name>Dortmund (SIERRA)</name><desc>EDLW-SIERRA</desc><type>reportingpoint</type><sym></sym></rtept>
+<rtept lat="51.5191650390625" lon="7.614449977874756"><name>Dortmund</name><desc>EDLW</desc><type>airport</type><sym>A</sym></rtept>
+</rte></gpx>

@@ -1,0 +1,212 @@
+# cessna 172sp checklist by MP2 #
+
+sw_checklist:Aircraft Acceptance - Cessna 172
+sw_item:Preflight Inspection|Complete
+sw_item:passenger briefing|Done
+sw_item:seats and seatbelts|check
+sw_item:electrical equipment|off
+sw_item:Emergency/Safety Equipment|Check
+sw_item:Load weight|Below 833lb
+
+
+sw_checklist:Before Engine Start Checklist
+ws_item:check engine area|clear
+sw_item:Brakes|Test/Set:sim/flightmodel/controls/parkbrake:>0
+sw_item:Battery|On:sim/cockpit/electrical/battery_on:1
+sw_item:Flaps|Up:sim/flightmodel/controls/wing1l_fla1def:0
+sw_item:Throttle|Closed:sim/flightmodel/engine/ENGN_thro:0
+sw_item:Mixture|Rich:sim/flightmodel/engine/ENGN_mixt:>0.98
+sw_item:Fuel Pump|Off:sim/cockpit/engine/fuel_pump_on:0
+sw_item:Fuel Selector Valve|Both:sim/cockpit/engine/fuel_tank_selector:4
+sw_item:Beacon Light|On:sim/cockpit/electrical/beacon_lights_on:1
+sw_item:Avionics Switch|On:sim/cockpit/electrical/avionics_on:1
+sw_item:Transponder set|STBY:sim/cockpit/radios/transponder_mode:1
+
+sw_checklist:Engine Start Checklist
+sw_item:Fuel Pump|On:sim/cockpit/engine/fuel_pump_on:1
+sw_item:Throttle open|1/4 in::sim/flightmodel/engine/ENGN_thro:>0.1
+sw_item:Ignition Switch|Start eng:sim/flightmodel/engine/ENGN_running:1
+sw_itemvoid:(Release key when engine starts)
+sw_item:Throttle 800-1000RPM|Set:sim/flightmodel/engine/ENGN_thro:<0.15
+sw_item:Oil Pressure|Check
+sw_item:Generator|On:sim/cockpit/electrical/generator_on:1
+sw_item:Radios|Set
+sw_item:Altimeters|Set
+
+sw_checklist:Taxi Checklist
+sw_item:Request Taxi Clearance
+sw_item:Fuel Pump|Off:sim/cockpit/engine/fuel_pump_on:0
+sw_item:HSI/Compass|Check
+sw_item:Taxi Lights|On:sim/cockpit/electrical/taxi_light_on:1
+sw_item:Nav Lights|On:sim/cockpit/electrical/nav_lights_on:1
+sw_item:Brakes|Released:sim/flightmodel/controls/parkbrake:0
+sw_item:Check Runway lenght|1000ft-3500ft
+
+sw_checklist:Before Takeoff Checklist:Before Takeoff
+sw_item:Brakes|Set:sim/flightmodel/controls/parkbrake:>0
+sw_item:Seatbelts|secure
+sw_item:Fuel Quantity|Check
+sw_item:Fuel Selector Valve|Both:sim/cockpit/engine/fuel_tank_selector:4
+sw_item:Mixture|Rich:sim/flightmodel/engine/ENGN_mixt:>0.98
+sw_item:Amperemeter positive charge|Check
+sw_item:Oil Temperature|Check
+sw_item:Elevator Trim Set|Takeoff:sim/flightmodel/controls/elv_trim:0.0
+sw_item:Flaps 0-10 degrees|Set:sim/flightmodel/controls/wing1l_fla1def:<11
+sw_item:Landing Lights|On:sim/cockpit/electrical/landing_lights_on:1
+sw_item:Strobe Lights|as required
+sw_item:Taxilights|Off:sim/cockpit/electrical/taxi_light_on:0
+sw_item:Pitot Heat|On:sim/cockpit/switches/pitot_heat_on:1
+sw_item:Request Takeoff Clearance
+
+sw_checklist:Takeoff Checklist (Fly and follow)
+sw_iteminfo:Smoothly increase thrust to full:sim/flightmodel/engine/ENGN_thro:1.0
+sw_iteminfo:Release brakes:sim/flightmodel/controls/parkbrake:0
+sw_iteminfo:V1 (descision) at 56KIAS:sim/flightmodel/position/indicated_airspeed:>55
+sw_iteminfo:Vr (rotate) at 65KIAS:sim/flightmodel/position/indicated_airspeed:>64
+sw_iteminfo:Maintain pitch 10-15 degrees:sim/cockpit/gyros/the_vac_ind_deg:<16
+sw_iteminfo:Trim to maintain 70-85KIAS during climb:sim/flightmodel/position/indicated_airspeed:<86
+sw_iteminfo:Retract flaps at 500feet AGL|If set:sim/flightmodel/controls/wing1l_fla1def:0
+sw_itemvoid:------------------------------------
+sw_iteminfo:INFO - Retract flaps now:sim/flightmodel/position/y_agl:>152
+
+sw_checklist:Engine faliure at takeoff!:takeoff engine faliure!
+sw_show:sim/flightmodel/engine/ENGN_running:!1
+sw_show:sim/flightmodel/position/indicated_airspeed:50:70
+sw_show:sw_show:sim/flightmodel/position/y_agl:<1000
+sw_itemvoid:Choose a landing spot directly ahead!
+sw_item:Throttle|cutoff:sim/flightmodel/engine/ENGN_thro:<0.1
+sw_item:Brakes|Apply:sim/flightmodel/controls/parkbrake:1
+sw_item:flaps|UP:sim/flightmodel/controls/wing1l_fla1def:0
+sw_item:Mixture|cutoff:sim/flightmodel/engine/ENGN_mixt:<0.1
+sw_item:Magneto/Starter Switch|Off:sim/cockpit/engine/ignition_on:0
+sw_item:Battery|Off:sim/cockpit/electrical/battery_on:0
+sw_iteminfo:glidespeed|70KIAS MAX:sim/flightmodel/position/indicated_airspeed:<71
+sw_itemvoid:(land and inform ATC about the situation, ask for help if needed)
+
+sw_checklist:Climb-out Checklist
+sw_show:sim/flightmodel/position/y_agl:152:260
+sw_show:sim/flightmodel/position/indicated_airspeed:>69
+sw_item:Mixture|Rich:sim/flightmodel/engine/ENGN_mixt:>0.98
+sw_item:Autopilot As Desired|Set
+sw_item:Landing Lights|Off:sim/cockpit/electrical/landing_lights_on:0
+sw_item:Airspeed|70-80 KIAS:sim/flightmodel/position/indicated_airspeed:<81
+sw_item:Climb Rate 500-700fpm:sim/flightmodel/position/vh_ind_fpm:>499
+sw_item:ATC As Required
+
+sw_checklist:Cruise Checklist
+sw_show:sim/flightmodel/position/y_agl:5:600
+sw_show:sim/flightmodel/position/vh_ind_fpm:600:20
+sw_item:Accelerate to 100-126 KIAS:sim/flightmodel/position/indicated_airspeed:>99
+sw_item:Altitude|below 14000ft:sim/flightmodel/position/y_agl:<14000
+sw_item:Mixture As Required|Lean (EGT peak)
+sw_item:Engine+Instruments|Check
+sw_item:Engine Temperatures|Check
+sw_item:Fuel Quantity|Check
+sw_item:Radios|Tuned/Set
+sw_item:Autopilot|Check/Set
+sw_item:Lights|As Req.
+
+sw_checklist:Engine Faliure/restart:cruise Engine faliure
+sw_show:sim/flightmodel/engine/ENGN_running:!1
+sw_show:sim/flightmodel/position/y_agl:>1000
+sw_show:sim/flightmodel/position/indicated_airspeed:>100
+sw_iteminfo:best glidespeed|68KIAS:sim/flightmodel/position/indicated_airspeed:65:68
+sw_itemvoid:restart engine procedure...
+sw_item:Throttle|cutoff:sim/flightmodel/engine/ENGN_thro:<0.1
+sw_item:Fuel Selector Valve|Both:sim/cockpit/engine/fuel_tank_selector:4
+sw_item:Fuel Pump|On:sim/cockpit/engine/fuel_pump_on:1
+sw_item:Mixture|Rich:sim/flightmodel/engine/ENGN_mixt:>0.98
+sw_iteminfo:Magnetos|BOTH/Start eng:sim/flightmodel/engine/ENGN_running:1
+sw_itemvoid:(until the engine starts)
+sw_itemvoid:INFO - if succesful, turn off the fuel pump,
+sw_itemvoid:INFO - if engine fails shortly, turn it back on
+sw_itemvoid:(if engine restart fails 3rd time go to forced landing list.)
+
+sw_checklist:Descent Checklist
+sw_item:ATIS/Airport info|Check
+sw_item:Fuel Selector Valve|Both:sim/cockpit/engine/fuel_tank_selector:4
+sw_item:Altimeter|Check
+sw_item:Radios|Set
+sw_item:Descent Speed w/o flaps 110 KIAS MAX:sim/flightmodel/position/indicated_airspeed:<111
+sw_item:Descent Speed with flaps 85 KIAS MAX:sim/flightmodel/position/indicated_airspeed:<86
+
+sw_checklist:Approach Checklist
+sw_itemvoid:---on aprroach---
+sw_item:Fuel Pump|On:sim/cockpit/engine/fuel_pump_on:1
+sw_item:Speed Establish (KIAS)|65-75:sim/flightmodel/position/indicated_airspeed:<76
+sw_item:Landing Lights|On:sim/cockpit/electrical/landing_lights_on:1
+sw_item:Flaps|10:sim/flightmodel/controls/wing1l_fla1def:>9
+sw_item:Check Runway lenght|600ft-3000ft
+sw_itemvoid:---on base leg---
+sw_item:Speed Establish (KIAS)|60-70:sim/flightmodel/position/indicated_airspeed:<71
+sw_item:Flaps|20-full:sim/flightmodel/controls/wing1l_fla1def:>19
+
+sw_checklist:On Final/Landing Checklist
+sw_show:sim/flightmodel/position/y_agl:600:300
+sw_show:sim/flightmodel/controls/wing1l_fla1def:10:20
+sw_show:sim/cockpit/electrical/landing_lights_on:0:1
+sw_item:request landing clearance
+sw_itemvoid:- if aborted go to next list -
+sw_item:Flaps|FULL:sim/flightmodel/controls/wing1l_fla1def:>29
+sw_item:Mixture|Rich:sim/flightmodel/engine/ENGN_mixt:>0.99
+sw_item:Descent Rate|-500fpm max:sim/flightmodel/position/vh_ind_fpm:<-499
+sw_item:Parking Brake Verify|OFF:sim/flightmodel/controls/parkbrake:0
+sw_item:Autopilot|Off
+sw_item:Landing Speed (KIAS)|80:sim/flightmodel/position/indicated_airspeed:<81
+
+sw_checklist:Aborted land/go-around/touch&go
+sw_item:increase speed (KIAS)|65-75:sim/flightmodel/position/indicated_airspeed:>64
+sw_item:Flaps|10:sim/flightmodel/controls/wing1l_fla1def:>9
+sw_itemvoid:- contact ATC -
+sw_item:increase altitude|500-1000Ft:sim/flightmodel/position/y_agl:>600
+sw_itemvoid:- after cleared of the runway
+sw_itemvoid:turn into crosswind leg or pattern -
+
+sw_checklist:Forced landing!:Forced landing
+sw_show:sim/flightmodel/engine/ENGN_running:!1
+sw_show:sim/flightmodel/position/y_agl:2000:1500
+sw_show:sim/flightmodel/position/indicated_airspeed:<69
+sw_iteminfo:best glidespeed|68KIAS:sim/flightmodel/position/indicated_airspeed:65:68
+sw_item:Seat belts|secure
+sw_item:Radio|report situation
+sw_itemvoid:Look for a suitable field 600Ft long min
+sw_item:Throttle|cutoff:sim/flightmodel/engine/ENGN_thro:<0.1
+sw_item:Fuel Selector Valve|OFF:sim/cockpit/engine/fuel_tank_selector:0
+sw_item:Magneto/Starter Switch|Off:sim/cockpit/engine/ignition_on:0
+sw_item:Mixture|Cutoff:sim/flightmodel/engine/ENGN_mixt:<0.1
+sw_item:Battery|On:sim/cockpit/electrical/battery_on:1
+sw_item:Avionics Switch|On:sim/cockpit/electrical/avionics_on:1
+sw_iteminfo:while near to ground...:sim/flightmodel/position/y_agl:<300
+sw_item:Flaps|FULL:sim/flightmodel/controls/wing1l_fla1def:>30
+sw_itemvoid:tail low touchdown
+sw_itemvoid:Brakes|apply heavily!
+
+sw_checklist:Taxi To Ramp Checklist
+sw_show:sim/flightmodel/position/y_agl:100:0
+sw_show:sim/flightmodel/position/indicated_airspeed:100:10
+sw_item:Flaps|Retract:sim/flightmodel/controls/wing1l_fla1def:0
+sw_item:Taxi Lights|On:sim/cockpit/electrical/taxi_light_on:1
+sw_item:Landing Lights|Off:sim/cockpit/electrical/landing_lights_on:0
+sw_item:Transponder|1200:sim/cockpit/radios/transponder_code:1200
+
+sw_checklist:Shutdown Checklist:Shutdown Checklist
+sw_show:sim/flightmodel/position/y_agl:100:0
+sw_show:sim/flightmodel/position/indicated_airspeed:100:0
+sw_show:sim/cockpit/electrical/taxi_light_on:0:1
+sw_show:sim/cockpit/electrical/landing_lights_on:1:0
+sw_show:sim/flightmodel/controls/wing1l_fla1def:20:0
+sw_item:Parking Brake|Set:sim/flightmodel/controls/parkbrake:1
+sw_item:Throttle|Idle:sim/flightmodel/engine/ENGN_thro:0
+sw_item:Fuel Pump|Off:sim/cockpit/engine/fuel_pump_on:0
+sw_item:Avionics Switch|Off:sim/cockpit/electrical/avionics_on:0
+sw_item:Taxi Lights|Off:sim/cockpit/electrical/taxi_light_on:0
+sw_item:Nav Lights|Off:sim/cockpit/electrical/nav_lights_on:0
+sw_item:Pitot Heat|Off:sim/cockpit/switches/pitot_heat_on:0
+sw_item:Mixture|Cutoff:sim/flightmodel/engine/ENGN_mixt:0
+sw_item:Fuel Selector Valve|Off:sim/cockpit/engine/fuel_tank_selector:0
+sw_item:Magneto/Starter Switch|Off:sim/cockpit/engine/ignition_on:0
+sw_item:Generator|Off:sim/cockpit/electrical/generator_on:0
+sw_item:Beacon Light|Off:sim/cockpit/electrical/beacon_lights_on:0
+sw_item:Transponder set|OFF:sim/cockpit/radios/transponder_mode:0
+sw_item:Battery|Off:sim/cockpit/electrical/battery_on:0
+

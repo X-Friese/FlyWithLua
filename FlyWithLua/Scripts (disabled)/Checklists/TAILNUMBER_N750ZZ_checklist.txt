@@ -1,0 +1,93 @@
+Starting
+--------
+Fuel selector                           On
+Battery switch                          On
+Mixture                                 Full Rich
+Carburetor heat                         Pushed in
+Throttle                                As required
+Prime                                   As required
+Auxiliary fuel pump                     On
+Starter                                 Engage until engine starts, then release
+Oil Pressure                            Check
+Alternator switch                       On
+
+Taxiing
+-------
+Flaperons                               Checked up
+Elevator trim                           Set to neutral / take off position
+Fuel selector valve                     Checked
+Oil pressure and oil temperature.       Checked
+Fuel quantity                           Checked
+Volts and Amp meter.                    Checked
+Lights                                  As required
+Radios and Navigation aids..            Set
+Mixture.                                Full rich
+Auxiliary fuel pump                     On
+ 
+Set throttle for  1700 RPM.
+Check magnetos, the RPM drop is         approximately 100).
+ 
+Pull carburetor heat to check operation.
+(RPM will decrease by approximately     100 at 1700 RPM).
+Push carburetor heat in after check.
+ 
+Altimeter.                              Set
+Fasten seat belts, tighten.             Checked
+Doors locked securely.                  Checked
+Freedom and deflection of controls.     Checked
+
+Normal Takeoff
+--------------
+Brakes                                  Released
+Mixture.                                Full rich
+Slowly advance throttle to              Full Throttle
+Rotate approximately at                 Vy (56 kias)
+
+Climb
+-----
+Max. power.                             2750 RPM
+Doors locked securely.                  Checked
+Trim.                                   Set
+Oil temperature and pressure.           Checked
+
+Cruise
+------
+Trim.                                   Set
+Auxiliary fuel pump.                    Off
+Engine power.                           Set to 2550 RPM
+
+Before Landing Check
+--------------------
+Auxiliary Fuel Pump.                    On
+Mixture.                                Full rich
+Carburetor heat.                        On
+Flaperons.                              As Required
+Speed.                                  As Required
+Fasten seat belts, tighten.             Checked
+Lights                                  As Required
+
+Landing (Flaperon up)
+---------------------
+Approach Airspeed                       53 KIAS
+Trim.                                   Set
+Landing speed.                          46 to 53 KIAS
+Braking                                 Minimum required
+
+Landing (Flaperon down)
+-----------------------
+Approach Airspeed                       49 KIAS
+Trim.                                   Set
+Landing speed.                          44 to 49 KIAS
+Braking                                 Minimum required
+
+Shutdown
+--------
+Flaperons                               Up
+Magnetos.                               Check ed
+Radios and Nav aids                     Off
+External lights                         Off
+Auxiliary Fuel pump                     Off
+Mixture                                 Pull/Out
+Magnetos (when propeller stops)         Off
+Master.                                 Off
+All switches.                           Off
