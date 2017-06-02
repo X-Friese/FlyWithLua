@@ -7141,7 +7141,7 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef       inCommand,
 
 void MacroMenuHandler(void * mRef, void * iRef)
 {
-    int MacroIndex = (int *) iRef;
+    int MacroIndex = (std::size_t) iRef; // snagar
     if (MacroTable[MacroIndex].IsSwitch)
     {
         int     ActualState;
