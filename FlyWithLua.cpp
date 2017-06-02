@@ -2,8 +2,8 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.0 nightly build " __DATE__ " " __TIME__
-//#define PLUGIN_VERSION "2.6.0 stable build " __DATE__ " " __TIME__
+//#define PLUGIN_VERSION "2.6.1 nightly build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.0 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -7141,12 +7141,7 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef       inCommand,
 
 void MacroMenuHandler(void * mRef, void * iRef)
 {
-    if (!strcmp((char *) iRef, "None"))
-    {
-        logMsg(logToDevCon, "FlyWithLua: User clicked on a menu item with no function defined.");
-        return;
-    }
-    int MacroIndex = (std::size_t) iRef; // snagar
+    int MacroIndex = (int *) iRef;
     if (MacroTable[MacroIndex].IsSwitch)
     {
         int     ActualState;
