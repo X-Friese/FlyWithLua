@@ -2,6 +2,7 @@
 You find all instructions to use this plugin in the "Documentation" subfolder.
 ------------------------------------------------------------------------------
 
+This version of FlyWithLua is made for X-Plane 11 64-bit only.
 
 Copyright (c) 2012 Carsten Lynker
 

@@ -1,13 +1,15 @@
-FlyWithLua
-==========
+FlyWithLua for X-Plane 11
+=========================
 
 This is the official source code repository for the FlyWithLua plugin project.
 
-FlyWithLua offers Lua scripting to X-Plane 9 and X-Plane 10 (both 32-bit and 64-bit).
+FlyWithLua offers Lua scripting to X-Plane since X-Plane 9.
 
 Discussions to general topics should be opened on the [official forum at x-plane.org](http://forums.x-plane.org/index.php?showforum=188).
 
-You will find a binary version ready to use in X-Plane in the [download area of x-plane.org](http://forums.x-plane.org/index.php?app=downloads&showfile=17468).
+You will find a binary version ready to use in X-Plane 9 or 10 in the [download area of x-plane.org](http://forums.x-plane.org/index.php?app=downloads&showfile=17468).
+
+The new versions are X-Plane 11 only and the binary is also in the [download area of x-plane.org](http://forums.x-plane.org/index.php?/files/file/35579-flywithlua-for-x-plane-11-windows-linux-mac-os-x-version/).
 
 If you want to grab a most nightly binary, just copy the subfolder `FlyWithLua` into your X-Plane's plugin folder.
 
@@ -26,4 +28,3 @@ TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONIN
 THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
-
