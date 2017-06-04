@@ -2,10 +2,21 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-//#define PLUGIN_VERSION "2.6.1 nightly build " __DATE__ " " __TIME__
-#define PLUGIN_VERSION "2.6.0 stable build " __DATE__ " " __TIME__
+#if IWANNABEEVIL
+
+#define PLUGIN_VERSION "Unsupported Black Edition " __DATE__ " " __TIME__
+#define PLUGIN_NAME "FlyWithLua"
+#define PLUGIN_DESCRIPTION "Pandora has widely opened her box for your private use only!"
+
+#else
+
+#define PLUGIN_VERSION "2.6.1 nightly build " __DATE__ " " __TIME__
+//#define PLUGIN_VERSION "2.6.2 stable build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
+
+#endif // IWANNABEEVIL
+
 
 // Copyright (c) 2012 Carsten Lynker
 //
@@ -244,6 +255,9 @@ using namespace std; // snagar
 
 
 // Do we want to access a forbidden DataRef?
+#if IWANNABEEVIL
+#define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) // we are evil and not interested in checking DataRefWanted
+#else
 #define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) if (strncmp(DataRefWanted, "sim/private/", 12)==0) \
     { \
         logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" can not be accessed from FlyWithLua, as it is a private DataRef. Reading or writing private DataRefs is prohibited by Laminar Research.")); \
@@ -253,6 +267,7 @@ using namespace std; // snagar
         LuaIsRunning = false; \
         return 0; \
     }
+#endif // IWANNABEEVIL
 
 
 
