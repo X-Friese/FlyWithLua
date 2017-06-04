@@ -6368,7 +6368,11 @@ PLUGIN_API int XPluginStart(
 
     // Plugin Info
     strcpy(outName, PLUGIN_NAME " " PLUGIN_VERSION);
+#if IWANNABEEVIL
+    strcpy(outSig, "Unofficial." PLUGIN_NAME);
+#else
     strcpy(outSig, "CarstenLynker." PLUGIN_NAME);
+#endif // IWANNABEEVIL
     strcpy(outDesc, PLUGIN_DESCRIPTION);
 
     // use posix path on Mac OSX
