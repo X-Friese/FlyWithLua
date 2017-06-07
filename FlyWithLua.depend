@@ -221,7 +221,7 @@
 	<stdlib.h>
 	"hidapi.h"
 
-1490636351 source:s:\development\github\flywithlua\flywithlua.cpp
+1496851255 source:s:\development\github\flywithlua\flywithlua.cpp
 	<windows.h>
 	<unistd.h>
 	"XPLMPlugin.h"
