@@ -10,8 +10,7 @@
 
 #else
 
-#define PLUGIN_VERSION "2.6.1 nightly build " __DATE__ " " __TIME__
-//#define PLUGIN_VERSION "2.6.2 stable build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.1 build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua"
 #define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
 
@@ -2781,10 +2780,20 @@ static int LuaSetAxisAssignment(lua_State *L)
         CommandRefIdWanted = 37;
     if (CommandWanted == "backup throttle")
         CommandRefIdWanted = 38;
+
+    // the next two axis functions changed in X-Plane 11.02b1
+    // if the scripts wants the no longer active functions, we set it to "none"
     if (CommandWanted == "auto roll")
-        CommandRefIdWanted = 39;
+        CommandRefIdWanted = 0;
     if (CommandWanted == "auto pitch")
-        CommandRefIdWanted = 40;
+        CommandRefIdWanted = 0;
+
+    // instead we have a new function
+    if (CommandWanted == "cowl flaps")
+        CommandRefIdWanted = 39;
+
+    // and nothing for the index value 40
+
     if (CommandWanted == "view left/right")
         CommandRefIdWanted = 41;
     if (CommandWanted == "view up/down")
