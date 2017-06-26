@@ -5,7 +5,7 @@
 		<Option title="FlyWithLua Version 2.6.x" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="X-Plane 11">
+			<Target title="Core Edition">
 				<Option output="FlyWithLua/64/win.xpl" prefix_auto="0" extension_auto="0" />
 				<Option object_output="Release213_64" />
 				<Option type="3" />
@@ -68,8 +68,8 @@
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
-			<Target title="Black Edition of X-Plane 11">
-				<Option output="S:/X-Plane 11/Resources/plugins/FlyWithLua/64/win.xpl" prefix_auto="0" extension_auto="0" />
+			<Target title="Complete Edition">
+				<Option output="Replacement_for_Complete_Edition/64/win.xpl" prefix_auto="0" extension_auto="0" />
 				<Option object_output="Release213_64" />
 				<Option type="3" />
 				<Option compiler="gnu_gcc_64_compiler" />
@@ -94,7 +94,7 @@
 					<Add option="-DXPLM200=1" />
 					<Add option="-DXPLM210=1" />
 					<Add option="-DUSE_EXTERNAL_ALLOCATOR" />
-					<Add option="-DIWANNABEEVIL" />
+					<Add option="-DCREATECOMPLETEEDITION" />
 					<Add directory="include64" />
 					<Add directory="../SDK213/SDK/CHeaders/XPLM" />
 					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
@@ -116,6 +116,9 @@
 					<Add directory="GLUT_for_Windows" />
 					<Add directory="C:/Program Files/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/bin" />
 				</Linker>
+				<ExtraCommands>
+					<Add after='xcopy /Y Replacement_for_Complete_Edition\64\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
+				</ExtraCommands>
 			</Target>
 		</Build>
 		<Linker>

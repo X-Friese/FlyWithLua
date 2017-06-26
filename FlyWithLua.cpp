@@ -2,19 +2,19 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#if IWANNABEEVIL
+#define PLUGIN_VERSION "2.6.2 build " __DATE__ " " __TIME__
 
-#define PLUGIN_VERSION "Unsupported Black Edition " __DATE__ " " __TIME__
-#define PLUGIN_NAME "FlyWithLua"
-#define PLUGIN_DESCRIPTION "Pandora has widely opened her box for your private use only!"
+#if CREATECOMPLETEEDITION
+
+#define PLUGIN_NAME "FlyWithLua Complete"
+#define PLUGIN_DESCRIPTION "Batteries included version of Pandora's box with additional features."
 
 #else
 
-#define PLUGIN_VERSION "2.6.1 build " __DATE__ " " __TIME__
-#define PLUGIN_NAME "FlyWithLua"
-#define PLUGIN_DESCRIPTION "Use Lua to manipulate DataRefs and control HID devices."
+#define PLUGIN_NAME "FlyWithLua Core"
+#define PLUGIN_DESCRIPTION "Core version of FlyWithLua with full support but less features."
 
-#endif // IWANNABEEVIL
+#endif // CREATECOMPLETEEDITION
 
 
 // Copyright (c) 2012 Carsten Lynker
@@ -87,6 +87,7 @@
  *  v2.4.4  [changed] new axis assignments in X-Plane 10.5x added to function set_axis_assignment()
  *  v2.6.0  [added] now we can create custom DataRefs
  *          [changed] from version 2.6.0 this plugin will only support X-Plane 11
+ *  v2.6.2  [added] new compiler flag "CREATECOMPLETEEDITION" to get a separated version without restrictions
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -5597,7 +5598,7 @@ void DebugLua( void )
         logMsg(logToDevCon, "FlyWithLua Error: Unable to write a debug file.");
         return;
     }
-    DebugFile << "-- FlyWithLua v" << PLUGIN_VERSION << " Debug File\n-- " << ctime(&DebugZeit) << "-- Memory in use: " << lua_gc(FWLLua, LUA_GCCOUNT, 0) << " kb";
+    DebugFile << "-- " << PLUGIN_NAME << " v" << PLUGIN_VERSION << " Debug File\n-- " << ctime(&DebugZeit) << "-- Memory in use: " << lua_gc(FWLLua, LUA_GCCOUNT, 0) << " kb";
     DebugFile << "\n*** Lua stack ***\n";
     int StackSize = lua_gettop(FWLLua);
     if (StackSize == 0)
@@ -6377,11 +6378,11 @@ PLUGIN_API int XPluginStart(
 
     // Plugin Info
     strcpy(outName, PLUGIN_NAME " " PLUGIN_VERSION);
-#if IWANNABEEVIL
-    strcpy(outSig, "Unofficial." PLUGIN_NAME);
+#if CREATECOMPLETEEDITION
+    strcpy(outSig, "CarstenLynker.FlyWithLua.Complete");
 #else
-    strcpy(outSig, "CarstenLynker." PLUGIN_NAME);
-#endif // IWANNABEEVIL
+    strcpy(outSig, "CarstenLynker.FlyWithLua.Core");
+#endif // CREATECOMPLETEEDITION
     strcpy(outDesc, PLUGIN_DESCRIPTION);
 
     // use posix path on Mac OSX
