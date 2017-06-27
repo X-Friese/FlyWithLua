@@ -63,7 +63,7 @@
 
 \begin{document}
 
-\title{FlyWithLua V2.2 Quick Reference Manual}
+\title{FlyWithLua V2.6 Core Reference Manual}
 \author{Carsten Lynker}
 \date{\today}
 
@@ -92,6 +92,24 @@ To use FlyWithLua, you will need following:
 \item Some skills in programming \href{http://www.lua.org}{Lua} (FlyWithLua uses \href{http://luajit.org/}{LuaJIT}, compatible to Lua 5.1).
 \item Knowledge about \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{DataRefs}.
 \end{enumerate}
+
+\subsection{Difference between Core, Complete and Source Edition}
+
+FlyWithLua is originally published in three different flavors.
+
+The first version is the \href{http://forums.x-plane.org/index.php?/files/file/35579-flywithlua-core-edition-for-x-plane-11-windows-linux-mac-os-x-version/}{Core Edition}. This is the right version to start your first steps in using Lua to customize your X-Plane installation. The Core Edition is fully supported by the FlyWithLua developer team and acts as the heart of the FlyWithLua economy. If you got an error with this version, check if you have the latest version installed and report your issue together with a \verb|Log.txt| and \verb|FlyWithLua_debug.txt| file at the official FlyWithLua support forum.
+
+Please ask for support here: \href{http://forums.x-plane.org/index.php?/forums/forum/335-help-me-i-have-a-problem-with-flywithlua/}{HelpMe Forum of FlyWithLua}
+
+The second edition was made for the user who know what they are doing. We call it the Complete Edition. \textbf{The Complete Edition is a ready to use binary version of FlyWithLua with additional libraries and no restrictions (access to private art control DataRefs is possible with this version).} Remember, Pandora keeps her box widely opened for you in the Complete Edition, but this has not only positive effects. The more possibilities you get to manipulate X-Plane, the more possible frustration may be the result, when Laminar Research updates X-Plane. If you do not know what the last sentence is about, you should not use the Complete Edition!
+
+This version of FlyWithLua has a lower level of support. Please ask in the same \href{http://forums.x-plane.org/index.php?/forums/forum/335-help-me-i-have-a-problem-with-flywithlua/}{HelpMe Forum} to get some assistance.
+
+For the real hackers we have the whole \href{https://github.com/X-Friese/FlyWithLua}{source code of FlyWithLua Core Edition} published on GitHub. Just grab the code and compile it for your own, to have the full control.
+
+You want all menu entries blink in pink? If you are a C/C++ crack, just edit the source and compile your own flavor. FlyWithLua is published with the MIT license, so you can do everything you want to the source code without getting into trouble with us.
+
+Years of hard work is our free gift to you. Use it with respect and honor.
 
 \subsection{Installation}
 
@@ -123,11 +141,11 @@ I prefer the last way, so you find the folder \verb|Scripts (disabled)| filled w
 
 \subsection{How to interact with Lua}
 
-If you have XSquawkBox installed, there is an easy way to talk to Lua. If you type in a line into XSquawkBox starting with a \verb|>| (a greater than sign), the line is send directly to Lua, instead of talking to your VATSIM channel (on COM1). Try the following code:
+If you have XSquawkBox\footnote{If not, you can click on the menu entry >>Enter a line of code<< in FlyWithLua's plugin menu. There is no need to have XSquawkBox installed to use FlyWithLua. On the other hand, flying online on VATSIM is really cool.} installed, there is an easy way to talk to Lua. If you type in a line into XSquawkBox starting with a \verb|>| (a greater than sign), the line is send directly to Lua, instead of talking to your VATSIM channel (on COM1). Try the following code:
 
 \verb|>print(2+3)|
 
-If everything is fine, Lua will print a \verb|5| into the XSquawkBox's main text display. The output produced by Lua is not forwarded to the VATSIM COM1 channel. So don't be afraid of disturbing the controller. You can check this behavior as XSquawkBox prints all internal information in dark red color.
+If everything is fine, Lua will print a \verb|5| into the XSquawkBox's main text display\footnote{Use the developer console to see the output, if you don't have XSquawkBox installed.}. The output produced by Lua is not forwarded to the VATSIM COM1 channel. So don't be afraid of disturbing the controller. You can check this behavior as XSquawkBox prints all internal information in dark red color.
 
 So FlyWithLua is a little pocket calculator? Hmm, why not. But this is not the intension of the plugin. FlyWithLua was made to interact with DataRefs.
 
@@ -3227,7 +3245,7 @@ That's all. Now you are using the Lua interpreter provided by Lua For Windows, n
 \newpage
 \section{Credits}
 
-This plugin was made by Carsten Lynker (main developer, Windows code), \href{http://www.snagar.org/}{Snagar} (Macintosh and Linux code) and Ingo Alm (lector and bughunter).
+This plugin was made by Carsten Lynker (main developer, Windows code), \href{http://www.snagar.org/}{Snagar} (early Macintosh and Linux code), William B. Good (Macintosh and Linux code) and Ingo Alm (lector and bughunter).
 
 FlyWithLua uses source code
 

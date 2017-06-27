@@ -61,10 +61,6 @@
 					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
 					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
 					<Add after="xcopy /Y include64\lua51.dll FlyWithLua\64" />
-					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
-					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.epub" />
-					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.pdf" />
-					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\Ein_Arcaze_USB_ansteuern.md -o FlyWithLua\Documentation\Ein_Arcaze_USB_ansteuern.epub" />
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
@@ -118,6 +114,71 @@
 				</Linker>
 				<ExtraCommands>
 					<Add after='xcopy /Y Replacement_for_Complete_Edition\64\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after='xcopy /Y &quot;*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
+					<Add after='xcopy /Y &quot;..\FWL_Docs\*.pdf&quot; &quot;FlyWithLua\Documentation&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Scripts\*.lua&quot; &quot;FlyWithLua\Scripts (disabled)\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Internals\*.*&quot; &quot;FlyWithLua\Internals\&quot;' />
+					<Add after='xcopy /Y &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\Modules\*.*&quot; &quot;FlyWithLua\Modules\&quot;' />
+					<Add after='xcopy /Y include64\lua51.dll &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after="xcopy /Y include64\lua51.dll FlyWithLua\64" />
+					<Mode after="always" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Full Complete Edition with manuals and scripts">
+				<Option output="Replacement_for_Complete_Edition/64/win.xpl" prefix_auto="0" extension_auto="0" />
+				<Option object_output="Release213_64" />
+				<Option type="3" />
+				<Option compiler="gnu_gcc_64_compiler" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-Wshadow" />
+					<Add option="-Wfloat-equal" />
+					<Add option="-pedantic" />
+					<Add option="-w" />
+					<Add option="-std=c++11" />
+					<Add option="-m64" />
+					<Add option="-fexceptions" />
+					<Add option="-fpermissive" />
+					<Add option="-DWIN64" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_WINDOWS" />
+					<Add option="-D_MBCS" />
+					<Add option="-D_USRDLL" />
+					<Add option="-DCustomCommands_EXPORTS" />
+					<Add option="-DSIMDATA_EXPORTS" />
+					<Add option="-DIBM=1" />
+					<Add option="-DXPLM200=1" />
+					<Add option="-DXPLM210=1" />
+					<Add option="-DUSE_EXTERNAL_ALLOCATOR" />
+					<Add option="-DCREATECOMPLETEEDITION" />
+					<Add directory="include64" />
+					<Add directory="../SDK213/SDK/CHeaders/XPLM" />
+					<Add directory="../SDK213/SDK/CHeaders/Wrappers" />
+					<Add directory="../SDK213/SDK/CHeaders/Widgets" />
+					<Add directory="GLUT_for_Windows" />
+					<Add directory="C:/Program Files/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/bin" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-m64" />
+					<Add option="-static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic" />
+					<Add library="Opengl32" />
+					<Add library="XPLM_64" />
+					<Add library="XPWidgets_64" />
+					<Add library="GLUT_for_Windows/gl/glut64.lib" />
+					<Add library="C:/Program Files (x86)/OpenAL 1.1 SDK/libs/Win64/OpenAL32.lib" />
+					<Add directory="include64" />
+					<Add directory="../SDK213/SDK/Libraries/Win" />
+					<Add directory="GLUT_for_Windows" />
+					<Add directory="C:/Program Files/mingw-w64/x86_64-6.3.0-posix-seh-rt_v5-rev1/mingw64/bin" />
+				</Linker>
+				<ExtraCommands>
+					<Add after='xcopy /Y Replacement_for_Complete_Edition\64\win.xpl &quot;S:\X-Plane 11\Resources\plugins\FlyWithLua\64&quot;' />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua_Manual_en.tex -o FlyWithLua\Documentation\FlyWithLua_Manual_en.epub" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.epub" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.md -o FlyWithLua\Documentation\First_Steps_Programming_FlyWithLua.pdf" />
+					<Add after="pandoc -N --epub-cover-image FlyWithLua_logo.JPG FlyWithLua\Documentation\Ein_Arcaze_USB_ansteuern.md -o FlyWithLua\Documentation\Ein_Arcaze_USB_ansteuern.epub" />
+					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
 		</Build>
