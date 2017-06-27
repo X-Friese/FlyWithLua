@@ -255,8 +255,8 @@ using namespace std; // snagar
 
 
 // Do we want to access a forbidden DataRef?
-#if IWANNABEEVIL
-#define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) // we are evil and not interested in checking DataRefWanted
+#if CREATECOMPLETEEDITION
+#define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) // we only want to check DataRefWanted in Core Edition
 #else
 #define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) if (strncmp(DataRefWanted, "sim/private/", 12)==0) \
     { \
@@ -267,7 +267,7 @@ using namespace std; // snagar
         LuaIsRunning = false; \
         return 0; \
     }
-#endif // IWANNABEEVIL
+#endif // CREATECOMPLETEEDITION
 
 
 
