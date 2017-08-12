@@ -1078,11 +1078,10 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
     //sprintf(buffer, "%.255s", "Lua stopped!");
 
     // reload the scenery when triggered by flag and reactivate Lua system
-    if ((LuaIsRunning == false) && (WeNeedToReloadTheScenery == true))
+    if (WeNeedToReloadTheScenery == true)
     {
         XPLMReloadScenery();
         WeNeedToReloadTheScenery = false;
-        LuaIsRunning = true;
     }
 
     // is Lua running?
@@ -5436,9 +5435,8 @@ static int LuaReplaceWAVFile(lua_State *L)
 static int LuaReloadScenery(lua_State *L)
 {
     // to reload the scenery, we need to be free from jumping back
-    // so we stop Lua and raise a flag to let the reload be done
-    // by the per frame call
-    LuaIsRunning = false;
+    // so we raise a flag to let the reload be done
+    // by the per drawing call
     WeNeedToReloadTheScenery = true;
     return 0;
 }
