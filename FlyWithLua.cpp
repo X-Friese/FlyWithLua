@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.2 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.3 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -269,6 +269,9 @@ using namespace std; // snagar
     }
 #endif // CREATECOMPLETEEDITION
 
+
+// a flag to reload the scenery
+bool WeNeedToReloadTheScenery = false;
 
 
 //Code from Ben Supnik Regarding Luajit in 64bit build
@@ -1073,6 +1076,14 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
 
     char buffer[LONGSTRING] = {"Lua stopped!"};
     //sprintf(buffer, "%.255s", "Lua stopped!");
+
+    // reload the scenery when triggered by flag and reactivate Lua system
+    if ((LuaIsRunning == false) && (WeNeedToReloadTheScenery == true))
+    {
+        XPLMReloadScenery();
+        WeNeedToReloadTheScenery = false;
+        LuaIsRunning = true;
+    }
 
     // is Lua running?
     if (!LuaIsRunning)
@@ -5422,6 +5433,15 @@ static int LuaReplaceWAVFile(lua_State *L)
     return 0;
 }
 
+static int LuaReloadScenery(lua_State *L)
+{
+    // to reload the scenery, we need to be free from jumping back
+    // so we stop Lua and raise a flag to let the reload be done
+    // by the per frame call
+    LuaIsRunning = false;
+    WeNeedToReloadTheScenery = true;
+    return 0;
+}
 
 void RegisterCoreCFunctionsToLua(lua_State *L)
 {
@@ -5538,6 +5558,7 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "load_situation", LuaLoadSituation);
     lua_register(L, "save_situation", LuaSaveSituation);
     lua_register(L, "load_aircraft", LuaLoadAircraft);
+    lua_register(L, "reload_scenery", LuaReloadScenery);
 
     // function to access HID devices (new since FWL2.1)
     lua_register(L, "create_HID_table", Luacreate_HID_table);
