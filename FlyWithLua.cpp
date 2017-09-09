@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.3 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.4 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -261,7 +261,7 @@ using namespace std; // snagar
 #define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) if (strncmp(DataRefWanted, "sim/private/", 12)==0) \
     { \
         logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" can not be accessed from FlyWithLua, as it is a private DataRef. Reading or writing private DataRefs is prohibited by Laminar Research.")); \
-        logMsg(logToAll, string("FlyWithLua Info: Ben Subnik told us this:    (Please see http://developer.x-plane.com/2014/05/art-controls-are-an-active-volcano/ for more details.)")); \
+        logMsg(logToAll, string("FlyWithLua Info: Ben Supnik told us this:    (Please see http://developer.x-plane.com/2014/05/art-controls-are-an-active-volcano/ for more details.)")); \
         logMsg(logToAll, string("FlyWithLua Info: The art controls are not a public interface to make X-Plane add-ons. They are an internal development tool. They are unsupported, undocumented, unsafe, and most importantly subject to change with every patch of X-Plane.")); \
         logMsg(logToAll, string("FlyWithLua Info: If you create an add-on that requires reading or writing the art controls, you can expect that your add-on will stop working when X-Plane is updated. When your add-on breaks, please do not complain or file a bug.")); \
         LuaIsRunning = false; \
