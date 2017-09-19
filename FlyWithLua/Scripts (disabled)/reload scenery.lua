@@ -21,10 +21,10 @@ end
 ffi.cdef( "void XPLMReloadScenery(void)" )
 
 -- define a global function (macros can only access global functions)
-function reload_scenery()
+function let_XPLM_reload_the_scenery()
     XPLMSpeakString("Please wait, X-Plane is reloading the scenery. Don't panic! The simulator will freeze for a moment.")
     XPLM.XPLMReloadScenery()
 end
 
 -- create the macro
-add_macro( "Reload the scenery", "reload_scenery()" )
+add_macro( "Reload the scenery", "let_XPLM_reload_the_scenery()" )
