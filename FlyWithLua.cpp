@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.4 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.5 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -88,6 +88,7 @@
  *  v2.6.0  [added] now we can create custom DataRefs
  *          [changed] from version 2.6.0 this plugin will only support X-Plane 11
  *  v2.6.2  [added] new compiler flag "CREATECOMPLETEEDITION" to get a separated version without restrictions
+ *  v2.6.5  [changed] doubled the number of joystick buttons for X-Plane 11.10 and above
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -250,7 +251,7 @@ using namespace std; // snagar
 #define MAXDATAREFS 400
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
-#define MAXJOYSTICKBUTTONS 1600  // this value is set by the length of DataRef sim/joystick/joystick_button_values
+#define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
 #define MAXSOUNDS 100            // the number of OpelAL sound buffers
 
 
@@ -2644,10 +2645,15 @@ static int LuaClearAllAxisAssignments(lua_State *L)
         int EveryThingIsZero[100] = {0};
         XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 100);
     }
-    else
+    else if (VersionXP < 11100)
     {
         int EveryThingIsZero[250] = {0};
         XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 250);
+    }
+    else
+    {
+        int EveryThingIsZero[500] = {0};
+        XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 500);
     }
     return 0;
 }
@@ -2707,9 +2713,9 @@ static int LuaSetAxisAssignment(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong argument range. Before X-Plane 11 axis number has to be from 0 to 99.");
         return 0;
     }
-    else if (AxisNumber < 0 || AxisNumber > 249)
+    else if (AxisNumber < 0 || AxisNumber > 499)
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Since X-Plane 11 axis number has to be from 0 to 249.");
+        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Since X-Plane 11 axis number has to be from 0 to 499.");
         return 0;
     }
     string CommandWanted = lua_tostring(L, 2);
