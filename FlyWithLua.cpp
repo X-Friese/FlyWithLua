@@ -2667,9 +2667,9 @@ static int LuaSetButtonAssignment(lua_State *L)
         return 0;
     }
     int ButtonNumber = lua_tointeger(L, 1);
-    if (ButtonNumber < 0 || ButtonNumber > 1599)
+    if (ButtonNumber < 0 || ButtonNumber > 3199)
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Button number has to be from 0 to 1599.");
+        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Button number has to be from 0 to 3199.");
         return 0;
     }
     strcpy(CommandWanted, lua_tostring(L, 2));
