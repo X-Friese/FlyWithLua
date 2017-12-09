@@ -3,7 +3,7 @@ button_sniffer_active = false
 
 function button_sniffer_event_handler()
 	if button_sniffer_active then
-        for i = 0, 3199, 1 do
+        for i = 0, 1599, 1 do
             if not last_button(i) and button(i) then
                 button_debug_string = "Button no. " .. i .. " was pressed."
             end
