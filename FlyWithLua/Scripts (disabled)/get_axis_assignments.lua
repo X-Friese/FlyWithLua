@@ -21,8 +21,8 @@ function get_axis_assignments()
 	local axis_function_index
 	local axis_reverse
 	
-	-- look into all 100 axis
-	for i = 0, 99 do
+	-- look into all 499 axis
+	for i = 0, 499 do
 		-- pull the index to the function name from X-Plane
 		axis_function_index = get( "sim/joystick/joystick_axis_assignments", i )
 		-- pull the reverse info from X-Plane
