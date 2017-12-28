@@ -904,6 +904,21 @@ When the user (pilot) presses, holds or releases the primary mouse button, an ev
 
 This is called by a XSquawkBox event. You can read out the predefined variable \verb|XSB_METAR|, or do whatever you like when XSquawkBox sends a new METAR (changes the weather).
 
+
+\subsubsection{do\_on\_new\_XSB\_text( "\emph{Lua code string}" )}
+
+\begin{enumerate}
+	\item \emph{Lua code string} = A string containing Lua code you want to be calculated every time when the plugin receives a new text message from XSquawkBox.
+\end{enumerate}
+
+This is called by a XSquawkBox event. You can read out the predefined variable \verb|XSB_TEXT_MESSAGE|, \verb|XSB_TEXT_FROM|, \verb|XSB_TEXT_FREQ|, \verb|XSB_TEXT_USE|, or do whatever you like when XSquawkBox receives a new text message.
+
+The variable \verb|XSB_TEXT_USE| can be 0 or 1. If \verb|XSB_TEXT_USE| is 0 (zero), XSquawkBox will not display or evaluate the message. Only this variable is pushed back to the XSquawkBox. The other three variables are read only (pulled from the XSquawkBox before executing the Lua code string, but not pushed back when finished).
+
+Please keep in mind that the code is executed during the event call (inter plugin communication). So you can not write into a variable defined by the \verb|DataRef()| function. But the \verb|dataref_table()| function works (you can use the variables created this way to write to X-Plane).
+
+There is an example script delivered with FlyWithLua. As you can see, the \verb|XSB_TEXT_FREQ| contains an integer value representing the frequency in 10 Hz multiplied by the value.
+
 \subsubsection{do\_on\_exit( "\emph{Lua code string}" )}
 
 \begin{enumerate}

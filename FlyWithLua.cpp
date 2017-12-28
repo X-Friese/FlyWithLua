@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.5 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.6 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -48,7 +48,7 @@
  *          [changed] Linux: dynamic linked against LuaJIT2.0.0 final and XPSDK211
  *  v2.1.15 [added] OSX x64 + XP10x64 test code for Ben Supnik, to test LuaJit.
  *  v2.1.18 [added] lin.xpl and mac.xpl 32-bit build by Snagar, no code change compared to 2.1.17
- *  v2.1.29 [linux/osx build] removed disabled HID codefor OSX (again)
+ *  v2.1.29 [linux/osx build] removed disabled HID code for OSX (again)
  */
 
 /** Commands made during FlyWithLua development
@@ -89,6 +89,7 @@
  *          [changed] from version 2.6.0 this plugin will only support X-Plane 11
  *  v2.6.2  [added] new compiler flag "CREATECOMPLETEEDITION" to get a separated version without restrictions
  *  v2.6.5  [changed] doubled the number of joystick buttons for X-Plane 11.10 and above
+ *  v2.6.6  [added] new function do_on_new_XSB_text() to handle XSquawkBox incoming text message events
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -849,6 +850,12 @@ float	MySlowLoopCallback(
 // let's give the last Metar to Lua
 XPLMDataRef gXSBMetarStringXDataRef = NULL;
 
+// we need to examine a text message from XSB
+XPLMDataRef gXSBTextMessageXDataRef = NULL;
+XPLMDataRef gXSBTextFromXDataRef = NULL;
+XPLMDataRef gXSBTextFreqsXDataRef = NULL;
+XPLMDataRef gXSBTextUseXDataRef = NULL;
+
 
 // Some variables used global in this plugin
 static string      EveryFrameCallbackCommand = "";
@@ -856,6 +863,7 @@ static string      CallbackCommand = "";
 static string      LongTimeCallbackCommand = "";
 static string      KeyEventCommand = "";
 static string      NewMetarCommand = "";
+static string      NewXSBTextCommand = "";
 
 float TimeBetweenCallbacks = 1.0;                // processed every second
 float LongTimeBetweenCallbacks = 10.0;           // not so often processed
@@ -2585,6 +2593,19 @@ static int LuaDoEveryMETARCallback(lua_State *L)
     string LuaShouldDoCommand = lua_tostring(L, 1);
     NewMetarCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(NewMetarCommand, "DO_ON_NEW_METAR_CHUNK");
+    return 0;
+}
+
+static int LuaDoOnNewXSBTextCallback(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        return 0;
+    }
+    string LuaShouldDoCommand = lua_tostring(L, 1);
+    NewXSBTextCommand.append(LuaShouldDoCommand).append("\n");
+    StoreLuaChunk(NewXSBTextCommand, "DO_ON_NEW_XSB_TEXT_CHUNK");
     return 0;
 }
 
@@ -5475,6 +5496,7 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "create_positive_edge_flip", LuaCreatePositiveEdgeFlip);
     lua_register(L, "create_negative_edge_flip", LuaCreateNegativeEdgeFlip);
     lua_register(L, "do_on_new_metar", LuaDoEveryMETARCallback);
+    lua_register(L, "do_on_new_XSB_text", LuaDoOnNewXSBTextCallback);
     lua_register(L, "do_on_keystroke", LuaDoEveryKeystroke);
     lua_register(L, "do_on_mouse_click", LuaDoEveryMouseClick);
     lua_register(L, "do_on_mouse_wheel", LuaDoEveryMouseWheel);
@@ -5657,6 +5679,8 @@ void DebugLua( void )
     DebugFile << LuaMouseWheelCommand;
     DebugFile << "\n\n*** New METAR callback ***\n";
     DebugFile << NewMetarCommand;
+    DebugFile << "\n\n*** New XSB Text callback ***\n";
+    DebugFile << NewXSBTextCommand;
     DebugFile << "\n\n*** command callbacks ***\n";
     if (CommandTableLastElement >= 0)
     {
@@ -5961,6 +5985,14 @@ void ResetLuaEngine( void )
 {
     char    success_cstring[NORMALSTRING];
 
+    // define some DataRefs
+    gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
+    gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);
+    gXSBTextFromXDataRef    = XPLMFindDataRef(XSB_TEXT_FROM);
+    gXSBTextFreqsXDataRef   = XPLMFindDataRef(XSB_TEXT_FREQS);
+    gXSBTextUseXDataRef     = XPLMFindDataRef(XSB_TEXT_USE);
+
+
     // run through the exit script
     if ((LuaResetCount>0) && !ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
     {
@@ -6021,6 +6053,7 @@ void ResetLuaEngine( void )
     CallbackCommand.clear();
     LongTimeCallbackCommand.clear();
     NewMetarCommand.clear();
+    NewXSBTextCommand.clear();
     KeyEventCommand.clear();
     LuaMouseClickCommand.clear();
     LuaMouseWheelCommand.clear();
@@ -6031,6 +6064,7 @@ void ResetLuaEngine( void )
     StoreLuaChunk(CallbackCommand, "DO_OFTEN_CHUNK");
     StoreLuaChunk(LongTimeCallbackCommand, "DO_SOMETIMES_CHUNK");
     StoreLuaChunk(NewMetarCommand, "DO_ON_NEW_METAR_CHUNK");
+    StoreLuaChunk(NewXSBTextCommand, "DO_ON_NEW_XSB_TEXT_CHUNK");
     StoreLuaChunk(KeyEventCommand, "DO_ON_KEYSTROKE_CHUNK");
     StoreLuaChunk(LuaMouseClickCommand, "DO_ON_MOUSE_CLICK_CHUNK");
     StoreLuaChunk(LuaMouseWheelCommand, "DO_ON_MOUSE_WHEEL_CHUNK");
@@ -6422,6 +6456,10 @@ PLUGIN_API int XPluginStart(
 
     // DataRefs we want to use
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
+    gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);
+    gXSBTextFromXDataRef    = XPLMFindDataRef(XSB_TEXT_FROM);
+    gXSBTextFreqsXDataRef   = XPLMFindDataRef(XSB_TEXT_FREQS);
+    gXSBTextUseXDataRef     = XPLMFindDataRef(XSB_TEXT_USE);
     gJoystickAxisAssignments = XPLMFindDataRef("sim/joystick/joystick_axis_assignments");
     gJoystickButtonAssignments = XPLMFindDataRef("sim/joystick/joystick_button_assignments");
     gJoystickAxisReverse = XPLMFindDataRef("sim/joystick/joystick_axis_reverse");
@@ -6714,10 +6752,39 @@ PLUGIN_API void XPluginReceiveMessage(
         logMsg(logToDevCon, "FlyWithLua: User switched to a new airport (or changed the plane). Script files have to be reloaded.");
         ReadAllScriptFiles();
     }
+    if (inMessage == XSB_MSG_TEXT)
+    {
+        char    ReadXSBString[LONGSTRING];
+        int     ReadXSBInteger;
+        if (LuaIsRunning)
+        {
+            XPLMGetDatab(gXSBTextMessageXDataRef, &ReadXSBString, 0, LONGSTRING);
+            lua_pushstring(FWLLua, ReadXSBString);
+            lua_setglobal(FWLLua, "XSB_TEXT_MESSAGE");
+
+            XPLMGetDatab(gXSBTextFromXDataRef, &ReadXSBString, 0, LONGSTRING);
+            lua_pushstring(FWLLua, ReadXSBString);
+            lua_setglobal(FWLLua, "XSB_TEXT_FROM");
+
+            XPLMGetDatavi(gXSBTextFreqsXDataRef, &ReadXSBInteger, 0, 1);
+            lua_pushnumber(FWLLua, ReadXSBInteger);
+            lua_setglobal(FWLLua, "XSB_TEXT_FREQ");
+
+            ReadXSBInteger = XPLMGetDatai(gXSBTextUseXDataRef);
+            lua_pushnumber(FWLLua, ReadXSBInteger);
+            lua_setglobal(FWLLua, "XSB_TEXT_USE");
+
+            RunLuaChunk("DO_ON_NEW_XSB_TEXT_CHUNK");
+
+            lua_getglobal(FWLLua, "XSB_TEXT_USE");
+            XPLMSetDatai(gXSBTextUseXDataRef, (int) lua_tonumber(FWLLua, -1));
+            lua_pop(FWLLua, 1);
+        }
+    }
     if (inMessage == XSB_MSG_METAR)
     {
-        char    ReadMetar[NORMALSTRING];
-        XPLMGetDatab(gXSBMetarStringXDataRef, ReadMetar, 0, NORMALSTRING);
+        char    ReadMetar[LONGSTRING];
+        XPLMGetDatab(gXSBMetarStringXDataRef, ReadMetar, 0, LONGSTRING);
         if (LuaIsRunning)
         {
             lua_pushstring(FWLLua, ReadMetar);
