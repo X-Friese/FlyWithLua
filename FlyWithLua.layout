@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
-	<ActiveTarget name="Full Complete Edition with manuals and scripts" />
-	<File name="include64\XSBComDefs.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="191" />
-		</Cursor>
-	</File>
+	<ActiveTarget name="Complete Edition" />
 	<File name="FlyWithLua.cpp" open="0" top="0" tabpos="1" split="0" active="1" splitpos="1173" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="2742" topLine="129" />
+		</Cursor>
+	</File>
+	<File name="include64\XSBComDefs.h" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="191" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

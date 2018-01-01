@@ -253,7 +253,7 @@ using namespace std; // snagar
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
-#define MAXSOUNDS 100            // the number of OpelAL sound buffers
+#define MAXSOUNDS 250            // the number of OpenAL sound buffers
 
 
 // Do we want to access a forbidden DataRef?
