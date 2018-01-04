@@ -40,7 +40,7 @@ int                   XPLMGetDirectoryContents(
 ]]
 
 -- and we have to load the DLL
-local XPLM = ffi.load(ffi.os == "Windows" and "XPLM")
+local XPLM = ffi.load(ffi.os == "Windows" and "XPLM_64")
 
 -- as Lua doesn't know char*, we have to declare a C-variable via FFI
 local filestring = ffi.new("char[1024]")
