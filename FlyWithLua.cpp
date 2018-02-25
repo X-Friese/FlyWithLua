@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.6 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.7 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -2407,6 +2407,44 @@ static int LuaCommandOnce(lua_State *L)
         return 0;
     }
     XPLMCommandOnce(CommandId);
+    return 0;
+}
+
+static int LuaCommandBegin(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string.");
+        return 0;
+    }
+    char LuaWantsToDo[NORMALSTRING];
+    strcpy(LuaWantsToDo, lua_tostring(L, 1));
+    XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
+    if (CommandId == NULL)
+    {
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. The command is unknown.");
+        return 0;
+    }
+    XPLMCommandBegin(CommandId);
+    return 0;
+}
+
+static int LuaCommandEnd(lua_State *L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string.");
+        return 0;
+    }
+    char LuaWantsToDo[NORMALSTRING];
+    strcpy(LuaWantsToDo, lua_tostring(L, 1));
+    XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
+    if (CommandId == NULL)
+    {
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. The command is unknown.");
+        return 0;
+    }
+    XPLMCommandEnd(CommandId);
     return 0;
 }
 
@@ -5519,6 +5557,8 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "set", LuaSet);
     lua_register(L, "set_array", LuaSetArray);
     lua_register(L, "command_once", LuaCommandOnce);
+    lua_register(L, "command_begin", LuaCommandBegin);
+    lua_register(L, "command_end", LuaCommandEnd);
     lua_register(L, "crash_the_sim", LuaCrashTheSim);
     lua_register(L, "draw_string", LuaDrawString);
     lua_register(L, "draw_string_Helvetica_18", LuaDrawStringHelv18);
