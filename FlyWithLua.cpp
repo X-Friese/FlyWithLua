@@ -2887,6 +2887,14 @@ static int LuaSetAxisAssignment(lua_State *L)
     if (CommandWanted == "gun/bomb up/down")
         CommandRefIdWanted = 48;
 
+    // added to support for X-Plane VR (version 11.20+)
+
+    if (CommandWanted == "VR Touchpad X")
+        CommandRefIdWanted = 49;
+    if (CommandWanted == "VR Touchpad Y")
+        CommandRefIdWanted = 50;
+    if (CommandWanted == "VR Trigger")
+        CommandRefIdWanted = 51;
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 

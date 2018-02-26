@@ -744,7 +744,7 @@ Assigning a function given by X-Plane to a joystick button. The same as clicking
 \end{enumerate}
 
 Assigning axis functions. Possible values for the function names are: \verb|"none"|, \verb|"pitch"|, \verb|"roll"|, \verb|"yaw"|, \verb|"throttle"|, \verb|"collective"|, \verb|"left toe brake"|, , \verb|"right toe brake"|, \verb|"prop"|, \verb|"mixture"|, \verb|"carb heat"|, \verb|"flaps"|, \verb|"thrust vector"|, \verb|"wing sweep"|, \verb|"speedbrakes"|, \verb|"displacement"|, \verb|"reverse"|, \verb|"elev trim"|, \verb|"ailn trim"|, \verb|"rudd trim"|, \verb|"throttle 1"|, \verb|"throttle 2"|, \verb|"throttle 3"|, \verb|"throttle 4"|, \verb|"prop 1"|, \verb|"prop 2"|, \verb|"prop 3"|, \verb|"prop 4"|, \verb|"mixture 1"|, \verb|"mixture 2"|, \verb|"mixture 3"|, \verb|"mixture 4"|, \verb|"reverse 1"|, \verb|"reverse 2"|, \verb|"reverse 3"|, \verb|"reverse 4"|, \verb|"landing gear"|, \verb|"nosewheel tiller"|, \verb|"backup throttle"|, \verb|"cowl flaps"|, \verb|"view left/right"|, \verb|"view up/down"|, \verb|"view zoom"|, \verb|"camera left/right"|, \verb|"camera up/down"|, \verb|"camera zoom"|,
-\verb|"gun/bomb left/right"| and \verb|"gun/bomb up/down"|.
+\verb|"gun/bomb left/right"|, \verb|"gun/bomb up/down"|, \verb|"VR Touchpad X"|, \verb|"VR Touchpad Y"| and \verb|"VR Trigger"|.
 	
 \subsubsection{clear\_all\_axis\_assignments()}
 
@@ -774,6 +774,16 @@ This will set the pilot's head in position and angle. If we are not in 3D view, 
 
 This will get the pilot's head position and angle.
 
+\subsubsection{command\_begin( "\emph{simulator function}" )}
+
+\begin{enumerate}
+	\item \emph{simulator function} = Name of the function you want to assign. You can copy\&paste the name from X-Plane's advanced button setting menu.
+\end{enumerate}
+
+Execute a simulator given command only one time.
+
+This will execute the "\emph{begin}" part of a command. X-Plane's commands have three phases. What really will happen when you execute one of this parts depends on the original programming made by Laminar Research  (or other). In some cases you will have to experiment the right command call (the right phase).
+
 \subsubsection{command\_once( "\emph{simulator function}" )}
 
 \begin{enumerate}
@@ -781,6 +791,20 @@ This will get the pilot's head position and angle.
 \end{enumerate}
 
 Execute a simulator given command only one time.
+
+This will execute the "\emph{main}" part of a command. X-Plane's commands have three phases. What really will happen when you execute one of this parts depends on the original programming made by Laminar Research  (or other). In some cases you will have to experiment the right command call (the right phase).
+
+In nearly 100\% this is the phase you want to call.
+
+\subsubsection{command\_end( "\emph{simulator function}" )}
+
+\begin{enumerate}
+	\item \emph{simulator function} = Name of the function you want to assign. You can copy\&paste the name from X-Plane's advanced button setting menu.
+\end{enumerate}
+
+Execute a simulator given command only one time.
+
+This will execute the "\emph{end}" part of a command. X-Plane's commands have three phases. What really will happen when you execute one of this parts depends on the original programming made by Laminar Research  (or other). In some cases you will have to experiment the right command call (the right phase).
 
 \subsubsection{logMsg( "\emph{string}" )}
 
