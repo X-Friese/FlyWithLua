@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.7 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.6.8 beta 1 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -153,6 +153,8 @@
  *     You may want to erase all of them, as they didn't fit your paths.
  */
 
+#include "FlyWithLua.h"
+
 #if IBM
 #include <windows.h>
 BOOL APIENTRY DllMain( HANDLE hModule,
@@ -174,7 +176,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #endif
 
 // OK, load as much as you can ;)
-
 #include "XPLMPlugin.h"
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
@@ -198,6 +199,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include <time.h>
 #include <wchar.h>
 #include "XSBComDefs.h"
+#include "FloatingWindow.h"
 
 // include OpenGL
 #if IBM
@@ -423,6 +425,7 @@ bool            UserWantsToReplaceAircraft = false;
 char            UserWantedFilename[LONGSTRING];
 
 bool            WeAreNotInDrawingState = true;
+
 
 void EraseDataRefTable( void )
 {
@@ -804,21 +807,10 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef        inCommand,
                                      XPLMCommandPhase      inPhase,
                                      void *                inRefcon);
 
-//Teddii: Enum fuer "logMsg"
-enum ELogType
-{
-    logToAll    = 0,
-    logToDevCon = 1,
-    logToSqkBox = 2
-};
-
-void logMsg (ELogType logType, std::string message ); //Teddii: added parameter logType //void logMsg ( std::string message );
 void initPluginDirectory ( ); // snagar
 
 void ResetLuaEngine( void );
 bool RunLuaString(string LuaCommandString);
-void CopyDataRefsToLua( void );
-void CopyDataRefsToXPlane( void );
 bool ReadScriptFile(char *FileNameToRead);
 bool RunLuaChunk(const char *ChunkName);
 
@@ -932,6 +924,10 @@ void FWLMouseEventWindowDraw(XPLMWindowID inWindowID, void * inRefcon)
 void FWLMouseEventWindowKey(XPLMWindowID inWindowID, char inKey, XPLMKeyFlags inFlags, char vkey, void * inRefcon, int losingFocus)
 {
     // no keyboard handling to catch mouse events
+}
+
+int	FWLMouseEventWindowRightMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void * inRefcon) {
+    return 0;
 }
 
 int	FWLMouseEventWindowMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void * inRefcon)
@@ -5658,6 +5654,9 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "set_sound_gain", LuaSetSoundGain);
     lua_register(L, "unload_all_sounds", LuaUnloadAllSounds);
     lua_register(L, "replace_WAV_file", LuaReplaceWAVFile);
+    
+    // functions to operate on floating windows
+    registerFloatingWindowFunctions(L);
 }
 
 // sort DataRefTable by name and index of the DataRef
@@ -6757,8 +6756,11 @@ PLUGIN_API int XPluginEnable(void)
     MouseWindowData.drawWindowFunc = FWLMouseEventWindowDraw;
     MouseWindowData.handleKeyFunc = FWLMouseEventWindowKey;
     MouseWindowData.handleMouseClickFunc = FWLMouseEventWindowMouse;
+    MouseWindowData.handleRightClickFunc = FWLMouseEventWindowRightMouse;
     MouseWindowData.handleMouseWheelFunc = FWLMouseEventWindowMouseWheel;
     MouseWindowData.handleCursorFunc = FWLMouseEventWindowCursor;
+    MouseWindowData.layer = xplm_WindowLayerFlightOverlay;
+    MouseWindowData.decorateAsFloatingWindow = xplm_WindowDecorationNone;
     MouseWindowData.refcon = NULL;
     FWLMouseEventWindowID = XPLMCreateWindowEx(&MouseWindowData);
 
@@ -6978,6 +6980,8 @@ float	MyFastLoopCallback(
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
     }
+    
+    floatingWindowFlightLoopCallback();
 
     return TimeBetweenCallbacks;
 }
