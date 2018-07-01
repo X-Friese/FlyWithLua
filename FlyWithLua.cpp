@@ -6032,6 +6032,9 @@ void ResetLuaEngine( void )
 {
     char    success_cstring[NORMALSTRING];
 
+    // close all floating windows
+    resetFloatingWindows();
+    
     // define some DataRefs
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
     gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);

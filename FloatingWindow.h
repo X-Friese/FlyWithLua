@@ -22,13 +22,14 @@ public:
     void setLeftMouseCallback(char *func);
     void setCloseCallback(char *func);
     bool isVisible() const;
+    void moveFromOrToVR();
     void onClose();
     ~FloatingWindow();
     
 private:
-
     XPLMWindowID window{};
     int width, height, decoration;
+    bool isInVR;
     
     std::string onDrawFunc;
     std::string onLeftMouseFunc;
@@ -46,3 +47,4 @@ private:
 
 void registerFloatingWindowFunctions(lua_State *L);
 void floatingWindowFlightLoopCallback();
+void resetFloatingWindows();

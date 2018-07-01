@@ -69,8 +69,11 @@ void FloatingWindow::createWindow() {
     if (!window) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Couldn't create floating window");
         flywithlua::LuaIsRunning = false;
+        return;
     }
 
+    isInVR = xpIsInVR;
+    
     if (xpIsInVR) {
         XPLMSetWindowPositioningMode(window, xplm_WindowVR, -1);
     } else {
@@ -93,6 +96,22 @@ void FloatingWindow::setLeftMouseCallback(char *func) {
 
 void FloatingWindow::setCloseCallback(char *func) {
     onCloseFunc = func;
+}
+
+void FloatingWindow::moveFromOrToVR() {
+    if (xpIsInVR && !isInVR) {
+        // X-Plane switched to VR but our window isn't in VR
+        XPLMSetWindowPositioningMode(window, xplm_WindowVR, -1);
+        isInVR = true;
+    } else if (!xpIsInVR && isInVR) {
+        // Our window is still in VR but X-Plane switched to 2D
+        XPLMSetWindowPositioningMode(window, xplm_WindowPositionFree, -1);
+        isInVR = false;
+        
+        int winLeft, winTop, winRight, winBot;
+        XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+        XPLMSetWindowGeometry(window, winLeft + 100, winTop - 100, winLeft + 100 + width, winTop - 100 - height);
+    }
 }
 
 void FloatingWindow::onDraw() {
@@ -306,7 +325,12 @@ void floatingWindowFlightLoopCallback() {
             wnd->onClose();
             it = floatingWindows.erase(it);
         } else {
+            wnd->moveFromOrToVR();
             ++it;
         }
     }
+}
+
+void resetFloatingWindows() {
+    floatingWindows.clear();
 }
