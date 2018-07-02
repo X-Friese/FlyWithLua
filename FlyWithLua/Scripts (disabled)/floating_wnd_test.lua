@@ -30,7 +30,8 @@ function on_draw(wnd, x, y)
 end
 
 -- x and y are relative from the origin of the window, i.e. the lower left
-function on_click(wnd, x, y)
+-- state: 1 = mouse down, 2 = mouse drag, 3 = mouse up
+function on_click(wnd, x, y, state)
     lastClickX = x
     lastClickY = y
 end
@@ -46,3 +47,7 @@ float_wnd_set_title(wnd, "FlyWithLua Test")
 float_wnd_set_ondraw(wnd, "on_draw")
 float_wnd_set_onclick(wnd, "on_click")
 float_wnd_set_onclose(wnd, "on_close")
+
+-- To destroy a window:
+-- float_wnd_destroy(wnd) 
+-- after that, do not use the wnd variable anymore

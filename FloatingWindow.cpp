@@ -166,9 +166,10 @@ bool FloatingWindow::onClick(int x, int y, XPLMMouseStatus status) {
     lua_pushlightuserdata(L, this);
     lua_pushnumber(L, x - left);
     lua_pushnumber(L, y - bottom);
+    lua_pushnumber(L, status);
 
     flywithlua::CopyDataRefsToLua();
-    if (lua_pcall(L, 3, 0, 0)) {
+    if (lua_pcall(L, 4, 0, 0)) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute floating window click callback");
         flywithlua::LuaIsRunning = false;
         return;
@@ -251,6 +252,27 @@ int LuaCreateFloatingWindow(lua_State *L) {
     return 1;
 }
 
+int LuaDestroyFloatingWindow(lua_State *L) {
+    if (!lua_islightuserdata(L, 1)) {
+        flywithlua::logMsg(logToAll, "FlyWithLua Error: wrong arguments given to create_floating_window.");
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    for (auto it = floatingWindows.begin(); it != floatingWindows.end(); ) {
+        auto &wndPtr = *it;
+        if (wndPtr.get() == wnd) {
+            it = floatingWindows.erase(it);
+            break;
+        } else {
+            ++it;
+        }
+    }
+    
+    return 0;
+}
+
 int LuaSetFloatingWindowTitle(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_title");
@@ -311,6 +333,7 @@ void registerFloatingWindowFunctions(lua_State *L) {
     lua_register(L, "float_wnd_set_ondraw", LuaSetOnDrawCallback);
     lua_register(L, "float_wnd_set_onclick", LuaSetOnClickCallback);
     lua_register(L, "float_wnd_set_onclose", LuaSetOnCloseCallback);
+    lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);
 }
 
 void floatingWindowFlightLoopCallback() {
