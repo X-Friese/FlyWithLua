@@ -199,7 +199,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include <time.h>
 #include <wchar.h>
 #include "XSBComDefs.h"
-#include "FloatingWindow.h"
+#include "FloatingWindows/FLWIntegration.h"
 
 // include OpenGL
 #if IBM
@@ -5654,9 +5654,6 @@ void RegisterCoreCFunctionsToLua(lua_State *L)
     lua_register(L, "set_sound_gain", LuaSetSoundGain);
     lua_register(L, "unload_all_sounds", LuaUnloadAllSounds);
     lua_register(L, "replace_WAV_file", LuaReplaceWAVFile);
-    
-    // functions to operate on floating windows
-    registerFloatingWindowFunctions(L);
 }
 
 // sort DataRefTable by name and index of the DataRef
@@ -6031,9 +6028,6 @@ bool RunLuaChunk(const char *ChunkName)
 void ResetLuaEngine( void )
 {
     char    success_cstring[NORMALSTRING];
-
-    // close all floating windows
-    resetFloatingWindows();
     
     // define some DataRefs
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
@@ -6152,6 +6146,10 @@ void ResetLuaEngine( void )
     luaL_openlibs(FWLLua);
 
     RegisterCoreCFunctionsToLua(FWLLua);
+
+    // functions to operate on floating windows
+    flwnd::initFloatingWindowSupport();
+
     lua_pushnumber(FWLLua, ++LuaResetCount);
     lua_setglobal(FWLLua, "LUA_RUN");
 
@@ -6554,6 +6552,8 @@ PLUGIN_API void    XPluginStop(void)
 
 PLUGIN_API void XPluginDisable(void)
 {
+    flwnd::deinitFloatingWindowSupport();
+
     // run through the exit script
     if (ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
     {
@@ -6984,7 +6984,7 @@ float	MyFastLoopCallback(
         lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
     }
     
-    floatingWindowFlightLoopCallback();
+    flwnd::onFlightLoop();
 
     return TimeBetweenCallbacks;
 }
