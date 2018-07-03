@@ -187,9 +187,18 @@ CALL_FUNCTION(GetWindowContentRegionWidth, float)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowPos(const ImVec2& pos, ImGuiCond cond = 0, const ImVec2& pivot = ImVec2 0 0); // set next window position. call before Begin(). use pivot=(0.5f,0.5f) to center on given point, etc.
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetNextWindowPos)
+IM_VEC_2_ARG(pos)
+OPTIONAL_INT_ARG(cond, 0)
+OPTIONAL_IM_VEC_2_ARG(pivot, 0, 0)
+CALL_FUNCTION_NO_RET(SetNextWindowPos, pos, cond, pivot)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowSize(const ImVec2& size, ImGuiCond cond = 0);                  // set next window size. set axis to 0.0f to force an auto-fit on this axis. call before Begin()
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetNextWindowSize)
+IM_VEC_2_ARG(size)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetNextWindowSize, size, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowSizeConstraints(const ImVec2& size_min, const ImVec2& size_max, ImGuiSizeCallback custom_callback = NULL, void* custom_callback_data = NULL); // set next window size limits. use -1,-1 on either X/Y axis to preserve the current size. Use callback to apply non-trivial programmatic constraints.
 // Unsupported arg type  ImGuiSizeCallback custom_callback = NULL
 // Unsupported arg type  void* custom_callback_data = NULL
@@ -199,7 +208,11 @@ IM_VEC_2_ARG(size)
 CALL_FUNCTION_NO_RET(SetNextWindowContentSize, size)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowCollapsed(bool collapsed, ImGuiCond cond = 0);                 // set next window collapsed state. call before Begin()
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetNextWindowCollapsed)
+BOOL_ARG(collapsed)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetNextWindowCollapsed, collapsed, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowFocus();                                                       // set next window to be focused / front-most. call before Begin()
 IMGUI_FUNCTION(SetNextWindowFocus)
 CALL_FUNCTION_NO_RET(SetNextWindowFocus)
@@ -210,11 +223,23 @@ NUMBER_ARG(alpha)
 CALL_FUNCTION_NO_RET(SetNextWindowBgAlpha, alpha)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowPos(const ImVec2& pos, ImGuiCond cond = 0);                        // (not recommended) set current window position - call within Begin()/End(). prefer using SetNextWindowPos(), as this may incur tearing and side-effects.
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetWindowPos)
+IM_VEC_2_ARG(pos)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetWindowPos, pos, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowSize(const ImVec2& size, ImGuiCond cond = 0);                      // (not recommended) set current window size - call within Begin()/End(). set to ImVec2 0 0 to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects.    
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetWindowSize)
+IM_VEC_2_ARG(size)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetWindowSize, size, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowCollapsed(bool collapsed, ImGuiCond cond = 0);                     // (not recommended) set current window collapsed state. prefer using SetNextWindowCollapsed().
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetWindowCollapsed)
+BOOL_ARG(collapsed)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetWindowCollapsed, collapsed, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowFocus();                                                           // (not recommended) set current window to be focused / front-most. prefer using SetNextWindowFocus().
 IMGUI_FUNCTION(SetWindowFocus)
 CALL_FUNCTION_NO_RET(SetWindowFocus)
@@ -225,11 +250,26 @@ NUMBER_ARG(scale)
 CALL_FUNCTION_NO_RET(SetWindowFontScale, scale)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowPos(const char* name, const ImVec2& pos, ImGuiCond cond = 0);      // set named window position.
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetWindowPos_3)
+LABEL_ARG(name)
+IM_VEC_2_ARG(pos)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetWindowPos, name, pos, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowSize(const char* name, const ImVec2& size, ImGuiCond cond = 0);    // set named window size. set axis to 0.0f to force an auto-fit on this axis.
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetWindowSize_3)
+LABEL_ARG(name)
+IM_VEC_2_ARG(size)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetWindowSize, name, size, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowCollapsed(const char* name, bool collapsed, ImGuiCond cond = 0);   // set named window collapsed state
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetWindowCollapsed_3)
+LABEL_ARG(name)
+BOOL_ARG(collapsed)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetWindowCollapsed, name, collapsed, cond)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowFocus(const char* name);                                           // set named window to be focused / front-most. use NULL to remove focus.
 IMGUI_FUNCTION(SetWindowFocus_1)
 LABEL_ARG(name)
@@ -962,7 +1002,11 @@ CALL_FUNCTION(GetTreeNodeToLabelSpacing, float)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetNextTreeNodeOpen(bool is_open, ImGuiCond cond = 0);              // set next TreeNode/CollapsingHeader open state.
-// Unsupported arg type  ImGuiCond cond = 0
+IMGUI_FUNCTION(SetNextTreeNodeOpen)
+BOOL_ARG(is_open)
+OPTIONAL_INT_ARG(cond, 0)
+CALL_FUNCTION_NO_RET(SetNextTreeNodeOpen, is_open, cond)
+END_IMGUI_FUNC
 //    IMGUI_API bool          CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);  // if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop().
 // Unsupported arg type  ImGuiTreeNodeFlags flags = 0
 //    IMGUI_API bool          CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags flags = 0); // when 'p_open' isn't NULL, display an additional small close button on upper right of the header
@@ -1244,7 +1288,6 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          SetDragDropPayload(const char* type, const void* data, size_t size, ImGuiCond cond = 0);// type is a user defined string of maximum 32 characters. Strings starting with '_' are reserved for dear imgui internal types. Data is copied and held by imgui.
 // Unsupported arg type  const void* data
 // Unsupported arg type  size_t size
-// Unsupported arg type  ImGuiCond cond = 0
 //    IMGUI_API void          EndDragDropSource();                                                                    // only call EndDragDropSource() if BeginDragDropSource() returns true!
 IMGUI_FUNCTION(EndDragDropSource)
 CALL_FUNCTION_NO_RET(EndDragDropSource)
