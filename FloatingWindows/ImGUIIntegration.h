@@ -15,6 +15,7 @@
 #endif
 
 #include <memory>
+#include <string>
 #include "FloatingWindow.h"
 #include "imgui/imgui.h"
 #include "lua.hpp"
@@ -24,8 +25,10 @@ namespace flwnd {
 class ImGUIWindow: public FloatingWindow {
 public:
     using BuildCallback = std::function<void(ImGUIWindow &)>;
+    using ErrorHandler = std::function<void(const std::string &)>;
 
     ImGUIWindow(int width, int height, int decoration);
+    void setErrorHandler(ErrorHandler eh);
     void setBuildCallback(BuildCallback cb);
     ~ImGUIWindow();
 protected:
@@ -36,7 +39,9 @@ private:
     GLuint fontTextureId{};
     ImGuiContext *imGuiContext{};
     int mLeft{}, mTop{}, mRight{}, mBottom{};
+    ErrorHandler onError;
     BuildCallback doBuild;
+    bool stopped = false;
 
     void buildGUI();
     void showGUI();

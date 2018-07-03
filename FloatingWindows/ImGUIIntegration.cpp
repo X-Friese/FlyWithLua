@@ -55,10 +55,25 @@ void ImGUIWindow::setBuildCallback(BuildCallback cb) {
     doBuild = cb;
 }
 
+void ImGUIWindow::setErrorHandler(ErrorHandler eh) {
+    onError = eh;
+}
+
 void ImGUIWindow::onDraw() {
+    if (stopped) {
+        return;
+    }
+
     updateMatrices();
-    buildGUI();
-    showGUI();
+    try {
+        buildGUI();
+        showGUI();
+    } catch (const std::exception &e) {
+        if (onError) {
+            onError(e.what());
+        }
+        stopped = true;
+    }
     FloatingWindow::onDraw();
 }
 

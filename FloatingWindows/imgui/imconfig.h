@@ -13,8 +13,11 @@
 
 #pragma once
 
+#include <stdexcept>
+#include <string>
+
 //---- Define assertion handler. Defaults to calling assert().
-//#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
+#define IM_ASSERT(_EXPR) do { if (!(_EXPR)) { throw std::runtime_error("ImGUI assertion failed: " # _EXPR); } } while (0)
 
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 //#define IMGUI_API __declspec( dllexport )

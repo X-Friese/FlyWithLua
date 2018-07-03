@@ -41,7 +41,7 @@ int LuaCreateFloatingWindow(lua_State *L) {
         lua_pushlightuserdata(L, wnd.get());
         return 1;
     } catch (const std::exception &e) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Couldn't create floating window");
+        flywithlua::logMsg(logToAll, "FlyWithLua Error: Couldn't create floating window");
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -117,7 +117,7 @@ int LuaSetOnDrawCallback(lua_State *L) {
         flywithlua::WeAreNotInDrawingState = false;
         flywithlua::CopyDataRefsToLua();
         if (lua_pcall(L, 3, 0, 0)) {
-            flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute floating window draw callback");
+            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window draw callback");
             flywithlua::LuaIsRunning = false;
             return;
         }
@@ -162,7 +162,7 @@ int LuaSetOnClickCallback(lua_State *L) {
 
         flywithlua::CopyDataRefsToLua();
         if (lua_pcall(L, 4, 0, 0)) {
-            flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute floating window click callback");
+            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window click callback");
             flywithlua::LuaIsRunning = false;
             return true;
         }
@@ -198,7 +198,7 @@ int LuaSetOnCloseCallback(lua_State *L) {
 
         flywithlua::CopyDataRefsToLua();
         if (lua_pcall(L, 1, 0, 0)) {
-            flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute floating window close callback");
+            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window close callback");
             flywithlua::LuaIsRunning = false;
             return;
         }
@@ -246,11 +246,17 @@ int LuaSetImguiBuilder(lua_State *L) {
 
         flywithlua::CopyDataRefsToLua();
         if (lua_pcall(L, 3, 0, 0)) {
-            flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute imgui window builder callback");
+            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute imgui window builder callback");
             flywithlua::LuaIsRunning = false;
             return;
         }
         flywithlua::CopyDataRefsToXPlane();
+    });
+
+    wnd->setErrorHandler([] (const std::string &errorMsg) {
+        flywithlua::logMsg(logToAll, "FlyWithLua imgui error: " + errorMsg);
+        lua_pushstring(flywithlua::FWLLua, errorMsg.c_str());
+        flywithlua::LuaIsRunning = false;
     });
 
     return 0;
