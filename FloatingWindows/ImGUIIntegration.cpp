@@ -219,6 +219,17 @@ bool ImGUIWindow::onMouseWheel(int x, int y, int wheel, int clicks) {
     return FloatingWindow::onMouseWheel(x, y, wheel, clicks);
 }
 
+XPLMCursorStatus ImGUIWindow::getCursor(int x, int y) {
+    ImGui::SetCurrentContext(imGuiContext);
+    ImGuiIO& io = ImGui::GetIO();
+
+    float outX, outY;
+    translateToImguiSpace(x, y, outX, outY);
+    io.MousePos = ImVec2(outX, outY);
+
+    return xplm_CursorDefault;
+}
+
 void ImGUIWindow::translateImguiToBoxel(float inX, float inY, int& outX, int& outY) {
     outX = (int)(mLeft + inX);
     outY = (int)(mTop - inY);
