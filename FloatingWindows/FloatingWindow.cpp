@@ -166,6 +166,10 @@ bool FloatingWindow::isVisible() const {
     return XPLMGetWindowIsVisible(window);
 }
 
+void FloatingWindow::setVisible(bool visible) {
+    XPLMSetWindowIsVisible(window, visible);
+}
+
 bool FloatingWindow::onRightClick(int x, int y, XPLMMouseStatus status) {
     return true;
 }

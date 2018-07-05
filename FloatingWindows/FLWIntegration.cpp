@@ -55,13 +55,10 @@ int LuaDestroyFloatingWindow(lua_State *L) {
     }
 
     FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    for (auto it = floatingWindows.begin(); it != floatingWindows.end(); ) {
-        auto &wndPtr = *it;
+    for (auto wndPtr: floatingWindows) {
         if (wndPtr.get() == wnd) {
-            it = floatingWindows.erase(it);
-            break;
-        } else {
-            ++it;
+            // this will lead to actual destruction in the flightloop callback
+            wndPtr->setVisible(false);
         }
     }
 

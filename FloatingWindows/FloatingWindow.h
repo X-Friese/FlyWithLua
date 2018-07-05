@@ -30,6 +30,7 @@ public:
 
     void setTitle(const char *title);
     bool isVisible() const;
+    void setVisible(bool visible);
     void moveFromOrToVR();
     void reportClose();
     void boxelsToNative(int x, int y, int &outX, int &outY);
