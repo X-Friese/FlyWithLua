@@ -43,7 +43,7 @@ int loadImage(const std::string&fileName) {
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glTexImage2D(GL_TEXTURE_2D, 0,
             GL_RGBA, imgWidth, imgHeight, 0,
-            GL_BGRA, GL_UNSIGNED_BYTE, data);
+            GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     stbi_image_free(data);
     textureIDs.push_back(id);
