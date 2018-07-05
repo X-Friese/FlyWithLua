@@ -51,9 +51,6 @@ private:
     void translateToImguiSpace(int inX, int inY, float &outX, float &outY);
 };
 
-void setupImguiIntegration(lua_State *L);
-void destroyImguiIntegration();
-
 } /* namespace flwnd */
 
 #endif /* FLOATINGWINDOWS_IMGUIINTEGRATION_H_ */

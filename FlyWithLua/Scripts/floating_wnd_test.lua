@@ -42,7 +42,7 @@ function on_close(wnd)
 end
 
 -- width, height, decoration style as per XPLMCreateWindowEx. 1 for solid background, 3 for transparent
-wnd = float_wnd_create(640, 480, 1, false)
+wnd = float_wnd_create(640, 480, 1)
 float_wnd_set_title(wnd, "FlyWithLua Test")
 float_wnd_set_ondraw(wnd, "on_draw")
 float_wnd_set_onclick(wnd, "on_click")

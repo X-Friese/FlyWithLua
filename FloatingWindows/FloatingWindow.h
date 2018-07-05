@@ -35,6 +35,7 @@ public:
     void reportClose();
     void boxelsToNative(int x, int y, int &outX, int &outY);
     XPLMWindowID getXWindow();
+    int loadImage(const std::string &fileName);
     virtual ~FloatingWindow();
 
 protected:

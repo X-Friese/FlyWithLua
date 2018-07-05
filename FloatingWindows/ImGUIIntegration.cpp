@@ -15,12 +15,6 @@
 
 namespace flwnd {
 
-void setupImguiIntegration(lua_State *L) {
-}
-
-void destroyImguiIntegration() {
-}
-
 ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     FloatingWindow(width, height, decoration)
 {
