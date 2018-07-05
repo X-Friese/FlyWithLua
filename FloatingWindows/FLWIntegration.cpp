@@ -125,6 +125,25 @@ int LuaSetOnDrawCallback(lua_State *L) {
     return 0;
 }
 
+int LuaGetFloatingWindowDimensions(lua_State *L) {
+    if (!lua_islightuserdata(L, 1)) {
+        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_get_dimensions");
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    auto xwnd = wnd->getXWindow();
+
+    int left, top, right, bottom;
+    XPLMGetWindowGeometry(xwnd, &left, &top, &right, &bottom);
+
+    lua_pushnumber(L, right - left);
+    lua_pushnumber(L, top - bottom);
+
+    return 2;
+}
+
 int LuaSetOnClickCallback(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_onclick");
@@ -276,6 +295,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_onclick", LuaSetOnClickCallback);
     lua_register(L, "float_wnd_set_onclose", LuaSetOnCloseCallback);
     lua_register(L, "float_wnd_set_imgui_builder", LuaSetImguiBuilder);
+    lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);
 }
 
