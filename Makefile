@@ -17,4 +17,4 @@ install: win.xpl
 	cp win.xpl /c/Users/rme/Desktop/X-Plane\ 11/Resources/plugins/FlyWithLua/64/
 
 clean:
-	rm -f FlyWithLua.o FloatingWindows/FloatingWindow.o include64/hid.o FloatingWindows/imgui/imgui.o FloatingWindows/imgui/imgui_demo.o FloatingWindows/imgui/imgui_draw.o FloatingWindows/imgui/ImgWindow.o FloatingWindows/imgui/imgui_lua_bindings.o
+	rm -f FlyWithLua.o FloatingWindows/FloatingWindow.o include64/hid.o FloatingWindows/imgui/imgui.o FloatingWindows/imgui/imgui_demo.o FloatingWindows/imgui/imgui_draw.o FloatingWindows/imgui/ImgWindow.o FloatingWindows/imgui/imgui_lua_bindings.o FloatingWindows/FLWIntegration.o FloatingWindows/ImGUIIntegration.o

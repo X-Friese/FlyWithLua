@@ -100,6 +100,10 @@ void FloatingWindow::setCloseCallback(CloseCallback cb) {
     onCloseCB = cb;
 }
 
+void FloatingWindow::setKeyCallback(KeyCallback cb) {
+    onKeyCB = cb;
+}
+
 void FloatingWindow::setTitle(const char *title) {
     XPLMSetWindowTitle(window, title);
 }
@@ -120,6 +124,14 @@ void FloatingWindow::moveFromOrToVR() {
         XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
         XPLMSetWindowGeometry(window, winLeft + 100, winTop - 100, winLeft + 100 + width, winTop - 100 - height);
     }
+}
+
+void FloatingWindow::requestInputFocus(bool req) {
+    XPLMTakeKeyboardFocus(req ? window : nullptr);
+}
+
+bool FloatingWindow::hasInputFocus() {
+    return XPLMHasKeyboardFocus(window);
 }
 
 void FloatingWindow::updateMatrices() {
@@ -175,6 +187,13 @@ bool FloatingWindow::onRightClick(int x, int y, XPLMMouseStatus status) {
 }
 
 void FloatingWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) {
+    if (losingFocus) {
+        return;
+    }
+
+    if (onKeyCB) {
+        onKeyCB(*this, key, virtualKey, flags);
+    }
 }
 
 XPLMCursorStatus FloatingWindow::getCursor(int x, int y) {

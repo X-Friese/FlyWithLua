@@ -36,6 +36,7 @@ protected:
     bool onClick(int x, int y, XPLMMouseStatus status) override;
     bool onMouseWheel(int x, int y, int wheel, int clicks) override;
     XPLMCursorStatus getCursor(int x, int y) override;
+    void onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) override;
 private:
     GLuint fontTextureId{};
     ImGuiContext *imGuiContext{};

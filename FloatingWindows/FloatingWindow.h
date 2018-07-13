@@ -22,20 +22,23 @@ public:
     using DrawCallback = std::function<void(FloatingWindow &)>;
     using ClickCallback = std::function<void(FloatingWindow &, int, int, XPLMMouseStatus)>;
     using CloseCallback = std::function<void(FloatingWindow &)>;
+    using KeyCallback = std::function<void(FloatingWindow &, char, char, XPLMKeyFlags)>;
 
     FloatingWindow(int winWidth, int winHeight, int winDecoration);
     void setDrawCallback(DrawCallback cb);
     void setClickCallback(ClickCallback cb);
     void setCloseCallback(CloseCallback cb);
+    void setKeyCallback(KeyCallback cb);
 
     void setTitle(const char *title);
     bool isVisible() const;
     void setVisible(bool visible);
     void moveFromOrToVR();
+    void requestInputFocus(bool req);
+    bool hasInputFocus();
     void reportClose();
     void boxelsToNative(int x, int y, int &outX, int &outY);
     XPLMWindowID getXWindow();
-    int loadImage(const std::string &fileName);
     virtual ~FloatingWindow();
 
 protected:
@@ -63,6 +66,7 @@ private:
     DrawCallback onDrawCB;
     ClickCallback onClickCB;
     CloseCallback onCloseCB;
+    KeyCallback onKeyCB;
     
     void createWindow();
 };

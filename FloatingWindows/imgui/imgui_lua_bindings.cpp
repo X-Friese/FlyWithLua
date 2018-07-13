@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <deque>
+#include <cstring>
+#include <cstdlib>
 #include "imgui.h"
 
 extern "C" {
@@ -96,6 +98,9 @@ static int impl_##name(lua_State *L) { \
 #define IM_TEXTURE_ID_ARG(name) \
   const ImTextureID name = (ImTextureID)luaL_checkinteger(L, arg++);
 
+#define DEFAULT_ARG(type, name, value) \
+  type name = value; \
+
 #define OPTIONAL_LABEL_ARG(name) \
   const char* name; \
   if (arg <= max_args) { \
@@ -141,6 +146,20 @@ static int impl_##name(lua_State *L) { \
     i_##name##_w = luaL_checknumber(L, arg++); \
   } \
   const ImVec4 name((double)i_##name##_x, (double)i_##name##_y, (double)i_##name##_z, (double)i_##name##_w);
+
+#define LABEL_POINTER_ARG(name) \
+  size_t i_##name##_size; \
+  const char * content = luaL_checklstring(L, arg++, &(i_##name##_size)); \
+  size_t buf_size = luaL_checknumber(L, arg++); \
+  char * name = new char [buf_size]; \
+  std::strcpy(name, content);
+
+#define END_LABEL_POINTER(name) \
+  if (name != NULL) { \
+    lua_pushstring(L, name); \
+    delete[] name; \
+    stackval++; \
+        }
 
 #define NUMBER_ARG(name)\
   lua_Number name = luaL_checknumber(L, arg++);
@@ -293,7 +312,6 @@ static void ImEndStack(int type) { \
 
 #include "imgui_iterator.inl"
 
-
 static const struct luaL_Reg imguilib [] = {
 #undef IMGUI_FUNCTION
 #define IMGUI_FUNCTION(name) {#name, impl_##name},
@@ -303,6 +321,8 @@ static const struct luaL_Reg imguilib [] = {
 // we can get the function names
 #undef IM_TEXTURE_ID_ARG
 #define IM_TEXTURE_ID_ARG(name)
+#undef DEFAULT_ARG
+#define DEFAULT_ARG(name, x, y)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
 #undef LABEL_ARG
@@ -321,6 +341,10 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
 #undef FLOAT_POINTER_ARG
 #define FLOAT_POINTER_ARG(name)
+#undef LABEL_POINTER_ARG
+#define LABEL_POINTER_ARG(name)
+#undef END_LABEL_POINTER
+#define END_LABEL_POINTER(name)
 #undef END_FLOAT_POINTER
 #define END_FLOAT_POINTER(name)
 #undef OPTIONAL_INT_ARG
