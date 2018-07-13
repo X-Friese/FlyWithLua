@@ -563,4 +563,6 @@ void LoadImguiBindings() {
   luaL_setfuncs(lState, imguilib, 0);
   PushImguiEnums(lState, "constant");
   lua_setglobal(lState, "imgui");
+  lua_pushnumber(lState, FLT_MAX);
+  lua_setglobal(lState, "FLT_MAX");
 }
