@@ -2,6 +2,7 @@
 #include <deque>
 #include <cstring>
 #include <cstdlib>
+#include <vector>
 #include "imgui.h"
 
 extern "C" {
@@ -170,6 +171,18 @@ static int impl_##name(lua_State *L) { \
     name = lua_tonumber(L, arg++); \
   }
 
+#define FLOAT_ARRAY_ARG(name) \
+  luaL_checktype(L, arg, LUA_TTABLE); \
+  int len = lua_objlen(L, arg++); \
+  std::vector<float> list; \
+  for (int i = 0; i < len; i++) \
+      { \
+    lua_pushinteger(L, i + 1); \
+    lua_gettable(L, arg - 1); \
+    list.push_back(luaL_checknumber(L, -1)); \
+      } \
+  const float *name = list.data();
+
 #define FLOAT_POINTER_ARG(name) \
   float i_##name##_value = luaL_checknumber(L, arg++); \
   float* name = &(i_##name##_value);
@@ -323,10 +336,14 @@ static const struct luaL_Reg imguilib [] = {
 #define IM_TEXTURE_ID_ARG(name)
 #undef DEFAULT_ARG
 #define DEFAULT_ARG(name, x, y)
+#undef FLOAT_ARRAY_ARG
+#define FLOAT_ARRAY_ARG(name)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
 #undef LABEL_ARG
 #define LABEL_ARG(name)
+#undef FLOAT_ARRAY_ARG
+#define FLOAT_ARRAY_ARG(name)
 #undef IM_VEC_2_ARG
 #define IM_VEC_2_ARG(name)
 #undef OPTIONAL_IM_VEC_2_ARG

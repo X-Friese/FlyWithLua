@@ -694,19 +694,37 @@ PUSH_BOOL(ret)
 END_INT_POINTER(v)
 END_IMGUI_FUNC
 //    IMGUI_API void          PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0, int stride = sizeof(float));
-// Unsupported arg type  const float* values
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0 0
+IMGUI_FUNCTION(PlotLines)
+LABEL_ARG(label)
+FLOAT_ARRAY_ARG(values)
+INT_ARG(values_count)
+OPTIONAL_INT_ARG(values_offset, 0)
+OPTIONAL_LABEL_ARG(overlay_text)
+OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
+OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
+OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
+OPTIONAL_INT_ARG(stride, sizeof(float))
+CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
+END_IMGUI_FUNC
 //    IMGUI_API void          PlotLines(const char* label, float (*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0);
 // Unsupported arg type  float (*values_getter)(void* data
 // Unsupported arg type  void* data
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0 0
 //    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0, int stride = sizeof(float));
-// Unsupported arg type  const float* values
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0 0
+IMGUI_FUNCTION(PlotHistogram)
+LABEL_ARG(label)
+FLOAT_ARRAY_ARG(values)
+INT_ARG(values_count)
+OPTIONAL_INT_ARG(values_offset, 0)
+OPTIONAL_LABEL_ARG(overlay_text)
+OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
+OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
+OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
+OPTIONAL_INT_ARG(stride, sizeof(float))
+CALL_FUNCTION_NO_RET(PlotHistogram, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
+END_IMGUI_FUNC
 //    IMGUI_API void          PlotHistogram(const char* label, float (*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0);
 // Unsupported arg type  float (*values_getter)(void* data
 // Unsupported arg type  void* data
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0 0
 //    IMGUI_API void          ProgressBar(float fraction, const ImVec2& size_arg = ImVec2 -1 0, const char* overlay = NULL);
 IMGUI_FUNCTION(ProgressBar)
 NUMBER_ARG(fraction)
@@ -943,7 +961,6 @@ END_IMGUI_FUNC
 // Unsupported arg type  const float* ref_col = NULL
 //    IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, ImVec2 size = ImVec2 0 0);  // display a colored square/button, hover for details, return true when pressed.
 // Unsupported arg type  ImGuiColorEditFlags flags = 0
-// Unsupported arg type  ImVec2 size = ImVec2 0 0
 //    IMGUI_API void          SetColorEditOptions(ImGuiColorEditFlags flags);                     // initialize current options (generally on application startup) if you want to select a default format, picker type, etc. User will be able to change many settings, unless you pass the _NoOptions flag to your calls.
 // Unsupported arg type ImGuiColorEditFlags flags
 //    IMGUI_API bool          TreeNode(const char* label);                                        // if returning 'true' the node is open and the tree id is pushed into the id stack. user is responsible for calling TreePop().
@@ -2550,15 +2567,3 @@ END_IMGUI_FUNC
 
 //struct ImFont
 
-// Manual additions
-IMGUI_FUNCTION(InputText)
-LABEL_ARG(label)
-LABEL_POINTER_ARG(buf)
-OPTIONAL_INT_ARG(flags, 0)
-DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
-DEFAULT_ARG(void*, user_data, NULL)
-CALL_FUNCTION(InputText, bool, label, buf, buf_size, flags, callback, user_data)
-PUSH_BOOL(ret)
-END_LABEL_POINTER(buf)
-//PUSH_BOOL(ret)
-END_IMGUI_FUNC
