@@ -2567,3 +2567,14 @@ END_IMGUI_FUNC
 
 //struct ImFont
 
+// Manual additions
+IMGUI_FUNCTION(InputText)
+LABEL_ARG(label)
+LABEL_POINTER_ARG(buf)
+OPTIONAL_INT_ARG(flags, 0)
+DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
+DEFAULT_ARG(void*, user_data, NULL)
+CALL_FUNCTION(InputText, bool, label, buf, buf_size, flags, callback, user_data)
+PUSH_BOOL(ret)
+END_LABEL_POINTER(buf)
+END_IMGUI_FUNC
