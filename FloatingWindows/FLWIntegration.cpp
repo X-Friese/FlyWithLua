@@ -351,6 +351,9 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
     lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);
+
+    lua_pushnumber(L, 1);
+    lua_setglobal(L, "SUPPORTS_FLOATING_WINDOWS");
 }
 
 void deinitFloatingWindowSupport() {
