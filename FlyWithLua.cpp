@@ -203,8 +203,8 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 // include OpenGL
 #if IBM
-#include <gl/GL.h>
-#include <gl/glut.h>
+#include <GL/GL.h>
+#include <GL/glut.h>
 #else
 #if LIN
 #define TRUE 1
