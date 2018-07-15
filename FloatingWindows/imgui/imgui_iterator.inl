@@ -737,7 +737,14 @@ IMGUI_FUNCTION(Bullet)
 CALL_FUNCTION_NO_RET(Bullet)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);
-// Unsupported arg type  ImGuiComboFlags flags = 0
+IMGUI_FUNCTION(BeginCombo)
+LABEL_ARG(label)
+LABEL_ARG(preview_value)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(BeginCombo, bool, label, preview_value, flags)
+IF_RET_ADD_END_STACK(5)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          EndCombo(); // only call EndCombo() if BeginCombo() returns true!
 IMGUI_FUNCTION(EndCombo)
 CALL_FUNCTION_NO_RET(EndCombo)
