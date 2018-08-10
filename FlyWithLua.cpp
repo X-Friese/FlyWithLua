@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.8 beta 9 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.1 beta 1 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -6626,6 +6626,31 @@ PLUGIN_API void XPluginDisable(void)
     logMsg(logToDevCon, "FlyWithLua Info: FlyWithLua plugin disabled.");
 }
 
+typedef struct {
+     /* Used to inform XPLMCreateWindowEx() of the SDK version you compiled         *
+      * against; should always be set to sizeof(XPLMCreateWindow_t)                 */
+     int                       structSize;
+     /* Left bound, in global desktop boxels                                        */
+     int                       left;
+     /* Top bound, in global desktop boxels                                         */
+     int                       top;
+     /* Right bound, in global desktop boxels                                       */
+     int                       right;
+     /* Bottom bound, in global desktop boxels                                      */
+     int                       bottom;
+     int                       visible;
+     XPLMDrawWindow_f          drawWindowFunc;
+     /* A callback to handle the user left-clicking within your window (or NULL to  *
+      * ignore left clicks)                                                         */
+     XPLMHandleMouseClick_f    handleMouseClickFunc;
+     XPLMHandleKey_f           handleKeyFunc;
+     XPLMHandleCursor_f        handleCursorFunc;
+     XPLMHandleMouseWheel_f    handleMouseWheelFunc;
+     /* A reference which will be passed into each of your window callbacks. Use    *
+      * this to pass information to yourself as needed.                             */
+     void *                    refcon;
+} XPLMCreateWindowSDK2_t;
+
 PLUGIN_API int XPluginEnable(void)
 {
     // init screen size
@@ -6750,7 +6775,7 @@ PLUGIN_API int XPluginEnable(void)
     XPLMRegisterKeySniffer(FWLKeySniffer, 0, (void *) "FWLKeySniffer");
 
     //register the mouse capture window
-    XPLMCreateWindow_t MouseWindowData;
+    XPLMCreateWindowSDK2_t MouseWindowData;
     MouseWindowData.structSize = sizeof(MouseWindowData);
     MouseWindowData.left = 0;
     MouseWindowData.bottom = 0;
@@ -6759,13 +6784,10 @@ PLUGIN_API int XPluginEnable(void)
     MouseWindowData.drawWindowFunc = FWLMouseEventWindowDraw;
     MouseWindowData.handleKeyFunc = FWLMouseEventWindowKey;
     MouseWindowData.handleMouseClickFunc = FWLMouseEventWindowMouse;
-    MouseWindowData.handleRightClickFunc = FWLMouseEventWindowRightMouse;
     MouseWindowData.handleMouseWheelFunc = FWLMouseEventWindowMouseWheel;
     MouseWindowData.handleCursorFunc = FWLMouseEventWindowCursor;
-    MouseWindowData.layer = xplm_WindowLayerFlightOverlay;
-    MouseWindowData.decorateAsFloatingWindow = xplm_WindowDecorationNone;
     MouseWindowData.refcon = NULL;
-    FWLMouseEventWindowID = XPLMCreateWindowEx(&MouseWindowData);
+    FWLMouseEventWindowID = XPLMCreateWindowEx((XPLMCreateWindow_t *) &MouseWindowData);
 
     return 1;
 }

@@ -114,7 +114,7 @@ function build_demo(wnd, x, y)
 
         -- The following function changes the color of all widgets until PopStyleColor is called.
         -- The format is AABBGGRR where A is alpha and B, G and R are blue, green and red.
-        -- So if you have an HTML color like #2B65EC (ocean blue), swap the first two and last two octecs
+        -- So if you have an HTML color like #2B65EC (ocean blue), swap the first two and last two hex digits
         -- and prefix it with FF to use it:
         imgui.PushStyleColor(imgui.constant.Col.Text, 0xFFEC652B)
         imgui.TextUnformatted("Ocean Blue Text")
@@ -400,6 +400,18 @@ function build_demo(wnd, x, y)
         -- Show a progress bar, 1 = 100%
         imgui.ProgressBar(0.5)
 
+        _, makeRed = imgui.Checkbox("Complicated Item", makeRed)
+        if imgui.IsItemActive() then
+            -- We can create a tooltip that is shown while the item is being clicked (click & hold):
+            imgui.BeginTooltip()
+            -- This function configures the wrapping inside the toolbox and thereby its width
+            imgui.PushTextWrapPos(imgui.GetFontSize() * 10)
+            imgui.TextUnformatted("Here's a long explanation text that describes the purpose of this widget")
+            -- Reset the wrapping, this must always be done if you used PushTextWrapPos
+            imgui.PopTextWrapPos()
+            imgui.EndTooltip()
+        end
+        
         -- Note that caption strings must be unique inside a window! If you need to have
         -- multiple widgets with the same caption, append ## followed by a unique id for an
         -- invisible caption extension:

@@ -5,7 +5,7 @@ LDPATHS=-L /opt/XSDK/Libraries/Win/ -L /opt/XSDK/CHeaders/Widgets/ -Linclude64 -
 LDLIBS=-l XPLM_64 -l XPWidgets_64 -lsetupapi -llua5.1.dll -lOpenGL32 -lglut64 -lOpenAL32
 LDFLAGS=--shared -static -static-libgcc -static-libstdc++ $(LDPATHS) $(LDLIBS)
 CXXDEFINES=-DWIN64 -DNDEBUG -D_WINDOWS -D_MBCS -D_USRDLL -DCustomCommands_EXPORTS -DSIMDATA_EXPORTS -DUSE_EXTERNAL_ALLOCATOR -DCREATECOMPLETEEDITION
-CXXFLAGS=-O3 -Wshadow -Wfloat-equal -pedantic -w -std=c++11 -fexceptions -fpermissive  $(CXXDEFINES) $(XPLANE_DEFINES) $(INCLUDES)
+CXXFLAGS=-O0 -Wshadow -Wfloat-equal -pedantic -w -std=c++11 -fexceptions -fpermissive  $(CXXDEFINES) $(XPLANE_DEFINES) $(INCLUDES)
 CFLAGS=$(CXXFLAGS)
 
 all: win.xpl
