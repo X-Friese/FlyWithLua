@@ -34,10 +34,6 @@ if(WIN32)
 	add_library(FWL_glut64 UNKNOWN IMPORTED)
 	set_target_properties(FWL_glut64 PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/src/GLUT_for_Windows/GL/glut64.lib")
 
-	add_library(FWL_setupapi UNKNOWN IMPORTED)
-	set_target_properties(FWL_setupapi PROPERTIES IMPORTED_LOCATION "/usr/x86_64-w64-mingw32/lib/libsetupapi.a")
-
-
 elseif(APPLE)
 
 elseif(UNIX)
@@ -56,7 +52,7 @@ endif()
 
 
 if(WIN32)
-	target_link_libraries(FlyWithLua --shared -static -static-libgcc -static-libstdc++ FWL_XPLM_64 FWL_XPWidgets_64 FWL_setupapi FWL_lua51 FWL_OpenGL32 FWL_glut64 FWL_OpenAL32)
+	target_link_libraries(FlyWithLua --shared -static -static-libgcc -static-libstdc++ setupapi FWL_XPLM_64 FWL_XPWidgets_64 FWL_lua51 FWL_OpenGL32 FWL_glut64 FWL_OpenAL32)
 elseif(APPLE)
 	link_directories("/opt/XSDK/Libraries/Mac")
 	target_link_libraries(FlyWithLua "-framework XPLM")
