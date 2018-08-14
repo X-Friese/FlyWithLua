@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.6.7 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.1 beta 1 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -153,6 +153,8 @@
  *     You may want to erase all of them, as they didn't fit your paths.
  */
 
+#include "FlyWithLua.h"
+
 #if IBM
 #include <windows.h>
 BOOL APIENTRY DllMain( HANDLE hModule,
@@ -174,7 +176,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #endif
 
 // OK, load as much as you can ;)
-
 #include "XPLMPlugin.h"
 #include "XPLMDisplay.h"
 #include "XPLMGraphics.h"
@@ -198,11 +199,12 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include <time.h>
 #include <wchar.h>
 #include "XSBComDefs.h"
+#include "FloatingWindows/FLWIntegration.h"
 
 // include OpenGL
 #if IBM
-#include <gl/GL.h>
-#include <gl/glut.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
 #else
 #if LIN
 #define TRUE 1
@@ -423,6 +425,7 @@ bool            UserWantsToReplaceAircraft = false;
 char            UserWantedFilename[LONGSTRING];
 
 bool            WeAreNotInDrawingState = true;
+
 
 void EraseDataRefTable( void )
 {
@@ -804,21 +807,10 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef        inCommand,
                                      XPLMCommandPhase      inPhase,
                                      void *                inRefcon);
 
-//Teddii: Enum fuer "logMsg"
-enum ELogType
-{
-    logToAll    = 0,
-    logToDevCon = 1,
-    logToSqkBox = 2
-};
-
-void logMsg (ELogType logType, std::string message ); //Teddii: added parameter logType //void logMsg ( std::string message );
 void initPluginDirectory ( ); // snagar
 
 void ResetLuaEngine( void );
 bool RunLuaString(string LuaCommandString);
-void CopyDataRefsToLua( void );
-void CopyDataRefsToXPlane( void );
 bool ReadScriptFile(char *FileNameToRead);
 bool RunLuaChunk(const char *ChunkName);
 
@@ -932,6 +924,10 @@ void FWLMouseEventWindowDraw(XPLMWindowID inWindowID, void * inRefcon)
 void FWLMouseEventWindowKey(XPLMWindowID inWindowID, char inKey, XPLMKeyFlags inFlags, char vkey, void * inRefcon, int losingFocus)
 {
     // no keyboard handling to catch mouse events
+}
+
+int	FWLMouseEventWindowRightMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void * inRefcon) {
+    return 0;
 }
 
 int	FWLMouseEventWindowMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void * inRefcon)
@@ -6032,7 +6028,7 @@ bool RunLuaChunk(const char *ChunkName)
 void ResetLuaEngine( void )
 {
     char    success_cstring[NORMALSTRING];
-
+    
     // define some DataRefs
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
     gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);
@@ -6150,6 +6146,10 @@ void ResetLuaEngine( void )
     luaL_openlibs(FWLLua);
 
     RegisterCoreCFunctionsToLua(FWLLua);
+
+    // functions to operate on floating windows
+    flwnd::initFloatingWindowSupport();
+
     lua_pushnumber(FWLLua, ++LuaResetCount);
     lua_setglobal(FWLLua, "LUA_RUN");
 
@@ -6552,6 +6552,8 @@ PLUGIN_API void    XPluginStop(void)
 
 PLUGIN_API void XPluginDisable(void)
 {
+    flwnd::deinitFloatingWindowSupport();
+
     // run through the exit script
     if (ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
     {
@@ -6623,6 +6625,31 @@ PLUGIN_API void XPluginDisable(void)
     // write to Log.txt
     logMsg(logToDevCon, "FlyWithLua Info: FlyWithLua plugin disabled.");
 }
+
+typedef struct {
+     /* Used to inform XPLMCreateWindowEx() of the SDK version you compiled         *
+      * against; should always be set to sizeof(XPLMCreateWindow_t)                 */
+     int                       structSize;
+     /* Left bound, in global desktop boxels                                        */
+     int                       left;
+     /* Top bound, in global desktop boxels                                         */
+     int                       top;
+     /* Right bound, in global desktop boxels                                       */
+     int                       right;
+     /* Bottom bound, in global desktop boxels                                      */
+     int                       bottom;
+     int                       visible;
+     XPLMDrawWindow_f          drawWindowFunc;
+     /* A callback to handle the user left-clicking within your window (or NULL to  *
+      * ignore left clicks)                                                         */
+     XPLMHandleMouseClick_f    handleMouseClickFunc;
+     XPLMHandleKey_f           handleKeyFunc;
+     XPLMHandleCursor_f        handleCursorFunc;
+     XPLMHandleMouseWheel_f    handleMouseWheelFunc;
+     /* A reference which will be passed into each of your window callbacks. Use    *
+      * this to pass information to yourself as needed.                             */
+     void *                    refcon;
+} XPLMCreateWindowSDK2_t;
 
 PLUGIN_API int XPluginEnable(void)
 {
@@ -6748,7 +6775,7 @@ PLUGIN_API int XPluginEnable(void)
     XPLMRegisterKeySniffer(FWLKeySniffer, 0, (void *) "FWLKeySniffer");
 
     //register the mouse capture window
-    XPLMCreateWindow_t MouseWindowData;
+    XPLMCreateWindowSDK2_t MouseWindowData;
     MouseWindowData.structSize = sizeof(MouseWindowData);
     MouseWindowData.left = 0;
     MouseWindowData.bottom = 0;
@@ -6760,7 +6787,7 @@ PLUGIN_API int XPluginEnable(void)
     MouseWindowData.handleMouseWheelFunc = FWLMouseEventWindowMouseWheel;
     MouseWindowData.handleCursorFunc = FWLMouseEventWindowCursor;
     MouseWindowData.refcon = NULL;
-    FWLMouseEventWindowID = XPLMCreateWindowEx(&MouseWindowData);
+    FWLMouseEventWindowID = XPLMCreateWindowEx((XPLMCreateWindow_t *) &MouseWindowData);
 
     return 1;
 }
@@ -6978,6 +7005,8 @@ float	MyFastLoopCallback(
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
     }
+    
+    flwnd::onFlightLoop();
 
     return TimeBetweenCallbacks;
 }
