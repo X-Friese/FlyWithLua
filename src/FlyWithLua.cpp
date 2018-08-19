@@ -6,7 +6,7 @@
 
 #if CREATECOMPLETEEDITION
 
-#define PLUGIN_NAME "FlyWithLua Complete"
+#define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Batteries included version of Pandora's box with additional features."
 
 #else
@@ -6486,7 +6486,7 @@ PLUGIN_API int XPluginStart(
     // Plugin Info
     strcpy(outName, PLUGIN_NAME " " PLUGIN_VERSION);
 #if CREATECOMPLETEEDITION
-    strcpy(outSig, "CarstenLynker.FlyWithLua.Complete");
+    strcpy(outSig, "CarstenLynker.FlyWithLua.NG");
 #else
     strcpy(outSig, "CarstenLynker.FlyWithLua.Core");
 #endif // CREATECOMPLETEEDITION
