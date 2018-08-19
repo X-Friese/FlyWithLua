@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.1 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.2 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -2561,8 +2561,10 @@ bool StoreLuaChunk(std::string LuaCommandString, const char *ChunkName)
         logMsg(logToDevCon, string("FlyWithLua Error: Can't store command string into a Lua chunk. The string should be stored into: ").append(ChunkName));
         logMsg(logToDevCon, LuaCommandString);
         LuaIsRunning = false;
+        return false;
     }
     lua_setglobal(FWLLua, ChunkName);
+    return true;
 }
 
 static int LuaDoEveryKeystroke(lua_State *L)
