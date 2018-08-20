@@ -1,0 +1,108 @@
+I have tried to move all the dependicies into the src folder but if I have missed any please contact me.
+
+Moving to the folder you want to build FlyWithLua NG in use the following commands.
+
+First use "Git Clone https://github.com/X-Friese/FlyWithLua.git"
+
+Now "cd FlyWithLua/scr"
+
+Next "mkdir build"
+
+Next "cd build"
+
+Next "cmake .."
+
+Next "make"
+
+If everything went well you should see a *.xpl in build for the platform you are on.
+
+My goal after getting this working is to be able to import the CMakeLists.txt file into CodeBlocks so that can be used for the IDE.
+
+*********************************************************************************************************************************
+
+
+Here are some examples of how to build for mutiple platforms and build systems.
+
+
+*******************************  Build For Windows On Linux  *******************************************************************
+
+If you are wanting to build for Windows on Linux you need x86_64-w64-mingw32 installed and use the following commands.
+
+Starting from the folder you want to build FlyWithLua NG in use the following commands.
+
+First use "Git Clone https://github.com/X-Friese/FlyWithLua.git"
+
+Now "cd FlyWithLua/scr"
+
+Next "mkdir build"
+
+Next "cd build"
+
+Next "cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-mingw-w64-x86-64.cmake .."
+
+Next "make"
+
+If everything went well you should see a win.xpl in the build folder.
+
+
+***********************************  Build For Windows On Windows Using MSYS  *************************************************
+
+If you are wanting to build for Windows on Windows using Msys use the following commands.
+
+Starting from your home folder use the following commands.
+
+First use "git clone https://github.com/X-Friese/FlyWithLua.git"
+
+Now "cd FlyWithLua"
+
+Next "cd src"
+
+Next "mkdir build"
+
+Next "cd build"
+
+Next "cmake -G 'MSYS Makefiles' .."
+
+Next "make"
+
+If everything went well you should see a win.xpl in the build folder.
+
+
+***********************************  Build For Linux On Linux  ***********************************************************
+
+If you are wanting to build for Linux on Linux use the following commands.
+
+Starting from your home folder use the following commands.
+
+First use "Git Clone https://github.com/X-Friese/FlyWithLua.git"
+
+Now "cd FlyWithLua/scr"
+
+Next "mkdir build"
+
+Next "cd build"
+
+Next "cmake .."
+
+Next "make"
+
+If everything went well you should see a lin.xpl in the build folder.
+
+
+***************************************  Some Other Comands I Have Found Useful  ************************************************
+
+If you are in the build folder using there three commands will clear out the build folder and put you back there ready for a Cmake command.
+
+First "cd .."
+
+Then "rm -r build/*"
+
+Then "cd build"
+
+
+If you want make to be more verbose use this command.
+
+"make VERBOSE=1"
+
+
+
