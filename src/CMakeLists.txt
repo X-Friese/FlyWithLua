@@ -1,4 +1,35 @@
+cmake_minimum_required(VERSION 3.9)
+project(FlyWithLua VERSION 2.7.1 DESCRIPTION "FlyWithLua X-Plane plugin")
+
 set(CMAKE_CXX_STANDARD 14)
+
+include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/Widgets")
+include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/Wrappers")
+include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/XPLM")
+include_directories("${CMAKE_SOURCE_DIR}/include64")
+include_directories("${CMAKE_SOURCE_DIR}/hidapi")
+include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
+include_directories("${CMAKE_SOURCE_DIR}/.")
+include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
+include_directories("${CMAKE_SOURCE_DIR}/imgui")
+
+if(WIN32)
+	include_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
+endif(WIN32)
+
+if(WIN32)
+	link_directories("${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Win")
+	link_directories("${CMAKE_SOURCE_DIR}/include64")
+	link_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
+
+endif(WIN32)
+
+if(APPLE)
+	link_directories("${CMAKE_SOURCE_DIR}/mac_libs")    
+elseif(UNIX)
+	link_directories("${CMAKE_SOURCE_DIR}/linux_libs/luaXML/64")
+	link_directories("${CMAKE_SOURCE_DIR}/linux_libs/glut/64")
+endif()
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1")
@@ -32,7 +63,7 @@ elseif(APPLE)
 	link_directories("/opt/XSDK/Libraries/Mac")
 	target_link_libraries(FlyWithLua "-framework XPLM")
 elseif(UNIX)
-	target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/64 -Wl,-rpath=./Resources/plugins/FlyWithLua/Modules -static-libgcc -static-libstdc++ -ldl -Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/src/flywithlua.sym LuaXML_lib_64 glut ${CMAKE_SOURCE_DIR}/src/linux_libs/luajit/64/libluajit-5.1.a -lGLU -lGL -ludev)
+	target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/64 -Wl,-rpath=./Resources/plugins/FlyWithLua/Modules -static-libgcc -static-libstdc++ -ldl -Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/flywithlua.sym LuaXML_lib_64 glut ${CMAKE_SOURCE_DIR}/linux_libs/luajit/64/libluajit-5.1.a -lGLU -lGL -ludev)
 endif()
 
 
