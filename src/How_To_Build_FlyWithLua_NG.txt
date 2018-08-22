@@ -104,5 +104,26 @@ If you want make to be more verbose use this command.
 
 "make VERBOSE=1"
 
+********************************************  Create Code Blocks Project From CmakeLists.txt File  **************************************
 
+First you will need to install MinGW-64, Cmake, CodeBlocks and Git.
 
+Create a CodeBlocks Projects folder like this.
+
+"mkdir CodeBlocksProjects"
+
+"cd D:\CodeBlocksProjects"
+
+"git clone https://github.com/X-Friese/FlyWithLua.git"
+
+"cd FlyWithLua/src"
+
+"mkdir build"
+
+"cd build"
+
+"cmake -G "CodeBlocks - MinGW Makefiles" .."
+
+Open CodeBlocks and use "Open an existing project" browsing to "FlyWithLua/src/build/FlyWithLua.cbp" and click on the Open button.
+
+At that point you should be able to build FlwWithLua.
