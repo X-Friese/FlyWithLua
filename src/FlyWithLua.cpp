@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.2 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.2 beta 1 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -425,6 +425,28 @@ bool            UserWantsToReplaceAircraft = false;
 char            UserWantedFilename[LONGSTRING];
 
 bool            WeAreNotInDrawingState = true;
+
+/*
+ * Since FlyWithLua can't handle datarefs with multiple types,
+ * let's do a somewhat sane translation to single types using
+ * a priority encoder.
+ */
+XPLMDataTypeID  GetDataRefTypeCompat(XPLMDataRef ref) {
+    XPLMDataTypeID types = XPLMGetDataRefTypes(ref);
+    if (types & xplmType_Double) {
+        return xplmType_Double;
+    } else if (types & xplmType_Float) {
+        return xplmType_Float;
+    } else if (types & xplmType_Int) {
+        return xplmType_Int;
+    } else if (types & xplmType_FloatArray) {
+        return xplmType_FloatArray;
+    } else if (types & xplmType_IntArray) {
+        return xplmType_IntArray;
+    } else {
+        return types;
+    }
+}
 
 
 void EraseDataRefTable( void )
@@ -2957,8 +2979,7 @@ static int LuaGet(lua_State *L)
     {
         IndexWanted = lua_tointeger(L, 2);
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
 
     // everything is fine, but a FWL-type dataref variable may carry a new value
     // we fix it by pushing all dataref variables to X-Plane before reading
@@ -3027,8 +3048,7 @@ static int LuaSet(lua_State *L)
         return 0;
     }
 
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
-    if ((int) DataRefTypeIdWanted == 6) DataRefTypeIdWanted = xplmType_Double;
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted == xplmType_Int)
     {
         int ValueToWrite = (int)lua_tonumber(L, 2);
@@ -3073,7 +3093,7 @@ static int LuaSetArray(lua_State *L)
         return 0;
     }
 
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted == xplmType_IntArray)
     {
         int ValueWanted = (int) lua_tonumber(L, 3);
@@ -3298,7 +3318,7 @@ static int LuaDataRef(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 4))
@@ -3306,7 +3326,6 @@ static int LuaDataRef(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append("\" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
     if ((ReadOnlyWanted == false) && (XPLMCanWriteDataRef(DataRefIdWanted) == false))
     {
         logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" is not writeable."));
@@ -3369,7 +3388,7 @@ static int LuaCreateSwitch(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3377,7 +3396,6 @@ static int LuaCreateSwitch(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3486,7 +3504,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3494,7 +3512,6 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3554,7 +3571,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3562,7 +3579,6 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3622,7 +3638,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3630,7 +3646,6 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3708,7 +3723,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3716,7 +3731,6 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3794,7 +3808,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3802,7 +3816,6 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3884,7 +3897,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3892,7 +3905,6 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -3974,7 +3986,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -3982,7 +3994,6 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
@@ -4064,7 +4075,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    XPLMDataTypeID  DataRefTypeIdWanted = XPLMGetDataRefTypes(DataRefIdWanted);
+    XPLMDataTypeID  DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
     if (DataRefTypeIdWanted >= xplmType_FloatArray)
     {
         if (!lua_isnumber(L, 3))
@@ -4072,7 +4083,6 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
             logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
-    if ((int)DataRefTypeIdWanted == 6 || (int)DataRefTypeIdWanted == 7) DataRefTypeIdWanted = xplmType_Double;
 
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)

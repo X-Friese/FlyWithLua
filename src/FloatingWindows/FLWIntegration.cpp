@@ -210,7 +210,7 @@ int LuaSetOnClickCallback(lua_State *L) {
     std::string cbName = lua_tostring(L, 2);
     wnd->setClickCallback([cbName] (FloatingWindow &fwnd, int x, int y, XPLMMouseStatus status) {
         if (!flywithlua::LuaIsRunning)  {
-            return true;
+            return;
         }
 
         lua_State *L = flywithlua::FWLLua;
@@ -218,7 +218,7 @@ int LuaSetOnClickCallback(lua_State *L) {
         lua_getglobal(L, cbName.c_str());
         if (!lua_isfunction(L, 1)) {
             lua_pop(L, 1);
-            return true;
+            return;
         }
 
         XPLMWindowID window = fwnd.getXWindow();
@@ -235,7 +235,7 @@ int LuaSetOnClickCallback(lua_State *L) {
         if (lua_pcall(L, 4, 0, 0)) {
             flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window click callback");
             flywithlua::LuaIsRunning = false;
-            return true;
+            return;
         }
         flywithlua::CopyDataRefsToXPlane();
     });
