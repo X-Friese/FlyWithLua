@@ -431,8 +431,7 @@ bool            WeAreNotInDrawingState = true;
  * let's do a somewhat sane translation to single types using
  * a priority encoder.
  */
-XPLMDataTypeID  GetDataRefTypeCompat(XPLMDataRef ref) {
-    XPLMDataTypeID types = XPLMGetDataRefTypes(ref);
+XPLMDataTypeID reduceTypes(XPLMDataTypeID types) {
     if (types & xplmType_Double) {
         return xplmType_Double;
     } else if (types & xplmType_Float) {
@@ -448,6 +447,10 @@ XPLMDataTypeID  GetDataRefTypeCompat(XPLMDataRef ref) {
     }
 }
 
+XPLMDataTypeID  GetDataRefTypeCompat(XPLMDataRef ref) {
+    XPLMDataTypeID types = XPLMGetDataRefTypes(ref);
+    return reduceTypes(types);
+}
 
 void EraseDataRefTable( void )
 {
@@ -791,7 +794,7 @@ static float init_sound(float elapsed, float elapsed_sim, int counter, void * re
 		// Make our context current, so that OpenAL commands affect our, um, stuff.
 
 		alcMakeContextCurrent(my_ctx);
-		printf("0x%08x: I created the context.\n",XPLMGetMyID(), my_ctx);
+		printf("0x%08x: I created the context %p.\n",XPLMGetMyID(), my_ctx);
 
 		ALCint		major_version, minor_version;
 		const char * al_hw=alcGetString(my_dev,ALC_DEVICE_SPECIFIER	);
@@ -807,7 +810,7 @@ static float init_sound(float elapsed, float elapsed_sim, int counter, void * re
 	}
 	else
 	{
-		printf("0x%08x: I found someone else's context 0x%08x.\n",XPLMGetMyID(), old_ctx);
+		printf("0x%08x: I found someone else's context %p.\n",XPLMGetMyID(), old_ctx);
 	}
 
 	// skipping some code, as we don't want to load the example sound file
@@ -833,7 +836,7 @@ void initPluginDirectory ( ); // snagar
 
 void ResetLuaEngine( void );
 bool RunLuaString(string LuaCommandString);
-bool ReadScriptFile(char *FileNameToRead);
+bool ReadScriptFile(const char *FileNameToRead);
 bool RunLuaChunk(const char *ChunkName);
 
 // new way to handle classic and modern DataRaf access
@@ -1038,6 +1041,7 @@ XPLMCursorStatus FWLMouseEventWindowCursor(XPLMWindowID	inWindowID,
         void *        inRefcon)
 {
     // noting to do with the cursor
+    return xplm_CursorDefault;
 }
 
 
@@ -4985,6 +4989,8 @@ static int      Luapeek(lua_State *L)
         DataRefTypeIdWanted = lua_tointeger(L, 2);
         IndexWanted         = lua_tointeger(L, 3);
 
+        DataRefTypeIdWanted = reduceTypes(DataRefTypeIdWanted);
+
         if (DataRefTypeIdWanted == xplmType_Float)
         {
             float ValueOfDataRef = XPLMGetDataf(DataRefIdWanted);
@@ -4999,7 +5005,7 @@ static int      Luapeek(lua_State *L)
             return 1;
         }
 
-        if ((DataRefTypeIdWanted == xplmType_Double) || (DataRefTypeIdWanted == 6))
+        if (DataRefTypeIdWanted == xplmType_Double)
         {
             double ValueOfDataRef = XPLMGetDatad(DataRefIdWanted);
             lua_pushnumber(FWLLua, ValueOfDataRef);
@@ -5051,6 +5057,8 @@ static int      Luapoke(lua_State *L)
         DataRefId     = lua_touserdata(L, 1);
         DataRefTypeId = lua_tointeger(L, 2);
         Index         = lua_tointeger(L, 3);
+
+        DataRefTypeId = reduceTypes(DataRefTypeId);
 
         if ((DataRefTypeId == xplmType_Int) && lua_isnumber(L, 4))
         {
@@ -6272,7 +6280,7 @@ void ResetLuaEngine( void )
     }
 }
 
-bool ReadScriptFile(char *FileNameToRead)
+bool ReadScriptFile(const char *FileNameToRead)
 {
     if (LuaIsRunning == false)
     {
@@ -6554,7 +6562,7 @@ PLUGIN_API void    XPluginStop(void)
 	// cleanup sound system
 	if(my_ctx)
 	{
-		printf("0x%08x: deleting my context 0x%08x\n", XPLMGetMyID(),my_ctx);
+		printf("0x%08x: deleting my context %p\n", XPLMGetMyID(),my_ctx);
 		alcMakeContextCurrent(NULL);
 		alcDestroyContext(my_ctx);
 	}
@@ -6637,31 +6645,6 @@ PLUGIN_API void XPluginDisable(void)
     // write to Log.txt
     logMsg(logToDevCon, "FlyWithLua Info: FlyWithLua plugin disabled.");
 }
-
-typedef struct {
-     /* Used to inform XPLMCreateWindowEx() of the SDK version you compiled         *
-      * against; should always be set to sizeof(XPLMCreateWindow_t)                 */
-     int                       structSize;
-     /* Left bound, in global desktop boxels                                        */
-     int                       left;
-     /* Top bound, in global desktop boxels                                         */
-     int                       top;
-     /* Right bound, in global desktop boxels                                       */
-     int                       right;
-     /* Bottom bound, in global desktop boxels                                      */
-     int                       bottom;
-     int                       visible;
-     XPLMDrawWindow_f          drawWindowFunc;
-     /* A callback to handle the user left-clicking within your window (or NULL to  *
-      * ignore left clicks)                                                         */
-     XPLMHandleMouseClick_f    handleMouseClickFunc;
-     XPLMHandleKey_f           handleKeyFunc;
-     XPLMHandleCursor_f        handleCursorFunc;
-     XPLMHandleMouseWheel_f    handleMouseWheelFunc;
-     /* A reference which will be passed into each of your window callbacks. Use    *
-      * this to pass information to yourself as needed.                             */
-     void *                    refcon;
-} XPLMCreateWindowSDK2_t;
 
 PLUGIN_API int XPluginEnable(void)
 {
@@ -6787,8 +6770,8 @@ PLUGIN_API int XPluginEnable(void)
     XPLMRegisterKeySniffer(FWLKeySniffer, 0, (void *) "FWLKeySniffer");
 
     //register the mouse capture window
-    XPLMCreateWindowSDK2_t MouseWindowData;
-    MouseWindowData.structSize = sizeof(MouseWindowData);
+    XPLMCreateWindow_t MouseWindowData;
+    MouseWindowData.structSize = 72; // SDK 2 size to work around XPD-9350
     MouseWindowData.left = 0;
     MouseWindowData.bottom = 0;
     XPLMGetScreenSize(&MouseWindowData.right, &MouseWindowData.top);
@@ -6798,8 +6781,11 @@ PLUGIN_API int XPluginEnable(void)
     MouseWindowData.handleMouseClickFunc = FWLMouseEventWindowMouse;
     MouseWindowData.handleMouseWheelFunc = FWLMouseEventWindowMouseWheel;
     MouseWindowData.handleCursorFunc = FWLMouseEventWindowCursor;
+    MouseWindowData.handleRightClickFunc = FWLMouseEventWindowRightMouse;
+    MouseWindowData.layer = xplm_WindowLayerFloatingWindows;
+    MouseWindowData.decorateAsFloatingWindow = xplm_WindowDecorationNone;
     MouseWindowData.refcon = NULL;
-    FWLMouseEventWindowID = XPLMCreateWindowEx((XPLMCreateWindow_t *) &MouseWindowData);
+    FWLMouseEventWindowID = XPLMCreateWindowEx(&MouseWindowData);
 
     return 1;
 }
