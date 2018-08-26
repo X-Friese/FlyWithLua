@@ -1,15 +1,27 @@
+-- July 22 2018
+
+-- This is the original graphics test.lua in the Scripts (disabled) folder
+-- modified to work with floating wondows
+
+
+if not SUPPORTS_FLOATING_WINDOWS then
+    -- to make sure the script doesn't stop old FlyWithLua versions
+    logMsg("imgui not supported by your FlyWithLua version")
+    return
+end
+
 require("graphics")
 
 dataref("first_axis", "sim/joystick/joystick_axis_values", "readonly", 0)
 
-lastClickX = 640 / 2
-lastClickY = 480 / 2
+flLastClickX = 640 / 2
+flLastClickY = 480 / 2
 
 -- x and y are the origin of the window, i.e. the lower left
 -- x increases to the right, y increases to the top
-function on_draw(wnd, x, y)
-    centerX = x + lastClickX
-    centerY = y + lastClickY
+function fl_on_draw(wnd, x, y)
+    centerX = x + flLastClickX
+    centerY = y + flLastClickY
 
     for i = 0, 360, 30 do
         graphics.set_color(0, 0, 1)
@@ -31,22 +43,22 @@ end
 
 -- x and y are relative from the origin of the window, i.e. the lower left
 -- state: 1 = mouse down, 2 = mouse drag, 3 = mouse up
-function on_click(wnd, x, y, state)
-    lastClickX = x
-    lastClickY = y
+function fl_on_click(wnd, x, y, state)
+    flLastClickX = x
+    flLastClickY = y
 end
 
 -- When on_close it called, it is illegal to do anything with the wnd variable outside of this function
 -- It is also not allowed to create new windows in on_close!
-function on_close(wnd)
+function fl_on_close(wnd)
 end
 
 -- width, height, decoration style as per XPLMCreateWindowEx. 1 for solid background, 3 for transparent
-wnd = float_wnd_create(640, 480, 1)
-float_wnd_set_title(wnd, "FlyWithLua Test")
-float_wnd_set_ondraw(wnd, "on_draw")
-float_wnd_set_onclick(wnd, "on_click")
-float_wnd_set_onclose(wnd, "on_close")
+local wnd = float_wnd_create(640, 480, 1, false)
+float_wnd_set_title(wnd, "Graphics Test for Floating Windows")
+float_wnd_set_ondraw(wnd, "fl_on_draw")
+float_wnd_set_onclick(wnd, "fl_on_click")
+float_wnd_set_onclose(wnd, "fl_on_close")
 
 -- To destroy a window:
 -- float_wnd_destroy(wnd) 

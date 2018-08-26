@@ -1,3 +1,10 @@
+if not SUPPORTS_FLOATING_WINDOWS then
+    -- to make sure the script doesn't stop old FlyWithLua versions
+    logMsg("imgui not supported by your FlyWithLua version")
+    return
+end
+
+
 require("graphics")
 
 dataref("first_axis", "sim/joystick/joystick_axis_values", "readonly", 0)
