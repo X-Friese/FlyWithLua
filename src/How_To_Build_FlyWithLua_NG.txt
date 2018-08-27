@@ -49,7 +49,7 @@ If everything went well you should see a win.xpl in the build folder.
 
 If you are wanting to build for Windows on Windows using Msys use the following commands.
 
-Starting from your home folder use the following commands.
+Starting from folder you want to build FlyWithLua NG in use the following commands.
 
 First use "git clone https://github.com/X-Friese/FlyWithLua.git"
 
@@ -72,7 +72,7 @@ If everything went well you should see a win.xpl in the build folder.
 
 If you are wanting to build for Linux on Linux use the following commands.
 
-Starting from your home folder use the following commands.
+Starting from folder you want to build FlyWithLua NG in use the following commands.
 
 First use "Git Clone https://github.com/X-Friese/FlyWithLua.git"
 
@@ -87,6 +87,31 @@ Next "cmake .."
 Next "make"
 
 If everything went well you should see a lin.xpl in the build folder.
+
+
+***************************************  Build for Mac on Linux using osxcross   ************************************************
+
+
+If you are wanting to build for the Mac on Linux use the following commands.
+
+First you need to install osxcross found here "https://github.com/tpoechtrager/osxcross" and follow the instructions on how to install.
+
+Starting from folder you want to build FlyWithLua NG in use the following commands.
+
+First use "Git Clone https://github.com/X-Friese/FlyWithLua.git"
+
+Now "cd FlyWithLua/scr"
+
+Next "mkdir build"
+
+Next "cd build"
+
+Next "cmake -DCMAKE_TOOLCHAIN_FILE=../Toolchain-ubuntu-osxcross-10.11.cmake .."
+
+Next "make"
+
+If everything went well you should see a mac.xpl in the build folder.
+  
 
 
 ***************************************  Some Other Comands I Have Found Useful  ************************************************
