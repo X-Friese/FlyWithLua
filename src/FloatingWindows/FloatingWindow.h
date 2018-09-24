@@ -31,6 +31,7 @@ public:
     void setKeyCallback(KeyCallback cb);
 
     void setTitle(const char *title);
+    void setPosition(int posx, int posy);
     bool isVisible() const;
     void setVisible(bool visible);
     void moveFromOrToVR();

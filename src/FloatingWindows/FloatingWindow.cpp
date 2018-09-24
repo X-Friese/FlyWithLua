@@ -18,6 +18,7 @@
 #include <memory>
 #include <stdexcept>
 #include "FloatingWindow.h"
+#include "../FlyWithLua.h"
 
 namespace {
 
@@ -108,6 +109,18 @@ void FloatingWindow::setTitle(const char *title) {
     XPLMSetWindowTitle(window, title);
 }
 
+void FloatingWindow::setPosition(int posx, int posy) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+        int winLeft, winTop, winRight, winBot;
+        XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+
+        XPLMSetWindowGeometry(window, winLeft + posx, winTop - posy, winLeft + posx + width, winTop - posy - height);
+    }
+}
+
 void FloatingWindow::moveFromOrToVR() {
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -122,6 +135,7 @@ void FloatingWindow::moveFromOrToVR() {
         
         int winLeft, winTop, winRight, winBot;
         XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+
         XPLMSetWindowGeometry(window, winLeft + 100, winTop - 100, winLeft + 100 + width, winTop - 100 - height);
     }
 }

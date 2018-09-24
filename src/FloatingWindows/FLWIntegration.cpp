@@ -112,6 +112,20 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
     return 0;
 }
 
+int LuaSetFloatingWindowPosition(lua_State *L) {
+    if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
+        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_position");
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    // Not sure what the correct syntxt is needed here.
+    wnd->setPosition(lua_tonumber(L, 2), lua_tonumber(L, 3));
+
+    return 0;
+}
+
 int LuaLoadFloatinWindowImage(lua_State *L) {
     if (!lua_isstring(L, 1)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_load_image");
@@ -344,6 +358,7 @@ void initFloatingWindowSupport() {
 
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
+    lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
     lua_register(L, "float_wnd_set_ondraw", LuaSetOnDrawCallback);
     lua_register(L, "float_wnd_set_onclick", LuaSetOnClickCallback);
     lua_register(L, "float_wnd_set_onclose", LuaSetOnCloseCallback);
