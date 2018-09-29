@@ -16,7 +16,9 @@ set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-clang++)
 
 # target environment on the build host system
 #   set 1st to dir with the cross compiler's C/C++ headers/libs
-set(CMAKE_FIND_ROOT_PATH "~/X-Plane_OsxCrossBuild/osxcross/target/SDK/MacOSX10.11.sdk/usr/")
+if (NOT DEFINED CMAKE_FIND_ROOT_PATH)
+  set(CMAKE_FIND_ROOT_PATH "~/X-Plane_OsxCrossBuild/osxcross/target/SDK/MacOSX10.11.sdk/usr/")
+endif()
 
 
 # modify default behavior of FIND_XXX() commands to

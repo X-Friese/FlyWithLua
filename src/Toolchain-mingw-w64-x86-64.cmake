@@ -17,9 +17,11 @@ set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
 #   set 1st to dir with the cross compiler's C/C++ headers/libs
 set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
 
-# modify default behavior of FIND_XXX() commands to
-# search for headers/libs in the target environment and
-# search for programs in the build host environment
+# Modify default behavior of FIND_XXX() commands to search for headers/libs in
+# the target environment and search for programs in the build host environment.
+# Note that using "ONLY" causes CMake to fail finding libraries bundled in the
+# git repository, since it forcefully prepends CMAKE_FIND_ROOT_PATH to any
+# CMAKE_LIBRARY_PATH.
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
