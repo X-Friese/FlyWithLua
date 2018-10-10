@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.3 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.4 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -824,6 +824,12 @@ static float init_sound(float elapsed, float elapsed_sim, int counter, void * re
 std::string              pluginMainDir;
 std::string              scriptDir;
 // END modified by Snagar
+
+// Added by Sparker
+std::string systemDir;
+std::string internalsDir;
+std::string modulesDir;
+// END added by Sparker
 
 // The user will be able to handle the plugin with commands
 XPLMCommandRef MyReloadScriptsCommand = NULL;
@@ -5703,7 +5709,8 @@ void DebugLua( void )
 {
     time_t      DebugZeit;
     time(&DebugZeit);
-    ofstream DebugFile("FlyWithLua_Debug.txt");
+    logMsg(logToAll, string("FlyWithLua Debug Info From Plugin: SystemPath \"").append(systemDir).append("\""));
+    ofstream DebugFile(systemDir + "FlyWithLua_Debug.txt");
     if (DebugFile.is_open() != true)
     {
         logMsg(logToDevCon, "FlyWithLua Error: Unable to write a debug file.");
@@ -6250,8 +6257,16 @@ void ResetLuaEngine( void )
     strcpy( dirSep, XPLMGetDirectorySeparator() ); // correct for each OS
     lua_pushstring(FWLLua, dirSep);
     lua_setglobal(FWLLua, "DIRECTORY_SEPARATOR");
+    lua_pushstring(FWLLua, systemDir.c_str());
+    lua_setglobal(FWLLua, "SYSTEM_DIRECTORY");
+    lua_pushstring(FWLLua, pluginMainDir.c_str());
+    lua_setglobal(FWLLua, "PLUGIN_MAIN_DIRECTORY");
     lua_pushstring(FWLLua, scriptDir.c_str());
     lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, internalsDir.c_str());
+    lua_setglobal(FWLLua, "INTERNALS_DIRECTORY");
+    lua_pushstring(FWLLua, modulesDir.c_str());
+    lua_setglobal(FWLLua, "MODULES_DIRECTORY");
     char AircraftFileName[256];
     char AircraftPath[512];
     XPLMGetNthAircraftModel(0, AircraftFileName, AircraftPath);
@@ -6288,7 +6303,6 @@ bool ReadScriptFile(const char *FileNameToRead)
         logMsg(logToDevCon, FileNameToRead);
         return false;
     }
-
 
     CopyDataRefsToLua();
     if (luaL_dofile(FWLLua, FileNameToRead))
@@ -6365,7 +6379,10 @@ bool ReadAllScriptFiles(void)
     }
 
     // run through the init script
-    if (ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.ini"))
+    sprintf(PathAndName, "%sResources/plugins/FlyWithLua/Internals/FlyWithLua.ini", systemDir.c_str());
+    logMsg(logToAll, "FlyWithLua Info: FlyWithLua.ini full path ");
+    logMsg(logToAll, PathAndName);
+    if (ReadScriptFile(PathAndName))
     {
         logMsg(logToDevCon, "FlyWithLua Info: Load ini file.");
     }
@@ -6414,7 +6431,9 @@ bool ReadAllScriptFiles(void)
                                             or (strstr(FileToLoad, ".LUA") != NULL and strlen(strstr(FileToLoad, ".LUA")) == 4)))
             {
                 // load the script file
-                sprintf(PathAndName, "Resources/plugins/FlyWithLua/Scripts/%s", FileToLoad);
+                // sprintf(PathAndName, "Resources/plugins/FlyWithLua/Scripts/%s", FileToLoad);
+                // sprintf(PathAndName, "%sResources/plugins/FlyWithLua/Scripts/%s", systemDir.c_str(), FileToLoad);
+                sprintf(PathAndName, "%s/%s", scriptDir.c_str(), FileToLoad);
                 logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file ").append(PathAndName) );
                 if (ReadScriptFile(PathAndName))
                 {
@@ -7421,22 +7440,29 @@ void initPluginDirectory ( )
 {
     char path[1024]; // hopefully path will not be longer then 1024 characters
 
-
     XPLMGetSystemPath( path );
     logMsg(logToDevCon, std::string("FlyWithLua: Your system path is ").append(path) ); // debug
-
 
     char dirSep[2];
     strcpy( dirSep, XPLMGetDirectorySeparator() ); // correct for each OS
 
+    systemDir.clear();
     pluginMainDir.clear();
     scriptDir.clear();
+    internalsDir.clear();
+    modulesDir.clear();
 
+    systemDir.append(path);
     pluginMainDir.append(path).append("Resources").append(dirSep).append("plugins").append(dirSep).append("FlyWithLua");
     scriptDir.append(pluginMainDir).append(dirSep).append("Scripts");
+    internalsDir.append(pluginMainDir).append(dirSep).append("Internals").append(dirSep);
+    modulesDir.append(pluginMainDir).append(dirSep).append("Modules").append(dirSep);
 
+    logMsg (logToDevCon, std::string("FlyWithLua: System Dir: ") + systemDir ); // debug
     logMsg (logToDevCon, std::string("FlyWithLua: Plugin Dir: ") + pluginMainDir ); // debug
     logMsg (logToDevCon, std::string("FlyWithLua: Plugin Scripts Dir: ") + scriptDir ); // debug
+    logMsg (logToDevCon, std::string("FlyWithLua: Plugin Internals Dir: ") + internalsDir ); // debug
+    logMsg (logToDevCon, std::string("FlyWithLua: Plugin Modules Dir: ") + modulesDir ); // debug
 }
 
 
