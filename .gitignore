@@ -216,3 +216,8 @@ pip-log.txt
 
 #ignore ZIP files
 *.zip
+
+# Artifacts of Docker-based cross-compilation
+src/build-lin
+src/build-mac
+src/build-win
