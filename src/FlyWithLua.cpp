@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.4 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.5 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -90,6 +90,16 @@
  *  v2.6.2  [added] new compiler flag "CREATECOMPLETEEDITION" to get a separated version without restrictions
  *  v2.6.5  [changed] doubled the number of joystick buttons for X-Plane 11.10 and above
  *  v2.6.6  [added] new function do_on_new_XSB_text() to handle XSquawkBox incoming text message events
+ *  v2.6.7  [added] support for XPLMCommandBegin and XPLMCommandEnd
+ *
+ *  v2.7.0  [added] support for floating windows and VR and new name NG (Next Generation)
+ *  v2.7.1  [solved] issue with not being able to write to xlua datarefs.
+ *  v2.7.2  [solved] issue with not being able to write to xlua array datarefs.
+ *          [added] check for nil in SaveInitialAssignments.ini before writing to initial_assignments.txt
+ *  v2.7.3  [added] being able to set initial window position of non VR floating windows.
+ *  v2.7.4  [solved] issue when loading situation files in Scripts folder might cause CTD.
+ *  v2.7.5  [added] better error reporting.
+ *
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -2423,7 +2433,7 @@ static int LuaCommandOnce(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string.");
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string for CommandOnce.");
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
@@ -2431,7 +2441,7 @@ static int LuaCommandOnce(lua_State *L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. The command is unknown.");
+        logMsg(logToAll, string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
     }
     XPLMCommandOnce(CommandId);
@@ -2442,7 +2452,7 @@ static int LuaCommandBegin(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string.");
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string for CommandBegin.");
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
@@ -2450,7 +2460,7 @@ static int LuaCommandBegin(lua_State *L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. The command is unknown.");
+        logMsg(logToAll, string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
     }
     XPLMCommandBegin(CommandId);
@@ -2461,7 +2471,7 @@ static int LuaCommandEnd(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string.");
+        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string for CommandEnd.");
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
@@ -2469,7 +2479,7 @@ static int LuaCommandEnd(lua_State *L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. The command is unknown.");
+        logMsg(logToAll, string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
     }
     XPLMCommandEnd(CommandId);
@@ -2603,7 +2613,7 @@ static int LuaDoEveryKeystroke(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryKeystroke command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2616,7 +2626,7 @@ static int LuaDoEveryMouseClick(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2629,7 +2639,7 @@ static int LuaDoEveryMouseWheel(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2642,7 +2652,7 @@ static int LuaDoEveryDrawCallback(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryDrawCallback command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2655,7 +2665,7 @@ static int LuaDoEveryMETARCallback(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMETARCallback command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2668,7 +2678,7 @@ static int LuaDoOnNewXSBTextCallback(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoOnNewXSBTextCallback command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2681,7 +2691,7 @@ static int LuaDoEveryFrame(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryFrame command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2694,7 +2704,7 @@ static int LuaDoOften(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoOften command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2707,7 +2717,7 @@ static int LuaDoSometimes(lua_State *L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your command is not a string.");
+        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoSometimes command is not a string.");
         return 0;
     }
     string LuaShouldDoCommand = lua_tostring(L, 1);

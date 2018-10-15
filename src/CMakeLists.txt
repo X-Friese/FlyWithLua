@@ -6,7 +6,7 @@
 #   * -DCREATECOMPLETEEDITION=XXX, where XXX is true or false. Default is true.
 
 cmake_minimum_required(VERSION 3.9)
-project(FlyWithLua VERSION 2.7.1 DESCRIPTION "FlyWithLua X-Plane plugin")
+project(FlyWithLua VERSION 2.7.5 DESCRIPTION "FlyWithLua X-Plane plugin")
 
 # By default, use optimized release configuration.
 if(NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
