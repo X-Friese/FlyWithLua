@@ -1,0 +1,3 @@
+upstream/*.exe
+upstream/*.dll
+upstream/*.so

@@ -247,6 +247,9 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 // include the extern command provided by the LUA team
 #include <lua.hpp>
 
+/// This symbol comes from statically linked LuaXML_lib library.
+extern "C" int luaopen_LuaXML_lib (lua_State* L);
+
 namespace flywithlua
 {
 using namespace std; // snagar
@@ -5547,6 +5550,32 @@ static int LuaReloadScenery(lua_State *L)
     return 0;
 }
 
+/**
+ * Register initialization functions of Lua modules compiled into the plugin.
+ *
+ * This function stores references to module initialization functions inside
+ * package.preload table, so that calling `require` in a script would be able
+ * to find the module.
+ *
+ * This approach allows us to compile binary modules into the plugin binary
+ * instead of having dynamically loadable libraries in Modules directory, at
+ * least for modules supported out of box. This is necessary to ensure that
+ * binary modules are compiled and linked against exactly the same version of
+ * LuaJIT that is shipped with FlyWithLua.
+ *
+ * While having dynamic libraries *may* work, this causes a risk of LuaJIT
+ * version mismatch, leading to difficult to debug errors. It also doesn't work
+ * well on UNIX platforms, where FlyWithLua plugin doesn't export any Lua
+ * symbols.
+ */
+void RegisterEmbeddedModules(lua_State *L)
+{
+  lua_getfield(L, LUA_GLOBALSINDEX, "package");
+  lua_getfield(L, -1, "preload");
+  lua_pushcfunction(L, ::luaopen_LuaXML_lib);
+  lua_setfield(L, -2, "LuaXML_lib");
+}
+
 void RegisterCoreCFunctionsToLua(lua_State *L)
 {
     lua_register(L, "XSBSpeakString", LuaXSBSpeakString);
@@ -6182,6 +6211,7 @@ void ResetLuaEngine( void )
     UserWantsToReplaceAircraft = false;
 
     luaL_openlibs(FWLLua);
+    RegisterEmbeddedModules(FWLLua);
 
     RegisterCoreCFunctionsToLua(FWLLua);
 
