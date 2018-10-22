@@ -7,7 +7,7 @@
 #    *) cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/ubuntu-osxcross-10.7.cmake ..
 
 set(CMAKE_SYSTEM_NAME Darwin)
-set(TOOLCHAIN_PREFIX o64)
+set(TOOLCHAIN_PREFIX x86_64-apple-darwin14)
 
 # cross compilers to use for C and C++
 set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-clang)

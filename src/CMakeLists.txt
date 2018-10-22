@@ -41,7 +41,6 @@ elseif(APPLE)
   list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/mac_libs")
 elseif(UNIX)
   list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/luajit/64")
-  list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/luaXML/64")
   list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/OpenAL")
 endif()
 
@@ -106,6 +105,8 @@ target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LI
 # Link Lua related libraries.
 find_library(LUAJIT_LIBRARY NAMES lua51 libluajit-5.1.a)
 target_link_libraries(FlyWithLua ${LUAJIT_LIBRARY})
+add_subdirectory(third_party/luaxml)
+target_link_libraries(FlyWithLua LuaXML_lib)
 
 # Link X-Plane plugin system libraries. They are only provided for OS X and Windows.
 if(WIN32 OR APPLE)

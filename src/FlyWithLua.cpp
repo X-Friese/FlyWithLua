@@ -247,6 +247,9 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 // include the extern command provided by the LUA team
 #include <lua.hpp>
 
+/// This symbol comes from statically linked LuaXML_lib library.
+extern "C" int luaopen_LuaXML_lib (lua_State* L);
+
 namespace flywithlua
 {
 using namespace std; // snagar
@@ -1147,7 +1150,7 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
                 if (lua_isstring(FWLLua, i))
                 {
                     // get the string from the stack
-                    strcpy(buffer, lua_tostring(FWLLua, i));
+                    strncpy(buffer, lua_tostring(FWLLua, i), sizeof(buffer));
 
                     // set color and position to OpenGL
                     XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
@@ -1954,7 +1957,7 @@ static int LuaPlaceUserAtAirport(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
     logMsg(logToSqkBox, string("FlyWithLua Info: Placing user's aircraft at ").append(UserWantedFilename)); //fallback to DevCon
     UserWantsANewPlane = false;
     UserWantsToLoadASituation = false;
@@ -1971,7 +1974,7 @@ static int LuaLoadAircraft(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
     logMsg(logToSqkBox, string("FlyWithLua Info: Loading aircraft ").append(UserWantedFilename)); //fallback to DevCon
     UserWantsANewPlane = true;
     UserWantsToLoadASituation = false;
@@ -1988,7 +1991,7 @@ static int LuaLoadSituation(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
     logMsg(logToSqkBox, string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
     UserWantsANewPlane = false;
     UserWantsToLoadASituation = true;
@@ -2005,7 +2008,8 @@ static int LuaSaveSituation(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(UserWantedFilename, lua_tostring(L, 1));
+    strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
+    logMsg(logToSqkBox, string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
     logMsg(logToSqkBox, string("FlyWithLua Info: Saving situation ").append(UserWantedFilename)); //fallback to DevCon
     XPLMSaveDataFile(xplm_DataFile_Situation, UserWantedFilename);
     return 0;
@@ -2067,7 +2071,7 @@ static int      LuaXSBLookupATC(lua_State *L)
         logMsg(logToDevCon, "FlyWithLua Error: Wrong argument to XSBLookupATC, we need a string to search for.");
         return 0;
     }
-    strcpy(ATC_wanted, lua_tostring(L, 1));
+    strncpy(ATC_wanted, lua_tostring(L, 1), sizeof(ATC_wanted));
     XPLMSetDatab(XSBATCCallsignXDataRef, ATC_wanted, 0, strlen(ATC_wanted));
     XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_LOOKUP_ATC, NULL);
     lua_pushnumber(L, XPLMGetDatai(XSBATCFreqXDataRef)/10);
@@ -2163,7 +2167,7 @@ static int LuaDrawString(lua_State *L)
     int     y_pos = lua_tointeger(L, 2);
     char  string_to_print[LONGSTRING];
 
-    strcpy(string_to_print, lua_tostring(L, 3));
+    strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
     XPLMDrawString(ColorWanted, x_pos, y_pos, string_to_print, NULL, xplmFont_Proportional);
     return 0;
 }
@@ -2192,7 +2196,7 @@ static int LuaDrawStringHelv18(lua_State *L)
 
     // get string from Lua Script
     char  string_to_print[LONGSTRING];
-    strcpy(string_to_print, lua_tostring(L, 3));
+    strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
     // set position to OpenGL
     glRasterPos2f (x_pos, y_pos);
@@ -2230,7 +2234,7 @@ static int LuaDrawStringHelv12(lua_State *L)
 
     // get string from Lua Script
     char  string_to_print[LONGSTRING];
-    strcpy(string_to_print, lua_tostring(L, 3));
+    strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
     // set position to OpenGL
     glRasterPos2f (x_pos, y_pos);
@@ -2268,7 +2272,7 @@ static int LuaDrawStringHelv10(lua_State *L)
 
     // get string from Lua Script
     char  string_to_print[LONGSTRING];
-    strcpy(string_to_print, lua_tostring(L, 3));
+    strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
     // set position to OpenGL
     glRasterPos2f (x_pos, y_pos);
@@ -2306,7 +2310,7 @@ static int LuaDrawStringTimes10(lua_State *L)
 
     // get string from Lua Script
     char  string_to_print[LONGSTRING];
-    strcpy(string_to_print, lua_tostring(L, 3));
+    strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
     // set position to OpenGL
     glRasterPos2f (x_pos, y_pos);
@@ -2344,7 +2348,7 @@ static int LuaDrawStringTimes24(lua_State *L)
 
     // get string from Lua Script
     char  string_to_print[LONGSTRING];
-    strcpy(string_to_print, lua_tostring(L, 3));
+    strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
     // set position to OpenGL
     glRasterPos2f (x_pos, y_pos);
@@ -2369,12 +2373,12 @@ static int LuaMeasureString(lua_State *L)
         return 0;
     }
     char  string_to_measure[LONGSTRING];
-    strcpy(string_to_measure, lua_tostring(L, 1));
+    strncpy(string_to_measure, lua_tostring(L, 1), sizeof(string_to_measure));
     if (lua_isstring(L, 2))
     {
         int result = 0;
         char  font_to_measure[LONGSTRING];
-        strcpy(font_to_measure, lua_tostring(L, 2));
+        strncpy(font_to_measure, lua_tostring(L, 2), sizeof(font_to_measure));
         if (strcmp(font_to_measure, "Helvetica_10") == 0)
         {
             for (int i = 0; string_to_measure[i] != '\0'; i++)
@@ -2437,7 +2441,7 @@ static int LuaCommandOnce(lua_State *L)
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
-    strcpy(LuaWantsToDo, lua_tostring(L, 1));
+    strncpy(LuaWantsToDo, lua_tostring(L, 1), sizeof(LuaWantsToDo));
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
@@ -2456,7 +2460,7 @@ static int LuaCommandBegin(lua_State *L)
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
-    strcpy(LuaWantsToDo, lua_tostring(L, 1));
+    strncpy(LuaWantsToDo, lua_tostring(L, 1), sizeof(LuaWantsToDo));
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
@@ -2475,7 +2479,7 @@ static int LuaCommandEnd(lua_State *L)
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
-    strcpy(LuaWantsToDo, lua_tostring(L, 1));
+    strncpy(LuaWantsToDo, lua_tostring(L, 1), sizeof(LuaWantsToDo));
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
@@ -2771,7 +2775,7 @@ static int LuaSetButtonAssignment(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong argument range. Button number has to be from 0 to 3199.");
         return 0;
     }
-    strcpy(CommandWanted, lua_tostring(L, 2));
+    strncpy(CommandWanted, lua_tostring(L, 2), sizeof(CommandWanted));
     if (strcmp(CommandWanted, "sim/none/none") == 0)
     {
         int set_the_value_to_zero = 0;
@@ -2985,7 +2989,7 @@ static int LuaGet(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(DataRefWanted, lua_tostring(L, 1));
+    strncpy(DataRefWanted, lua_tostring(L, 1), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
@@ -3057,7 +3061,7 @@ static int LuaSet(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(DataRefWanted, lua_tostring(L, 1));
+    strncpy(DataRefWanted, lua_tostring(L, 1), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
@@ -3101,7 +3105,7 @@ static int LuaSetArray(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(DataRefWanted, lua_tostring(L, 1));
+    strncpy(DataRefWanted, lua_tostring(L, 1), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3140,7 +3144,7 @@ static int LuaGetDataRefBinding(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(VariableWanted, lua_tostring(L, 1));
+    strncpy(VariableWanted, lua_tostring(L, 1), sizeof(VariableWanted));
     if (DataRefTableLastElement>-1)
     {
         for (int i=0;i<=DataRefTableLastElement;i++)
@@ -3172,8 +3176,8 @@ static int LuaDefineSharedDataRef(lua_State *L)
         LuaIsRunning = false;
         return 0;
     }
-    strcpy(DataRefNameWanted, lua_tostring(L, 1));
-    strcpy(DataRefTypeWanted, lua_tostring(L, 2));
+    strncpy(DataRefNameWanted, lua_tostring(L, 1), sizeof(DataRefNameWanted));
+    strncpy(DataRefTypeWanted, lua_tostring(L, 2), sizeof(DataRefTypeWanted));
 
     // check if the name is okay
     if (strncmp(DataRefNameWanted, "sim/", 4) == 0)
@@ -3255,7 +3259,7 @@ static int LuaDataRef(lua_State *L)
     }
     else
     {
-        strcpy(ReadOnlyOrNot, lua_tostring(L, 3));
+        strncpy(ReadOnlyOrNot, lua_tostring(L, 3), sizeof(ReadOnlyOrNot));
         if ((strcmp(ReadOnlyOrNot, "writable") == 0) || (strcmp(ReadOnlyOrNot, "writeable") == 0))  // allow a often used mistake in spelling writable
         {
             ReadOnlyWanted = false;
@@ -3265,8 +3269,8 @@ static int LuaDataRef(lua_State *L)
             ReadOnlyWanted = true;
         }
     }
-    strcpy(VariableWanted, lua_tostring(L, 1));
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(VariableWanted, lua_tostring(L, 1), sizeof(VariableWanted));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
 
     if (!lua_isnumber(L, 4))
     {
@@ -3366,8 +3370,8 @@ static int LuaDataRef(lua_State *L)
         DataRefTable[DataRefTableLastElement].DataRefTypeId = DataRefTypeIdWanted;
         DataRefTable[DataRefTableLastElement].Index = IndexWanted;
         DataRefTable[DataRefTableLastElement].IsReadOnly = ReadOnlyWanted;
-        strcpy(DataRefTable[DataRefTableLastElement].DataRefName, DataRefWanted);
-        strcpy(DataRefTable[DataRefTableLastElement].LuaVariable, VariableWanted);
+        strncpy(DataRefTable[DataRefTableLastElement].DataRefName, DataRefWanted, sizeof(DataRefTable[DataRefTableLastElement].DataRefName));
+        strncpy(DataRefTable[DataRefTableLastElement].LuaVariable, VariableWanted, sizeof(DataRefTable[DataRefTableLastElement].LuaVariable));
     }
 
     PushDataRefToLuaVariable(VariableWanted, DataRefIdWanted, DataRefTypeIdWanted, IndexWanted);
@@ -3387,7 +3391,7 @@ static int LuaCreateSwitch(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3460,7 +3464,7 @@ static int LuaCreateAxisMedian(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3503,7 +3507,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3570,7 +3574,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3637,7 +3641,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3722,7 +3726,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3807,7 +3811,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3896,7 +3900,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -3985,7 +3989,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -4074,7 +4078,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
         return 0;
     }
 
-    strcpy(DataRefWanted, lua_tostring(L, 2));
+    strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -4536,7 +4540,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
 
     if (lua_isstring(L, 1))
     {
-        strcpy(NameFragment, lua_tostring(L, 1));
+        strncpy(NameFragment, lua_tostring(L, 1), sizeof(NameFragment));
         inNameFragment = NameFragment;
     }
     else
@@ -4545,7 +4549,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
     }
     if (lua_isstring(L, 2))
     {
-        strcpy(IDFragment, lua_tostring(L, 2));
+        strncpy(IDFragment, lua_tostring(L, 2), sizeof(IDFragment));
         inIDFragment = IDFragment;
     }
     else
@@ -4739,7 +4743,7 @@ static int      LuaXPLMFindDataRef(lua_State *L)
     char            DataRefWanted[NORMALSTRING];
     XPLMDataRef     DataRefID;
 
-    strcpy(DataRefWanted, luaL_checkstring(L, 1));
+    strncpy(DataRefWanted, luaL_checkstring(L, 1), sizeof(DataRefWanted));
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
@@ -5109,7 +5113,7 @@ static int      Luapoke(lua_State *L)
         if ((DataRefTypeId == xplmType_Data) && lua_isstring(L, 4))
         {
             char    DataRefValue[LONGSTRING];
-            strcpy(DataRefValue, lua_tostring(FWLLua, 4));
+            strncpy(DataRefValue, lua_tostring(FWLLua, 4), sizeof(DataRefValue));
             XPLMSetDatab(DataRefId, DataRefValue, Index, sizeof(DataRefValue));
             update_Lua_dataref_strings(DataRefId, Index, DataRefValue);
         }
@@ -5187,7 +5191,7 @@ static int      Luadirectory_to_table(lua_State *L)
 #endif
     char*           FileIndex[500];
 
-    strcpy(DirectoryPath, luaL_checkstring(L, 1));
+    strncpy(DirectoryPath, luaL_checkstring(L, 1), sizeof(DirectoryPath));
 
     if (XPLMGetDirectoryContents(DirectoryPath, 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 500, &TotalNumberOfFiles, &NumberOfFiles))
     {
@@ -5231,7 +5235,7 @@ static int LuaLoadWAVFile(lua_State *L)
         return 0;
     }
     char FileNameToLoad[NORMALSTRING];
-    strcpy(FileNameToLoad, lua_tostring(L, 1));
+    strncpy(FileNameToLoad, lua_tostring(L, 1), sizeof(FileNameToLoad));
     if (++OpenALTableLastElement >= MAXSOUNDS)
     {
         logMsg(logToAll, "FlyWithLua Error: Too much sounds to handle.");
@@ -5506,7 +5510,7 @@ static int LuaReplaceWAVFile(lua_State *L)
         return 0;
     }
     char FileNameToLoad[NORMALSTRING];
-    strcpy(FileNameToLoad, lua_tostring(L, 2));
+    strncpy(FileNameToLoad, lua_tostring(L, 2), sizeof(FileNameToLoad));
 
     // free memory
     alDeleteSources(1, &OpenALSources[SourceNo]);
@@ -5544,6 +5548,32 @@ static int LuaReloadScenery(lua_State *L)
     // by the per drawing call
     WeNeedToReloadTheScenery = true;
     return 0;
+}
+
+/**
+ * Register initialization functions of Lua modules compiled into the plugin.
+ *
+ * This function stores references to module initialization functions inside
+ * package.preload table, so that calling `require` in a script would be able
+ * to find the module.
+ *
+ * This approach allows us to compile binary modules into the plugin binary
+ * instead of having dynamically loadable libraries in Modules directory, at
+ * least for modules supported out of box. This is necessary to ensure that
+ * binary modules are compiled and linked against exactly the same version of
+ * LuaJIT that is shipped with FlyWithLua.
+ *
+ * While having dynamic libraries *may* work, this causes a risk of LuaJIT
+ * version mismatch, leading to difficult to debug errors. It also doesn't work
+ * well on UNIX platforms, where FlyWithLua plugin doesn't export any Lua
+ * symbols.
+ */
+void RegisterEmbeddedModules(lua_State *L)
+{
+  lua_getfield(L, LUA_GLOBALSINDEX, "package");
+  lua_getfield(L, -1, "preload");
+  lua_pushcfunction(L, ::luaopen_LuaXML_lib);
+  lua_setfield(L, -2, "LuaXML_lib");
 }
 
 void RegisterCoreCFunctionsToLua(lua_State *L)
@@ -6018,7 +6048,7 @@ void CopyDataRefsToXPlane( void )
                 {
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
                     char    DataRefValue[LONGSTRING];
-                    strcpy(DataRefValue, lua_tostring(FWLLua, -1));
+                    strncpy(DataRefValue, lua_tostring(FWLLua, -1), sizeof(DataRefValue));
                     lua_pop(FWLLua, 1);
                     XPLMSetDatab(DataRefTable[i].DataRefId, DataRefValue, 0, sizeof(DataRefValue));
                 }
@@ -6065,7 +6095,7 @@ bool RunLuaChunk(const char *ChunkName)
 void ResetLuaEngine( void )
 {
     char    success_cstring[NORMALSTRING];
-    
+
     // define some DataRefs
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
     gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);
@@ -6181,6 +6211,7 @@ void ResetLuaEngine( void )
     UserWantsToReplaceAircraft = false;
 
     luaL_openlibs(FWLLua);
+    RegisterEmbeddedModules(FWLLua);
 
     RegisterCoreCFunctionsToLua(FWLLua);
 
@@ -6424,7 +6455,7 @@ bool ReadAllScriptFiles(void)
         // reading out the files into a string step by step
         for (k = 0; k < NumberOfFiles; k++)
         {
-            strcpy(FileToLoad, FileIndex[k]);
+            strncpy(FileToLoad, FileIndex[k], sizeof(FileToLoad));
             if ((FileToLoad[0] != '.') and ((strstr(FileToLoad, ".fwl") != NULL and strlen(strstr(FileToLoad, ".fwl")) == 4)
                                             or (strstr(FileToLoad, ".FWL") != NULL and strlen(strstr(FileToLoad, ".FWL")) == 4)
 #if defined(__LP64__) || defined(_WIN64)
@@ -7032,7 +7063,7 @@ float	MyFastLoopCallback(
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
     }
-    
+
     flwnd::onFlightLoop();
 
     return TimeBetweenCallbacks;
