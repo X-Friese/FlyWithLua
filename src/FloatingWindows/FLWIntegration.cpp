@@ -194,6 +194,19 @@ int LuaSetOnDrawCallback(lua_State *L) {
     return 0;
 }
 
+int LuaGetXPLMWindowHandle(lua_State *L) {
+    if (!lua_islightuserdata(L, 1)) {
+        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_xplm_handle.");
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    XPLMWindowID window = wnd->getXWindow();
+    lua_pushlightuserdata(L, window);
+    return 1;
+}
+
 int LuaGetFloatingWindowDimensions(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_get_dimensions");
@@ -363,6 +376,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_onclick", LuaSetOnClickCallback);
     lua_register(L, "float_wnd_set_onclose", LuaSetOnCloseCallback);
     lua_register(L, "float_wnd_set_imgui_builder", LuaSetImguiBuilder);
+    lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
     lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);

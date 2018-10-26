@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.5 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.6 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -92,13 +92,17 @@
  *  v2.6.6  [added] new function do_on_new_XSB_text() to handle XSquawkBox incoming text message events
  *  v2.6.7  [added] support for XPLMCommandBegin and XPLMCommandEnd
  *
- *  v2.7.0  [added] support for floating windows and VR and new name NG (Next Generation)
- *  v2.7.1  [solved] issue with not being able to write to xlua datarefs.
- *  v2.7.2  [solved] issue with not being able to write to xlua array datarefs.
- *          [added] check for nil in SaveInitialAssignments.ini before writing to initial_assignments.txt
- *  v2.7.3  [added] being able to set initial window position of non VR floating windows.
- *  v2.7.4  [solved] issue when loading situation files in Scripts folder might cause CTD.
- *  v2.7.5  [added] better error reporting.
+ *  v2.7.0  [added]   support for floating windows and VR and new name NG (Next Generation)
+ *  v2.7.1  [solved]  issue with not being able to write to xlua datarefs.
+ *  v2.7.2  [solved]  issue with not being able to write to xlua array datarefs.
+ *          [added]   check for nil in SaveInitialAssignments.ini before writing to initial_assignments.txt
+ *  v2.7.3  [added]   being able to set initial window position of non VR floating windows.
+ *  v2.7.4  [solved]  issue when loading situation files in Scripts folder might cause CTD.
+ *  v2.7.5  [added]   better error reporting.
+ *  v2.7.6  [fixed]   package.path and package.cpath in FlyWithLua.ini.
+ *          [changed] Replaced strcpy() with strncpy() in most places to avoid buffer overflows.
+ *          [changed] Statically link LuaXML_lib into FlyWithLua plugin binary.
+ *          [added]   The ability to get the xplm handle from floating window to be used with ffi thanks to IanQ.
  *
  *
  *  Markus (Teddii):
