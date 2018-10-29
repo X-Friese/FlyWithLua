@@ -1,0 +1,6 @@
+*.aux
+*.make
+*.d
+*.fls
+*.out
+*.toc
