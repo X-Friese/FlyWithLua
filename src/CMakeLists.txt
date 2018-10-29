@@ -106,7 +106,8 @@ target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LI
 find_library(LUAJIT_LIBRARY NAMES lua51 libluajit-5.1.a)
 target_link_libraries(FlyWithLua ${LUAJIT_LIBRARY})
 add_subdirectory(third_party/luaxml)
-target_link_libraries(FlyWithLua LuaXML_lib)
+add_subdirectory(third_party/luasocket)
+target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial)
 
 # Link X-Plane plugin system libraries. They are only provided for OS X and Windows.
 if(WIN32 OR APPLE)

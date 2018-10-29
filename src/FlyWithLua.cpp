@@ -209,6 +209,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 #include <math.h>
 #include <time.h>
 #include <wchar.h>
@@ -253,6 +254,11 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
 /// This symbol comes from statically linked LuaXML_lib library.
 extern "C" int luaopen_LuaXML_lib (lua_State* L);
+/// These symbols come from statically linked LuaSocket libraries.
+extern "C" int luaopen_mime_core (lua_State* L);
+extern "C" int luaopen_socket_core (lua_State* L);
+extern "C" int luaopen_socket_serial (lua_State* L);
+extern "C" int luaopen_socket_unix (lua_State* L);
 
 namespace flywithlua
 {
@@ -5574,10 +5580,21 @@ static int LuaReloadScenery(lua_State *L)
  */
 void RegisterEmbeddedModules(lua_State *L)
 {
-  lua_getfield(L, LUA_GLOBALSINDEX, "package");
-  lua_getfield(L, -1, "preload");
-  lua_pushcfunction(L, ::luaopen_LuaXML_lib);
-  lua_setfield(L, -2, "LuaXML_lib");
+    auto const preload_libs = std::map<std::string, lua_CFunction>{
+        {"LuaXML_lib", ::luaopen_LuaXML_lib},
+        {"mime.core", ::luaopen_mime_core},
+        {"socket.core", ::luaopen_socket_core},
+#ifndef IBM
+        {"socket.serial", ::luaopen_socket_serial},
+        {"socket.unix", ::luaopen_socket_unix},
+#endif
+    };
+    for (auto& lib : preload_libs) {
+        lua_getfield(L, LUA_GLOBALSINDEX, "package");
+        lua_getfield(L, -1, "preload");
+        lua_pushcfunction(L, lib.second);
+        lua_setfield(L, -2, lib.first.c_str());
+    }
 }
 
 void RegisterCoreCFunctionsToLua(lua_State *L)
