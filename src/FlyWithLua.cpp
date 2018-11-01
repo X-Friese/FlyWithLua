@@ -103,6 +103,7 @@
  *          [changed] Replaced strcpy() with strncpy() in most places to avoid buffer overflows.
  *          [changed] Statically link LuaXML_lib into FlyWithLua plugin binary.
  *          [added]   The ability to get the xplm handle from floating window to be used with ffi thanks to IanQ.
+ *          [changed] Statically link LuaSocket_lib into FlyWithLua plugin binary.
  *
  *
  *  Markus (Teddii):
