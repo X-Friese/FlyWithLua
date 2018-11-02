@@ -1,13 +1,13 @@
 --------------------------------
 -- Script:  jjjLib1
--- Version: 1.6
--- Date:    2017-12-25
+-- Version: 1.7
+-- Date:    2018-04-21
 -- By:      3j@raeuber.com
 --------------------------------
 module(..., package.seeall)
 
 jjjLib1Installed = true
-jjjLib1Version = 1.6
+jjjLib1Version = 1.7
 
 require("graphics")
 
@@ -75,6 +75,7 @@ local saveCustomPath = {}
 local saveCustomName = {}
 local paramsActionOnSet = {}
 local numMissingDRs = {}
+local curParamProfile = {}
 
 
 ------------------------------------------------------------------------------------------------
@@ -346,6 +347,7 @@ function getPlId(plugin)
 	saveCustomPath[plId] = SCRIPT_DIRECTORY
 	saveCustomName[plId] = plugin .. "-custom"
 	paramsActionOnSet[plId] = false
+	curParamProfile[plId] = "A"
 	numMissingDRs[plId] = 0
 	flashRectTimer[plId] = {}
 	flashRectX1[plId] = {}
@@ -460,7 +462,7 @@ function addParam(plId, param, metaArray, actionOnSet)
 		end
 		saveScope = string.lower(saveScope)
 		params[plId][param]["save"] = saveScope
-		if saveScope == "global" or saveScope == "aircraft" or saveScope == "custom" then
+		if saveScope == "global" or saveScope == "global-profile" or saveScope == "aircraft" or saveScope == "aircraft-profile" or saveScope == "custom" or saveScope == "custom-profile" then
 			saveScopes[plId][saveScope] = true
 		end
 	end
@@ -553,6 +555,12 @@ function setCustomPrefsName(plId, name)
 	saveCustomName[plId] = name
 end
 
+function setParamProfile(plId, profile)
+	if profile ~= nil and profile ~= false and profile ~= "" then
+		curParamProfile[plId] = profile
+	end
+end
+
 
 ------------------------------------------------------------------------------------------------
 -- private functions (global, not plugin specific)
@@ -595,12 +603,20 @@ end
 
 local function saveParamsScope(plId, scope)
 	local file = false
+	local profile = ""
+	profile = "-" .. curParamProfile[plId]
 	if scope == "global" then
 		file = io.open(SCRIPT_DIRECTORY .. pluginName[plId] .. ".prf", "w")
+	elseif scope == "global-profile" then
+		file = io.open(SCRIPT_DIRECTORY .. pluginName[plId] .. profile .. ".prf", "w")
 	elseif scope == "aircraft" then
 		file = io.open(AIRCRAFT_PATH .. pluginName[plId] .. ".prf", "w")
+	elseif scope == "aircraft-profile" then
+		file = io.open(AIRCRAFT_PATH .. pluginName[plId] .. profile .. ".prf", "w")
 	elseif scope == "custom" then
 		file = io.open(saveCustomPath[plId] .. saveCustomName[plId] .. ".prf", "w")
+	elseif scope == "custom-profile" then
+		file = io.open(saveCustomPath[plId] .. saveCustomName[plId] .. profile .. ".prf", "w")
 	end
 	if not file then
 		alert(plId, "ERROR!", "Could not write preferences file .prf! (scope = " .. scope .. ")", "white", "Ok")
@@ -616,11 +632,15 @@ local function saveParamsScope(plId, scope)
 	return true
 end
 
-function saveParams(plId)
+function saveParams(plId, singleScope)
 	local ok = true
-	for scope, inUse in pairs(saveScopes[plId]) do
-		if inUse then
-			ok = ok and saveParamsScope(plId, scope)
+	if singleScope then
+		ok = saveParamsScope(plId, singleScope)
+	else
+		for scope, inUse in pairs(saveScopes[plId]) do
+			if inUse then
+				ok = ok and saveParamsScope(plId, scope)
+			end
 		end
 	end
 	if ok then
@@ -636,12 +656,20 @@ local function loadParamsScope(plId, scope)
 	local type
 
 	local file = false
+	local profile = ""
+	profile = "-" .. curParamProfile[plId]
 	if scope == "global" then
 		file = io.open(SCRIPT_DIRECTORY .. pluginName[plId] .. ".prf", "r")
+	elseif scope == "global-profile" then
+		file = io.open(SCRIPT_DIRECTORY .. pluginName[plId] .. profile .. ".prf", "r")
 	elseif scope == "aircraft" then
 		file = io.open(AIRCRAFT_PATH .. pluginName[plId] .. ".prf", "r")
+	elseif scope == "aircraft-profile" then
+		file = io.open(AIRCRAFT_PATH .. pluginName[plId] .. profile .. ".prf", "r")
 	elseif scope == "custom" then
 		file = io.open(saveCustomPath[plId] .. saveCustomName[plId] .. ".prf", "r")
+	elseif scope == "custom-profile" then
+		file = io.open(saveCustomPath[plId] .. saveCustomName[plId] .. profile .. ".prf", "r")
 	end
 	if not file then
 		return false
@@ -669,11 +697,15 @@ local function loadParamsScope(plId, scope)
 	return true
 end
 
-function loadParams(plId)
+function loadParams(plId, singleScope)
 	local ok = true
-	for scope, inUse in pairs(saveScopes[plId]) do
-		if inUse then
-			ok = ok and loadParamsScope(plId, scope)
+	if singleScope then
+		ok = loadParamsScope(plId, singleScope)
+	else
+		for scope, inUse in pairs(saveScopes[plId]) do
+			if inUse then
+				ok = ok and loadParamsScope(plId, scope)
+			end
 		end
 	end
 	savedParams[plId] = arrayCopy(params[plId])
@@ -1181,6 +1213,13 @@ function addPanelSliderLegend(plId, panelId, textL, textR)
 	return
 end
 
+function addPanelDataRefDisplay(plId, panelId, dataRefPointer, dataRefType, size, format)
+	local w = getButtonWidth(size, nil) + panelPadding
+	checkBreak(plId, panelId, w, panelLineHeight)
+	curX[plId][panelId] = curX[plId][panelId] + w
+	return addPanelElement(plId, panelId, {["type"]="DrD", ["dr"]=dataRefPointer, ["drtype"]=dataRefType, ["fmt"]=format, ["x"]=curX[plId][panelId] - w, ["y"]=curY[plId][panelId]})
+end
+
 function addPanelFpsDisplay(plId, panelId)
 	return addPanelElement(plId, panelId, {["type"]="fpsD", ["id"]="fpsD", ["click"]=true, ["x"]=curX[plId][panelId], ["y"]=curY[plId][panelId]})
 end
@@ -1271,7 +1310,7 @@ function checkPanelClick(plId, panelId)
 							panelRefreshAction[plId][panelId]()
 						end
 						if params[plId][param]["autosave"] then
-							saveParams(plId)
+							saveParamsScope(plId, params[plId][param]["save"])
 						end
 					end
 					action = element["action"]
@@ -1458,7 +1497,7 @@ local function drawPanelElement(plId, panelId, e)
 			graphics.draw_rectangle(e["x1"] + (getParamMin(plId, e["param"]) - min)/(max - min)*e["w"], e["y1"] + e["h"]*0.4, e["x1"] + (getParamMax(plId, e["param"]) - min)/(max - min)*e["w"], e["y2"] - e["h"]*0.5)
 		end
 		if getParamDefault(plId, e["param"]) then
-			default = math.floor(e["x1"] + (getParamDefault(plId, e["param"]) - min)/(max - min)*e["w"] + 0.5)
+			default = e["x1"] + (getParamDefault(plId, e["param"]) - min)/(max - min)*e["w"]
 			graphics.draw_line(default, e["y1"] + 1, default, e["y2"] - e["h"]*0.5)
 		end
 		value  = e["x1"] + (getParam(plId, e["param"]) - min)/(max - min)*e["w"]
@@ -1481,6 +1520,16 @@ local function drawPanelElement(plId, panelId, e)
 		graphics.set_color(colR, colG, colB, 0.5*alpha)
 		draw_string_Helvetica_10(pX + e["x"] + e["textX"], pY + e["y"] + panelLineHeight*0.4 - 1, e["text"])
 		draw_string_Helvetica_10(pX + e["x"] + e["textX"] + 1, pY + e["y"] + panelLineHeight*0.4 - 1, e["text"])
+	elseif tp == "DrD" then
+		graphics.set_color(colR, colG, colB, 1*alpha)
+		if e["drtype"] == "f" then
+			tx = string.format(e["fmt"], getDataRef_f(e["dr"]))
+		elseif e["drtype"] == "i" then
+			tx = string.format(e["fmt"], getDataRef_i(e["dr"]))
+		else
+			tx = ""
+		end
+		draw_string_Helvetica_12(pX + e["x"], pY + e["y"], tx)
 	elseif tp == "fpsD" then
 		e["x1"] = pX + e["x"]
 		e["y1"] = pY + e["y"] - panelLineHeight*0.33
