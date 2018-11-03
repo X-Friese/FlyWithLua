@@ -263,9 +263,6 @@ extern "C" int luaopen_socket_unix (lua_State* L);
 
 namespace flywithlua
 {
-using namespace std; // snagar
-
-
 // Maybe usefull to be platform independend
 #ifndef M_PI
 #define M_PI    3.14159265358979323846f
@@ -400,9 +397,9 @@ static int                         DataRefTableLastElement = -1;
 struct  MacroTableStructure
 {
     bool        IsSwitch;
-    string      MacroName;
-    string      ActivateCommand;
-    string      DeactivateCommand;
+    std::string      MacroName;
+	std::string      ActivateCommand;
+	std::string      DeactivateCommand;
     int         XPLM_Index;
 };
 
@@ -416,7 +413,7 @@ struct  SwitchTableStructure
     SwitchTypes     SwitchType;
     XPLMDataRef     DataRefID;
     XPLMDataTypeID  DataRefType;
-    string          DataRefName;
+	std::string          DataRefName;
     int             button;
     int             button2;
     int             index;
@@ -522,11 +519,11 @@ void EraseDataRefTable( void )
 struct      CommandTableStructure
 {
     XPLMCommandRef      Reference;
-    string              Name;
-    string              Description;
-    string              BeginCommand;
-    string              ContinueCommand;
-    string              EndCommand;
+	std::string              Name;
+	std::string              Description;
+	std::string              BeginCommand;
+	std::string              ContinueCommand;
+	std::string              EndCommand;
 };
 
 static CommandTableStructure    CommandTable[MAXCOMMANDS];
@@ -534,7 +531,7 @@ static int                      CommandTableLastElement = -1;
 
 struct      OpenALTableStructure
 {
-    string              filename;
+	std::string         filename;
     float               pitch;
     float               gain;
     bool                loop;
@@ -865,7 +862,7 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef        inCommand,
 void initPluginDirectory ( ); // snagar
 
 void ResetLuaEngine( void );
-bool RunLuaString(string LuaCommandString);
+bool RunLuaString(std::string LuaCommandString);
 bool ReadScriptFile(const char *FileNameToRead);
 bool RunLuaChunk(const char *ChunkName);
 
@@ -905,12 +902,12 @@ XPLMDataRef gXSBTextUseXDataRef = NULL;
 
 
 // Some variables used global in this plugin
-static string      EveryFrameCallbackCommand = "";
-static string      CallbackCommand = "";
-static string      LongTimeCallbackCommand = "";
-static string      KeyEventCommand = "";
-static string      NewMetarCommand = "";
-static string      NewXSBTextCommand = "";
+static std::string      EveryFrameCallbackCommand = "";
+static std::string      CallbackCommand = "";
+static std::string      LongTimeCallbackCommand = "";
+static std::string      KeyEventCommand = "";
+static std::string      NewMetarCommand = "";
+static std::string      NewXSBTextCommand = "";
 
 float TimeBetweenCallbacks = 1.0;                // processed every second
 float LongTimeBetweenCallbacks = 10.0;           // not so often processed
@@ -962,12 +959,12 @@ int          MacroMenuItem;
 int          ATCMenuItem;
 
 // to be able to draw text we need a container to carry Lua commands
-string          LuaDrawCommand;
+std::string          LuaDrawCommand;
 
 // and we need a window to catch mouse events
 XPLMWindowID    FWLMouseEventWindowID;
-string          LuaMouseClickCommand;
-string          LuaMouseWheelCommand;
+std::string          LuaMouseClickCommand;
+std::string          LuaMouseWheelCommand;
 
 int             LAST_SCREEN_WIDTH, LAST_SCREEN_HIGHT;
 
@@ -1953,7 +1950,7 @@ void PushDataRefToLuaVariable(  char*           VariableWantedCString,
     }
 
 
-    logMsg(logToAll, string("FlyWithLua Error: The type of the DataRef variable \"").append(VariableWantedCString).append("\" is unknown or impossible."));
+    logMsg(logToAll, std::string("FlyWithLua Error: The type of the DataRef variable \"").append(VariableWantedCString).append("\" is unknown or impossible."));
     LuaIsRunning = false;
     return;
 }
@@ -1969,7 +1966,7 @@ static int LuaPlaceUserAtAirport(lua_State *L)
         return 0;
     }
     strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
-    logMsg(logToSqkBox, string("FlyWithLua Info: Placing user's aircraft at ").append(UserWantedFilename)); //fallback to DevCon
+    logMsg(logToSqkBox, std::string("FlyWithLua Info: Placing user's aircraft at ").append(UserWantedFilename)); //fallback to DevCon
     UserWantsANewPlane = false;
     UserWantsToLoadASituation = false;
     UserWantsToReplaceAircraft = true;
@@ -1986,7 +1983,7 @@ static int LuaLoadAircraft(lua_State *L)
         return 0;
     }
     strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
-    logMsg(logToSqkBox, string("FlyWithLua Info: Loading aircraft ").append(UserWantedFilename)); //fallback to DevCon
+    logMsg(logToSqkBox, std::string("FlyWithLua Info: Loading aircraft ").append(UserWantedFilename)); //fallback to DevCon
     UserWantsANewPlane = true;
     UserWantsToLoadASituation = false;
     UserWantsToReplaceAircraft = false;
@@ -2003,7 +2000,7 @@ static int LuaLoadSituation(lua_State *L)
         return 0;
     }
     strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
-    logMsg(logToSqkBox, string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
+    logMsg(logToSqkBox, std::string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
     UserWantsANewPlane = false;
     UserWantsToLoadASituation = true;
     UserWantsToReplaceAircraft = false;
@@ -2020,8 +2017,8 @@ static int LuaSaveSituation(lua_State *L)
         return 0;
     }
     strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
-    logMsg(logToSqkBox, string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
-    logMsg(logToSqkBox, string("FlyWithLua Info: Saving situation ").append(UserWantedFilename)); //fallback to DevCon
+    logMsg(logToSqkBox, std::string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
+    logMsg(logToSqkBox, std::string("FlyWithLua Info: Saving situation ").append(UserWantedFilename)); //fallback to DevCon
     XPLMSaveDataFile(xplm_DataFile_Situation, UserWantedFilename);
     return 0;
 }
@@ -2033,7 +2030,7 @@ static int LuaXSBSpeakString(lua_State *L)
         logMsg(logToSqkBox, "FlyWithLua Error: nothing to say."); //fallback to DevCon
         return 0;
     }
-    string LuaWantsToSpeak = lua_tostring(L, 1);
+	std::string LuaWantsToSpeak = lua_tostring(L, 1);
     logMsg(logToSqkBox, LuaWantsToSpeak); //fallback to DevCon
     return 0;
 }
@@ -2096,7 +2093,7 @@ static int LualogMsg(lua_State *L)
         logMsg(logToDevCon, "FlyWithLua Error: nothing to log.");
         return 0;
     }
-    string LuaWantsToSpeak = lua_tostring(L, 1);
+	std::string LuaWantsToSpeak = lua_tostring(L, 1);
     logMsg(logToDevCon, LuaWantsToSpeak);
     return 0;
 }
@@ -2108,7 +2105,7 @@ static int LuaSpeakString(lua_State *L)
         logMsg(logToSqkBox, "FlyWithLua Error: nothing to say."); //fallback to DevCon
         return 0;
     }
-    string LuaWantsToSpeak = lua_tostring(L, 1);
+	std::string LuaWantsToSpeak = lua_tostring(L, 1);
     logMsg(logToSqkBox, LuaWantsToSpeak.c_str()); //fallback to DevCon
     XPLMSpeakString(LuaWantsToSpeak.c_str());
     return 0;
@@ -2149,7 +2146,7 @@ static int LuaDrawString(lua_State *L)
 
     if (lua_isstring(L, 4))
     {
-        string ColorString = lua_tostring(L, 4);
+		std::string ColorString = lua_tostring(L, 4);
 
         if (ColorString.compare("red") == 0)     fill_RGB_array(ColorWanted, 1.0, 0.0, 0.0);
         if (ColorString.compare("green") == 0)   fill_RGB_array(ColorWanted, 0.0, 1.0, 0.0);
@@ -2456,7 +2453,7 @@ static int LuaCommandOnce(lua_State *L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
+        logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
     }
     XPLMCommandOnce(CommandId);
@@ -2475,7 +2472,7 @@ static int LuaCommandBegin(lua_State *L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
+        logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
     }
     XPLMCommandBegin(CommandId);
@@ -2494,7 +2491,7 @@ static int LuaCommandEnd(lua_State *L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
+        logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
     }
     XPLMCommandEnd(CommandId);
@@ -2511,13 +2508,13 @@ static int LuaAddMacro(lua_State *L)
     }
     if ( lua_isstring(L, 1) && lua_isstring(L, 2) && lua_isstring(L, 3) )
     {
-        string MacroName = lua_tostring(L, 1);
+		std::string MacroName = lua_tostring(L, 1);
         MacroTable[MacroTableLastElement].MacroName = MacroName;
         MacroTable[MacroTableLastElement].ActivateCommand.append(lua_tostring(L, 2));
         MacroTable[MacroTableLastElement].DeactivateCommand.append(lua_tostring(L, 3));
         MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(MacroMenuId, MacroName.c_str(), (void *) MacroTableLastElement, 0);
         MacroTable[MacroTableLastElement].IsSwitch = true;
-        string StartActive = "";
+		std::string StartActive = "";
         if (lua_isstring(L, 4))
         {
             StartActive = lua_tostring(L, 4);
@@ -2540,7 +2537,7 @@ static int LuaAddMacro(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong parameters to AddMacro function.");
         return 0;
     }
-    string MacroName = lua_tostring(L, 1);
+	std::string MacroName = lua_tostring(L, 1);
     MacroTable[MacroTableLastElement].MacroName = MacroName;
     MacroTable[MacroTableLastElement].ActivateCommand.append(lua_tostring(L, 2));
     MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(MacroMenuId, MacroName.c_str(), (void *) MacroTableLastElement, 0);
@@ -2562,7 +2559,7 @@ static int LuaAddATCMacro(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong parameters to AddATCMacro function.");
         return 0;
     }
-    string MacroName = lua_tostring(L, 1);
+	std::string MacroName = lua_tostring(L, 1);
     MacroTable[MacroTableLastElement].MacroName = MacroName;
     MacroTable[MacroTableLastElement].ActivateCommand.append(lua_tostring(L, 2));
     MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(ATCMenuId, MacroName.c_str(), (void *) MacroTableLastElement, 1);
@@ -2578,7 +2575,7 @@ static int LuaActivateMacro(lua_State *L)
         return 0;
     }
     if (MacroTableLastElement < 0) return 0;
-    string search_string = lua_tostring(L, 1);
+	std::string search_string = lua_tostring(L, 1);
     for (int i=0; i<=MacroTableLastElement; i++)
     {
         if ((MacroTable[i].IsSwitch) && (MacroTable[i].MacroName == search_string))
@@ -2598,7 +2595,7 @@ static int LuaDeactivateMacro(lua_State *L)
         return 0;
     }
     if (MacroTableLastElement < 0) return 0;
-    string search_string = lua_tostring(L, 1);
+	std::string search_string = lua_tostring(L, 1);
     for (int i=0; i<=MacroTableLastElement; i++)
     {
         if ((MacroTable[i].IsSwitch) && (MacroTable[i].MacroName == search_string))
@@ -2615,7 +2612,7 @@ bool StoreLuaChunk(std::string LuaCommandString, const char *ChunkName)
     if (LuaIsRunning == false) return false;
     if (luaL_loadstring(FWLLua, LuaCommandString.c_str()))
     {
-        logMsg(logToDevCon, string("FlyWithLua Error: Can't store command string into a Lua chunk. The string should be stored into: ").append(ChunkName));
+        logMsg(logToDevCon, std::string("FlyWithLua Error: Can't store command string into a Lua chunk. The string should be stored into: ").append(ChunkName));
         logMsg(logToDevCon, LuaCommandString);
         LuaIsRunning = false;
         return false;
@@ -2631,7 +2628,7 @@ static int LuaDoEveryKeystroke(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryKeystroke command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     KeyEventCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(KeyEventCommand, "DO_ON_KEYSTROKE_CHUNK");
     return 0;
@@ -2644,7 +2641,7 @@ static int LuaDoEveryMouseClick(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     LuaMouseClickCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(LuaMouseClickCommand, "DO_ON_MOUSE_CLICK_CHUNK");
     return 0;
@@ -2657,7 +2654,7 @@ static int LuaDoEveryMouseWheel(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     LuaMouseWheelCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(LuaMouseWheelCommand, "DO_ON_MOUSE_WHEEL_CHUNK");
     return 0;
@@ -2670,7 +2667,7 @@ static int LuaDoEveryDrawCallback(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryDrawCallback command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     LuaDrawCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(LuaDrawCommand, "DO_EVERY_DRAW_CHUNK");
     return 0;
@@ -2683,7 +2680,7 @@ static int LuaDoEveryMETARCallback(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMETARCallback command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     NewMetarCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(NewMetarCommand, "DO_ON_NEW_METAR_CHUNK");
     return 0;
@@ -2696,7 +2693,7 @@ static int LuaDoOnNewXSBTextCallback(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoOnNewXSBTextCallback command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     NewXSBTextCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(NewXSBTextCommand, "DO_ON_NEW_XSB_TEXT_CHUNK");
     return 0;
@@ -2709,7 +2706,7 @@ static int LuaDoEveryFrame(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryFrame command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     EveryFrameCallbackCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(EveryFrameCallbackCommand, "DO_EVERY_FRAME_CHUNK");
     return 0;
@@ -2722,7 +2719,7 @@ static int LuaDoOften(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoOften command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     CallbackCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(CallbackCommand, "DO_OFTEN_CHUNK");
     return 0;
@@ -2735,7 +2732,7 @@ static int LuaDoSometimes(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoSometimes command is not a string.");
         return 0;
     }
-    string LuaShouldDoCommand = lua_tostring(L, 1);
+	std::string LuaShouldDoCommand = lua_tostring(L, 1);
     LongTimeCallbackCommand.append(LuaShouldDoCommand).append("\n");
     StoreLuaChunk(LongTimeCallbackCommand, "DO_SOMETIMES_CHUNK");
     return 0;
@@ -2796,7 +2793,7 @@ static int LuaSetButtonAssignment(lua_State *L)
     int CommandRefIdWanted = (std::size_t) XPLMFindCommand(CommandWanted); // snagar
     if (CommandRefIdWanted == 0)
     {
-        logMsg(logToDevCon, string("FlyWithLua Error: The Command \"").append(CommandWanted).append("\" does not exist."));
+        logMsg(logToDevCon, std::string("FlyWithLua Error: The Command \"").append(CommandWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -2832,7 +2829,7 @@ static int LuaSetAxisAssignment(lua_State *L)
         logMsg(logToAll, "FlyWithLua Error: wrong argument range. Since X-Plane 11 axis number has to be from 0 to 499.");
         return 0;
     }
-    string CommandWanted = lua_tostring(L, 2);
+	std::string CommandWanted = lua_tostring(L, 2);
     if (CommandWanted == "none")
         CommandRefIdWanted = 0;
     if (CommandWanted == "pitch")
@@ -2953,7 +2950,7 @@ static int LuaSetAxisAssignment(lua_State *L)
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 
-    string  ReverseOrNot = lua_tostring(L, 3);
+	std::string ReverseOrNot = lua_tostring(L, 3);
     if (ReverseOrNot == "reverse")
     {
         XPLMSetDatavi(gJoystickAxisReverse, &reverse_yes, AxisNumber, 1);
@@ -3006,7 +3003,7 @@ static int LuaGet(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3078,7 +3075,7 @@ static int LuaSet(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3123,7 +3120,7 @@ static int LuaSetArray(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3225,8 +3222,8 @@ static int LuaDefineSharedDataRef(lua_State *L)
     }
     else
     {
-        logMsg(logToAll, string("FlyWithLua Error: Unknown type for the shared DataRef \"").append(DataRefNameWanted).append("\"."));
-        logMsg(logToAll, string("FlyWithLua Error: We do not know what \"").append(DataRefTypeWanted).append("\" is."));
+        logMsg(logToAll, std::string("FlyWithLua Error: Unknown type for the shared DataRef \"").append(DataRefNameWanted).append("\"."));
+        logMsg(logToAll, std::string("FlyWithLua Error: We do not know what \"").append(DataRefTypeWanted).append("\" is."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3234,7 +3231,7 @@ static int LuaDefineSharedDataRef(lua_State *L)
     // share the data
     if (XPLMShareData(DataRefNameWanted, XPLMDataRefTypeWanted, NULL, NULL) == 0)
     {
-        logMsg(logToAll, string("FlyWithLua Error: Wrong type for the existing shared DataRef \"").append(DataRefNameWanted).append("\"."));
+        logMsg(logToAll, std::string("FlyWithLua Error: Wrong type for the existing shared DataRef \"").append(DataRefNameWanted).append("\"."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3307,7 +3304,7 @@ static int LuaDataRef(lua_State *L)
                     // everything is fine?
                     if (IndexWanted != DataRefTable[i].Index)
                     {
-                        logMsg(logToAll, string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\", but the index is different."));
+                        logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\", but the index is different."));
                         LuaIsRunning = false;
                         return 0;
                     }
@@ -3318,7 +3315,7 @@ static int LuaDataRef(lua_State *L)
                 }
                 else
                 {
-                    logMsg(logToAll, string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\"."));
+                    logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\"."));
                     LuaIsRunning = false;
                     return 0;
                 }
@@ -3333,11 +3330,11 @@ static int LuaDataRef(lua_State *L)
         {
             if ((strcmp(DataRefTable[i].DataRefName, DataRefWanted) == 0) && (DataRefTable[i].Index == IndexWanted))
             {
-                logMsg(logToDevCon, string("FlyWithLua Info: The DataRef \"") + DataRefWanted + string("\" is already handled in variable \"") + DataRefTable[i].LuaVariable + string("\", you want to use it with \"") + VariableWanted + "\".");
+                logMsg(logToDevCon, std::string("FlyWithLua Info: The DataRef \"") + DataRefWanted + std::string("\" is already handled in variable \"") + DataRefTable[i].LuaVariable + std::string("\", you want to use it with \"") + VariableWanted + "\".");
                 logMsg(logToDevCon, "FlyWithLua Info: As long as only one variable wants writable access to the DataRef, it is okay (but you loose performance).");
                 if (ReadOnlyWanted == false && DataRefTable[i].IsReadOnly == false)
                 {
-                    logMsg(logToAll, string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" wants to write a DataRef, that is already handled by another variable."));
+                    logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" wants to write a DataRef, that is already handled by another variable."));
                     LuaIsRunning = false;
                     return 0;
                 }
@@ -3349,7 +3346,7 @@ static int LuaDataRef(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3358,12 +3355,12 @@ static int LuaDataRef(lua_State *L)
     {
         if (!lua_isnumber(L, 4))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append("\" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append("\" should have an index. I set it to 0."));
         }
     }
     if ((ReadOnlyWanted == false) && (XPLMCanWriteDataRef(DataRefIdWanted) == false))
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" is not writeable."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" is not writeable."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3419,7 +3416,7 @@ static int LuaCreateSwitch(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3428,7 +3425,7 @@ static int LuaCreateSwitch(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -3535,7 +3532,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3544,7 +3541,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -3602,7 +3599,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3611,7 +3608,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -3669,7 +3666,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3678,7 +3675,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -3754,7 +3751,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3763,7 +3760,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -3839,7 +3836,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3848,7 +3845,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -3928,7 +3925,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -3937,7 +3934,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -4017,7 +4014,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -4026,7 +4023,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -4106,7 +4103,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == NULL)
     {
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
+        logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
     }
@@ -4115,7 +4112,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
+            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(" should have an index. I set it to 0."));
         }
     }
 
@@ -5266,7 +5263,7 @@ static int LuaLoadWAVFile(lua_State *L)
 	// Generate source and load a buffer of audio.
 	alGenSources(1, &OpenALSources[OpenALTableLastElement]);
 	OpenALBuffers[OpenALTableLastElement] = load_wave(FileNameToLoad);
-	logMsg(logToDevCon, string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
+	logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
 	CHECK_ERR();
 
 	// Basic initializtion code to play a sound: specify the buffer the source is playing, as well as some
@@ -5536,7 +5533,7 @@ static int LuaReplaceWAVFile(lua_State *L)
 	// Generate source and load a buffer of audio.
 	alGenSources(1, &OpenALSources[SourceNo]);
 	OpenALBuffers[SourceNo] = load_wave(FileNameToLoad);
-	logMsg(logToDevCon, string("FlyWithLua: Replaced sound by new file \"").append(FileNameToLoad).append("\"."));
+	logMsg(logToDevCon, std::string("FlyWithLua: Replaced sound by new file \"").append(FileNameToLoad).append("\"."));
 	CHECK_ERR();
 
 	// Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
@@ -5771,8 +5768,8 @@ void DebugLua( void )
 {
     time_t      DebugZeit;
     time(&DebugZeit);
-    logMsg(logToAll, string("FlyWithLua Debug Info From Plugin: SystemPath \"").append(systemDir).append("\""));
-    ofstream DebugFile(systemDir + "FlyWithLua_Debug.txt");
+    logMsg(logToAll, std::string("FlyWithLua Debug Info From Plugin: SystemPath \"").append(systemDir).append("\""));
+    std::ofstream DebugFile(systemDir + "FlyWithLua_Debug.txt");
     if (DebugFile.is_open() != true)
     {
         logMsg(logToDevCon, "FlyWithLua Error: Unable to write a debug file.");
@@ -6370,7 +6367,7 @@ bool ReadScriptFile(const char *FileNameToRead)
     CopyDataRefsToLua();
     if (luaL_dofile(FWLLua, FileNameToRead))
     {
-        logMsg(logToDevCon, string("FlyWithLua: Lua has crashed, can't execute script file: ").append(FileNameToRead));
+        logMsg(logToDevCon, std::string("FlyWithLua: Lua has crashed, can't execute script file: ").append(FileNameToRead));
         return false;
     }
     CopyDataRefsToXPlane();
