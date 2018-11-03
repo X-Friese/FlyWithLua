@@ -67,7 +67,7 @@ add_compile_options(-fvisibility=hidden)
 
 # Enable stricter warnings and then disable some we are not interested in.
 add_compile_options(-Wall -Wpedantic -Wshadow -Wfloat-equal -Wextra)
-add_compile_options(-Wno-unused -Wno-terminate)
+add_compile_options(-Wno-unused)
 
 # Always use position-independent code and highest optimization level (FPS!).
 add_compile_options(-O3 -fPIC)
@@ -136,8 +136,11 @@ if(APPLE)
 endif()
 
 if(WIN32)
-  # Unlike OS X and Linux we build standard libraries statically since X-Plane does not provide them.
+    # Unlike OS X and Linux we build standard libraries statically since X-Plane does not provide them.
 	target_link_libraries(FlyWithLua -static-libgcc -static-libstdc++)
+    # MSYS2 for some reason always links against winpthread, so we have to work around it by statically linking the
+    # entire plugin. This allows building the plugin nativaly on Windows.
+    target_link_libraries(FlyWithLua -static)
 elseif(APPLE)
   # Restrict set of symbols exported from the plugin. This reduces changes of
   # conflict with other plugins, in particular ones with Lua interpreter
