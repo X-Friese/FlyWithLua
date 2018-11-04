@@ -303,23 +303,23 @@ struct lua_alloc_request_t
 #define		ALLOC_UNLOCK	0x00A110C5
 #define		ALLOC_LOCK_RO	0x00A110C6
 
-static void *lj_alloc_create(void)
+static void *lj_alloc_create()
 {
-    struct lua_alloc_request_t r = { 0 };
+    struct lua_alloc_request_t r = {};
     XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_OPEN,&r);
     return r.ud;
 }
 
 static void  lj_alloc_destroy(void *msp)
 {
-    struct lua_alloc_request_t r = { 0 };
+    struct lua_alloc_request_t r = {};
     r.ud = msp;
     XPLMSendMessageToPlugin(XPLM_PLUGIN_XPLANE, ALLOC_CLOSE,&r);
 }
 
 static void *lj_alloc_f(void *msp, void *ptr, size_t osize, size_t nsize)
 {
-    struct lua_alloc_request_t r = { 0 };
+    struct lua_alloc_request_t r = {};
     r.ud = msp;
     r.ptr = ptr;
     r.osize = osize;
@@ -352,7 +352,7 @@ static int compare_filenames(const void *a, const void *b)
 void*   HIDSloppyTable[MAXHIDDEVICES];
 int     LAST_SLOPPY_HID = -1;
 
-void CloseAllOpenHIDDevices( void )
+void CloseAllOpenHIDDevices()
 {
     if (LAST_SLOPPY_HID >= 0)
     {
@@ -362,7 +362,6 @@ void CloseAllOpenHIDDevices( void )
         }
     }
     LAST_SLOPPY_HID = -1;
-    return;
 }
 //#endif
 
@@ -458,44 +457,41 @@ XPLMDataTypeID  GetDataRefTypeCompat(XPLMDataRef ref) {
     return reduceTypes(types);
 }
 
-void EraseDataRefTable( void )
+void EraseDataRefTable()
 {
     XPLMDataRef     DoNothing = XPLMFindDataRef("sim/none/none");
 
-    for (int i=0; i<MAXDATAREFS; i++)
-    {
-        DataRefTable[i].IsReadOnly = true;
-        DataRefTable[i].DataRefId = DoNothing;
-        strcpy(DataRefTable[i].DataRefName, "");
-        DataRefTable[i].DataRefTypeId = xplmType_Unknown;
-        DataRefTable[i].Index = 0;
-        strcpy(DataRefTable[i].LuaVariable, "");
+    for (auto &dataref : DataRefTable) {
+        dataref.IsReadOnly = true;
+        dataref.DataRefId = DoNothing;
+        strcpy(dataref.DataRefName, "");
+        dataref.DataRefTypeId = xplmType_Unknown;
+        dataref.Index = 0;
+        strcpy(dataref.LuaVariable, "");
     }
     DataRefTableLastElement = -1;
 
-    for (int i=0; i<MAXMACROS; i++)
-    {
-        MacroTable[i].IsSwitch = false;
-        MacroTable[i].MacroName.clear();
-        MacroTable[i].ActivateCommand.clear();
-        MacroTable[i].DeactivateCommand.clear();
-        MacroTable[i].XPLM_Index = 0;
+    for (auto &macro : MacroTable) {
+		macro.IsSwitch = false;
+		macro.MacroName.clear();
+		macro.ActivateCommand.clear();
+		macro.DeactivateCommand.clear();
+		macro.XPLM_Index = 0;
     }
 
     MacroTableLastElement = -1;
 
-    for (int i=0; i<MAXDATAREFS; i++)
-    {
-        SwitchTable[i].button = 0;
-        SwitchTable[i].DataRefID = DoNothing;
-        SwitchTable[i].DataRefName.clear();
-        SwitchTable[i].DataRefType = xplmType_Unknown;
-        SwitchTable[i].off_int = 0;
-        SwitchTable[i].off_float = 0;
-        SwitchTable[i].off_double = 0;
-        SwitchTable[i].on_int = 1;
-        SwitchTable[i].on_float = 1;
-        SwitchTable[i].on_double = 1;
+    for (auto &sw : SwitchTable) {
+		sw.button = 0;
+		sw.DataRefID = DoNothing;
+		sw.DataRefName.clear();
+		sw.DataRefType = xplmType_Unknown;
+		sw.off_int = 0;
+		sw.off_float = 0;
+		sw.off_double = 0;
+		sw.on_int = 1;
+		sw.on_float = 1;
+		sw.on_double = 1;
     }
 
     SwitchTableLastElement = -1;
@@ -608,7 +604,7 @@ ALuint load_wave(const char * file_name)
 	// First: we open the file and copy it into a single large memory buffer for processing.
 
 	FILE * fi = fopen(file_name,"rb");
-	if(fi == NULL)
+	if(fi == nullptr)
 	{
 		XPLMDebugString("WAVE file load failed - could not open.\n");
 		return 0;
@@ -617,7 +613,7 @@ ALuint load_wave(const char * file_name)
 	int file_size = ftell(fi);
 	fseek(fi,0,SEEK_SET);
 	char * mem = (char*) malloc(file_size);
-	if(mem == NULL)
+	if(mem == nullptr)
 	{
 		XPLMDebugString("WAVE file load failed - could not allocate memory.\n");
 		fclose(fi);
@@ -639,7 +635,7 @@ ALuint load_wave(const char * file_name)
 
 	int swapped = 0;
 	char * riff = find_chunk(mem, mem_end, RIFF_ID, 0);
-	if(riff == NULL)
+	if(riff == nullptr)
 	{
 		riff = find_chunk(mem, mem_end, RIFF_ID, 1);
 		if(riff)
@@ -659,12 +655,12 @@ ALuint load_wave(const char * file_name)
 		FAIL("Could not find WAVE signature in wave file.\n")
 
 	char * format = find_chunk(riff+4, chunk_end(riff,swapped), FMT_ID, swapped);
-	if(format == NULL)
+	if(format == nullptr)
 		FAIL("Could not find FMT  chunk in wave file.\n")
 
 	// Find the format chunk, and swap the values if needed.  This gives us our real format.
 
-	format_info * fmt = (format_info *) format;
+	auto * fmt = (format_info *) format;
 	if(swapped)
 	{
 		fmt->format = SWAP_16(fmt->format);
@@ -838,7 +834,7 @@ std::string modulesDir;
 // END added by Sparker
 
 // The user will be able to handle the plugin with commands
-XPLMCommandRef MyReloadScriptsCommand = NULL;
+XPLMCommandRef MyReloadScriptsCommand = nullptr;
 
 int    MyReloadScriptsCommandHandler(XPLMCommandRef        inCommand,
                                      XPLMCommandPhase      inPhase,
@@ -846,8 +842,8 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef        inCommand,
 
 void initPluginDirectory ( ); // snagar
 
-void ResetLuaEngine( void );
-bool RunLuaString(std::string LuaCommandString);
+void ResetLuaEngine();
+bool RunLuaString(const std::string &LuaCommandString);
 bool ReadScriptFile(const char *FileNameToRead);
 bool RunLuaChunk(const char *ChunkName);
 
@@ -877,13 +873,13 @@ float	MySlowLoopCallback(
 
 
 // let's give the last Metar to Lua
-XPLMDataRef gXSBMetarStringXDataRef = NULL;
+XPLMDataRef gXSBMetarStringXDataRef = nullptr;
 
 // we need to examine a text message from XSB
-XPLMDataRef gXSBTextMessageXDataRef = NULL;
-XPLMDataRef gXSBTextFromXDataRef = NULL;
-XPLMDataRef gXSBTextFreqsXDataRef = NULL;
-XPLMDataRef gXSBTextUseXDataRef = NULL;
+XPLMDataRef gXSBTextMessageXDataRef = nullptr;
+XPLMDataRef gXSBTextFromXDataRef = nullptr;
+XPLMDataRef gXSBTextFreqsXDataRef = nullptr;
+XPLMDataRef gXSBTextUseXDataRef = nullptr;
 
 
 // Some variables used global in this plugin
@@ -1065,7 +1061,7 @@ int            FWLCommandCallback(
 {
     int     CommandNumber = -1;
 
-    if (LuaIsRunning == false) return 1;  // no Lua - no fun
+    if (!LuaIsRunning) return 1;  // no Lua - no fun
     if (CommandTableLastElement == -1) return 1; // no Lua commands defined
     for (int i=0; i<=CommandTableLastElement; i++)
     {
@@ -1086,15 +1082,15 @@ int            FWLCommandCallback(
     lua_setglobal(FWLLua, "COMMAND_PROCESSING");
     if (inPhase == xplm_CommandBegin)
     {
-        if (CommandTable[CommandNumber].BeginCommand != "") luaL_dostring(FWLLua, CommandTable[CommandNumber].BeginCommand.c_str());
+        if (!CommandTable[CommandNumber].BeginCommand.empty()) luaL_dostring(FWLLua, CommandTable[CommandNumber].BeginCommand.c_str());
     }
     if (inPhase == xplm_CommandContinue)
     {
-        if (CommandTable[CommandNumber].ContinueCommand != "") luaL_dostring(FWLLua, CommandTable[CommandNumber].ContinueCommand.c_str());
+        if (!CommandTable[CommandNumber].ContinueCommand.empty()) luaL_dostring(FWLLua, CommandTable[CommandNumber].ContinueCommand.c_str());
     }
     if (inPhase == xplm_CommandEnd)
     {
-        if (CommandTable[CommandNumber].EndCommand != "") luaL_dostring(FWLLua, CommandTable[CommandNumber].EndCommand.c_str());
+        if (!CommandTable[CommandNumber].EndCommand.empty()) luaL_dostring(FWLLua, CommandTable[CommandNumber].EndCommand.c_str());
     }
     CopyDataRefsToXPlane();
     lua_getglobal(FWLLua, "COMMAND_PROCESSING");
@@ -1121,7 +1117,7 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
     //sprintf(buffer, "%.255s", "Lua stopped!");
 
     // reload the scenery when triggered by flag and reactivate Lua system
-    if (WeNeedToReloadTheScenery == true)
+    if (WeNeedToReloadTheScenery)
     {
         XPLMReloadScenery();
         WeNeedToReloadTheScenery = false;
@@ -1133,7 +1129,7 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
 
         float   ColorWanted[] = { 1.0, 0.0, 0.0 }; 	     // RGB Red
         XPLMGetScreenSize(&LAST_SCREEN_WIDTH, &LAST_SCREEN_HIGHT);
-        XPLMDrawString(ColorWanted, LAST_SCREEN_WIDTH - 100, LAST_SCREEN_HIGHT - 10, buffer, NULL, xplmFont_Proportional);
+        XPLMDrawString(ColorWanted, LAST_SCREEN_WIDTH - 100, LAST_SCREEN_HIGHT - 10, buffer, nullptr, xplmFont_Proportional);
         int StackSize = lua_gettop(FWLLua);
         int     NUMBER_OF_CR = 0;
         if (StackSize > 0)
@@ -1151,15 +1147,14 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
                     glRasterPos2f (20, LAST_SCREEN_HIGHT - 20 * i - 15 * NUMBER_OF_CR - 20);
 
                     // print each letter using a GLUT loop
-                    for (int j=0; j<LONGSTRING; j++)
-                    {
-                        if (buffer[j] == '\n')
+                    for (char c : buffer) {
+                        if (c == '\n')
                         {
                             glRasterPos2f (20, LAST_SCREEN_HIGHT - 20 * i - 15 * ++NUMBER_OF_CR - 20);
                         }
                         else
                         {
-                            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, buffer[j]);
+                            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, c);
                         }
                     }
                 }
@@ -1226,7 +1221,7 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
     clock_t time_end = clock();
 
     // write time difference and memory usage into global variables
-    if (LuaIsRunning == true)
+    if (LuaIsRunning)
     {
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_EVERY_DRAW_TIME_SEC");
@@ -1234,17 +1229,6 @@ int FWLDrawWindowCallback(XPLMDrawingPhase     inPhase,
 
     return 1;
 };
-
-void FWLHandleKeyCallback(
-    XPLMWindowID         inWindowID,
-    char                 inKey,
-    XPLMKeyFlags         inFlags,
-    char                 inVirtualKey,
-    void *               inRefcon,
-    int                  losingFocus)
-{
-    // nothing to handle here, we use a seperate sniffer
-}
 
 int FWLKeySniffer(
     char                 inChar,
@@ -1298,7 +1282,7 @@ int FWLKeySniffer(
     }
 }
 
-void XSBSpeakString(std::string StringToSpeak)
+void XSBSpeakString(const std::string &StringToSpeak)
 {
     std::size_t ptr = StringToSpeak.find('\n');
     if (WeHaveXSB)
@@ -1316,7 +1300,6 @@ void XSBSpeakString(std::string StringToSpeak)
             XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_USER_MSG, NULL);
         }
     }
-    return;
 }
 
 
@@ -1474,7 +1457,7 @@ static int      Luahid_open(lua_State *L)
         lua_pushnil(L);
         return 1;
     }
-    unsigned short vendor_id = (unsigned short)id;
+	auto vendor_id = (unsigned short)id;
 
     id = luaL_checkinteger(L, 2);
     if (id < 0 || id > 0xFFFF)
@@ -1484,7 +1467,7 @@ static int      Luahid_open(lua_State *L)
         lua_pushnil(L);
         return 1;
     }
-    unsigned short product_id = (unsigned short)id;
+	auto product_id = (unsigned short)id;
 
     // space enough in the sloppy table?
     if (++LAST_SLOPPY_HID >= MAXHIDDEVICES)
@@ -1497,11 +1480,11 @@ static int      Luahid_open(lua_State *L)
     }
 
     // open the device
-    device_pointer = hid_open(vendor_id, product_id, NULL);
+    device_pointer = hid_open(vendor_id, product_id, nullptr);
     HIDSloppyTable[LAST_SLOPPY_HID] = device_pointer;
 
     // push pointer to lua
-    if (device_pointer != NULL)
+    if (device_pointer != nullptr)
     {
         lua_pushlightuserdata(L, device_pointer);
         return 1;
@@ -1546,7 +1529,7 @@ static int      Luahid_open_path(lua_State *L)
     HIDSloppyTable[LAST_SLOPPY_HID] = device_pointer;
 
     // push pointer to lua
-    if (device_pointer != NULL)
+    if (device_pointer != nullptr)
     {
         lua_pushlightuserdata(L, device_pointer);
         return 1;
@@ -1937,7 +1920,6 @@ void PushDataRefToLuaVariable(  char*           VariableWantedCString,
 
     logMsg(logToAll, std::string("FlyWithLua Error: The type of the DataRef variable \"").append(VariableWantedCString).append("\" is unknown or impossible."));
     LuaIsRunning = false;
-    return;
 }
 
 // define the core C functions to use them inside the Lua state
@@ -2023,35 +2005,35 @@ static int LuaXSBSpeakString(lua_State *L)
 static int      LuaXSBShowFlightplan(lua_State *L)
 {
     CopyDataRefsToXPlane();
-    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_SHOW_FP, NULL);
+    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_SHOW_FP, nullptr);
     return 0;
 }
 
 static int      LuaXSBSendFlightplan(lua_State *L)
 {
     CopyDataRefsToXPlane();
-    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_SEND_FP, NULL);
+    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_SEND_FP, nullptr);
     return 0;
 }
 
 static int      LuaXSBUserLogin(lua_State *L)
 {
     CopyDataRefsToXPlane();
-    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_USER_LOGIN, NULL);
+    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_USER_LOGIN, nullptr);
     return 0;
 }
 
 static int      LuaXSBConnect(lua_State *L)
 {
     CopyDataRefsToXPlane();
-    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_CONNECT, NULL);
+    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_CONNECT, nullptr);
     return 0;
 }
 
 static int      LuaXSBDisconnect(lua_State *L)
 {
     CopyDataRefsToXPlane();
-    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_DISCONNECT, NULL);
+    XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_DISCONNECT, nullptr);
     return 0;
 }
 
@@ -2133,14 +2115,14 @@ static int LuaDrawString(lua_State *L)
     {
 		std::string ColorString = lua_tostring(L, 4);
 
-        if (ColorString.compare("red") == 0)     fill_RGB_array(ColorWanted, 1.0, 0.0, 0.0);
-        if (ColorString.compare("green") == 0)   fill_RGB_array(ColorWanted, 0.0, 1.0, 0.0);
-        if (ColorString.compare("blue") == 0)    fill_RGB_array(ColorWanted, 0.0, 0.0, 1.0);
-        if (ColorString.compare("yellow") == 0)  fill_RGB_array(ColorWanted, 1.0, 1.0, 0.0);
-        if (ColorString.compare("cyan") == 0)    fill_RGB_array(ColorWanted, 0.0, 1.0, 1.0);
-        if (ColorString.compare("magenta") == 0) fill_RGB_array(ColorWanted, 1.0, 0.0, 1.0);
-        if (ColorString.compare("grey") == 0)    fill_RGB_array(ColorWanted, 0.5, 0.5, 0.5);
-        if (ColorString.compare("black") == 0)   fill_RGB_array(ColorWanted, 0.0, 0.0, 0.0);
+        if (ColorString == "red")     fill_RGB_array(ColorWanted, 1.0, 0.0, 0.0);
+        else if (ColorString == "green")   fill_RGB_array(ColorWanted, 0.0, 1.0, 0.0);
+        else if (ColorString == "blue")    fill_RGB_array(ColorWanted, 0.0, 0.0, 1.0);
+        else if (ColorString == "yellow")  fill_RGB_array(ColorWanted, 1.0, 1.0, 0.0);
+		else if (ColorString == "cyan")    fill_RGB_array(ColorWanted, 0.0, 1.0, 1.0);
+		else if (ColorString == "magenta") fill_RGB_array(ColorWanted, 1.0, 0.0, 1.0);
+		else if (ColorString == "grey")    fill_RGB_array(ColorWanted, 0.5, 0.5, 0.5);
+		else if (ColorString == "black")   fill_RGB_array(ColorWanted, 0.0, 0.0, 0.0);
     }
 
     if (lua_isnumber(L, 4) && lua_isnumber(L, 5) && lua_isnumber(L, 6))
@@ -2161,7 +2143,7 @@ static int LuaDrawString(lua_State *L)
     char  string_to_print[LONGSTRING];
 
     strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
-    XPLMDrawString(ColorWanted, x_pos, y_pos, string_to_print, NULL, xplmFont_Proportional);
+    XPLMDrawString(ColorWanted, x_pos, y_pos, string_to_print, nullptr, xplmFont_Proportional);
     return 0;
 }
 
@@ -2436,7 +2418,7 @@ static int LuaCommandOnce(lua_State *L)
     char LuaWantsToDo[NORMALSTRING];
     strncpy(LuaWantsToDo, lua_tostring(L, 1), sizeof(LuaWantsToDo));
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
-    if (CommandId == NULL)
+    if (CommandId == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
@@ -2455,7 +2437,7 @@ static int LuaCommandBegin(lua_State *L)
     char LuaWantsToDo[NORMALSTRING];
     strncpy(LuaWantsToDo, lua_tostring(L, 1), sizeof(LuaWantsToDo));
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
-    if (CommandId == NULL)
+    if (CommandId == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
@@ -2474,7 +2456,7 @@ static int LuaCommandEnd(lua_State *L)
     char LuaWantsToDo[NORMALSTRING];
     strncpy(LuaWantsToDo, lua_tostring(L, 1), sizeof(LuaWantsToDo));
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
-    if (CommandId == NULL)
+    if (CommandId == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append("\" is unknown."));
         return 0;
@@ -2499,7 +2481,7 @@ static int LuaAddMacro(lua_State *L)
         MacroTable[MacroTableLastElement].DeactivateCommand.append(lua_tostring(L, 3));
         MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(MacroMenuId, MacroName.c_str(), (void *) MacroTableLastElement, 0);
         MacroTable[MacroTableLastElement].IsSwitch = true;
-		std::string StartActive = "";
+		std::string StartActive;
         if (lua_isstring(L, 4))
         {
             StartActive = lua_tostring(L, 4);
@@ -2592,9 +2574,9 @@ static int LuaDeactivateMacro(lua_State *L)
     return 0;
 }
 
-bool StoreLuaChunk(std::string LuaCommandString, const char *ChunkName)
+bool StoreLuaChunk(const std::string &LuaCommandString, const char *ChunkName)
 {
-    if (LuaIsRunning == false) return false;
+    if (!LuaIsRunning) return false;
     if (luaL_loadstring(FWLLua, LuaCommandString.c_str()))
     {
         logMsg(logToDevCon, std::string("FlyWithLua Error: Can't store command string into a Lua chunk. The string should be stored into: ").append(ChunkName));
@@ -2986,7 +2968,7 @@ static int LuaGet(lua_State *L)
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3058,7 +3040,7 @@ static int LuaSet(lua_State *L)
     // Do we want to access a forbidden DataRef?
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3103,7 +3085,7 @@ static int LuaSetArray(lua_State *L)
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3214,7 +3196,7 @@ static int LuaDefineSharedDataRef(lua_State *L)
     }
 
     // share the data
-    if (XPLMShareData(DataRefNameWanted, XPLMDataRefTypeWanted, NULL, NULL) == 0)
+    if (XPLMShareData(DataRefNameWanted, XPLMDataRefTypeWanted, nullptr, nullptr) == 0)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: Wrong type for the existing shared DataRef \"").append(DataRefNameWanted).append("\"."));
         LuaIsRunning = false;
@@ -3253,14 +3235,7 @@ static int LuaDataRef(lua_State *L)
     else
     {
         strncpy(ReadOnlyOrNot, lua_tostring(L, 3), sizeof(ReadOnlyOrNot));
-        if ((strcmp(ReadOnlyOrNot, "writable") == 0) || (strcmp(ReadOnlyOrNot, "writeable") == 0))  // allow a often used mistake in spelling writable
-        {
-            ReadOnlyWanted = false;
-        }
-        else
-        {
-            ReadOnlyWanted = true;
-        }
+		ReadOnlyWanted = !((strcmp(ReadOnlyOrNot, "writable") == 0) || (strcmp(ReadOnlyOrNot, "writeable") == 0));
     }
     strncpy(VariableWanted, lua_tostring(L, 1), sizeof(VariableWanted));
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
@@ -3317,7 +3292,7 @@ static int LuaDataRef(lua_State *L)
             {
                 logMsg(logToDevCon, std::string("FlyWithLua Info: The DataRef \"") + DataRefWanted + std::string("\" is already handled in variable \"") + DataRefTable[i].LuaVariable + std::string("\", you want to use it with \"") + VariableWanted + "\".");
                 logMsg(logToDevCon, "FlyWithLua Info: As long as only one variable wants writable access to the DataRef, it is okay (but you loose performance).");
-                if (ReadOnlyWanted == false && DataRefTable[i].IsReadOnly == false)
+                if (ReadOnlyWanted == 0 && !DataRefTable[i].IsReadOnly)
                 {
                     logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append("\" wants to write a DataRef, that is already handled by another variable."));
                     LuaIsRunning = false;
@@ -3329,7 +3304,7 @@ static int LuaDataRef(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3343,7 +3318,7 @@ static int LuaDataRef(lua_State *L)
             logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append("\" should have an index. I set it to 0."));
         }
     }
-    if ((ReadOnlyWanted == false) && (XPLMCanWriteDataRef(DataRefIdWanted) == false))
+    if (ReadOnlyWanted == 0 && XPLMCanWriteDataRef(DataRefIdWanted) == 0)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" is not writeable."));
         LuaIsRunning = false;
@@ -3362,7 +3337,7 @@ static int LuaDataRef(lua_State *L)
         DataRefTable[DataRefTableLastElement].DataRefId = DataRefIdWanted;
         DataRefTable[DataRefTableLastElement].DataRefTypeId = DataRefTypeIdWanted;
         DataRefTable[DataRefTableLastElement].Index = IndexWanted;
-        DataRefTable[DataRefTableLastElement].IsReadOnly = ReadOnlyWanted;
+        DataRefTable[DataRefTableLastElement].IsReadOnly = ReadOnlyWanted != 0;
         strncpy(DataRefTable[DataRefTableLastElement].DataRefName, DataRefWanted, sizeof(DataRefTable[DataRefTableLastElement].DataRefName));
         strncpy(DataRefTable[DataRefTableLastElement].LuaVariable, VariableWanted, sizeof(DataRefTable[DataRefTableLastElement].LuaVariable));
     }
@@ -3399,7 +3374,7 @@ static int LuaCreateSwitch(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3515,7 +3490,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3582,7 +3557,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3649,7 +3624,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3734,7 +3709,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3819,7 +3794,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3908,7 +3883,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -3997,7 +3972,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -4086,7 +4061,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State *L)
 
     // let's search for the DataRef
     XPLMDataRef     DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
-    if (DataRefIdWanted == NULL)
+    if (DataRefIdWanted == nullptr)
     {
         logMsg(logToAll, std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
@@ -4538,7 +4513,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
     }
     else
     {
-        inNameFragment = NULL;
+        inNameFragment = nullptr;
     }
     if (lua_isstring(L, 2))
     {
@@ -4547,7 +4522,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
     }
     else
     {
-        inIDFragment = NULL;
+        inIDFragment = nullptr;
     }
     if (lua_isnumber(L, 3))
     {
@@ -4556,7 +4531,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
     }
     else
     {
-        inLat = NULL;
+        inLat = nullptr;
     }
     if (lua_isnumber(L, 4))
     {
@@ -4565,7 +4540,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
     }
     else
     {
-        inLon = NULL;
+        inLon = nullptr;
     }
     if (lua_isnumber(L, 5))
     {
@@ -4574,7 +4549,7 @@ static int      LuaXPLMFindNavAid(lua_State *L)
     }
     else
     {
-        inFrequency = NULL;
+        inFrequency = nullptr;
     }
     if (lua_isnumber(L, 6))
     {
@@ -4606,7 +4581,8 @@ static int      LuaXPLMGetNavAidInfo(lua_State *L)
         return 0;
     }
 
-    XPLMGetNavAidInfo(lua_tointeger(L,1), &outType, &outLatitude, &outLongitude, &outHeight, &outFrequency, &outHeading, outID, outName, NULL);
+    XPLMGetNavAidInfo(lua_tointeger(L,1), &outType, &outLatitude, &outLongitude, &outHeight, &outFrequency, &outHeading, outID, outName,
+					  nullptr);
 
     lua_pushnumber(L, outType);
     lua_pushnumber(L, outLatitude);
@@ -4741,7 +4717,7 @@ static int      LuaXPLMFindDataRef(lua_State *L)
     CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     DataRefID = XPLMFindDataRef(DataRefWanted);
-    if (DataRefID != NULL)
+    if (DataRefID != nullptr)
     {
         lua_pushlightuserdata(L, DataRefID);
     }
@@ -5749,13 +5725,13 @@ static int compare_switchtable(struct SwitchTableStructure *a, struct SwitchTabl
     else return 0;
 }
 
-void DebugLua( void )
+void DebugLua()
 {
     time_t      DebugZeit;
     time(&DebugZeit);
     logMsg(logToAll, std::string("FlyWithLua Debug Info From Plugin: SystemPath \"").append(systemDir).append("\""));
     std::ofstream DebugFile(systemDir + "FlyWithLua_Debug.txt");
-    if (DebugFile.is_open() != true)
+    if (!DebugFile.is_open())
     {
         logMsg(logToDevCon, "FlyWithLua Error: Unable to write a debug file.");
         return;
@@ -5988,9 +5964,9 @@ void DebugLua( void )
     DebugFile.close();
 }
 
-void CopyDataRefsToLua( void )
+void CopyDataRefsToLua()
 {
-    if (LuaIsRunning == false) return;
+    if (!LuaIsRunning) return;
     if (DataRefTableLastElement >= 0)
     {
         for (int i=0; i<= DataRefTableLastElement; i++)
@@ -6001,12 +5977,11 @@ void CopyDataRefsToLua( void )
                                         DataRefTable[i].Index);
         }
     }
-    return;
 }
 
-void CopyDataRefsToXPlane( void )
+void CopyDataRefsToXPlane()
 {
-    if (LuaIsRunning == false) return;
+    if (!LuaIsRunning) return;
     if (DataRefTableLastElement >= 0)
     {
         for (int i=0; i<= DataRefTableLastElement; i++)
@@ -6059,12 +6034,11 @@ void CopyDataRefsToXPlane( void )
             }
         }
     }
-    return;
 }
 
-bool RunLuaString(std::string LuaCommandString)
+bool RunLuaString(const std::string &LuaCommandString)
 {
-    if (LuaIsRunning == false) return false;
+    if (!LuaIsRunning) return false;
     CopyDataRefsToLua();
     if (luaL_dostring(FWLLua, LuaCommandString.c_str()))
     {
@@ -6078,7 +6052,7 @@ bool RunLuaString(std::string LuaCommandString)
 
 bool RunLuaChunk(const char *ChunkName)
 {
-    if (LuaIsRunning == false) return false;
+    if (!LuaIsRunning) return false;
     CopyDataRefsToLua();
     lua_getglobal(FWLLua, ChunkName);
     if (!lua_isfunction(FWLLua, 1))
@@ -6096,7 +6070,7 @@ bool RunLuaChunk(const char *ChunkName)
 }
 
 
-void ResetLuaEngine( void )
+void ResetLuaEngine()
 {
     char    success_cstring[NORMALSTRING];
 
@@ -6122,7 +6096,7 @@ void ResetLuaEngine( void )
         for (int i=0; i<= CommandTableLastElement; i++)
         {
             XPLMUnregisterCommandHandler(CommandTable[i].Reference, FWLCommandCallback, 1, (void *) "FlyWithLuaCommand");
-            CommandTable[i].Reference = NULL;
+            CommandTable[i].Reference = nullptr;
             CommandTable[i].Name.erase();
             CommandTable[i].Description.erase();
             CommandTable[i].BeginCommand.erase();
@@ -6151,7 +6125,7 @@ void ResetLuaEngine( void )
     {
         /* X-Plane has an allocator for us - we _must_ use it. */
         ud = lj_alloc_create();
-        if (ud == NULL)
+        if (ud == nullptr)
         {
             logMsg(logToDevCon, "FlyWithLua Error: LuaJIT Kernel Panic! No space to create the Lua instance!");
         }
@@ -6342,7 +6316,7 @@ void ResetLuaEngine( void )
 
 bool ReadScriptFile(const char *FileNameToRead)
 {
-    if (LuaIsRunning == false)
+    if (!LuaIsRunning)
     {
         logMsg(logToDevCon, "FlyWithLua: Lua is not running, can't load script file.");
         logMsg(logToDevCon, FileNameToRead);
@@ -6361,7 +6335,7 @@ bool ReadScriptFile(const char *FileNameToRead)
     return true;
 }
 
-bool ReadAllScriptFiles(void)
+bool ReadAllScriptFiles()
 {
     char            FileToLoad[SHORTSRTING] = "";
     char            PathAndName[NORMALSTRING] = "";
@@ -6460,20 +6434,20 @@ bool ReadAllScriptFiles(void)
         for (k = 0; k < NumberOfFiles; k++)
         {
             strncpy(FileToLoad, FileIndex[k], sizeof(FileToLoad));
-            if ((FileToLoad[0] != '.') and ((strstr(FileToLoad, ".fwl") != NULL and strlen(strstr(FileToLoad, ".fwl")) == 4)
-                                            or (strstr(FileToLoad, ".FWL") != NULL and strlen(strstr(FileToLoad, ".FWL")) == 4)
+            if ((FileToLoad[0] != '.') and ((strstr(FileToLoad, ".fwl") != nullptr and strlen(strstr(FileToLoad, ".fwl")) == 4)
+                                            or (strstr(FileToLoad, ".FWL") != nullptr and strlen(strstr(FileToLoad, ".FWL")) == 4)
 #if defined(__LP64__) || defined(_WIN64)
-                                            or (strstr(FileToLoad, ".lua64") != NULL and strlen(strstr(FileToLoad, ".lua64")) == 6)
-                                            or (strstr(FileToLoad, ".Lua64") != NULL and strlen(strstr(FileToLoad, ".Lua64")) == 6)
-                                            or (strstr(FileToLoad, ".LUA64") != NULL and strlen(strstr(FileToLoad, ".LUA64")) == 6)
+                                            or (strstr(FileToLoad, ".lua64") != nullptr and strlen(strstr(FileToLoad, ".lua64")) == 6)
+                                            or (strstr(FileToLoad, ".Lua64") != nullptr and strlen(strstr(FileToLoad, ".Lua64")) == 6)
+                                            or (strstr(FileToLoad, ".LUA64") != nullptr and strlen(strstr(FileToLoad, ".LUA64")) == 6)
 #else
                                             or (strstr(FileToLoad, ".lua32") != NULL and strlen(strstr(FileToLoad, ".lua32")) == 6)
                                             or (strstr(FileToLoad, ".Lua32") != NULL and strlen(strstr(FileToLoad, ".Lua32")) == 6)
                                             or (strstr(FileToLoad, ".LUA32") != NULL and strlen(strstr(FileToLoad, ".LUA32")) == 6)
 #endif
-                                            or (strstr(FileToLoad, ".lua") != NULL and strlen(strstr(FileToLoad, ".lua")) == 4)
-                                            or (strstr(FileToLoad, ".Lua") != NULL and strlen(strstr(FileToLoad, ".Lua")) == 4)
-                                            or (strstr(FileToLoad, ".LUA") != NULL and strlen(strstr(FileToLoad, ".LUA")) == 4)))
+                                            or (strstr(FileToLoad, ".lua") != nullptr and strlen(strstr(FileToLoad, ".lua")) == 4)
+                                            or (strstr(FileToLoad, ".Lua") != nullptr and strlen(strstr(FileToLoad, ".Lua")) == 4)
+                                            or (strstr(FileToLoad, ".LUA") != nullptr and strlen(strstr(FileToLoad, ".LUA")) == 4)))
             {
                 // load the script file
                 // sprintf(PathAndName, "Resources/plugins/FlyWithLua/Scripts/%s", FileToLoad);
@@ -6512,7 +6486,7 @@ bool ReadAllScriptFiles(void)
     clock_t time_end = clock();
 
     // write time difference and memory usage into global variables
-    if (LuaIsRunning == true)
+    if (LuaIsRunning)
     {
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "SCRIPTS_LOADING_TIME_SEC");
@@ -6540,7 +6514,6 @@ void update_Lua_dataref_variables(XPLMDataRef DataRefID, int Index, float Value)
             lua_setglobal(FWLLua, DataRefTable[i].LuaVariable);
         }
     }
-    return;
 }
 
 void update_Lua_dataref_strings(XPLMDataRef DataRefID, int Index, char * ValueString)
@@ -6555,7 +6528,6 @@ void update_Lua_dataref_strings(XPLMDataRef DataRefID, int Index, char * ValueSt
             lua_setglobal(FWLLua, DataRefTable[i].LuaVariable);
         }
     }
-    return;
 }
 
 
@@ -6627,7 +6599,7 @@ PLUGIN_API void    XPluginStop(void)
 	if(my_ctx)
 	{
 		printf("0x%08x: deleting my context %p\n", XPLMGetMyID(),my_ctx);
-		alcMakeContextCurrent(NULL);
+		alcMakeContextCurrent(nullptr);
 		alcDestroyContext(my_ctx);
 	}
 	if(my_dev) alcCloseDevice(my_dev);
@@ -6694,17 +6666,17 @@ PLUGIN_API void XPluginDisable(void)
     XPLMDestroyMenu(FlyWithLuaMenuId);
     XPLMDestroyMenu(ATCMenuId);
     XPLMDestroyMenu(MacroMenuId);
-    FlyWithLuaMenuId = NULL;
-    ATCMenuId = NULL;
-    MacroMenuId = NULL;
+    FlyWithLuaMenuId = nullptr;
+    ATCMenuId = nullptr;
+    MacroMenuId = nullptr;
 
     // unregister callbacks
     XPLMUnregisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void *) "FWLWindowDrawer");
     XPLMUnregisterKeySniffer(FWLKeySniffer, 0, (void *) "FWLKeySniffer");
     XPLMUnregisterCommandHandler(MyReloadScriptsCommand, MyReloadScriptsCommandHandler, 0, 0);
-    XPLMUnregisterFlightLoopCallback(MyFastLoopCallback, NULL);
-    XPLMUnregisterFlightLoopCallback(MySlowLoopCallback, NULL);
-    XPLMUnregisterFlightLoopCallback(MyEveryFrameLoopCallback, NULL);
+    XPLMUnregisterFlightLoopCallback(MyFastLoopCallback, nullptr);
+    XPLMUnregisterFlightLoopCallback(MySlowLoopCallback, nullptr);
+    XPLMUnregisterFlightLoopCallback(MyEveryFrameLoopCallback, nullptr);
 
     // write to Log.txt
     logMsg(logToDevCon, "FlyWithLua Info: FlyWithLua plugin disabled.");
@@ -6723,14 +6695,13 @@ PLUGIN_API int XPluginEnable(void)
     }
 
     // init CommandTable
-    for (int i=0; i< MAXCOMMANDS; i++)
-    {
-        CommandTable[i].Reference = NULL;
-        CommandTable[i].Name.erase();
-        CommandTable[i].Description.erase();
-        CommandTable[i].BeginCommand.erase();
-        CommandTable[i].ContinueCommand.erase();
-        CommandTable[i].EndCommand.erase();
+    for (auto &command : CommandTable) {
+		command.Reference = NULL;
+		command.Name.erase();
+		command.Description.erase();
+		command.BeginCommand.erase();
+		command.ContinueCommand.erase();
+		command.EndCommand.erase();
     }
 
     // The commands
@@ -6741,37 +6712,38 @@ PLUGIN_API int XPluginEnable(void)
     XPLMRegisterCommandHandler(MyReloadScriptsCommand,            // in Command name
                                MyReloadScriptsCommandHandler,     // in Handler
                                0,                                 // Receive input when plugin windows.
-                               (void *) 0);                       // inRefcon.
+                               nullptr);                       // inRefcon.
 
     // Check in the main funktions
     XPLMRegisterFlightLoopCallback(
         MyFastLoopCallback,	    /* Callback */
         TimeBetweenCallbacks,	/* Interval */
-        NULL);  	     	    /* refcon not used. */
+		nullptr);  	     	    /* refcon not used. */
 
     XPLMRegisterFlightLoopCallback(
         MySlowLoopCallback, 	/* Callback */
         TimeBetweenCallbacks,	/* Interval */
-        NULL);  	        	/* refcon not used. */
+		nullptr);  	        	/* refcon not used. */
 
     XPLMRegisterFlightLoopCallback(
         MyEveryFrameLoopCallback,  /* Callback */
         -1,                        /* every frame */
-        NULL);                     /* refcon not used. */
+		nullptr);                     /* refcon not used. */
 
     XPLMRegisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void *) "FWLWindowDrawer");
 
     // create the FlyWithLua menu inside the plugin menu
     if (FlyWithLuaMenuItem < 0) FlyWithLuaMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "FlyWithLua", (void *)"None", 1);
-    FlyWithLuaMenuId = XPLMCreateMenu("FlyWithLua", XPLMFindPluginsMenu(), FlyWithLuaMenuItem, FlyWithLuaMenuHandler, NULL);
+    FlyWithLuaMenuId = XPLMCreateMenu("FlyWithLua", XPLMFindPluginsMenu(), FlyWithLuaMenuItem, FlyWithLuaMenuHandler,
+									  nullptr);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Reload all Lua script files", (void *)"Reload", 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
 
     // create the macro and ATC menus inside the FlyWithLua menu
     if (MacroMenuItem < 0) MacroMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua Macros", (void *)"None", 1);
-    MacroMenuId = XPLMCreateMenu("FlyWithLua Macros", FlyWithLuaMenuId, MacroMenuItem, MacroMenuHandler, NULL);
+    MacroMenuId = XPLMCreateMenu("FlyWithLua Macros", FlyWithLuaMenuId, MacroMenuItem, MacroMenuHandler, nullptr);
     if (ATCMenuItem < 0) ATCMenuItem = XPLMAppendMenuItem(FlyWithLuaMenuId, "FlyWithLua ATC", (void *)"None", 1);
-    ATCMenuId = XPLMCreateMenu("FlyWithLua ATC", FlyWithLuaMenuId, ATCMenuItem, MacroMenuHandler, NULL);
+    ATCMenuId = XPLMCreateMenu("FlyWithLua ATC", FlyWithLuaMenuId, ATCMenuItem, MacroMenuHandler, nullptr);
 
     // add some diagnostic menu items
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
@@ -6802,7 +6774,7 @@ PLUGIN_API int XPluginEnable(void)
     }
 
     // register sound initializer
-    XPLMRegisterFlightLoopCallback(init_sound,-1.0,NULL);
+    XPLMRegisterFlightLoopCallback(init_sound, -1.0f, nullptr);
 
     // Starting the Lua engine
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
@@ -6810,7 +6782,7 @@ PLUGIN_API int XPluginEnable(void)
     {
         /* X-Plane has an allocator for us - we _must_ use it. */
         ud = lj_alloc_create();
-        if (ud == NULL)
+        if (ud == nullptr)
         {
             logMsg(logToDevCon, "FlyWithLua Error: LuaJIT Panic! No space to create the Lua instance!");
         }
@@ -6848,23 +6820,16 @@ PLUGIN_API int XPluginEnable(void)
     MouseWindowData.handleRightClickFunc = FWLMouseEventWindowRightMouse;
     MouseWindowData.layer = xplm_WindowLayerFloatingWindows;
     MouseWindowData.decorateAsFloatingWindow = xplm_WindowDecorationNone;
-    MouseWindowData.refcon = NULL;
+    MouseWindowData.refcon = nullptr;
     FWLMouseEventWindowID = XPLMCreateWindowEx(&MouseWindowData);
 
     return 1;
 }
 
-#if XPLM210
 PLUGIN_API void XPluginReceiveMessage(
     XPLMPluginID    inFromWho,
     intptr_t        inMessage,
     void *          inParam)
-#else
-PLUGIN_API void XPluginReceiveMessage(
-    XPLMPluginID    inFromWho,
-    intptr_t        inMessage,
-    void *          inParam)
-#endif
 {
 
 
@@ -6968,7 +6933,7 @@ float	MySlowLoopCallback(
     // get time before execution
     clock_t time_start = clock();
 
-    if ((LongTimeCallbackCommand.length() > 1) && (LuaIsRunning == true))
+    if ((LongTimeCallbackCommand.length() > 1) && LuaIsRunning)
     {
         RunLuaChunk("DO_SOMETIMES_CHUNK");
     }
@@ -6977,7 +6942,7 @@ float	MySlowLoopCallback(
     clock_t time_end = clock();
 
     // write time difference and memory usage into global variables
-    if (LuaIsRunning == true)
+    if (LuaIsRunning)
     {
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_SOMETIMES_TIME_SEC");
@@ -6997,7 +6962,7 @@ float	MyFastLoopCallback(
     clock_t time_start = clock();
 
     // stack overflow? pull the emergency brake!
-    if ((lua_gettop(FWLLua) > 100) && (LuaIsRunning == true))
+    if ((lua_gettop(FWLLua) > 100) && LuaIsRunning)
     {
         logMsg(logToAll, "FlyWithLua Debug Info: Stack overflow, more than 100 elements on stack.");
         LuaIsRunning = false;
@@ -7031,11 +6996,11 @@ float	MyFastLoopCallback(
         ReadAllScriptFiles();
         return TimeBetweenCallbacks;
     }
-    if ((CallbackCommand.length() > 1) && (LuaIsRunning == true))
+    if ((CallbackCommand.length() > 1) && LuaIsRunning)
     {
         RunLuaChunk("DO_OFTEN_CHUNK");
     }
-    if ((LuaIsRunning == false) && (CrashReportDisplayed == false))
+    if (!LuaIsRunning && !CrashReportDisplayed)
     {
         CrashReportDisplayed = true;
         int StackSize = lua_gettop(FWLLua);
@@ -7062,7 +7027,7 @@ float	MyFastLoopCallback(
     clock_t time_end = clock();
 
     // write time difference and memory usage into global variables
-    if (LuaIsRunning == true)
+    if (LuaIsRunning)
     {
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
@@ -7084,7 +7049,7 @@ float CalculateMedianOfThree(float a, float b, float c)
 }
 
 // switch some DataRefs
-void ExecuteSwitches( void )
+void ExecuteSwitches()
 {
     float       FloatToSet;
     int         IntToSet;
@@ -7149,19 +7114,19 @@ void ExecuteSwitches( void )
                 {
                     if (XPLMGetDatai(SwitchTable[i].DataRefID) == SwitchTable[i].off_int)
                         XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].on_int);
-                        else XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].off_int);
+					 else XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].off_int);
                 }
             if (SwitchTable[i].DataRefType == xplmType_Float)
                 {
                     if (XPLMGetDataf(SwitchTable[i].DataRefID) == SwitchTable[i].off_float)
                         XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].on_float);
-                        else XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].off_float);
+					 else XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].off_float);
                 }
             if (SwitchTable[i].DataRefType == xplmType_Double)
                 {
                     if (XPLMGetDatad(SwitchTable[i].DataRefID) == SwitchTable[i].off_double)
                         XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].on_double);
-                        else XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].off_double);
+					 else XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].off_double);
                 }
             if (SwitchTable[i].DataRefType == xplmType_IntArray)
                 {
@@ -7169,7 +7134,7 @@ void ExecuteSwitches( void )
                     XPLMGetDatavi(SwitchTable[i].DataRefID, &check_value_int, SwitchTable[i].index, 1);
                     if (check_value_int == SwitchTable[i].off_int)
                         XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].on_int, SwitchTable[i].index, 1);
-                        else XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].off_int, SwitchTable[i].index, 1);
+					 else XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].off_int, SwitchTable[i].index, 1);
                 }
             if (SwitchTable[i].DataRefType == xplmType_FloatArray) XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
                 {
@@ -7177,7 +7142,7 @@ void ExecuteSwitches( void )
                     XPLMGetDatavf(SwitchTable[i].DataRefID, &check_value_float, SwitchTable[i].index, 1);
                     if (check_value_float == SwitchTable[i].off_float)
                         XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
-                        else XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].off_float, SwitchTable[i].index, 1);
+					 else XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].off_float, SwitchTable[i].index, 1);
                 }
         }
         if ((SwitchTable[i].SwitchType == PositiveIncrement) && (JoystickButtonValues[SwitchTable[i].button] == 1) && (JoystickButtonLastValues[SwitchTable[i].button] == 0))
@@ -7333,7 +7298,6 @@ void ExecuteSwitches( void )
             }
         }
     }
-    return;
 }
 
 // Now follows the extreme fast part of it
@@ -7349,7 +7313,7 @@ float	MyEveryFrameLoopCallback(
     // catching the buttons (only relevant in this callback)
     XPLMGetDatavi(gJoystickButtonValues, JoystickButtonValues, 0, MAXJOYSTICKBUTTONS);
 
-    if (LuaIsRunning == true) ExecuteSwitches();
+    if (LuaIsRunning) ExecuteSwitches();
 
     if ((EveryFrameCallbackCommand.length() > 1) && (LuaIsRunning == true))
     {
@@ -7373,7 +7337,7 @@ float	MyEveryFrameLoopCallback(
     clock_t time_end = clock();
 
     // write time difference and memory usage into global variables
-    if (LuaIsRunning == true)
+    if (LuaIsRunning)
     {
         lua_pushnumber(FWLLua, (double)(time_end - time_start) / CLOCKS_PER_SEC );
         lua_setglobal(FWLLua, "DO_EVERY_FRAME_TIME_SEC");
@@ -7401,7 +7365,7 @@ int    MyReloadScriptsCommandHandler(XPLMCommandRef       inCommand,
 
 void MacroMenuHandler(void * mRef, void * iRef)
 {
-    int MacroIndex = (std::size_t) iRef; // snagar
+	auto MacroIndex = (std::size_t) iRef; // snagar
     if (MacroTable[MacroIndex].IsSwitch)
     {
         int     ActualState;
@@ -7421,7 +7385,6 @@ void MacroMenuHandler(void * mRef, void * iRef)
     {
         RunLuaString(MacroTable[MacroIndex].ActivateCommand);
     }
-    return;
 }
 
 // Functions called by the menu will be send to command handler.
@@ -7462,7 +7425,7 @@ void logMsg (ELogType logType, std::string message )
     std::string out = message + "\n";
 
     //if XSquawkBox not connected / not installed fall back to DevCon
-    if(WeHaveXSB == false && (logType&logToSqkBox) != 0)
+    if(!WeHaveXSB && (logType & logToSqkBox) != 0)
     {
         logType = logToDevCon;
     }
