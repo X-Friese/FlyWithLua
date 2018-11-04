@@ -221,3 +221,6 @@ pip-log.txt
 src/build-lin
 src/build-mac
 src/build-win
+
+# Clion project files
+.idea

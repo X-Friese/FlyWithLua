@@ -202,6 +202,7 @@
 #include <time.h>
 #include <wchar.h>
 #include <vector>
+#include <sol.hpp>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
 
