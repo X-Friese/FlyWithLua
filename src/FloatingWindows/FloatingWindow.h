@@ -39,6 +39,22 @@ public:
     bool hasInputFocus();
     void reportClose();
     void boxelsToNative(int x, int y, int &outX, int &outY);
+
+	bool isPopped();
+	bool isFront();
+	void bringToFront();
+	void setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight);
+	void setPositioningMode(int pmode, int monindex);
+	void setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity);
+	void setWindowGeometry(int mleft, int mtop, int mright, int mbot);
+	void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot);
+	void setWindowGeometryVR(int bWidth, int bHeight);
+	bool isVR();
+	void setMonitorIndex(int monIndex);
+	int getMonitorIndex();
+	void setIsCmdVisible(int fCondition);
+	bool getIsCmdVisible();
+
     XPLMWindowID getXWindow();
     virtual ~FloatingWindow();
 
