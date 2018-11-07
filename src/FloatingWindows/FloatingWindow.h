@@ -72,6 +72,9 @@ private:
     int width, height, decoration;
     bool isInVR = false;
 
+	bool isCmdVisible = false;
+	int outMonitorIndex;
+
     XPLMDataRef vrEnabledRef{};
     XPLMDataRef modeliewMatrixRef{};
     XPLMDataRef viewportRef{};
