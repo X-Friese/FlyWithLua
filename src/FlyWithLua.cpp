@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.6 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.7 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -104,7 +104,7 @@
  *          [changed] Statically link LuaXML_lib into FlyWithLua plugin binary.
  *          [added]   The ability to get the xplm handle from floating window to be used with ffi thanks to IanQ.
  *          [changed] Statically link LuaSocket_lib into FlyWithLua plugin binary.
- *
+ *  v2.7.7  [added]   New floating window methods by IanQ.
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -2017,8 +2017,6 @@ static int LuaSaveSituation(lua_State* L)
         return 0;
     }
     strncpy(UserWantedFilename, lua_tostring(L, 1), sizeof(UserWantedFilename));
-    logMsg(logToSqkBox,
-           std::string("FlyWithLua Info: Loading situation ").append(UserWantedFilename)); //fallback to DevCon
     logMsg(logToSqkBox,
            std::string("FlyWithLua Info: Saving situation ").append(UserWantedFilename)); //fallback to DevCon
     XPLMSaveDataFile(xplm_DataFile_Situation, UserWantedFilename);

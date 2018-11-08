@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# How to run
+# ./xp11_FlyWithLua_NG_plugin_builder/FlyWithLua/buildFlyWithLua_NG
 
 cd ~/xp11_FlyWithLua_NG_plugin_builder/FlyWithLua
 
