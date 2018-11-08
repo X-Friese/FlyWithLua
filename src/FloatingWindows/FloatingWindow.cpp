@@ -121,6 +121,102 @@ void FloatingWindow::setPosition(int posx, int posy) {
     }
 }
 
+bool FloatingWindow::isPopped() {
+    return XPLMWindowIsPoppedOut(window);
+}
+
+bool FloatingWindow::isFront() {
+    return XPLMIsWindowInFront(window);
+}
+
+void FloatingWindow::bringToFront() {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+	    XPLMBringWindowToFront(window);
+    }
+}
+
+void FloatingWindow::setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+        XPLMSetWindowResizingLimits(window, minwidth, minheight, maxwidth, maxheight);
+    }
+}
+
+void FloatingWindow::setPositioningMode(int pmode, int monindex) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+		XPLMSetWindowPositioningMode(window, static_cast<XPLMWindowPositioningMode>(pmode), monindex);
+    }
+}
+
+void FloatingWindow::setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+        XPLMSetWindowGravity(window, inLeftGravity, inTopGravity, inRightGravity, inBottomGravity);
+    }
+}
+
+void FloatingWindow::setWindowGeometry(int mleft, int mtop, int mright, int mbot) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+        XPLMSetWindowGeometry(window, mleft, mtop, mright, mbot);
+    }
+}
+
+void FloatingWindow::setWindowGeometryOS(int mleft, int mtop, int mright, int mbot) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled && isPopped()) {
+        XPLMSetWindowGeometryOS(window, mleft, mtop, mright, mbot);
+    }
+}
+
+void FloatingWindow::setWindowGeometryVR(int bWidth, int bHeight) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (vrEnabled) {
+        XPLMSetWindowGeometryVR(window, bWidth, bHeight);
+    }
+}
+
+bool FloatingWindow::isVR() {
+    return XPLMWindowIsInVR(window);
+}
+
+void FloatingWindow::setMonitorIndex(int monIndex) {
+    outMonitorIndex = monIndex;
+}
+
+int FloatingWindow::getMonitorIndex() {
+    return outMonitorIndex;
+}
+
+void FloatingWindow::setIsCmdVisible(int fCondition) {
+
+    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
+
+    if (!vrEnabled) {
+		fCondition == 0 ? isCmdVisible = true : isCmdVisible = false;
+	}
+}
+
+bool FloatingWindow::getIsCmdVisible() {
+    return isCmdVisible;
+}
+
 void FloatingWindow::moveFromOrToVR() {
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
