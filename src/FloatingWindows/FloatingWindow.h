@@ -50,8 +50,6 @@ public:
 	void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot);
 	void setWindowGeometryVR(int bWidth, int bHeight);
 	bool isVR();
-	void setMonitorIndex(int monIndex);
-	int getMonitorIndex();
 	void setIsCmdVisible(int fCondition);
 	bool getIsCmdVisible();
 
@@ -73,7 +71,6 @@ private:
     bool isInVR = false;
 
 	bool isCmdVisible = false;
-	int outMonitorIndex;
 
     XPLMDataRef vrEnabledRef{};
     XPLMDataRef modeliewMatrixRef{};

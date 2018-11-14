@@ -196,14 +196,6 @@ bool FloatingWindow::isVR() {
     return XPLMWindowIsInVR(window);
 }
 
-void FloatingWindow::setMonitorIndex(int monIndex) {
-    outMonitorIndex = monIndex;
-}
-
-int FloatingWindow::getMonitorIndex() {
-    return outMonitorIndex;
-}
-
 void FloatingWindow::setIsCmdVisible(int fCondition) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
