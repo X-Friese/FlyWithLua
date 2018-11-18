@@ -59,7 +59,11 @@ void FloatingWindow::createWindow() {
     params.visible = 1;
     params.refcon = this;
     params.drawWindowFunc = [] (XPLMWindowID id, void *ref) {
-        reinterpret_cast<FloatingWindow *>(ref)->onDraw();
+        try {
+            reinterpret_cast<FloatingWindow*>(ref)->onDraw();
+        } catch (std::exception& e) {
+            flywithlua::logMsg(logToAll, std::string("Caught error: ") + e.what());
+        }
     };
     params.handleMouseClickFunc = [] (XPLMWindowID id, int x, int y, XPLMMouseStatus status, void *ref) -> int {
         return reinterpret_cast<FloatingWindow *>(ref)->onClick(x, y, status);

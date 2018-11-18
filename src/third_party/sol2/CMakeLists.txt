@@ -24,3 +24,5 @@ set(CXX_FEATURES
 add_library(sol2 INTERFACE)
 add_library(sol2::sol2 ALIAS sol2)
 target_include_directories(sol2 INTERFACE "./upstream")
+# Enforce function call argument type checks when calling from Lua to C++
+target_compile_definitions(sol2 INTERFACE SOL_SAFE_FUNCTION_CALLS)
