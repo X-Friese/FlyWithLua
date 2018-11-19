@@ -113,14 +113,14 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
 }
 
 int LuaSetFloatingWindowPosition(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
+    if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_position");
         flywithlua::LuaIsRunning = false;
         return 0;
     }
 
     FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    // Not sure what the correct syntxt is needed here.
+
     wnd->setPosition(lua_tonumber(L, 2), lua_tonumber(L, 3));
 
     return 0;
@@ -249,7 +249,7 @@ int LuaFloatingWindowSetVisible(lua_State *L) {
 
     FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
 
-	wnd->setIsCmdVisible(lua_tonumber(L, 2));
+    wnd->setIsCmdVisible(lua_tonumber(L, 2));
     wnd->setVisible(lua_tonumber(L, 2));
 
     return 0;
@@ -297,6 +297,20 @@ int LuaFloatingWindowBringToFront(lua_State *L) {
     return 0;
 }
 
+int LuaFloatingWindowIsVR(lua_State *L) {
+    if (!lua_islightuserdata(L, 1)) {
+        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_is_vr");
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+
+    lua_pushboolean(L, wnd->isVR());
+
+    return 1;
+}
+
 int LuaSetFloatingWindowResizingLimits(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 5)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_resizing_limits");
@@ -339,20 +353,6 @@ int LuaSetFloatingWindowGravity(lua_State *L) {
     return 0;
 }
 
-int LuaSetFloatingWindowGeometry(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 5)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_geometry");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-
-    wnd->setWindowGeometry(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
-
-    return 0;
-}
-
 int LuaGetFloatingWindowGeometry(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_geometry");
@@ -363,97 +363,52 @@ int LuaGetFloatingWindowGeometry(lua_State *L) {
     FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
     XPLMWindowID window = wnd->getXWindow();
 
-    int sLeft, sTop, sRight, sBottom;
-    XPLMGetWindowGeometry(window, &sLeft, &sTop, &sRight, &sBottom);
+    // For VR: gLeft = Width; gTop = Height
+    int gLeft, gTop, gRight,gBottom;
 
-    lua_pushnumber(L, sLeft);
-    lua_pushnumber(L, sTop);
-    lua_pushnumber(L, sRight);
-    lua_pushnumber(L, sBottom);
+    if (wnd->isVR()) {
+        XPLMGetWindowGeometryVR(window, &gLeft, &gTop);
+    } else if (wnd->isPopped()) {
+        XPLMGetWindowGeometryOS(window, &gLeft, &gTop, &gRight, &gBottom);
+    } else {
+        XPLMGetWindowGeometry(window, &gLeft, &gTop, &gRight, &gBottom);
+    }
+
+    lua_pushnumber(L, gLeft);
+    lua_pushnumber(L, gTop);
+
+    if (wnd->isVR()) {
+        return 2;
+    }
+
+    lua_pushnumber(L, gRight);
+    lua_pushnumber(L, gBottom);
 
     return 4;
 }
 
-int LuaSetFloatingWindowGeometryOS(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 5)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_geometry_os");
-        flywithlua::LuaIsRunning = false;
-        return 0;
+int LuaSetFloatingWindowGeometry(lua_State *L) {
+
+    if (lua_islightuserdata(L, 1)) {
+
+        FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+
+        if (wnd->isVR() && lua_isnumber(L, 2) && lua_isnumber(L, 3)) {
+            wnd->setWindowGeometryVR(lua_tonumber(L, 2), lua_tonumber(L, 3));
+            return 0;
+        } else if (lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5)) {
+            if (wnd->isPopped()) {
+                wnd->setWindowGeometryOS(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
+            } else {
+                wnd->setWindowGeometry(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
+            }
+            return 0;
+        }
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-
-    wnd->setWindowGeometryOS(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
-
+    flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_geometry");
+    flywithlua::LuaIsRunning = false;
     return 0;
-}
-
-int LuaGetFloatingWindowGeometryOS(lua_State *L) {
-    if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_geometry_os");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    XPLMWindowID window = wnd->getXWindow();
-
-    int sLeft, sTop, sRight, sBottom;
-    XPLMGetWindowGeometryOS(window, &sLeft, &sTop, &sRight, &sBottom);
-
-    lua_pushnumber(L, sLeft);
-    lua_pushnumber(L, sTop);
-    lua_pushnumber(L, sRight);
-    lua_pushnumber(L, sBottom);
-
-    return 4;
-}
-
-int LuaSetFloatingWindowGeometryVR(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_geometry_vr");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-
-    wnd->setWindowGeometryVR(lua_tonumber(L, 2), lua_tonumber(L, 3));
-
-    return 0;
-}
-
-int LuaGetFloatingWindowGeometryVR(lua_State *L) {
-    if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_geometry_vr");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    XPLMWindowID window = wnd->getXWindow();
-
-    int gWidth, gHeight;
-    XPLMGetWindowGeometryVR(window, &gWidth, &gHeight);
-
-    lua_pushnumber(L, gWidth);
-    lua_pushnumber(L, gHeight);
-
-    return 2;
-}
-
-int LuaFloatingWindowIsVR(lua_State *L) {
-    if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_is_vr");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-
-    lua_pushboolean(L, wnd->isVR());
-
-    return 1;
 }
 
 int LuaSetOnClickCallback(lua_State *L) {
@@ -610,21 +565,17 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
     lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);
-	lua_register(L, "float_wnd_get_visible", LuaFloatingWindowGetVisible);
-	lua_register(L, "float_wnd_set_visible", LuaFloatingWindowSetVisible);
-	lua_register(L, "float_wnd_is_popped", LuaFloatingWindowIsPopped);
-	lua_register(L, "float_wnd_is_front", LuaFloatingWindowIsFront);
-	lua_register(L, "float_wnd_bring_to_front", LuaFloatingWindowBringToFront);
-	lua_register(L, "float_wnd_set_resizing_limits", LuaSetFloatingWindowResizingLimits);
-	lua_register(L, "float_wnd_set_positioning_mode", LuaSetFloatingWindowPositioningMode);
-	lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
-	lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
-	lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
-	lua_register(L, "float_wnd_set_geometry_os", LuaSetFloatingWindowGeometryOS);
-	lua_register(L, "float_wnd_get_geometry_os", LuaGetFloatingWindowGeometryOS);
-	lua_register(L, "float_wnd_set_geometry_vr", LuaSetFloatingWindowGeometryVR);
-	lua_register(L, "float_wnd_get_geometry_vr", LuaGetFloatingWindowGeometryVR);
-	lua_register(L, "float_wnd_is_vr", LuaFloatingWindowIsVR);
+    lua_register(L, "float_wnd_get_visible", LuaFloatingWindowGetVisible);
+    lua_register(L, "float_wnd_set_visible", LuaFloatingWindowSetVisible);
+    lua_register(L, "float_wnd_is_popped", LuaFloatingWindowIsPopped);
+    lua_register(L, "float_wnd_is_front", LuaFloatingWindowIsFront);
+    lua_register(L, "float_wnd_bring_to_front", LuaFloatingWindowBringToFront);
+    lua_register(L, "float_wnd_is_vr", LuaFloatingWindowIsVR);
+    lua_register(L, "float_wnd_set_resizing_limits", LuaSetFloatingWindowResizingLimits);
+    lua_register(L, "float_wnd_set_positioning_mode", LuaSetFloatingWindowPositioningMode);
+    lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
+    lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
+    lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
 
     lua_pushnumber(L, 1);
     lua_setglobal(L, "SUPPORTS_FLOATING_WINDOWS");
@@ -640,7 +591,7 @@ void deinitFloatingWindowSupport() {
 void onFlightLoop() {
     for (auto it = floatingWindows.begin(); it != floatingWindows.end(); ) {
         auto wnd = *it;
-		if (!wnd->getIsCmdVisible() && !wnd->isVisible()) {
+        if (!wnd->getIsCmdVisible() && !wnd->isVisible()) {
             wnd->reportClose();
             it = floatingWindows.erase(it);
         } else {

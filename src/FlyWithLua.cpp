@@ -372,11 +372,11 @@ void CloseAllOpenHIDDevices()
 
 struct  MonitorBoundsStructure
 {
-    int		MonitorIndex;
-    int		inLeft;
-    int		inTop;
-    int		inRight;
-    int		inBottom;
+    int    MonitorIndex;
+    int    inLeft;
+    int    inTop;
+    int    inRight;
+    int    inBottom;
 };
 
 struct DataRefTableStructure
@@ -5056,89 +5056,89 @@ static int LuaXPLMGetScreenBoundsGlobal(lua_State *L)
 
 static void LuaReceiveMonitorBounds_f(int inMonitorIndex, int inLeft, int inTop, int inRight, int inBottom, void * refcon)
 {
-	auto MonitorBounds = reinterpret_cast<vector<MonitorBoundsStructure>*>(refcon);
-	
-	MonitorBounds->emplace_back(
-		MonitorBoundsStructure{
-			inMonitorIndex,
-			inLeft,
-			inTop,
-			inRight,
-			inBottom
-		}
-	);
+    auto MonitorBounds = reinterpret_cast<std::vector<MonitorBoundsStructure>*>(refcon);
+
+    MonitorBounds->emplace_back(
+        MonitorBoundsStructure{
+            inMonitorIndex,
+            inLeft,
+            inTop,
+            inRight,
+            inBottom
+        }
+    );
 }
 
 static int LuaXPLMGetAllMonitorBoundsOS(lua_State *L)
 {
-	vector<MonitorBoundsStructure> MonitorBounds;
-	
-	XPLMGetAllMonitorBoundsOS(LuaReceiveMonitorBounds_f, &MonitorBounds);
-	
-	int monitorCount = 0;
-	 
-	lua_newtable(L);						// create parent table, size unknown
+    std::vector<MonitorBoundsStructure> MonitorBounds;
 
-	for (auto& m : MonitorBounds)
-	{
-		monitorCount++;
-		lua_pushnumber(L, monitorCount);	// puts key of the first child table on-top of Lua VM stack
-		lua_createtable(L, 5, 0);			// creates first child table of size 5 array elements
+    XPLMGetAllMonitorBoundsOS(LuaReceiveMonitorBounds_f, &MonitorBounds);
 
-		lua_pushnumber(L, m.MonitorIndex);	// fills child table
-	    lua_setfield(L, -2, "MonIndex");	// setfield() pops the value from Lua VM stack
+    int monitorCount = 0;
 
-		lua_pushnumber(L, m.inLeft);
-	    lua_setfield(L, -2, "inLeft");
+    lua_newtable(L);                        // create parent table, size unknown
 
-		lua_pushnumber(L, m.inTop);
-	    lua_setfield(L, -2, "inTop");
+    for (auto& m : MonitorBounds)
+    {
+        monitorCount++;
+        lua_pushnumber(L, monitorCount);    // puts key of the first child table on-top of Lua VM stack
+        lua_createtable(L, 5, 0);           // creates first child table of size 5 array elements
 
-		lua_pushnumber(L, m.inRight);
-	    lua_setfield(L, -2, "inRight");
+        lua_pushnumber(L, m.MonitorIndex);  // fills child table
+        lua_setfield(L, -2, "MonIndex");    // setfield() pops the value from Lua VM stack
 
-		lua_pushnumber(L, m.inBottom);
-	    lua_setfield(L, -2, "inBottom");
+        lua_pushnumber(L, m.inLeft);
+        lua_setfield(L, -2, "inLeft");
 
-		lua_settable(L, -3);				// lua_settable() pops key, value pair from Lua VM stack
-	}										// and puts child table into the parent
+        lua_pushnumber(L, m.inTop);
+        lua_setfield(L, -2, "inTop");
+
+        lua_pushnumber(L, m.inRight);
+        lua_setfield(L, -2, "inRight");
+
+        lua_pushnumber(L, m.inBottom);
+        lua_setfield(L, -2, "inBottom");
+
+        lua_settable(L, -3);                // lua_settable() pops key, value pair from Lua VM stack
+    }                                       // and puts child table into the parent
 
     return 1;
 }
 
 static int LuaXPLMGetAllMonitorBoundsGlobal(lua_State *L)
 {
-	vector<MonitorBoundsStructure> MonitorBounds;
-	
-	XPLMGetAllMonitorBoundsGlobal(LuaReceiveMonitorBounds_f, &MonitorBounds);
-	
-	int monitorCount = 0;
-	 
-	lua_newtable(L);						// create parent table, size unknown
+    std::vector<MonitorBoundsStructure> MonitorBounds;
 
-	for (auto& m : MonitorBounds)
-	{
-		monitorCount++;
-		lua_pushnumber(L, monitorCount);	// puts key of the first child table on-top of Lua VM stack
-		lua_createtable(L, 5, 0);			// creates first child table of size 5 array elements
+    XPLMGetAllMonitorBoundsGlobal(LuaReceiveMonitorBounds_f, &MonitorBounds);
 
-		lua_pushnumber(L, m.MonitorIndex);	// fills child table
-	    lua_setfield(L, -2, "MonIndex");	// setfield() pops the value from Lua VM stack
+    int monitorCount = 0;
 
-		lua_pushnumber(L, m.inLeft);
-	    lua_setfield(L, -2, "inLeft");
+    lua_newtable(L);                        // create parent table, size unknown
 
-		lua_pushnumber(L, m.inTop);
-	    lua_setfield(L, -2, "inTop");
+    for (auto& m : MonitorBounds)
+    {
+        monitorCount++;
+        lua_pushnumber(L, monitorCount);    // puts key of the first child table on-top of Lua VM stack
+        lua_createtable(L, 5, 0);           // creates first child table of size 5 array elements
 
-		lua_pushnumber(L, m.inRight);
-	    lua_setfield(L, -2, "inRight");
+        lua_pushnumber(L, m.MonitorIndex);  // fills child table
+        lua_setfield(L, -2, "MonIndex");    // setfield() pops the value from Lua VM stack
 
-		lua_pushnumber(L, m.inBottom);
-	    lua_setfield(L, -2, "inBottom");
+        lua_pushnumber(L, m.inLeft);
+        lua_setfield(L, -2, "inLeft");
 
-		lua_settable(L, -3);				// lua_settable() pops key, value pair from Lua VM stack
-	}										// and puts child table into the parent
+        lua_pushnumber(L, m.inTop);
+        lua_setfield(L, -2, "inTop");
+
+        lua_pushnumber(L, m.inRight);
+        lua_setfield(L, -2, "inRight");
+
+        lua_pushnumber(L, m.inBottom);
+        lua_setfield(L, -2, "inBottom");
+
+        lua_settable(L, -3);                // lua_settable() pops key, value pair from Lua VM stack
+    }                                       // and puts child table into the parent
 
     return 1;
 }

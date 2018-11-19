@@ -2,11 +2,17 @@
 --
 --	New XPlane 11 XPLMDisplay Methods
 --
---	Modified: Nov 13 2018 - IanQ
+--	Modified: Nov 18 2018 - IanQ
 --
 -- Lua/C++ Testing
 --
 -- NEW:
+--
+-- XPLMGetMouseLocationGlobal - void XPLMGetMouseLocationGlobal(int * outX, int * outY)
+-- XPLMGetScreenSize - void XPLMGetScreenSize(int * outWidth, int * outHeight)
+-- XPLMGetScreenBoundsGlobal - void XPLMGetScreenBoundsGlobal(int * inLeft, int * inTop, int * inRight, int * inBottom)
+-- XPLMGetAllMonitorBoundsOS - void XPLMGetAllMonitorBoundsOS(XPLMReceiveMonitorBoundsOS_f inMonitorBoundsCallback, void * inRefcon)
+-- XPLMGetAllMonitorBoundsGlobal - void XPLMGetAllMonitorBoundsGlobal(XPLMReceiveMonitorBoundsGlobal_f inMonitorBoundsCallback, void * inRefcon)
 --
 -- float_wnd_is_popped - int XPLMWindowIsPoppedOut(XPLMWindowID inWindowID)
 -- float_wnd_get_visible - int XPLMGetWindowIsVisible(XPLMWindowID inWindowID)
@@ -16,20 +22,17 @@
 -- float_wnd_set_resizing_limits - void XPLMSetWindowResizingLimits(XPLMWindowID inWindowID, int inMinWidthBoxels, int inMinHeightBoxels, int inMaxWidthBoxels, int inMaxHeightBoxels)
 -- float_wnd_set_positioning_mode - void XPLMSetWindowPositioningMode(XPLMWindowID inWindowID, XPLMWindowPositioningMode inPositioningMode, int inMonitorIndex)
 -- float_wnd_set_gravity - void XPLMSetWindowGravity(XPLMWindowID inWindowID, float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity)
--- float_wnd_set_geometry - void XPLMGetWindowGeometry(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)
--- float_wnd_get_geometry - void XPLMSetWindowGeometry(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom)
--- float_wnd_set_geometry_os - void XPLMGetWindowGeometryOS(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)
--- float_wnd_get_geometry_os - void XPLMSetWindowGeometryOS(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom)
+-- float_wnd_set_geometry
+--		- for floating window, equivalent to - void XPLMSetWindowGeometry(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom))
+--		- for OS window, equivalent to       - void XPLMSetWindowGeometryOS(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom)
+-- float_wnd_get_geometry
+--		- for floating window, equivalent to - void XPLMGetWindowGeometry(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)
+--		- for OS window, equivalent to       - void XPLMGetWindowGeometryOS(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)
+--
+-- NOT TESTED AS HAVE NO VR HARDWARE----------------------------------------------------------------
 -- float_wnd_is_vr - int XPLMWindowIsInVR(XPLMWindowID inWindowID)
--- NOT FULLY TESTED AS CAN'T DO VR ----------------------------------------------------------------
--- float_wnd_set_geometry_vr - void XPLMSetWindowGeometryVR(XPLMWindowID inWindowID, int widthBoxels, int heightBoxels)
--- float_wnd_get_geometry_vr - void XPLMGetWindowGeometryVR(XPLMWindowID inWindowID, int * outWidthBoxels, int * outHeightBoxels)
-
--- XPLMGetMouseLocationGlobal - void XPLMGetMouseLocationGlobal(int * outX, int * outY)
--- XPLMGetScreenSize - void XPLMGetScreenSize(int * outWidth, int * outHeight)
--- XPLMGetScreenBoundsGlobal - void XPLMGetScreenBoundsGlobal(int * inLeft, int * inTop, int * inRight, int * inBottom)
--- XPLMGetAllMonitorBoundsOS - void XPLMGetAllMonitorBoundsOS(XPLMReceiveMonitorBoundsOS_f inMonitorBoundsCallback, void * inRefcon)
--- XPLMGetAllMonitorBoundsGlobal - void XPLMGetAllMonitorBoundsGlobal(XPLMReceiveMonitorBoundsGlobal_f inMonitorBoundsCallback, void * inRefcon)
+-- float_wnd_set_geometry, equivalent to - void XPLMSetWindowGeometryVR(XPLMWindowID inWindowID, int widthBoxels, int heightBoxels)
+-- float_wnd_get_geometry, equivalent to - void XPLMGetWindowGeometryVR(XPLMWindowID inWindowID, int * outWidthBoxels, int * outHeightBoxels)
 --
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- NOTES:
@@ -65,8 +68,8 @@ local mousex, mousey = 0,0											-- mouse click x,y coordinates
 
 local minWidth, minHeight, maxWidth, maxHeight = 800,600,800,600	-- float_wnd_set_resizing_limits
 local gLeft, gTop, gRight, gBottom = 0.0,1.0,1.0,1.0				-- float_wnd_set_gravity
-local winLeft, winTop, winRight, winBottom = 0,0,0,0				-- float_wnd_get_geometry/_os
-local vrWidth, vrHeight = 0,0										-- float_wnd_get_geometry_vr
+local winLeft, winTop, winRight, winBottom = 0,0,0,0				-- float_wnd_get_geometry (fw & os)
+local vrWidth, vrHeight = 0,0										-- float_wnd_get_geometry (vr)
 local dWidth, dHeight = 0,0											-- float_wnd_get_dimensions
 local msgx, msgy = 0,0												-- XPLMGetMouseLocationGlobal
 local ssWidth, ssHeight = 0,0										-- XPLMGetScreenSize
@@ -114,23 +117,21 @@ function on_draw(fwl_wnd, x, y)
 	is_visible = float_wnd_get_visible(fwl_wnd)
 	is_front = float_wnd_is_front(fwl_wnd)
 	is_vr = float_wnd_is_vr(fwl_wnd)
-	--is_vr = true	-- if this is set can pseudo-emulate VR, Get/SetGeometry methods work - a little!
+	--is_vr = true	-- if this is set can pseudo-emulate VR, Get/SetGeometry methods don't work though!
 
 	-- numerical rep of boolean, used for math calc
 	numPopped = bool_to_number(is_popped)
 	
-	if (not is_popped) then 
-		-- uses global desktop boxel coordinates
-		winLeft, winTop, winRight, winBottom = float_wnd_get_geometry(fwl_wnd)
-	else
-		-- uses operating system pixel coordinates
-		winLeft, winTop, winRight, winBottom = float_wnd_get_geometry_os(fwl_wnd)
-	end
-
+	-- get geometry
 	if (is_vr) then
 		-- uses boxels of a window in VR
-		vrWidth, vrHeight = float_wnd_get_geometry_vr(fwl_wnd)
-		draw_string(x + 2, y + 140, "VR Window Size = " .. vrWidth .. " x " .. vrHeight, "white")
+		vrWidth, vrHeight = float_wnd_get_geometry(fwl_wnd)
+		winTop, winBottom = minHeight, 0
+		draw_string(x + 2, y + 250, "VR Window Size = " .. vrWidth .. " x " .. vrHeight, "white")
+	else
+		-- if floating window, uses global desktop boxel coordinates
+		-- if popped window, uses operating system pixel coordinates
+		winLeft, winTop, winRight, winBottom = float_wnd_get_geometry(fwl_wnd)
 	end
 
 	-- pre-existing float_wnd command, calculates window size
@@ -150,16 +151,16 @@ function on_draw(fwl_wnd, x, y)
 	tOS = XPLMGetAllMonitorBoundsOS()
 	tGB = XPLMGetAllMonitorBoundsGlobal()
 
-	draw_string(x + 2, y + 230, "All Bounds Monitor OS Element Count:   " .. #tOS)
-	draw_string(x + 2, y + 215, "All Bounds Monitor Global Element Count:   " .. #tGB)
+	draw_string(x + 2, y + 200, "All Bounds Monitor OS Element Count:   " .. #tOS)
+	draw_string(x + 2, y + 185, "All Bounds Monitor Global Element Count:   " .. #tGB)
 
 	for i = 1,#tOS,1 do
-		draw_string(x + 2, y + 200 - (i * 15), "All Bounds Monitor " .. tOS[i].MonIndex .. " :      OS: " .. tOS[i].inLeft .. " , " ..
+		draw_string(x + 2, y + 170 - (i * 15), "All Bounds Monitor " .. tOS[i].MonIndex .. " :      OS: " .. tOS[i].inLeft .. " , " ..
 			 tOS[i].inTop  .. " , " .. tOS[i].inRight .. " , " .. tOS[i].inBottom)
 	end
 
 	for i = 1,#tGB,1 do
-		draw_string(x + 350, y + 200 - (i * 15), "Global: " .. tGB[i].inLeft .. " , " ..
+		draw_string(x + 350, y + 170 - (i * 15), "Global: " .. tGB[i].inLeft .. " , " ..
 			 tGB[i].inTop  .. " , " .. tGB[i].inRight .. " , " .. tGB[i].inBottom)
 	end
 
@@ -199,6 +200,10 @@ function on_draw(fwl_wnd, x, y)
 		end
 	end
 
+	if (toggle_timer ~= 0) then 
+		draw_string(x + dWidth - 130, y + 5, "Time Remaining = " .. generic_timer - os.time(), "white")
+	end
+
 	-- floating windows use Boxels, OS windows use pixels
 	-- for OS window, size is 20 units bigger width & height
 	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 20, "Window is " .. text_wt[numPopped + 1] .. " Window", "white")
@@ -209,7 +214,7 @@ function on_draw(fwl_wnd, x, y)
 	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 135, "Click HERE to change window positioning mode", "gray")
 	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 160, "Click HERE to set window gravity to " .. gLeft .. "," .. gTop .. "," .. gRight .. "," .. gBottom, "green")
 	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 185, "Click HERE to set window resizing limits", "red")
-	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 210, "Click HERE to change window geometry", "cyan")
+	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 210, "Click HERE to increase window geometry; click HERE to decrease; click HERE for normal", "cyan")
 	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 235, "Click HERE to bring window to front", "yellow")
 	draw_string(x + 20, y + (winTop - winBottom - (20 * numPopped)) - 260, "Click HERE to change window visibility - 2nd window will hide/unhide/close", "magenta")
 	
@@ -257,7 +262,7 @@ function on_click(fwl_wnd, x, y, state)
 				float_wnd_set_positioning_mode(fwl_wnd, 4, -1)
 			else
 				float_wnd_set_positioning_mode(fwl_wnd, 0, -1)
-				float_wnd_set_geometry(fwl_wnd, tLeft, tTop, tLeft + 800, tTop - 600) 
+				float_wnd_set_geometry(fwl_wnd, tLeft, tTop, tLeft + minWidth, tTop - minHeight) 
 			end
 		end
 
@@ -269,7 +274,7 @@ function on_click(fwl_wnd, x, y, state)
 				float_wnd_set_positioning_mode(fwl_wnd, 5, -1)
 			else
 				float_wnd_set_positioning_mode(fwl_wnd, 0, -1)
-				float_wnd_set_geometry(fwl_wnd, tLeft, tTop, tLeft + 800, tTop - 600) 
+				float_wnd_set_geometry(fwl_wnd, tLeft, tTop, tLeft + minWidth, tTop - minHeight) 
 			end
 		end
 	
@@ -298,17 +303,30 @@ function on_click(fwl_wnd, x, y, state)
 		end
 
 		-- set window geometry
-		if (x >= 45 and x <= 250 and y >= winTop - winBottom - 210 - (20 * numPopped) and y <= winTop - winBottom - 190 - (20 * numPopped)) then
+		if (x >= 45 and x <= 530 and y >= winTop - winBottom - 210 - (20 * numPopped) and y <= winTop - winBottom - 190 - (20 * numPopped)) then
 			logMsg("in Geometry statement")
-			if (is_popped) then
-				-- uses operating system pixel coordinates
-				float_wnd_set_geometry_os(fwl_wnd, winLeft + 500, winTop - 500, winLeft + 660 + 500, winTop - 500 - 500)
-			elseif (is_vr) then
+			
+			-- set size depending on where user clicks
+			if (x >= 45 and x <= 150) then
+				hsize, vsize, vrsize = 1024, 768, 200
+			elseif (x >= 285 and x <= 385) then
+				hsize, vsize, vrsize = 640, 480, -200
+			elseif (x >= 420 and x <= 520) then
+				hsize, vsize, vrsize = 800, 600, 0
+			end
+			
+			if (is_vr) then
 				-- uses boxels of a window in VR
-				float_wnd_set_geometry_vr(fwl_wnd, vrWidth + 200, vrHeight + 200) 
+				logMsg("VR coords: " .. vrWidth + vrsize .. " , " .. vrHeight + vrsize)
+				float_wnd_set_geometry(fwl_wnd, vrWidth + vrsize, vrHeight + vrsize) 
+			elseif (is_popped) then
+				-- uses operating system pixel coordinates
+				logMsg("OS coords: " .. winLeft .. " , " .. winTop .. " , " .. winLeft + hsize + (20 * numPopped) .. " , " .. winTop - vsize - (20 * numPopped))
+				float_wnd_set_geometry(fwl_wnd, winLeft, winTop, winLeft + hsize + (20 * numPopped), winTop - vsize - (20 * numPopped))
 			else
 				-- uses global desktop boxel coordinates
-				float_wnd_set_geometry(fwl_wnd, winLeft + 300, winTop - 300, winLeft + 640 + 300, winTop - 480 - 300) 
+				logMsg("NORM coords: " .. winLeft .. " , " .. winTop .. " , " .. winLeft + hsize .. " , " .. winTop - vsize)
+				float_wnd_set_geometry(fwl_wnd, winLeft, winTop, winLeft + hsize, winTop - vsize) 
 			end
 		end
 			
@@ -354,15 +372,14 @@ end
 function second_window()
 	if (toggle_second_window == "new") then
 		logMsg("in second_window new")
-		float_wnd_set_geometry(fwl_wnd, winLeft + 100, winTop - 100, winLeft + 800 + 100, winTop - 600 - 100) 
-		des_wnd = float_wnd_create(800, 600, 1, true)
+		float_wnd_set_geometry(fwl_wnd, winLeft + 100, winTop - 100, winLeft + minWidth + 100, winTop - minHeight - 100) 
+		des_wnd = float_wnd_create(minWidth, minHeight, 1, true)
 		float_wnd_set_title(des_wnd, pTitle)
 		float_wnd_set_ondraw(des_wnd, "des_ondraw")
 		float_wnd_set_onclick(des_wnd, "des_onclick")
 		float_wnd_set_onclose(des_wnd, "des_onclose")
 		if (is_popped) then 
 			float_wnd_set_positioning_mode(des_wnd, 4, -1) 
-			float_wnd_set_geometry_os(des_wnd, winLeft - 200, winTop - 100, winLeft + 820 - 200, winTop - 620 - 100) 
 		end
 	end
 
@@ -377,7 +394,7 @@ function second_window()
 		float_wnd_set_visible(des_wnd, 1)
 		if (is_popped) then 
 			float_wnd_set_positioning_mode(des_wnd, 4, -1) 
-			float_wnd_set_geometry_os(des_wnd, winLeft - 200, winTop - 100, winLeft + 820 - 200, winTop - 620 - 100) 
+			float_wnd_set_geometry(des_wnd, winLeft - 100, winTop + 100, winLeft + 820 - 100, winTop - 620 + 100) 
 		end
 	end
 
@@ -388,7 +405,7 @@ function second_window()
 			-- I tried to just do a set_positioning_mode(fwl_wnd, 4, -1) but that created an orphan window
 			float_wnd_set_positioning_mode(fwl_wnd, 0, -1) 
 			float_wnd_set_positioning_mode(fwl_wnd, 4, -1) 
-			float_wnd_set_geometry_os(fwl_wnd, winLeft, winTop, winLeft + 820, winTop - 620) 
+			float_wnd_set_geometry(fwl_wnd, winLeft, winTop, winLeft + 820, winTop - 620) 
 		else
 			float_wnd_bring_to_front(fwl_wnd)
 		end
@@ -404,7 +421,7 @@ function second_window()
 end -- function second_window
 
 -- width, height, decoration style as per XPLMCreateWindowEx. 1 for solid background, 3 for transparent
-fwl_wnd = float_wnd_create(800, 600, 1, true)
+fwl_wnd = float_wnd_create(minWidth, minHeight, 1, true)
 float_wnd_set_title(fwl_wnd, "FlyWithLua Test")
 float_wnd_set_ondraw(fwl_wnd, "on_draw")
 float_wnd_set_onclick(fwl_wnd, "on_click")

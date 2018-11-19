@@ -134,7 +134,7 @@ void FloatingWindow::bringToFront() {
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
     if (!vrEnabled) {
-	    XPLMBringWindowToFront(window);
+        XPLMBringWindowToFront(window);
     }
 }
 
@@ -152,7 +152,7 @@ void FloatingWindow::setPositioningMode(int pmode, int monindex) {
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
     if (!vrEnabled) {
-		XPLMSetWindowPositioningMode(window, static_cast<XPLMWindowPositioningMode>(pmode), monindex);
+        XPLMSetWindowPositioningMode(window, static_cast<XPLMWindowPositioningMode>(pmode), monindex);
     }
 }
 
@@ -201,8 +201,8 @@ void FloatingWindow::setIsCmdVisible(int fCondition) {
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
     if (!vrEnabled) {
-		fCondition == 0 ? isCmdVisible = true : isCmdVisible = false;
-	}
+        fCondition == 0 ? isCmdVisible = true : isCmdVisible = false;
+    }
 }
 
 bool FloatingWindow::getIsCmdVisible() {

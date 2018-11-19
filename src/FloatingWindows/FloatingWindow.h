@@ -40,18 +40,18 @@ public:
     void reportClose();
     void boxelsToNative(int x, int y, int &outX, int &outY);
 
-	bool isPopped();
-	bool isFront();
-	void bringToFront();
-	void setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight);
-	void setPositioningMode(int pmode, int monindex);
-	void setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity);
-	void setWindowGeometry(int mleft, int mtop, int mright, int mbot);
-	void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot);
-	void setWindowGeometryVR(int bWidth, int bHeight);
-	bool isVR();
-	void setIsCmdVisible(int fCondition);
-	bool getIsCmdVisible();
+    bool isPopped();
+    bool isFront();
+    void bringToFront();
+    void setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight);
+    void setPositioningMode(int pmode, int monindex);
+    void setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity);
+    void setWindowGeometry(int mleft, int mtop, int mright, int mbot);
+    void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot);
+    void setWindowGeometryVR(int bWidth, int bHeight);
+    bool isVR();
+    void setIsCmdVisible(int fCondition);
+    bool getIsCmdVisible();
 
     XPLMWindowID getXWindow();
     virtual ~FloatingWindow();
@@ -70,7 +70,7 @@ private:
     int width, height, decoration;
     bool isInVR = false;
 
-	bool isCmdVisible = false;
+    bool isCmdVisible = false;
 
     XPLMDataRef vrEnabledRef{};
     XPLMDataRef modeliewMatrixRef{};
