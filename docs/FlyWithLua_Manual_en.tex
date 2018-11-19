@@ -63,7 +63,7 @@
 
 \begin{document}
 
-\title{FlyWithLua V2.6 Core Reference Manual}
+\title{FlyWithLua V2.7 NG Reference Manual}
 \author{Carsten Lynker}
 \date{\today}
 
@@ -387,11 +387,23 @@ end
 
 A string containing the directory separator of the current OS.
 
+\subsubsection{SYSTEM\_DIRECTORY}
+
+The complete OS-specific path to the X-Plane root directory with trailing slash.
+
 \subsubsection{SCRIPT\_DIRECTORY}
 
 The complete OS-specific path to the scripts including a directory separator as it's last character. If you want to write a file named \verb|my_info.txt| into the scripts directory (instead of X-Plane's main directory), use code like this:
 
 \verb|infofile = os.open(SCRIPT_DIRECTORY .. "my_info.txt", "w")|
+
+\subsubsection{INTERNALS\_DIRECTORY}
+
+The complete OS-specific path to the FlyWithLua Internals directory with trailing slash.
+
+\subsubsection{MODULES\_DIRECTORY}
+
+The complete OS-specific path to the FlyWithLua Modules directory with trailing slash.
 
 \subsubsection{AIRCRAFT\_PATH}
 
@@ -3027,6 +3039,524 @@ If you want to turn on the battery, use this code:
 local battery = dataref_table( "sim/cockpit/electrical/battery_on" )
 battery[0] = 1
 \end{lstlisting}
+
+\newpage
+\section{FlyWithLua 2.7.x Added New Features}
+
+Starting with version 2.7.0, FlyWithLua now supports creating native plugin windows. There are two ways to use them:
+
+\hspace*{10mm}	graphics module: You can use the existing graphics module of FlyWithLua to draw into 
+\hspace*{10mm}	the windows, see examples included in the "Scripts (disabled)" folder that start with
+\hspace*{10mm}	"floating\_wnd".
+
+\hspace*{10mm}	imgui: FlyWithLua now supports creating imgui GUIs. imgui is an awesome 3rd party
+\hspace*{10mm}	GUI library that makes it really easy to create stunning GUIs. See the examples included
+\hspace*{10mm}	in the "Scripts (disabled)" folder that start with "imgui".
+
+Why would you want to use these new capabilities instead of using existing GUI libraries written in
+lua?
+
+\hspace*{10mm}	The windows can be moved and popped out to a native window
+
+\hspace*{10mm}	The performance is better because the GUI isn't created by lua (for imgui windows)
+
+\hspace*{10mm}	Imgui is more powerful than the existing libraries - for example, you can load an image
+\hspace*{10mm}	file (even png and jpg) and use it as a background image or button or whatever...
+
+\hspace*{10mm}	Both window types automatically (!) work in VR
+
+Here are a few teasing images to see what is now possible.
+
+\newpage
+\begin{center}
+\includegraphics[width=10cm]{imgui_demo.jpg} 
+\end{center}
+
+\begin{center}
+\includegraphics[width=10cm]{imgui_plots.jpg}
+\end{center}
+
+\newpage
+\begin{center}
+\includegraphics[width=10cm]{Radio_Entry_Window.jpg}
+\end{center}
+
+\begin{center}
+\includegraphics[width=10cm]{LogPilotHeadPosition.jpg}
+\end{center}
+
+\newpage
+The following functions don't work with floating windows in VR anymore, no matter if using imgui or FWL: do\_every\_frame, do\_on\_mouse\_click.
+
+Instead of using do\_every\_frame, you can register a drawing function that is called everytime X-Plane
+draws the window. It gets passed the x and y coordinates of the window's lower left corner as absolute
+coordinates. This is required because FWL's graphics functions take absolute screen coordinates and
+you have to make sure that you actually draw into the window. For example, if you pass (0, 0) as
+coordinates to a lua function that draws a dot, the pixel would always be in the lower left of
+the screen because they are absolute coordinates. But if the window doesn't cover that part of the
+screen, the pixel wouldn't be visible in the window. So if you want to put the pixel in the lower left of
+the window, pass (x, y) as coordinates to the lua functions. If you want a button on top of the window
+with a padding of 10px from the borders, you would draw a rectangle with the first point at (x + 10, y +
+height - 10). I attached a sketch to visualize this. x and y are passed as paramters to your drawing
+function by FlyWithLua and you must use them to place your pixels inside the window.
+
+And instead of do\_on\_mouse\_click, you can register an onclick function with the floating window.
+That function is only called if the click actually happened inside the window, so it gets passed relative
+coordinates already. So if the user clicks on the upper left of your button's rectangle, it would get
+passed (10, height - 10). You would then have to set a flag to remember that the user clicked
+somewhere so that you can then check this variable the next time the window is drawn.
+
+Using imgui, you don't need to care about drawing the controls yourself or mapping the clicks back to
+the controls. In fact, you don't need to register an onclick function at all. imgui is an immediate GUI,
+that means the controls don't have any internal state. You can't ask a checkbox if it is currently checked
+and you can't set a callback function to a button. They just have no state at all. How does it work then?
+For imgui windows, you register a builder function. That function is also called everytime the window
+is drawn. If you want to place a button, you just call
+imgui.Button("My Button")
+
+When you do that, imgui does not only draw the button, it also checks if the mouse button was released
+over this area in the last frame. And if that's the case, the Button function returns true! It's a little weird
+to get used to in the beginning, but all imgui functions actually return boolean values to indicate
+whether they were just being used. So if you want to react on the button, you just do something like
+this:
+
+if imgui.Button("My Button") then \newline
+\hspace*{10mm}	command\_once("some x-plane command") \newline
+end
+
+In the next frame, the mouse will not have been released over this button again, so the button doesn't
+return true in the next frame, resulting in your action being only called once as desired. The same goes
+for other controls like sliders and checkboxes - they return a boolean to indicate if you need to react on
+a change.
+
+\newpage
+\begin{center}
+\includegraphics[width=15cm]{FlyWithLuaFloatingWindow.jpg}
+\end{center}
+
+\newpage
+\section{Floating Windows}
+
+Starting with version 2.7.0 NG we have floating windows that can be in 2d, popped out or in VR. They are X-Plane 11 Window API style windows that can be created with Lua. There are examples of these kind of windows in the "Scripts (disabled)" folder anf are prefaced with "floating\_wnd\_".
+
+\subsection{\hspace*{1.0mm}demo\_floating\_wnd = float\_wnd\_create(800,450,1,false)}
+
+This is how you create a floating windows in lua.
+
+"demo\_floating\_wnd" is the name of the handle of the window that is created.
+
+The first two parameters specify the size of the window in boxels. Boxels are scalable pixels.If the UI scale is set to 100\% in the settings, a boxel equals a pixel. However, if the user sets the UI scale to more than 100\%, a boxel will be scaled to span multiple pixels.
+
+The third parameter specifies the window decoration. The following decorations are possible:
+\hspace*{10mm}	0: "X-Plane will draw no decoration for your window, and apply no automatic click
+\hspace*{10mm}	handlers. The window will not stop click from passing through its bounds. This is
+\hspace*{10mm}	suitable for "windows" which request, say, the full screen bounds, then only draw in
+\hspace*{10mm}	a small portion of the available area."
+
+\hspace*{10mm}	1: "The default decoration for "native" windows, like the map. Provides a solid back-    \hspace*{10mm}  ground, as well as click handlers for resizing and dragging the window."
+
+\hspace*{10mm}	2: "X-Plane will draw no decoration for your window, nor will it provide resize han-
+\hspace*{10mm}	dlers for your window edges, but it will stop clicks from passing through your win-
+\hspace*{10mm}	dows bounds."
+
+\hspace*{10mm}	3: "Like 2, but with resizing; X-Plane will draw no decoration for your window, but
+\hspace*{10mm}	it will stop clicks from passing through your windows bounds, and provide automatic
+\hspace*{10mm}	mouse handlers for resizing."
+
+The last parameter configures whether you want to use imgui for the floating window.
+The return value is a handle to the window that can be used to configure additional things.
+
+\subsection{\hspace*{1.0mm}float\_wnd\_set\_title(demo\_floating\_wnd, \ "floating window Demo")}
+
+This function sets the title of the window if it has a decoration.
+
+The first parameter must be a handle to the window previously created with the float\_wind\_create.
+
+The second parameter is the title of the window.
+
+
+\subsection{\hspace*{1.0mm}float\_wnd\_set\_position(demo\_floating\_wnd, 775, 650)}
+
+This function sets the initial position of the window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second and third parameters set the initial position of the window.
+
+\subsection{\hspace*{1.0mm}float\_wnd\_set\_ondraw(demo\_floating\_wnd, \ "on\_draw\_floating\_window")}
+
+This function sets the name of the ondraw function.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter sets the name of the ondraw function.
+
+\subsection{\hspace*{1.0mm}float\_wnd\_set\_onclick(demo\_floating\_wnd, "on\_click\_floating\_window")}
+
+This function sets the name of the onclick function.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter sets the name of the onclick function.
+
+\subsection{\hspace*{1.0mm}float\_wnd\_set\_onclose(demo\_floating\_wnd, "on\_close\_floating\_window")}
+
+This function sets the name of the onclose function.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter sets the name of the onclose function.
+
+\subsection{\hspace*{1.0mm}xplm\_wnd = float\_wnd\_get\_xplm\_handle(demo\_floating\_wnd)}
+
+This function gets the xplm handle of the window created above to be used with ffi.
+
+"xplm\_wnd" is the name of the xplm handle of the window that was created.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\subsection{\hspace*{1.0mm}function on\_draw\_floating\_window(demo\_floating\_wnd, x3, y3)}
+
+x and y are the origin of the window, i.e. the lower left
+
+x increases to the right, y increases to the top
+
+\subsection{\hspace*{1.0mm}function\ on\_click\_floating\_window(demo\_floating\_wnd, x3, y3)}
+
+x and y are relative from the origin of the window, i.e. the lower left
+
+\subsection{\hspace*{1.0mm}function\ on\_close\_floating\_window(demo\_floating\_wnd)}
+
+When on\_close it called, it is illegal to do anything with the wnd variable.
+
+It is also not allowed to create new windows in on\_close!
+
+\newpage
+\subsection{\hspace*{1.0mm}is\_popped = float\_wnd\_is\_popped(fwl\_wnd)}
+
+"is\_popped" is the name of the boolean to know if the created window is popped out.
+
+The parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\subsection{\hspace*{1.0mm}is\_visible = float\_wnd\_get\_visible(fwl\_wnd)}
+
+"is\_visable" is the name of the boolean to know if the created window is visable.
+
+The parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\subsection{\hspace*{1.0mm}is\_front = float\_wnd\_is\_front(fwl\_wnd)}
+
+"is\_front" is the name of the boolean to know if the created window is in front.
+
+The parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\subsection{\hspace*{1.0mm}is\_vr = float\_wnd\_is\_vr(fwl\_wnd)}
+
+"is\_vr" is the name of the boolean to know if the created window is in vr.
+
+The parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_bring\_to\_front(fwl\_wnd)}
+
+The function brings the created window to the front.
+
+The parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_resizing\_limits(fwl\_wnd, minWidth, minHeight, maxWidth, maxHeight)}
+
+The function sets the resizing limits for the created window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter sets the  minimum width for the created window.
+
+The third parameter sets the  minimum height for the created window.
+
+The forth parameter sets the maximum width for the created window.
+
+The fifth paramter sets the maximum height for the created window.
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_positioning\_mode(fwl\_wnd, 1, -1)}
+
+This function sets the positioning mode of the created window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter sets the policy for how X-Plane will position whe created window.
+
+\hspace*{10mm}	Here are the aviable values for the policy.
+
+\hspace*{10mm}	xplm\_WindowPositionFree \hspace*{23.0mm}	0\newline
+\hspace*{10mm}	xplm\_WindowCenterOnMonitor \hspace*{15.0mm}	1\newline
+\hspace*{10mm}	xplm\_WindowFullScreenOnMonitor \hspace*{8.5mm}	2\newline
+\hspace*{10mm}	xplm\_WindowFullScreenOnAllMonitors \hspace*{2.5mm}	3\newline
+\hspace*{10mm}	xplm\_WindowPopOut \hspace*{31.2mm}	4\newline
+\hspace*{10mm}	xplm\_WindowVR \hspace*{38.0mm}	5
+
+The thrid parameter is the monitor index.
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_gravity(fwl\_wnd, gLeft, gTop, gRight, gBottom)}
+
+A window's "gravity" controls how the window shifts as the whole X-Plane window resizes. A gravity of 1 means the window maintains its positioning relative to the right or top edges, 0 the left/bottom, and 0.5 keeps it centered.
+
+Default gravity is (0, 1, 0, 1), meaning your window will maintain its position relative to the top left and will not change size as its containing window grows.
+
+If you wanted, say, a window that sticks to the top of the screen (with a constant height), but which grows to take the full width of the window, you would pass (0, 1, 1, 1). Because your left and right edges would maintain their positioning relative to their respective edges of the screen, the whole width of your window would change with the X-Plane window.
+
+Only applies to modern windows. (Windows created using the deprecated XPLMCreateWindow(), or windows compiled against a pre-XPLM300 version of the SDK will simply get the default gravity.) 
+
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The remaining parameters follow the discription above.
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_geometry(fwl\_wnd, tLeft, tTop, tRight, tBottom)}
+
+This routine allows you to set the position and size of a window.
+
+\emph{for floating window, equivalent to - void XPLMSetWindowGeometry(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom))}
+
+The units and coordinate system match those of XPLMGetWindowGeometry(). That is, modern windows use global desktop boxel coordinates, while legacy windows use pixels relative to the main X-Plane display.
+
+Note that this only applies to "floating" windows (that is, windows that are drawn within the X-Plane simulation windows, rather than being "popped out" into their own first-class operating system windows). To set the position of windows whose positioning mode is xplm\_WindowPopOut, you'll need to instead use XPLMSetWindowGeometryOS(). 
+
+\emph{for OS window, equivalent to       - void XPLMSetWindowGeometryOS(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom)}
+
+This routine allows you to set the position and size, in operating system pixel coordinates, of a popped out window (that is, a window whose positioning mode is xplm\_WindowPopOut, which exists outside the X-Plane simulation window, in its own first-class operating system window).
+
+Note that you are responsible for ensuring both that your window is popped out (using XPLMWindowIsPoppedOut()) and that a monitor really exists at the OS coordinates you provide (using XPLMGetAllMonitorBoundsOS()).
+
+\emph{for VR window, equivalent to       - void XPLMSetWindowGeometryVR(XPLMWindowID inWindowID, int widthBoxels, int heightBoxels)}
+
+This routine allows you to set the size, in boxels, of a window in VR (that is, a window whose positioning mode is xplm\_WindowVR).
+
+Note that you are responsible for ensuring your window is in VR (using XPLMWindowIsInVR()).
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The remaining parameters set position and size of the created window.
+ 
+\newpage
+
+\subsection{\hspace*{1.0mm}winLeft, winTop, winRight, winBottom = float\_wnd\_get\_geometry(fwl\_wnd)}
+
+This routine returns the position and size of a window. The units and coordinate system vary depending on the type of window you have.
+
+\emph{ for flo﻿ating﻿ window, equivalent to - void XPLMGetWindowGeometry(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)}
+
+If this is a legacy window (one compiled against a pre-XPLM300 version of the SDK, or an XPLM300 window that was not created using XPLMCreateWindowEx()), the units are pixels relative to the main X-Plane display.
+
+If, on the other hand, this is a new X-Plane 11-style window (compiled against the XPLM300 SDK and created using XPLMCreateWindowEx()), the units are global desktop boxels.
+
+Pass NULL to not receive any paramter.
+
+"winLeft" Name of variable for the left side of the created window.
+
+"winTop" Name of variable for the top of the created window.
+
+"winRight" Name of variable for the right side of the created window.
+
+"winBottom" Name of variable for the bottom of the created window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\emph{ for OS window, equivalent to       - void XPLMGetWindowGeometryOS(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)}
+
+This routine allows you to set the position and size, in operating system pixel coordinates, of a popped out window (that is, a window whose positioning mode is xplm\_WindowPopOut, which exists outside the X-Plane simulation window, in its own first-class operating system window).
+
+Note that you are responsible for ensuring both that your window is popped out (using XPLMWindowIsPoppedOut()) and that a monitor really exists at the OS coordinates you provide (using XPLMGetAllMonitorBoundsOS()).
+
+"winLeft", "winTop", "winRight", "winBottom".
+
+\emph{ for VR window, equivalent to       - void XPLMGetWindowGeometryVR(XPLMWindowID inWindowID, int * outWidthBoxels, int * outHeightBoxels)}
+
+Returns the width and height, in boxels, of a window in VR. Note that you are responsible for ensuring your window is in VR (using XPLMWindowIsInVR()).
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+"vrWidth" Name of variable to set vr width of the created window.
+
+"vrHeight" Name of variable to set vr height of the created window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\newpage
+
+\subsection{\hspace*{1.0mm}msgx, msgy = XPLMGetMouseLocationGlobal()}
+
+Returns the current mouse location in global desktop boxels. Unlike XPLMGetMouseLocation(), the bottom left of the main X-Plane window is not guaranteed to be (0, 0)---instead, the origin is the lower left of the entire global desktop space. In addition, this routine gives the real mouse location when the mouse goes to X-Plane windows other than the primary display. Thus, it can be used with both pop-out windows and secondary monitors.
+
+This is the mouse location function to use with modern windows (i.e., those created by XPLMCreateWindowEx()).
+
+Pass NULL to not receive info about either parameter.
+
+"msgx" Name of variable to get global x mouse location of the created window.
+
+"msgy" Name of variable to get global y mouse location of the created window.
+
+\subsection{\hspace*{1.0mm}ssWidth, ssHeight = XPLMGetScreenSize()}
+
+This routine returns the size of the main X-Plane OpenGL window in pixels. This number can be used to get a rough idea of the amount of detail the user will be able to see when drawing in 3-d.
+
+"ssWidth" Name of variable to get screen size width.
+
+"ssHeight" Name of variable to get screen size height.
+
+\subsection{\hspace*{1.0mm}bLeft, bTop, bRight, bBottom = XPLMGetScreenBoundsGlobal()}
+
+This routine returns the bounds of the "global" X-Plane desktop, in boxels. Unlike the non-global version XPLMGetScreenSize(), this is multi-monitor aware. There are three primary consequences of multimonitor awareness.
+
+First, if the user is running X-Plane in full-screen on two or more monitors (typically configured using one full-screen window per monitor), the global desktop will be sized to include all X-Plane windows.
+
+Second, the origin of the screen coordinates is not guaranteed to be (0, 0). Suppose the user has two displays side-by-side, both running at 1080p. Suppose further that they've configured their OS to make the left display their "primary" monitor, and that X-Plane is running in full-screen on their right monitor only. In this case, the global desktop bounds would be the rectangle from (1920, 0) to (3840, 1080). If the user later asked X-Plane to draw on their primary monitor as well, the bounds would change to (0, 0) to (3840, 1080).
+
+Finally, if the usable area of the virtual desktop is not a perfect rectangle (for instance, because the monitors have different resolutions or because one monitor is configured in the operating system to be above and to the right of the other), the global desktop will include any wasted space. Thus, if you have two 1080p monitors, and monitor 2 is configured to have its bottom left touch monitor 1's upper right, your global desktop area would be the rectangle from (0, 0) to (3840, 2160).
+
+Note that popped-out windows (windows drawn in their own operating system windows, rather than "floating" within X-Plane) are not included in these bounds.
+
+"bLeft" Name of variable for the left bounds of the "global" X-Plane desktop, in boxels.
+
+"bTop" Name of variable for the top bounds of the "global" X-Plane desktop, in boxels.
+
+"bRight" Name of variable for the right bounds of the "global" X-Plane desktop, in boxels.
+
+"bBottom" Name of variable for the bottom bounds of the "global" X-Plane desktop, in boxels.
+
+\subsection{\hspace*{1.0mm}tOS = XPLMGetAllMonitorBoundsOS()}
+
+This routine immediately calls you back with the bounds (in pixels) of each monitor within the operating system's global desktop space. Note that unlike XPLMGetAllMonitorBoundsGlobal(), this may include monitors that have no X-Plane window on them.
+
+Note that this function's monitor indices match those provided by XPLMGetAllMonitorBoundsGlobal(), but the coordinates are different (since the X-Plane global desktop may not match the operating system's global desktop, and one X-Plane boxel may be larger than one pixel).
+
+This function returns the following values in a lua multi-dimensional table (an element for each monitor):
+
+    int        MonitorIndex;
+    int        inLeft;
+    int        inTop;
+    int        inRight;
+    int        inBottom;
+ 
+
+To access the values in FWL, use the following format: tOS[x].yyyy, where x = monitor number, and yyyy is table member.
+
+Example for monitor 1: tOS[1].inLeft; tOS[1].inBottom; monitor 2: tOS[2].inLeft; tOS[2].inBottom 
+
+\subsection{\hspace*{1.0mm}tGB = XPLMGetAllMonitorBoundsGlobal()}
+
+This routine immediately calls you back with the bounds (in boxels) of each full-screen X-Plane window within the X-Plane global desktop space. Note that if a monitor is *not* covered by an X-Plane window, you cannot get its bounds this way. Likewise, monitors with only an X-Plane window (not in full-screen mode) will not be included.
+
+If X-Plane is running in full-screen and your monitors are of the same size and configured contiguously in the OS, then the combined global bounds of all full-screen monitors will match the total global desktop bounds, as returned by XPLMGetScreenBoundsGlobal(). (Of course, if X-Plane is running in windowed mode, this will not be the case. Likewise, if you have differently sized monitors, the global desktop space will include wasted space.)
+
+Note that this function's monitor indices match those provided by XPLMGetAllMonitorBoundsOS(), but the coordinates are different (since the X-Plane global desktop may not match the operating system's global desktop, and one X-Plane boxel may be larger than one pixel due to 150\% or 200\% scaling).
+
+This function returns the following values in a lua multi-dimensional table (an element for each monitor):
+
+    int        MonitorIndex;
+    int        inLeft;
+    int        inTop;
+    int        inRight;
+    int        inBottom;
+ 
+
+To access the values in FWL, use the following format: tOS[x].yyyy, where x = monitor number, and yyyy is table member.
+
+Example for monitor 1: tOS[1].inLeft; tOS[1].inBottom; monitor 2: tOS[2].inLeft; tOS[2].inBottom  
+
+\newpage
+\section{Imgui Windows}
+
+Starting with version 2.7.0 NG we have imgui windows that can be in 2d, popped out or in VR. They are X-Plane 11 Window API style windows that use imgui widgets and can be created with Lua. There are examples of these kind of windows in the "Scripts (disabled)" folder and are prefaced with "imgui\_".
+
+\subsection{demo\_wnd = float\_wnd\_create(800, 450, 1, true)}
+
+The first two parameters specify the size of the window in boxels. Boxels are
+scalable pixes. If the UI scale is set to 100\% in the settings, a boxel equals
+a pixel. However, if the user sets the UI scale to more than 100\%, a boxel will
+be scaled to span multiple pixels.
+
+The third parameter specifies the window decoration. The following decorations are possible:
+\hspace*{10mm}	0: "X-Plane will draw no decoration for your window, and apply no automatic click
+\hspace*{10mm}	handlers. The window will not stop click from passing through its bounds. This is
+\hspace*{10mm}	suitable for "windows" which request, say, the full screen bounds, then only draw in a
+\hspace*{10mm}	small portion of the available area."
+
+\hspace*{10mm}	1: "The default decoration for "native" windows, like the map. Provides a solid back-
+\hspace*{10mm}	ground, as well as click handlers for resizing and dragging the window."
+
+\hspace*{10mm}	2: "X-Plane will draw no decoration for your window, nor will it provide resize han-
+\hspace*{10mm}	dlers for your window edges, but it will stop clicks from passing through your windows
+\hspace*{10mm}	bounds."
+
+\hspace*{10mm}	3: "Like 2, but with resizing; X-Plane will draw no decoration for your window, but
+\hspace*{10mm}	it will stop clicks from passing through your windows bounds, and provide automatic
+\hspace*{10mm}	mouse handlers for resizing."
+
+The last parameter configures whether you want to use imgui for the floating window.
+
+The return value is a handle to the window that can be used to configure additional things.
+
+\subsection{float\_wnd\_set\_title(demo\_wnd, "Demo Window")}
+
+This function sets the title of the window if it has a decoration.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter is the title of the window.
+
+\subsection{float\_wnd\_set\_position(demo\_wnd, 775, 650)}
+
+This function sets the initial position of the window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second and third parameters set the initial position of the window.
+
+\subsection{float\_wnd\_set\_imgui\_builder(demo\_wnd, "build\_demo")}
+
+imgui GUIs are built each frame. You will need to supply a function that is called every frame.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The second parameter must be the name of a function. Note that unlike other function in FlyWithLua, you
+can only pass the name of a function here, not an arbitrary lua string. This function will be called for
+every frame while the window is visible, so you don't need an additional do\_every\_frame unless you
+also need to do things while the window is closed.
+
+\subsection{float\_wnd\_set\_onclose(demo\_wnd, "closed\_demo")}
+
+If the window has a decoration with a close button (like decoration 1), you might need a way to know when the users closes the window. This function can be used to setup a function to be called when the user closes the window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create and the second parameter must be the name of a function. Note that unlike other function in FlyWithLua, you
+can only pass the name of a function here, not an arbitrary lua string. This function will be called
+when the user closes the window. After the window is closed, its builder function will not be called
+again and it is illegal to use the window handle variable returned by float\_wnd\_create, e.g. it is illegal
+to set the window title after it was closed.
+
+\subsection{image\_id = float\_wnd\_load\_image(SCRIPT\_DIRECTORY .. "/imgui\_demo.jpg")}
+
+imgui supports drawing images, so let's load one. The images must always be loaded globally to make sure they are only loaded once per script!
+
+\newpage
+imgui widgets have no state, that means we need to store states of checkboxes, radio buttons etc. globally.
+
+makeRed = false
+\newline
+sliderVal = 0
+\newline
+choice = 1
+\newline
+angle = 0
+\newline
+text = ""
+
+\subsection{function build\_demo(wnd, x, y)}
+
+This function is called for every frame. Use this function to create your GUI. The first parameter (wnd)
+is the handle of the window. It is the same handle as the one returned by float\_wnd\_create. It is required if you have multiple windows that use the same builder function so you know which of these windows is currently being built. The x and y parameters are the current position of the window in OpenGL coordinates, i.e. the position of the lower left corner in global screen coordinates. These coordinates are only needed for using the graphics module on top of the imgui GUI. If you only use imgui, these coordinates are not required because imgui has its own coordinate system inside the window.
+
+\subsection{function closed\_demo(wnd)}
+
+This function is called when the user closes the window. Drawing or calling imgui functions is not allowed in this function as the window is already destroyed.
 
 
 \newpage
