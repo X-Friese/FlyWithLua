@@ -201,6 +201,7 @@
 #include <math.h>
 #include <time.h>
 #include <wchar.h>
+#include <vector>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
 
@@ -368,6 +369,15 @@ void CloseAllOpenHIDDevices()
     LAST_SLOPPY_HID = -1;
 }
 //#endif
+
+struct  MonitorBoundsStructure
+{
+    int    MonitorIndex;
+    int    inLeft;
+    int    inTop;
+    int    inRight;
+    int    inBottom;
+};
 
 struct DataRefTableStructure
 {
@@ -5007,6 +5017,130 @@ static int LuaXPLMGetDataRefTypes(lua_State* L)
     }
 }
 
+static int LuaXPLMGetMouseLocationGlobal(lua_State *L)
+{
+    int sGlobalx, sGlobaly;
+    XPLMGetMouseLocationGlobal(&sGlobalx, &sGlobaly);
+
+    lua_pushnumber(L, sGlobalx);
+    lua_pushnumber(L, sGlobaly);
+
+    return 2;
+}
+
+static int LuaXPLMGetScreenSize(lua_State *L)
+{
+    int sWidth, sHeight;
+    XPLMGetScreenSize(&sWidth, &sHeight);
+
+    lua_pushnumber(L, sWidth);
+    lua_pushnumber(L, sHeight);
+
+    return 2;
+}
+
+static int LuaXPLMGetScreenBoundsGlobal(lua_State *L)
+{
+    int sLeft, sTop, sRight, sBottom;
+    XPLMGetScreenBoundsGlobal(&sLeft, &sTop, &sRight, &sBottom);
+
+    lua_pushnumber(L, sLeft);
+    lua_pushnumber(L, sTop);
+    lua_pushnumber(L, sRight);
+    lua_pushnumber(L, sBottom);
+
+    return 4;
+}
+
+static void LuaReceiveMonitorBounds_f(int inMonitorIndex, int inLeft, int inTop, int inRight, int inBottom, void * refcon)
+{
+    auto MonitorBounds = reinterpret_cast<std::vector<MonitorBoundsStructure>*>(refcon);
+
+    MonitorBounds->emplace_back(
+        MonitorBoundsStructure{
+            inMonitorIndex,
+            inLeft,
+            inTop,
+            inRight,
+            inBottom
+        }
+    );
+}
+
+static int LuaXPLMGetAllMonitorBoundsOS(lua_State *L)
+{
+    std::vector<MonitorBoundsStructure> MonitorBounds;
+
+    XPLMGetAllMonitorBoundsOS(LuaReceiveMonitorBounds_f, &MonitorBounds);
+
+    int monitorCount = 0;
+
+    lua_newtable(L);                        // create parent table, size unknown
+
+    for (auto& m : MonitorBounds)
+    {
+        monitorCount++;
+        lua_pushnumber(L, monitorCount);    // puts key of the first child table on-top of Lua VM stack
+        lua_createtable(L, 5, 0);           // creates first child table of size 5 array elements
+
+        lua_pushnumber(L, m.MonitorIndex);  // fills child table
+        lua_setfield(L, -2, "MonIndex");    // setfield() pops the value from Lua VM stack
+
+        lua_pushnumber(L, m.inLeft);
+        lua_setfield(L, -2, "inLeft");
+
+        lua_pushnumber(L, m.inTop);
+        lua_setfield(L, -2, "inTop");
+
+        lua_pushnumber(L, m.inRight);
+        lua_setfield(L, -2, "inRight");
+
+        lua_pushnumber(L, m.inBottom);
+        lua_setfield(L, -2, "inBottom");
+
+        lua_settable(L, -3);                // lua_settable() pops key, value pair from Lua VM stack
+    }                                       // and puts child table into the parent
+
+    return 1;
+}
+
+static int LuaXPLMGetAllMonitorBoundsGlobal(lua_State *L)
+{
+    std::vector<MonitorBoundsStructure> MonitorBounds;
+
+    XPLMGetAllMonitorBoundsGlobal(LuaReceiveMonitorBounds_f, &MonitorBounds);
+
+    int monitorCount = 0;
+
+    lua_newtable(L);                        // create parent table, size unknown
+
+    for (auto& m : MonitorBounds)
+    {
+        monitorCount++;
+        lua_pushnumber(L, monitorCount);    // puts key of the first child table on-top of Lua VM stack
+        lua_createtable(L, 5, 0);           // creates first child table of size 5 array elements
+
+        lua_pushnumber(L, m.MonitorIndex);  // fills child table
+        lua_setfield(L, -2, "MonIndex");    // setfield() pops the value from Lua VM stack
+
+        lua_pushnumber(L, m.inLeft);
+        lua_setfield(L, -2, "inLeft");
+
+        lua_pushnumber(L, m.inTop);
+        lua_setfield(L, -2, "inTop");
+
+        lua_pushnumber(L, m.inRight);
+        lua_setfield(L, -2, "inRight");
+
+        lua_pushnumber(L, m.inBottom);
+        lua_setfield(L, -2, "inBottom");
+
+        lua_settable(L, -3);                // lua_settable() pops key, value pair from Lua VM stack
+    }                                       // and puts child table into the parent
+
+    return 1;
+}
+
 static int Luapeek(lua_State* L)
 {
     if (lua_islightuserdata(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3))
@@ -5719,6 +5853,11 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "save_situation", LuaSaveSituation);
     lua_register(L, "load_aircraft", LuaLoadAircraft);
     lua_register(L, "reload_scenery", LuaReloadScenery);
+    lua_register(L, "XPLMGetMouseLocationGlobal", LuaXPLMGetMouseLocationGlobal);
+    lua_register(L, "XPLMGetScreenSize", LuaXPLMGetScreenSize);
+    lua_register(L, "XPLMGetScreenBoundsGlobal", LuaXPLMGetScreenBoundsGlobal);
+    lua_register(L, "XPLMGetAllMonitorBoundsOS", LuaXPLMGetAllMonitorBoundsOS);
+    lua_register(L, "XPLMGetAllMonitorBoundsGlobal", LuaXPLMGetAllMonitorBoundsGlobal);
 
     // function to access HID devices (new since FWL2.1)
     lua_register(L, "create_HID_table", Luacreate_HID_table);
