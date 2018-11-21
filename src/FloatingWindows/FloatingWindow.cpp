@@ -139,21 +139,11 @@ void FloatingWindow::bringToFront() {
 }
 
 void FloatingWindow::setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight) {
-
-    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
-
-    if (!vrEnabled) {
-        XPLMSetWindowResizingLimits(window, minwidth, minheight, maxwidth, maxheight);
-    }
+    XPLMSetWindowResizingLimits(window, minwidth, minheight, maxwidth, maxheight);
 }
 
 void FloatingWindow::setPositioningMode(int pmode, int monindex) {
-
-    bool vrEnabled = XPLMGetDatai(vrEnabledRef);
-
-    if (!vrEnabled) {
-        XPLMSetWindowPositioningMode(window, static_cast<XPLMWindowPositioningMode>(pmode), monindex);
-    }
+    XPLMSetWindowPositioningMode(window, static_cast<XPLMWindowPositioningMode>(pmode), monindex);
 }
 
 void FloatingWindow::setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity) {
