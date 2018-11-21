@@ -51,7 +51,7 @@
 
 \setlength{\headheight}{2cm}
 \chead{\includegraphics[width=2.0cm]{FlyWithLua_logo.jpg}\\[2ex]}
-\cfoot{\footnotesize Seite \thepage\ von \pageref{LastPage}}
+\cfoot{\footnotesize Page \thepage\ of \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
@@ -3217,11 +3217,15 @@ The first parameter must be a handle to a window previously created with float\_
 
 \subsection{\hspace*{1.0mm}function on\_draw\_floating\_window(demo\_floating\_wnd, x3, y3)}
 
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
 x and y are the origin of the window, i.e. the lower left
 
 x increases to the right, y increases to the top
 
 \subsection{\hspace*{1.0mm}function\ on\_click\_floating\_window(demo\_floating\_wnd, x3, y3)}
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
 
 x and y are relative from the origin of the window, i.e. the lower left
 
@@ -3230,6 +3234,8 @@ x and y are relative from the origin of the window, i.e. the lower left
 When on\_close it called, it is illegal to do anything with the wnd variable.
 
 It is also not allowed to create new windows in on\_close!
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
 
 \newpage
 \subsection{\hspace*{1.0mm}is\_popped = float\_wnd\_is\_popped(fwl\_wnd)}
@@ -3360,7 +3366,7 @@ The remaining parameters sets the size of the created window increasing or decre
 
 This routine returns the position and size of a normal 2d window. The units and coordinate system vary depending on the type of window you have.
 
-\emph{ for flo﻿ating﻿ window, equivalent to - void XPLMGetWindowGeometry(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)}
+\emph{for floating window, equivalent to - void XPLMGetWindowGeometry(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)}
 
 If this is a legacy window (one compiled against a pre-XPLM300 version of the SDK, or an XPLM300 window that was not created using XPLMCreateWindowEx()), the units are pixels relative to the main X-Plane display.
 
@@ -3438,6 +3444,8 @@ This routine returns the size of the main X-Plane OpenGL window in pixels. This 
 
 "ssHeight" Name of variable to get screen size height.
 
+\newpage
+
 \subsection{\hspace*{1.0mm}bLeft, bTop, bRight, bBottom = XPLMGetScreenBoundsGlobal()}
 
 This routine returns the bounds of the "global" X-Plane desktop, in boxels. Unlike the non-global version XPLMGetScreenSize(), this is multi-monitor aware. There are three primary consequences of multimonitor awareness.
@@ -3457,6 +3465,8 @@ Note that popped-out windows (windows drawn in their own operating system window
 "bRight" Name of variable for the right bounds of the "global" X-Plane desktop, in boxels.
 
 "bBottom" Name of variable for the bottom bounds of the "global" X-Plane desktop, in boxels.
+
+\newpage
 
 \subsection{\hspace*{1.0mm}tOS = XPLMGetAllMonitorBoundsOS()}
 
@@ -3568,11 +3578,12 @@ when the user closes the window. After the window is closed, its builder functio
 again and it is illegal to use the window handle variable returned by float\_wnd\_create, e.g. it is illegal
 to set the window title after it was closed.
 
+\newpage
+
 \subsection{image\_id = float\_wnd\_load\_image(SCRIPT\_DIRECTORY .. "/imgui\_demo.jpg")}
 
 imgui supports drawing images, so let's load one. The images must always be loaded globally to make sure they are only loaded once per script!
 
-\newpage
 imgui widgets have no state, that means we need to store states of checkboxes, radio buttons etc. globally.
 
 makeRed = false
