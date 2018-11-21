@@ -3310,21 +3310,39 @@ The first parameter must be a handle to a window previously created with float\_
 
 The remaining parameters follow the discription above.
 
-\subsection{\hspace*{1.0mm}function float\_wnd\_set\_geometry(fwl\_wnd, tLeft, tTop, tRight, tBottom)}
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_geometry(fwl\_wnd, nLeft, nTop, nRight, nBottom)}
 
-This routine allows you to set the position and size of a window.
+This routine allows you to set the position and size of a normal 2d window.
 
 \emph{for floating window, equivalent to - void XPLMSetWindowGeometry(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom))}
 
 The units and coordinate system match those of XPLMGetWindowGeometry(). That is, modern windows use global desktop boxel coordinates, while legacy windows use pixels relative to the main X-Plane display.
 
-Note that this only applies to "floating" windows (that is, windows that are drawn within the X-Plane simulation windows, rather than being "popped out" into their own first-class operating system windows). To set the position of windows whose positioning mode is xplm\_WindowPopOut, you'll need to instead use XPLMSetWindowGeometryOS(). 
+Note that this only applies to "floating" windows (that is, windows that are drawn within the X-Plane simulation windows, rather than being "popped out" into their own first-class operating system windows). To set the position of windows whose positioning mode is xplm\_WindowPopOut, you'll need to instead use XPLMSetWindowGeometryOS().
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The remaining parameters set position and size of the created window.
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_geometry(fwl\_wnd, pLeft, pTop, pRight, pBottom)}
+
+This routine allows you to set the position and size of a poped out or OS 2d window.
 
 \emph{for OS window, equivalent to       - void XPLMSetWindowGeometryOS(XPLMWindowID inWindowID, int inLeft, int inTop, int inRight, int inBottom)}
 
 This routine allows you to set the position and size, in operating system pixel coordinates, of a popped out window (that is, a window whose positioning mode is xplm\_WindowPopOut, which exists outside the X-Plane simulation window, in its own first-class operating system window).
 
 Note that you are responsible for ensuring both that your window is popped out (using XPLMWindowIsPoppedOut()) and that a monitor really exists at the OS coordinates you provide (using XPLMGetAllMonitorBoundsOS()).
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+The remaining parameters set position and size of the created window.
+
+\newpage
+
+\subsection{\hspace*{1.0mm}function float\_wnd\_set\_geometry(fwl\_wnd, vrWidth, vrHeight)}
+
+This routine allows you to set the size of a VR window.
 
 \emph{for VR window, equivalent to       - void XPLMSetWindowGeometryVR(XPLMWindowID inWindowID, int widthBoxels, int heightBoxels)}
 
@@ -3334,13 +3352,13 @@ Note that you are responsible for ensuring your window is in VR (using XPLMWindo
 
 The first parameter must be a handle to a window previously created with float\_wnd\_create.
 
-The remaining parameters set position and size of the created window.
+The remaining parameters sets the size of the created window increasing or decreasing from a centered position.
  
 \newpage
 
-\subsection{\hspace*{1.0mm}winLeft, winTop, winRight, winBottom = float\_wnd\_get\_geometry(fwl\_wnd)}
+\subsection{\hspace*{1.0mm}nwinLeft, nwinTop, nwinRight, nwinBottom = float\_wnd\_get\_geometry(fwl\_wnd)}
 
-This routine returns the position and size of a window. The units and coordinate system vary depending on the type of window you have.
+This routine returns the position and size of a normal 2d window. The units and coordinate system vary depending on the type of window you have.
 
 \emph{ for flo﻿ating﻿ window, equivalent to - void XPLMGetWindowGeometry(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)}
 
@@ -3350,15 +3368,21 @@ If, on the other hand, this is a new X-Plane 11-style window (compiled against t
 
 Pass NULL to not receive any paramter.
 
-"winLeft" Name of variable for the left side of the created window.
+"nwinLeft" Name of variable for the left side of the created window.
 
-"winTop" Name of variable for the top of the created window.
+"nwinTop" Name of variable for the top of the created window.
 
-"winRight" Name of variable for the right side of the created window.
+"nwinRight" Name of variable for the right side of the created window.
 
-"winBottom" Name of variable for the bottom of the created window.
+"nwinBottom" Name of variable for the bottom of the created window.
 
 The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+\newpage
+
+\subsection{\hspace*{1.0mm}pwinLeft, pwinTop, pwinRight, pwinBottom = float\_wnd\_get\_geometry(fwl\_wnd)}
+
+This routine returns the position and size of a poped out or OS window. The units and coordinate system vary depending on the type of window you have.
 
 \emph{ for OS window, equivalent to       - void XPLMGetWindowGeometryOS(XPLMWindowID inWindowID, int * outLeft, int * outTop, int * outRight, int * outBottom)}
 
@@ -3366,13 +3390,25 @@ This routine allows you to set the position and size, in operating system pixel 
 
 Note that you are responsible for ensuring both that your window is popped out (using XPLMWindowIsPoppedOut()) and that a monitor really exists at the OS coordinates you provide (using XPLMGetAllMonitorBoundsOS()).
 
-"winLeft", "winTop", "winRight", "winBottom".
+"pwinLeft" Name of variable for the left side of the created window.
+
+"pwinTop" Name of variable for the top of the created window.
+
+"pwinRight" Name of variable for the right side of the created window.
+
+"pwinBottom" Name of variable for the bottom of the created window.
+
+The first parameter must be a handle to a window previously created with float\_wnd\_create.
+
+
+
+\subsection{\hspace*{1.0mm}vrwinWidth, vrwinHeight = float\_wnd\_get\_geometry(fwl\_wnd)}
+
+This routine returns the size of a VR window.
 
 \emph{ for VR window, equivalent to       - void XPLMGetWindowGeometryVR(XPLMWindowID inWindowID, int * outWidthBoxels, int * outHeightBoxels)}
 
 Returns the width and height, in boxels, of a window in VR. Note that you are responsible for ensuring your window is in VR (using XPLMWindowIsInVR()).
-
-The first parameter must be a handle to a window previously created with float\_wnd\_create.
 
 "vrWidth" Name of variable to set vr width of the created window.
 

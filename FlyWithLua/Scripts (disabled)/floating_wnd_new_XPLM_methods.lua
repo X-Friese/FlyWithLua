@@ -318,7 +318,8 @@ function on_click(fwl_wnd, x, y, state)
 			if (is_vr) then
 				-- uses boxels of a window in VR
 				logMsg("VR coords: " .. vrWidth + vrsize .. " , " .. vrHeight + vrsize)
-				float_wnd_set_geometry(fwl_wnd, vrWidth + vrsize, vrHeight + vrsize) 
+				-- float_wnd_set_geometry(fwl_wnd, vrWidth + vrsize, vrHeight + vrsize)
+				float_wnd_set_geometry(fwl_wnd, vsize, hsize)
 			elseif (is_popped) then
 				-- uses operating system pixel coordinates
 				logMsg("OS coords: " .. winLeft .. " , " .. winTop .. " , " .. winLeft + hsize + (20 * numPopped) .. " , " .. winTop - vsize - (20 * numPopped))
