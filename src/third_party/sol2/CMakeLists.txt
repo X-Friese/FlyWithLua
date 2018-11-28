@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 project(sol2 VERSION 2.20.0 DESCRIPTION "A C++ <-> Lua API wrapper with advanced features and top notch performance.")
 
 set(CXX_FEATURES
+        cxx_std_14
         cxx_auto_type
         cxx_constexpr
         cxx_decltype
@@ -26,3 +27,4 @@ add_library(sol2::sol2 ALIAS sol2)
 target_include_directories(sol2 INTERFACE "./upstream")
 # Enforce function call argument type checks when calling from Lua to C++
 target_compile_definitions(sol2 INTERFACE SOL_SAFE_FUNCTION_CALLS)
+target_compile_features(sol2 INTERFACE ${CXX_FEATURES})

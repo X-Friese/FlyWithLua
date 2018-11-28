@@ -17,17 +17,13 @@ RUN apt-get install -y --no-install-recommends clang curl && apt-get clean
 #Build arguments
 ARG osxcross_repo="tpoechtrager/osxcross"
 ARG osxcross_revision="f4ba4facae996b3b14d89eb62c0384564f7368b5"
-ARG darwin_sdk_version="10.10"
-ARG darwin_osx_version_min="10.6"
-ARG darwin_version="14"
-ARG darwin_sdk_url="https://www.dropbox.com/s/yfbesd249w10lpc/MacOSX${darwin_sdk_version}.sdk.tar.xz"
+ARG darwin_sdk_version="10.11"
+ARG darwin_sdk_url="https://github.com/apriorit/osxcross-sdks/raw/master/MacOSX10.11.sdk.tar.xz"
 
 # ENV available in docker image
 ENV OSXCROSS_REPO="${osxcross_repo}" \
     OSXCROSS_REVISION="${osxcross_revision}" \
     DARWIN_SDK_VERSION="${darwin_sdk_version}" \
-    DARWIN_VERSION="${darwin_version}" \
-    DARWIN_OSX_VERSION_MIN="${darwin_osx_version_min}" \
     DARWIN_SDK_URL="${darwin_sdk_url}" \
     CROSSBUILD=1
 
@@ -38,7 +34,7 @@ RUN mkdir -p "/tmp/osxcross" \
  && rm -f osxcross.tar.gz \
  && curl -sLo tarballs/MacOSX${DARWIN_SDK_VERSION}.sdk.tar.xz \
              "${DARWIN_SDK_URL}" \
- && UNATTENDED=1 JOBS=4 SDK_VERSION="${DARWIN_SDK_VERSION}" OSX_VERSION_MIN="${DARWIN_OSX_VERSION_MIN}" ./build.sh \
+ && UNATTENDED=1 JOBS=4 SDK_VERSION=10.11 ./build.sh \
  && mv target /usr/osxcross \
  && mv tools /usr/osxcross/ \
  && rm -rf "/usr/osxcross/SDK/MacOSX${DARWIN_SDK_VERSION}.sdk/usr/share/man" \
