@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <sol.hpp>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
@@ -23,6 +24,25 @@
 #include "stb_image.h"
 
 namespace flwnd {
+
+/**
+ * A function, which returns a Lua callback function.
+ *
+ * This type allows to abstract away method how a callback is passed from lua, be that by name or directly by reference.
+ * Using a provider allows to delay callback resolution until invocation time which often is useful when passing
+ * callback by name: the callback function may not be defined yet when the callback is set, but it will be by the call
+ * time. Prom pedantic perspective this is not a great practice but it does happen in existing scripts, so we support
+ * it.
+ */
+typedef std::function<sol::protected_function()> CallbackProvider;
+
+/**
+ * A function, which sets some kind of callback for a floating (or ImGUI) window.
+ *
+ * This type is used by LuaSetCallbackByName and LuaSetCallbackByRef as a template parameter and is implemented by
+ * LuaSetImguiBuilder and LuaSetOn???Callback functions.
+ */
+typedef void(CallbackSetter)(sol::light<FloatingWindow>, CallbackProvider const&);
 
 std::vector<std::shared_ptr<FloatingWindow>> floatingWindows;
 std::vector<GLuint> textureIDs;
@@ -147,25 +167,17 @@ int LuaLoadFloatinWindowImage(lua_State *L) {
     }
 }
 
-int LuaSetOnDrawCallback(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_ondraw");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    std::string cbName = lua_tostring(L, 2);
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    wnd->setDrawCallback([cbName] (FloatingWindow &fwnd) {
+/**
+ * Set floating window drawing function from Lua.
+ *
+ * See LuaSetImguiBuilder for details about CallbackProvider.
+ *
+ * @param wnd Pointer to a FloatingWindow instance.
+ * @param on_draw_provider A lambda, which returns the actual on_draw handler from Lua.
+ */
+void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const& on_draw_provider) {
+    static_cast<FloatingWindow*>(wnd)->setDrawCallback([on_draw_provider] (FloatingWindow &fwnd) {
         if (!flywithlua::LuaIsRunning)  {
-            return;
-        }
-
-        lua_State *L = flywithlua::FWLLua;
-
-        lua_getglobal(L, cbName.c_str());
-        if (!lua_isfunction(L, 1)) {
-            lua_pop(L, 1);
             return;
         }
 
@@ -174,24 +186,25 @@ int LuaSetOnDrawCallback(lua_State *L) {
         int left, top, right, bottom;
         XPLMGetWindowGeometry(window, &left, &top, &right, &bottom);
 
-        lua_pushlightuserdata(L, &fwnd);
-        lua_pushnumber(L, left);
-        lua_pushnumber(L, bottom);
-
         XPLMSetGraphicsState(0, 0, 0, 1, 1, 0, 0);
 
         flywithlua::WeAreNotInDrawingState = false;
         flywithlua::CopyDataRefsToLua();
-        if (lua_pcall(L, 3, 0, 0)) {
-            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window draw callback");
-            flywithlua::LuaIsRunning = false;
+
+        auto on_draw = on_draw_provider();
+        if (!on_draw) {
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_ondraw");
             return;
         }
+        auto result = on_draw(sol::light<FloatingWindow>(fwnd), left, bottom);
+        if (!result.valid()) {
+            sol::error err = result;
+            flywithlua::panic(err.what());
+        }
+
         flywithlua::CopyDataRefsToXPlane();
         flywithlua::WeAreNotInDrawingState = true;
     });
-
-    return 0;
 }
 
 int LuaGetXPLMWindowHandle(lua_State *L) {
@@ -411,25 +424,23 @@ int LuaSetFloatingWindowGeometry(lua_State *L) {
     return 0;
 }
 
-int LuaSetOnClickCallback(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_onclick");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    std::string cbName = lua_tostring(L, 2);
-    wnd->setClickCallback([cbName] (FloatingWindow &fwnd, int x, int y, XPLMMouseStatus status) {
+/**
+ * Set floating window mouse handler from Lua.
+ *
+ * See LuaSetImguiBuilder for details about CallbackProvider.
+ *
+ * @param fwnd Pointer to a FloatingWindow instance.
+ * @param on_click_provider A lambda, which returns the actual on_click handler from Lua.
+ */
+void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider const& on_click_provider) {
+    static_cast<FloatingWindow*>(fwnd)->setClickCallback([on_click_provider] (FloatingWindow &fwnd, int x, int y, XPLMMouseStatus status) {
         if (!flywithlua::LuaIsRunning)  {
             return;
         }
 
-        lua_State *L = flywithlua::FWLLua;
-
-        lua_getglobal(L, cbName.c_str());
-        if (!lua_isfunction(L, 1)) {
-            lua_pop(L, 1);
+        auto on_click = on_click_provider();
+        if (!on_click) {
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick");
             return;
         }
 
@@ -438,100 +449,94 @@ int LuaSetOnClickCallback(lua_State *L) {
         int left, top, right, bottom;
         XPLMGetWindowGeometry(window, &left, &top, &right, &bottom);
 
-        lua_pushlightuserdata(L, &fwnd);
-        lua_pushnumber(L, x - left);
-        lua_pushnumber(L, y - bottom);
-        lua_pushnumber(L, status);
-
         flywithlua::CopyDataRefsToLua();
-        if (lua_pcall(L, 4, 0, 0)) {
-            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window click callback");
-            flywithlua::LuaIsRunning = false;
-            return;
+
+        auto result = on_click(sol::light<FloatingWindow>(fwnd), x - left, y - bottom, status);
+        if (!result.valid()) {
+            sol::error err = result;
+            flywithlua::panic(err.what());
         }
+
         flywithlua::CopyDataRefsToXPlane();
     });
-
-    return 0;
 }
 
-int LuaSetOnCloseCallback(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_onclose");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    std::string cbName = lua_tostring(L, 2);
-    wnd->setCloseCallback([cbName] (FloatingWindow &fwnd) {
+/**
+ * Set floating window close event handler from Lua.
+ *
+ * See LuaSetImguiBuilder for details about CallbackProvider.
+ *
+ * @param fwnd Pointer to a FloatingWindow instance.
+ * @param on_close_provider A lambda, which returns the actual on_close handler from Lua.
+ */
+void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider const& on_close_provider) {
+    static_cast<FloatingWindow*>(fwnd)->setCloseCallback([on_close_provider] (FloatingWindow &fwnd) {
         if (!flywithlua::LuaIsRunning)  {
             return;
         }
 
-        lua_State *L = flywithlua::FWLLua;
-
-        lua_getglobal(L, cbName.c_str());
-        if (!lua_isfunction(L, 1)) {
-            lua_pop(L, 1);
+        auto on_close = on_close_provider();
+        if (!on_close) {
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick");
             return;
         }
-
-        lua_pushlightuserdata(L, &fwnd);
 
         flywithlua::CopyDataRefsToLua();
-        if (lua_pcall(L, 1, 0, 0)) {
-            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute floating window close callback");
-            flywithlua::LuaIsRunning = false;
-            return;
+
+        auto result = on_close(sol::light<FloatingWindow>(fwnd));
+        if (!result.valid()) {
+            sol::error err = result;
+            flywithlua::panic(err.what());
         }
+
         flywithlua::CopyDataRefsToXPlane();
     });
-
-    return 0;
 }
 
-int LuaSetImguiBuilder(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_imgui_builder");
-        flywithlua::LuaIsRunning = false;
-        return 0;
-    }
-
-    void *ptr = lua_touserdata(L, 1);
-    ImGUIWindow *wnd = dynamic_cast<ImGUIWindow *>(reinterpret_cast<FloatingWindow*>(ptr));
+/**
+ * Set ImGUI window builder from lua.
+ *
+ * This function accepts builder_provider instead of builder directly to allow callback-time resolution of the builder.
+ * This is mostly useful when builder function is specified by name and float_wnd_set_imgui_builder() is called before
+ * the function is actually defined in Lua. However, by the time builder callback is called, the function is defined and
+ * builder_provider will be able to correctly discover it.
+ *
+ * Note: this builder_provider trick wouldn't be necessary if we only allowed passing builder by reference. If this ever
+ * becomes the case, this could should be simplified.
+ *
+ * @param fwnd Pointer to an instance of ImGUIWindow to set builder for.
+ * @param builder_provider A lambda, which returns the actual window builder from Lua.
+ */
+void LuaSetImguiBuilder(sol::light<FloatingWindow> fwnd, CallbackProvider const& builder_provider) {
+    auto* wnd = dynamic_cast<ImGUIWindow*>(static_cast<FloatingWindow*>(fwnd));
     if (!wnd) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong window type passed to float_wnd_set_imgui_builder");
-        flywithlua::LuaIsRunning = false;
-        return 0;
+        flywithlua::panic("FlyWithLua Error: Wrong window type passed to float_wnd_set_imgui_builder");
+        return;
     }
-    std::string cbName = lua_tostring(L, 2);
 
-    wnd->setBuildCallback([cbName] (ImGUIWindow &iwnd) {
+    wnd->setBuildCallback([builder_provider] (ImGUIWindow& iwnd) {
         if (!flywithlua::LuaIsRunning)  {
             return;
         }
 
-        lua_State *L = flywithlua::FWLLua;
-
-        lua_getglobal(L, cbName.c_str());
-        if (!lua_isfunction(L, 1)) {
-            lua_pop(L, 1);
+        // Obtain window builder and make sure it is a valid function (otherwise conversion to sol::protected_function
+        // will fail).
+        auto builder = builder_provider();
+        if (!builder) {
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_imgui_builder");
             return;
         }
 
         int left, top, right, bottom;
         XPLMGetWindowGeometry(iwnd.getXWindow(), &left, &top, &right, &bottom);
 
-        lua_pushlightuserdata(L, &iwnd);
-        lua_pushnumber(L, left);
-        lua_pushnumber(L, bottom);
-
         flywithlua::CopyDataRefsToLua();
-        if (lua_pcall(L, 3, 0, 0)) {
-            flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute imgui window builder callback");
-            flywithlua::LuaIsRunning = false;
-            return;
+
+        // Attempt to execute passed function and stop Lua if it fails for any reason.
+        auto result = builder(sol::light<FloatingWindow>(iwnd), left, bottom);
+        if (!result.valid()) {
+            sol::error err = result;
+            flywithlua::panic(err.what());
         }
         flywithlua::CopyDataRefsToXPlane();
     });
@@ -541,8 +546,46 @@ int LuaSetImguiBuilder(lua_State *L) {
         lua_pushstring(flywithlua::FWLLua, errorMsg.c_str());
         flywithlua::LuaIsRunning = false;
     });
+}
 
-    return 0;
+/**
+ * Accepts a function reference and creates an appropriate callback provider for actual callback setter.
+ *
+ * This function acts as a glue between Lua (sol2) and C++ implementation of callback setter. It allows to abstract away
+ * whether the callback was passed by reference or by name when used together with LuaSetCallbackByName.
+ *
+ * @tparam setter Function which actually implements corresponding callback logic.
+ * @param fwnd Pointer to FloatingWindow instance received from Lua as a light userdata.
+ * @param callback Reference to the Lua callback function.
+ */
+template<CallbackSetter setter>
+void LuaSetCallbackByRef(::sol::light<FloatingWindow> fwnd, ::sol::protected_function const& callback) {
+    if (!callback) {
+        flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_imgui_builder");
+        return;
+    }
+    setter(fwnd, [callback]() -> auto { return callback; });
+}
+
+/**
+ * Accepts a function name and creates an appropriate callback provider for actual callback setter.
+ *
+ * Function with the specified name must exist in the global scope at the time when the callback is invoked. It is
+ * responsibility of setter to ensure function validity before calling it.
+ *
+ * This function acts as a glue between Lua (sol2) and C++ implementation of callback setter. It allows to abstract away
+ * whether the callback was passed by reference or by name when used together with LuaSetCallbackByName.
+ *
+ * @tparam setter Function which actually implements corresponding callback logic.
+ * @param fwnd Pointer to FloatingWindow instance received from Lua as a light userdata.
+ * @param callback_name Callback function name in the global scope.
+ */
+template<CallbackSetter setter>
+void LuaSetCallbackByName(sol::light<FloatingWindow> fwnd, std::string const& callback_name) {
+    setter(fwnd, [callback_name]() {
+        sol::state_view lua(flywithlua::FWLLua);
+        return lua[callback_name];
+    });
 }
 
 void initFloatingWindowSupport() {
@@ -557,10 +600,6 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
     lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
-    lua_register(L, "float_wnd_set_ondraw", LuaSetOnDrawCallback);
-    lua_register(L, "float_wnd_set_onclick", LuaSetOnClickCallback);
-    lua_register(L, "float_wnd_set_onclose", LuaSetOnCloseCallback);
-    lua_register(L, "float_wnd_set_imgui_builder", LuaSetImguiBuilder);
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
@@ -576,6 +615,16 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
+
+	::sol::state_view lua(L);
+    lua.set_function("float_wnd_set_imgui_builder", sol::overload(LuaSetCallbackByName<LuaSetImguiBuilder>,
+                                                                  LuaSetCallbackByRef<LuaSetImguiBuilder>));
+    lua.set_function("float_wnd_set_ondraw", sol::overload(LuaSetCallbackByName<LuaSetOnDrawCallback>,
+                                                           LuaSetCallbackByRef<LuaSetOnDrawCallback>));
+    lua.set_function("float_wnd_set_onclick", sol::overload(LuaSetCallbackByName<LuaSetOnClickCallback>,
+                                                            LuaSetCallbackByRef<LuaSetOnClickCallback>));
+    lua.set_function("float_wnd_set_onclose", sol::overload(LuaSetCallbackByName<LuaSetOnCloseCallback>,
+                                                            LuaSetCallbackByRef<LuaSetOnCloseCallback>));
 
     lua_pushnumber(L, 1);
     lua_setglobal(L, "SUPPORTS_FLOATING_WINDOWS");

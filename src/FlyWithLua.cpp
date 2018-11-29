@@ -202,6 +202,7 @@
 #include <time.h>
 #include <wchar.h>
 #include <vector>
+#include <sol.hpp>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
 
@@ -6316,6 +6317,7 @@ void ResetLuaEngine()
         /* use the default allocator. */
         FWLLua = luaL_newstate();
     }
+    sol::set_default_state(FWLLua);
 
     LuaDrawCommand.clear();
     EveryFrameCallbackCommand.clear();
@@ -6980,6 +6982,7 @@ PLUGIN_API int XPluginEnable(void)
         /* use the default allocator. */
         FWLLua = luaL_newstate();
     }
+    sol::set_default_state(FWLLua);
 
     luaL_openlibs(FWLLua);
 
@@ -7192,6 +7195,7 @@ float MyFastLoopCallback(
     }
     if (!LuaIsRunning && !CrashReportDisplayed)
     {
+        // TODO: Reconcile this code with flywithlua::panic()
         CrashReportDisplayed = true;
         int StackSize = lua_gettop(FWLLua);
         if (StackSize == 0)
@@ -7669,7 +7673,12 @@ void logMsg(ELogType logType, std::string message)
     {
         XSBSpeakString(message);
     }
+}
 
+void panic(const std::string& message)
+{
+    LuaIsRunning = false;
+    logMsg(logToAll, message);
 }
 
 void initPluginDirectory()

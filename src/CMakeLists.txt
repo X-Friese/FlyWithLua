@@ -109,6 +109,10 @@ add_subdirectory(third_party/luaxml)
 add_subdirectory(third_party/luasocket)
 target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial)
 
+# Add Sol2 library for C++ <-> Lua bindings
+add_subdirectory(third_party/sol2)
+target_link_libraries(FlyWithLua sol2::sol2)
+
 # Link X-Plane plugin system libraries. They are only provided for OS X and Windows.
 if (WIN32 OR APPLE)
     find_library(XPLM_LIBRARY NAMES XPLM XPLM_64.lib)

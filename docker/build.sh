@@ -19,7 +19,7 @@ function build() {
       ;;
     mac)
       flags+=('-DCMAKE_TOOLCHAIN_FILE=../Toolchain-ubuntu-osxcross-10.11.cmake')
-      flags+=('-DCMAKE_FIND_ROOT_PATH=/usr/osxcross/SDK/MacOSX10.10.sdk/')
+      flags+=('-DCMAKE_FIND_ROOT_PATH=/usr/osxcross/SDK/MacOSX10.11.sdk/')
       ;;
     *)
       echo "Platform $platform is not supported, skipping..."
