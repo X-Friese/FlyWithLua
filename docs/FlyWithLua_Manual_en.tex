@@ -93,9 +93,10 @@ To use FlyWithLua, you will need following:
 \item Knowledge about \href{http://www.xsquawkbox.net/xpsdk/docs/DataRefs.html}{DataRefs}.
 \end{enumerate}
 
-\subsection{Difference between Core, Complete and Source Edition}
+\newpage
+\subsection{Difference between Core, Complete, NG and Source Edition}
 
-FlyWithLua is originally published in three different flavors.
+FlyWithLua is originally published in three different flavors but only the NG version is currently supported.
 
 The first version is the \href{http://forums.x-plane.org/index.php?/files/file/35579-flywithlua-core-edition-for-x-plane-11-windows-linux-mac-os-x-version/}{Core Edition}. This is the right version to start your first steps in using Lua to customize your X-Plane installation. The Core Edition is fully supported by the FlyWithLua developer team and acts as the heart of the FlyWithLua economy. If you got an error with this version, check if you have the latest version installed and report your issue together with a \verb|Log.txt| and \verb|FlyWithLua_debug.txt| file at the official FlyWithLua support forum.
 
@@ -105,12 +106,15 @@ The second edition was made for the user who know what they are doing. We call i
 
 This version of FlyWithLua has a lower level of support. Please ask in the same \href{http://forums.x-plane.org/index.php?/forums/forum/335-help-me-i-have-a-problem-with-flywithlua/}{HelpMe Forum} to get some assistance.
 
+The third edition was created to alow FlyWithLua to be used in VR and because of that effort can also be used on a second monitor. It has all the features of the previous Complete edition so can access private art control datarefs. The support is by the X-Plane org comunity and can be found here. Please ask in the same \href{http://forums.x-plane.org/index.php?/forums/forum/335-help-me-i-have-a-problem-with-flywithlua/}{HelpMe Forum} to get some assistance. 
+
 For the real hackers we have the whole \href{https://github.com/X-Friese/FlyWithLua}{source code of FlyWithLua Core Edition} published on GitHub. Just grab the code and compile it for your own, to have the full control.
 
 You want all menu entries blink in pink? If you are a C/C++ crack, just edit the source and compile your own flavor. FlyWithLua is published with the MIT license, so you can do everything you want to the source code without getting into trouble with us.
 
 Years of hard work is our free gift to you. Use it with respect and honor.
 
+\newpage
 \subsection{Installation}
 
 To use the plugin, just copy the complete folder \verb|FlyWithLua| into X-Plane's main plugin folder. The main plugin folder looks like this:
@@ -139,6 +143,7 @@ This means, you have three ways to disable a script.
 
 I prefer the last way, so you find the folder \verb|Scripts (disabled)| filled with examples. All these examples may produce an enormous frustration, if you just copy them into the >>active<< folder. They may redefine your joystick setting for example. So be very carefully and modify them before usage. Lua scripts are a powerful weapon!
 
+\newpage
 \subsection{How to interact with Lua}
 
 If you have XSquawkBox\footnote{If not, you can click on the menu entry >>Enter a line of code<< in FlyWithLua's plugin menu. There is no need to have XSquawkBox installed to use FlyWithLua. On the other hand, flying online on VATSIM is really cool.} installed, there is an easy way to talk to Lua. If you type in a line into XSquawkBox starting with a \verb|>| (a greater than sign), the line is send directly to Lua, instead of talking to your VATSIM channel (on COM1). Try the following code:
@@ -3686,6 +3691,56 @@ Now every script behaves like the sound library was >>battery included<< in FlyW
 
 The LuaXML library is included into FlyWithLua. If you want to use proteaAudio, you will have to integrate it as described. Two example files for proteaAudio are included into FlyWithLua, to help you making the first steps with this library.
 
+\newpage
+
+\section{Statically linking lib's into FlyWithLua plugin binary. }
+
+This is from the commit from Alexander Zhirov explaining the benifit of statically linking lib's.
+
+This is the safest way to ensure that the binary module is both compiled
+and linked against exactly the same version of LuaJIT as used by
+FlyWithLua.
+
+The conventional method [1] of building and linking binary Lua modules
+does not work well in case of FlyWithLua. Normally the host executable
+would provide a Lua implementation and any binary Lua module is supposed
+to link against symbols exported from the host at runtime. This is
+impossible in case of X-Plane and FlyWithLua because FWL is a
+dynamically loaded binary itself. Moreover, it is most likely to be not
+the only plugin with Lua code (e.g. aircrafts using XLua or SASL), so we
+must not export Lua symbols into public space to avoid messy conflicts.
+
+All and all, it is the safest for us to link whatever binary Lua modules
+we want to support and resort onto dynamically loaded binaries only in a
+worst case (e.g. users adding their own modules).
+
+All those considerations, however, don't impact normal, non-binary Lua
+modules, since linking is no concern for them.
+
+\href{http://lua-users.org/wiki/BuildingModules}{lua-users.org/wiki/BuildingModules}
+
+\newpage
+\section{LuaXML}
+
+There is a example script "test xml library LuaXML.lua" and its helper "test.xml" found in the "Resources/plugins/FlyWithLua/Scripts (disabled)" folder.
+
+\href{https://luarocks.org/modules/djerius/luaxml}{LuaXML - LuaRocks}
+
+\section{Luasocket}
+
+There is a example script "test\_luasocket.lua"  found in the "Resources/plugins/FlyWithLua/Scripts (disabled)" folder.
+
+\href{https://github.com/diegonehab/luasocket}{LuaSocket}
+
+\section{Sol2}
+
+There is two example scripts "floating\_wnd\_reference\_test.lua" and "imgui\_hello\_world.lua" found in the "Resources/plugins/FlyWithLua/Scripts (disabled)" folder.
+
+\href{https://github.com/ThePhD/sol2}{Sol2 GitHub}
+
+\newpage
+
+
 \section{The new 64-bit architecture}
 
 Since X-Plane 10.20 the simulator can run in 64-bit. As the simulator integrates the plugins as dynamic libraries, the plugins will also have to use 64-bit code. FlyWithLua can run under both conditions, 32 and 64 bit. But you will sometimes have to write different code for 32 and 64 bit.
@@ -3870,6 +3925,8 @@ That's all. Now you are using the Lua interpreter provided by Lua For Windows, n
 
 This plugin was made by Carsten Lynker (main developer, Windows code), \href{http://www.snagar.org/}{Snagar} (early Macintosh and Linux code), William B. Good (Macintosh and Linux code) and Ingo Alm (lector and bughunter).
 
+Starting with Carsten's great plugin the following developers helped create and improve FlyWithLua NG. Folke Will (initial implementation of floating windows and imgui), Alexander Zhirov (adding Luaxml and Luasocket to binary and adding the use of sol2), IanQ (added more floating windows methods), William Good (updating this manual and other small improvements) 
+
 FlyWithLua uses source code
 
 from \href{http://www.signal11.us/oss/hidapi/}{HIDAPI}, created by Alan Ott, Signal 11 Software,\\
@@ -3886,6 +3943,7 @@ carsten.lynker@gmail.com
 
 Happy landings!
 
+\newpage
 \section{License}
 
 Copyright (c) 2012 Carsten Lynker
