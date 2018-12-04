@@ -463,7 +463,7 @@ bool UserWantsToLoadASituation  = false;
 bool UserWantsToReplaceAircraft = false;
 char UserWantedFilename[LONGSTRING];
 
-bool WeAreNotInDrawingState                          = true;
+bool WeAreNotInDrawingState     = true;
 
 /*
  * Since FlyWithLua can't handle datarefs with multiple types,
@@ -1678,7 +1678,7 @@ static int Luahid_write(lua_State* L)
         BlockToWrite[i - 2] = static_cast<unsigned char>(luaL_checknumber(L, i));
     }
     // write values to HID device
-    int      result = hid_write((hid_device*) lua_touserdata(L, 1), BlockToWrite, static_cast<size_t>(noa - 1));
+    int result = hid_write((hid_device*) lua_touserdata(L, 1), BlockToWrite, static_cast<size_t>(noa - 1));
     if (result == -1)
     {
         logMsg(logToAll, "FlyWithLua Error: hid_write() failed.");
@@ -1823,7 +1823,7 @@ static int Luahid_send_feature_report(lua_State* L)
         BlockToWrite[i - 2] = static_cast<unsigned char>(luaL_checknumber(L, i));
     }
     // write values to HID device
-    int      result = hid_send_feature_report((hid_device*) lua_touserdata(L, 1), BlockToWrite,
+    int result = hid_send_feature_report((hid_device*) lua_touserdata(L, 1), BlockToWrite,
                                               static_cast<size_t>(noa - 1));
     if (result == -1)
     {
@@ -1858,7 +1858,7 @@ static int Luahid_send_filled_feature_report(lua_State* L)
         return 0;
     }
     // collect values to write
-    for (auto i      = 3; i <= noa; i++)
+    for (auto i = 3; i <= noa; i++)
     {
         BlockToWrite[i - 3] = static_cast<unsigned char>(luaL_checknumber(L, i));
     }
@@ -1983,7 +1983,7 @@ void PushDataRefToLuaVariable(char* VariableWantedCString,
     // we have a new mixed DataRef type "number" since X-Plane 11
     if (DataRefTypeIdWanted == (xplmType_Int | xplmType_Double | xplmType_Float))
     {
-        float ValueOfDataRef = XPLMGetDataf(DataRefIdWanted);
+        auto ValueOfDataRef = XPLMGetDataf(DataRefIdWanted);
         lua_pushnumber(FWLLua, ValueOfDataRef);
         lua_setglobal(FWLLua, VariableWantedCString);
         return;
@@ -2485,8 +2485,8 @@ static int LuaMeasureString(lua_State* L)
         lua_pushnumber(L, result);
     } else
     {
-        float result = XPLMMeasureString(xplmFont_Proportional, string_to_measure,
-                                         static_cast<int>(strlen(string_to_measure)));
+        auto result = XPLMMeasureString(xplmFont_Proportional, string_to_measure,
+                                        static_cast<int>(strlen(string_to_measure)));
         lua_pushnumber(L, result);
     }
     return 1;
@@ -2642,7 +2642,7 @@ static int LuaActivateMacro(lua_State* L)
     }
     if (MacroTableLastElement < 0) return 0;
     std::string search_string = lua_tostring(L, 1);
-    for (auto    i             = 0; i <= MacroTableLastElement; i++)
+    for (auto i = 0; i <= MacroTableLastElement; i++)
     {
         if ((MacroTable[i].IsSwitch) && (MacroTable[i].MacroName == search_string))
         {
@@ -2662,7 +2662,7 @@ static int LuaDeactivateMacro(lua_State* L)
     }
     if (MacroTableLastElement < 0) return 0;
     std::string search_string = lua_tostring(L, 1);
-    for (auto    i             = 0; i <= MacroTableLastElement; i++)
+    for (auto i = 0; i <= MacroTableLastElement; i++)
     {
         if ((MacroTable[i].IsSwitch) && (MacroTable[i].MacroName == search_string))
         {
@@ -2815,7 +2815,7 @@ static int LuaClearAllButtonAssignments(lua_State* L)
 
 static int LuaClearAllAxisAssignments(lua_State* L)
 {
-    int                   VersionXP, VersionSDK;
+    int VersionXP, VersionSDK;
     XPLMHostApplicationID HostID;
     XPLMGetVersions(&VersionXP, &VersionSDK, &HostID);
 
@@ -2844,7 +2844,7 @@ static int LuaSetButtonAssignment(lua_State* L)
                "FlyWithLua Error: wrong argument types. We need a string and an integer to set a button assignment.");
         return 0;
     }
-    auto ButtonNumber       = static_cast<int>(lua_tointeger(L, 1));
+    auto ButtonNumber = static_cast<int>(lua_tointeger(L, 1));
     if (ButtonNumber < 0 || ButtonNumber > 3199)
     {
         logMsg(logToAll, "FlyWithLua Error: wrong argument range. Button number has to be from 0 to 3199.");
@@ -2875,7 +2875,7 @@ static int reverse_yes = 1;
 
 static int LuaSetAxisAssignment(lua_State* L)
 {
-    int                   VersionXP, VersionSDK;
+    int VersionXP, VersionSDK;
     XPLMHostApplicationID HostID;
     XPLMGetVersions(&VersionXP, &VersionSDK, &HostID);
 
@@ -3228,7 +3228,7 @@ static int LuaGetDataRefBinding(lua_State* L)
     strncpy(VariableWanted, lua_tostring(L, 1), sizeof(VariableWanted));
     if (DataRefTableLastElement > -1)
     {
-        for (int i = 0; i <= DataRefTableLastElement; i++)
+        for (auto i = 0; i <= DataRefTableLastElement; i++)
         {
             if (strcmp(VariableWanted, DataRefTable[i].LuaVariable) == 0)
             {
@@ -4884,8 +4884,8 @@ static int LuaXPLMGetDatavf(lua_State* L)
     if (lua_islightuserdata(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3))
     {
         float SpaceForValues[100] = {0};
-        auto inMax               = static_cast<int>(lua_tointeger(L, 3));
-        auto StartFrom           = static_cast<int>(lua_tointeger(L, 2));
+        auto inMax                = static_cast<int>(lua_tointeger(L, 3));
+        auto StartFrom            = static_cast<int>(lua_tointeger(L, 2));
         if (inMax > 100)
         {
             logMsg(logToAll, "FlyWithLua Error: Can't handle more than 100 values in function XPLMGetDatavf.");
@@ -4914,8 +4914,8 @@ static int LuaXPLMGetDatavi(lua_State* L)
     if (lua_islightuserdata(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3))
     {
         int SpaceForValues[100] = {0};
-        auto inMax               = static_cast<int>(lua_tointeger(L, 3));
-        auto StartFrom           = static_cast<int>(lua_tointeger(L, 2));
+        auto inMax              = static_cast<int>(lua_tointeger(L, 3));
+        auto StartFrom          = static_cast<int>(lua_tointeger(L, 2));
         if (inMax > 100)
         {
             logMsg(logToAll, "FlyWithLua Error: Can't handle more than 100 values in function XPLMGetDatavi.");
@@ -4986,8 +4986,8 @@ static int LuaXPLMSetDatavi(lua_State* L)
     if (lua_islightuserdata(L, 1) && lua_istable(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4))
     {
         int         SpaceForValues[100] = {0};
-        auto inMax               = static_cast<int>(lua_tointeger(L, 4));
-        auto StartFrom           = static_cast<int>(lua_tointeger(L, 3));
+        auto inMax                      = static_cast<int>(lua_tointeger(L, 4));
+        auto StartFrom                  = static_cast<int>(lua_tointeger(L, 3));
         XPLMDataRef DataRefWanted       = lua_touserdata(L, 1);
         if (inMax > 100)
         {
@@ -5019,8 +5019,8 @@ static int LuaXPLMSetDatavf(lua_State* L)
     if (lua_islightuserdata(L, 1) && lua_istable(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4))
     {
         float       SpaceForValues[100] = {0};
-        auto inMax               = static_cast<int>(lua_tointeger(L, 4));
-        auto StartFrom           = static_cast<int>(lua_tointeger(L, 3));
+        auto inMax                      = static_cast<int>(lua_tointeger(L, 4));
+        auto StartFrom                  = static_cast<int>(lua_tointeger(L, 3));
         XPLMDataRef DataRefWanted       = lua_touserdata(L, 1);
         if (inMax > 100)
         {
@@ -5386,11 +5386,11 @@ static int Luadirectory_to_table(lua_State* L)
     int        TotalNumberOfFiles; // modified by saar -- debug
 
 #endif
-    char* FileIndex[500];
+    char* FileIndex[1000];
 
     strncpy(DirectoryPath, luaL_checkstring(L, 1), sizeof(DirectoryPath));
 
-    if (XPLMGetDirectoryContents(DirectoryPath, 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 500,
+    if (XPLMGetDirectoryContents(DirectoryPath, 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 1000,
                                  reinterpret_cast<int *>(&TotalNumberOfFiles), reinterpret_cast<int *>(&NumberOfFiles)))
     {
         // create an empty table on stack
@@ -5670,7 +5670,7 @@ static int LuaUnloadAllSounds(lua_State* L)
     // release memory for OpenAL buffers
     if (OpenALTableLastElement > -1)
     {
-        for (int i = 0; i <= OpenALTableLastElement; i++)
+        for (auto i = 0; i <= OpenALTableLastElement; i++)
         {
             alDeleteSources(1, &OpenALSources[i]);
             alDeleteBuffers(1, &OpenALBuffers[i]);
@@ -6005,7 +6005,7 @@ void DebugLua()
     DebugFile << "\n\n*** command callbacks ***\n";
     if (CommandTableLastElement >= 0)
     {
-        for (int i = 0; i <= CommandTableLastElement; i++)
+        for (auto i = 0; i <= CommandTableLastElement; i++)
         {
             DebugFile << "Command    --> \"" << CommandTable[i].Name << "\" (" << CommandTable[i].Reference << ")\n";
             DebugFile << "Description--> \"" << CommandTable[i].Description << "\"\n";
@@ -6025,7 +6025,7 @@ void DebugLua()
         qsort((void*) &DataRefTable, static_cast<size_t>(DataRefTableLastElement + 1), (size_t) sizeof(struct DataRefTableStructure),
               (compfn) compare_datareftable);
 
-        for (int i = 0; i <= DataRefTableLastElement; i++)
+        for (auto i = 0; i <= DataRefTableLastElement; i++)
         {
             DebugFile << "The DataRef \"" << DataRefTable[i].DataRefName << "\" is stored in \""
                       << DataRefTable[i].LuaVariable;
@@ -6079,7 +6079,7 @@ void DebugLua()
         qsort((void*) &SwitchTable, static_cast<size_t>(SwitchTableLastElement + 1), (size_t) sizeof(struct SwitchTableStructure),
               (compfn) compare_switchtable);
 
-        for (int i = 0; i <= SwitchTableLastElement; i++)
+        for (auto i = 0; i <= SwitchTableLastElement; i++)
         {
             if (SwitchTable[i].SwitchType == Switch)
             {
@@ -6148,7 +6148,7 @@ void DebugLua()
     DebugFile << "\n\n*** Macros from macro and ATC memu are stored in a table ***\n";
     if (MacroTableLastElement >= 0)
     {
-        for (int i = 0; i <= MacroTableLastElement; i++)
+        for (auto i = 0; i <= MacroTableLastElement; i++)
         {
             DebugFile << "<<< Macro table element no. " << i;
             if (MacroTable[i].IsSwitch)
@@ -6169,7 +6169,7 @@ void DebugLua()
     if (OpenALTableLastElement >= 0)
     {
         char     WhatToSay[LONGSTRING];
-        for (int i = 0; i <= OpenALTableLastElement; i++)
+        for (auto i = 0; i <= OpenALTableLastElement; i++)
         {
             DebugFile << "<<< Sound table element no. " << i << " >>>\n";
             DebugFile << "filename --> \"" << OpenALTable[i].filename << "\"\n";
@@ -6196,7 +6196,7 @@ void CopyDataRefsToLua()
     if (!LuaIsRunning) return;
     if (DataRefTableLastElement >= 0)
     {
-        for (int i = 0; i <= DataRefTableLastElement; i++)
+        for (auto i = 0; i <= DataRefTableLastElement; i++)
         {
             PushDataRefToLuaVariable(DataRefTable[i].LuaVariable,
                                      DataRefTable[i].DataRefId,
@@ -6211,7 +6211,7 @@ void CopyDataRefsToXPlane()
     if (!LuaIsRunning) return;
     if (DataRefTableLastElement >= 0)
     {
-        for (int i = 0; i <= DataRefTableLastElement; i++)
+        for (auto i = 0; i <= DataRefTableLastElement; i++)
         {
             if (!DataRefTable[i].IsReadOnly)
             {
@@ -7259,7 +7259,7 @@ float MyFastLoopCallback(
         } else
         {
             logMsg(logToAll, "FlyWithLua Debug Info: The Lua stack contains the following elements:");
-            for (int i = 1; i <= StackSize; i++)
+            for (auto i = 1; i <= StackSize; i++)
             {
                 if (lua_isstring(FWLLua, i))
                 {
@@ -7621,7 +7621,7 @@ float MyEveryFrameLoopCallback(
     }
 
     // store the joystick buttons for state analysis
-    for (int i = 0; i < MAXJOYSTICKBUTTONS; i++)
+    for (auto i = 0; i < MAXJOYSTICKBUTTONS; i++)
     {
         JoystickButtonLastValues[i] = JoystickButtonValues[i];
     }
