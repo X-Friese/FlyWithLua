@@ -807,12 +807,9 @@ static int ConvertPath(const char * inPath, char * outPath, int outPathMaxLen) {
 
 // Initialization code.
 
-static float init_sound(float elapsed, float elapsed_sim, int counter, void* ref)
+static float init_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*counter*/, void* /*ref*/)
 {
-    (void) elapsed;
-    (void) elapsed_sim;
-    (void) counter;
-    (void) ref;
+
     CHECK_ERR();
 
     char buf[2048];
@@ -1003,41 +1000,28 @@ std::string  LuaMouseWheelCommand;
 
 int LAST_SCREEN_WIDTH, LAST_SCREEN_HIGHT;
 
-void FWLMouseEventWindowDraw(XPLMWindowID inWindowID, void* inRefcon)
+void FWLMouseEventWindowDraw(XPLMWindowID /*inWindowID*/, void* /*inRefcon*/)
 {
-    (void) inWindowID;
-    (void) inRefcon;
+
     // we have nothing to draw inside the mouse event window
 }
 
-void FWLMouseEventWindowKey(XPLMWindowID inWindowID, char inKey, XPLMKeyFlags inFlags, char vkey, void* inRefcon,
-                            int losingFocus)
+void FWLMouseEventWindowKey(XPLMWindowID /*inWindowID*/, char /*inKey*/, XPLMKeyFlags /*inFlags*/, char /*vkey*/,
+                            void* /*inRefcon*/, int /*losingFocus*/)
 {
-    (void) inWindowID;
-    (void) inKey;
-    (void) inFlags;
-    (void) vkey;
-    (void) inRefcon;
-    (void) losingFocus;
+
     // no keyboard handling to catch mouse events
 }
 
-int FWLMouseEventWindowRightMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void* inRefcon)
+int FWLMouseEventWindowRightMouse(XPLMWindowID /*inWindowID*/, int /*x*/, int /*y*/, XPLMMouseStatus /*isDown*/,
+                             void* /*inRefcon*/)
 {
-    (void) inWindowID;
-    (void) x;
-    (void) y;
-    (void) isDown;
-    (void) inRefcon;
     return 0;
 }
 
-int FWLMouseEventWindowMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void* inRefcon)
+int FWLMouseEventWindowMouse(XPLMWindowID /*inWindowID*/, int /*x*/, int /*y*/, XPLMMouseStatus isDown,
+                             void* /*inRefcon*/)
 {
-    (void) inWindowID;
-    (void) x;
-    (void) y;
-    (void) inRefcon;
     // is Lua running? If not, give the control back to X-Plane
     if (!LuaIsRunning)
     {
@@ -1075,17 +1059,13 @@ int FWLMouseEventWindowMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseSta
     }
 }
 
-int FWLMouseEventWindowMouseWheel(XPLMWindowID inWindowID,
-                                  int x,
-                                  int y,
+int FWLMouseEventWindowMouseWheel(XPLMWindowID /*inWindowID*/,
+                                  int /*x*/,
+                                  int /*y*/,
                                   int wheel,
                                   int clicks,
-                                  void* inRefcon)
+                                  void* /*inRefcon*/)
 {
-    (void) inWindowID;
-    (void) x;
-    (void) y;
-    (void) inRefcon;
     // is Lua running? If not, give the control back to X-Plane
     if (!LuaIsRunning)
     {
@@ -1116,15 +1096,11 @@ int FWLMouseEventWindowMouseWheel(XPLMWindowID inWindowID,
     }
 }
 
-XPLMCursorStatus FWLMouseEventWindowCursor(XPLMWindowID inWindowID,
-                                           int x,
-                                           int y,
-                                           void* inRefcon)
+XPLMCursorStatus FWLMouseEventWindowCursor(XPLMWindowID /*inWindowID*/,
+                                           int /*x*/,
+                                           int /*y*/,
+                                           void* /*inRefcon*/)
 {
-    (void) inWindowID;
-    (void) x;
-    (void) y;
-    (void) inRefcon;
     // noting to do with the cursor
     return xplm_CursorDefault;
 }
@@ -1133,9 +1109,8 @@ XPLMCursorStatus FWLMouseEventWindowCursor(XPLMWindowID inWindowID,
 int FWLCommandCallback(
         XPLMCommandRef inCommand,
         XPLMCommandPhase inPhase,
-        void* inRefcon)
+        void* /*inRefcon*/)
 {
-    (void) inRefcon;
     int CommandNumber = -1;
 
     if (!LuaIsRunning) return 1;  // no Lua - no fun
@@ -1185,13 +1160,10 @@ int FWLCommandCallback(
     }
 }
 
-int FWLDrawWindowCallback(XPLMDrawingPhase inPhase,
-                          int inIsBefore,
-                          void* inRefcon)
+int FWLDrawWindowCallback(XPLMDrawingPhase /*inPhase*/,
+                          int /*inIsBefore*/,
+                          void* /*inRefcon*/)
 {
-    (void) inPhase;
-    (void) inIsBefore;
-    (void) inRefcon;
     // get time before execution
     clock_t time_start = clock();
 
@@ -1317,9 +1289,8 @@ int FWLKeySniffer(
         char inChar,
         XPLMKeyFlags inFlags,
         char inVirtualKey,
-        void* inRefcon)
+        void* /*inRefcon*/)
 {
-    (void) inRefcon;
     // is Lua running? If not, give the control back to X-Plane
     if (!LuaIsRunning)
     {
@@ -2165,7 +2136,7 @@ static int LuaSpeakString(lua_State* L)
     return 0;
 }
 
-// this is a helper fuction to LuaDrawString() filling the RGB color array
+// this is a helper function to LuaDrawString() filling the RGB color array
 static void fill_RGB_array(float* array_to_fill, float red, float green, float blue)
 {
     array_to_fill[0] = red;
@@ -4793,14 +4764,7 @@ static int LuaXPLMGetFMSEntryInfo(lua_State* L)
     XPLMNavType outType    = xplm_Nav_Unknown;
     char        outID[256] = "";
     XPLMNavRef  outRef     = XPLM_NAV_NOT_FOUND;
-#if XPLM200 and not XPLM210
-    long outAltitude = 0;
-#elif WIN64
-    int                 outAltitude = 0;
-#else
-//    intptr_t            outAltitude = 0;
-    int                 outAltitude = 0; // modified by saar
-#endif
+    int outAltitude = 0; // modified by saar
     float outLat = 0;
     float outLon = 0;
 
@@ -5373,25 +5337,15 @@ static int Luadirectory_to_table(lua_State* L)
     char DirectoryPath[LONGSTRING] = "";
     int  k;
     char FilesInFolder[15000];
-#if XPLM200 and not XPLM210
-    long NumberOfFiles;
-    long TotalNumberOfFiles;
-#elif WIN64
-    int             NumberOfFiles;
-    int             TotalNumberOfFiles;
-#else
-//    intptr_t        NumberOfFiles;
-//    intptr_t        TotalNumberOfFiles;
-    int        NumberOfFiles; // modified by saar -- debug
-    int        TotalNumberOfFiles; // modified by saar -- debug
+    int NumberOfFiles; // modified by saar -- debug
+    int TotalNumberOfFiles; // modified by saar -- debug
 
-#endif
     char* FileIndex[1000];
 
     strncpy(DirectoryPath, luaL_checkstring(L, 1), sizeof(DirectoryPath));
 
     if (XPLMGetDirectoryContents(DirectoryPath, 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 1000,
-                                 reinterpret_cast<int *>(&TotalNumberOfFiles), reinterpret_cast<int *>(&NumberOfFiles)))
+                                 &TotalNumberOfFiles, &NumberOfFiles))
     {
         // create an empty table on stack
         lua_createtable(L, static_cast<int>(NumberOfFiles), 0);
@@ -6572,18 +6526,8 @@ bool ReadAllScriptFiles()
     char PlaneTailNumber[SHORTSRTING] = "";
     int  k;
     char FilesInFolder[5000];
-#if XPLM200 and not XPLM210
-    long NumberOfFiles;
-    long TotalNumberOfFiles;
-#elif WIN64
-    int             NumberOfFiles;
-    int             TotalNumberOfFiles;
-#else
-//    intptr_t        NumberOfFiles;
-//    intptr_t        TotalNumberOfFiles;
-    int        NumberOfFiles; // modified by saar
-    int        TotalNumberOfFiles; // modified by saar
-#endif
+    int NumberOfFiles; // modified by saar
+    int TotalNumberOfFiles; // modified by saar
     char* FileIndex[250];
 
     // get starting time
@@ -7064,12 +7008,11 @@ PLUGIN_API int XPluginEnable(void)
 }
 
 PLUGIN_API void XPluginReceiveMessage(
-        XPLMPluginID inFromWho,
+        XPLMPluginID /*inFromWho*/,
         intptr_t inMessage,
-        void* inParam)
+        void* /*inParam*/)
 {
-    (void) inFromWho;
-    (void) inParam;
+
     char        XSBString[500];
     //char    ReadText[NORMALSTRING];
     //char    ReadText2[NORMALSTRING];
@@ -7165,15 +7108,11 @@ PLUGIN_API void XPluginReceiveMessage(
 
 // to be processed not so often
 float MySlowLoopCallback(
-        float inElapsedSinceLastCall,
-        float inElapsedTimeSinceLastFlightLoop,
-        int inCounter,
-        void* inRefcon)
+        float /*inElapsedSinceLastCall*/,
+        float /*inElapsedTimeSinceLastFlightLoop*/,
+        int /*inCounter*/,
+        void* /*inRefcon*/)
 {
-    (void) inElapsedSinceLastCall;
-    (void) inElapsedTimeSinceLastFlightLoop;
-    (void) inCounter;
-    (void) inRefcon;
     // get time before execution
     clock_t time_start = clock();
 
@@ -7197,15 +7136,11 @@ float MySlowLoopCallback(
 
 // Now follows the fast part of it
 float MyFastLoopCallback(
-        float inElapsedSinceLastCall,
-        float inElapsedTimeSinceLastFlightLoop,
-        int inCounter,
-        void* inRefcon)
+        float /*inElapsedSinceLastCall*/,
+        float /*inElapsedTimeSinceLastFlightLoop*/,
+        int /*inCounter*/,
+        void* /*inRefcon*/)
 {
-    (void) inElapsedSinceLastCall;
-    (void) inElapsedTimeSinceLastFlightLoop;
-    (void) inCounter;
-    (void) inRefcon;
     // get time before execution
     clock_t time_start = clock();
 
@@ -7591,15 +7526,11 @@ void ExecuteSwitches()
 
 // Now follows the extreme fast part of it
 float MyEveryFrameLoopCallback(
-        float inElapsedSinceLastCall,
-        float inElapsedTimeSinceLastFlightLoop,
-        int inCounter,
-        void* inRefcon)
+        float /*inElapsedSinceLastCall*/,
+        float /*inElapsedTimeSinceLastFlightLoop*/,
+        int /*inCounter*/,
+        void* /*inRefcon*/)
 {
-    (void) inElapsedSinceLastCall;
-    (void) inElapsedTimeSinceLastFlightLoop;
-    (void) inCounter;
-    (void) inRefcon;
     // get time before execution
     clock_t time_start = clock();
 
@@ -7642,12 +7573,10 @@ float MyEveryFrameLoopCallback(
 }
 
 
-int MyReloadScriptsCommandHandler(XPLMCommandRef inCommand,
+int MyReloadScriptsCommandHandler(XPLMCommandRef /*inCommand*/,
                                   XPLMCommandPhase inPhase,
-                                  void* inRefcon)
+                                  void* /*inRefcon*/)
 {
-    (void) inCommand;
-    (void) inRefcon;
     if (inPhase == xplm_CommandBegin)
     {
         ReadAllScriptFiles();
@@ -7658,9 +7587,8 @@ int MyReloadScriptsCommandHandler(XPLMCommandRef inCommand,
 
 // execute the macro by setting a mission level
 
-void MacroMenuHandler(void* mRef, void* iRef)
+void MacroMenuHandler(void* /*mRef*/, void* iRef)
 {
-    (void) mRef;
     auto MacroIndex = (std::size_t) iRef; // snagar
     if (MacroTable[MacroIndex].IsSwitch)
     {
@@ -7682,9 +7610,8 @@ void MacroMenuHandler(void* mRef, void* iRef)
 }
 
 // Functions called by the menu will be send to command handler.
-void FlyWithLuaMenuHandler(void* mRef, void* iRef)
+void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
 {
-    (void) mRef;
     if (!strcmp((char*) iRef, "Reload"))
     {
         logMsg(logToDevCon, "FlyWithLua: User forced a script reload.");

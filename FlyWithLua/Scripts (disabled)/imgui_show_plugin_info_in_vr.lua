@@ -1,6 +1,6 @@
--- Imugi Show Plugin Information In VR Ver. 1.00
+-- Imugi Show Plugin Information In VR Ver. 1.02
 -- Using Imgui and ffi display plugin info and enable/disable in VR
--- William R. Good 12-04-18
+-- William R. Good 12-05-18
 
 if not SUPPORTS_FLOATING_WINDOWS then
     -- to make sure the script doesn't stop old FlyWithLua versions
@@ -116,6 +116,12 @@ void      XPLMGetPluginInfo(
                 char *               outDescription);    /* Can be NULL */
 
 int       XPLMIsPluginEnabled(
+               XPLMPluginID         inPluginID);
+
+int       XPLMEnablePlugin(
+               XPLMPluginID         inPluginID);
+
+void      XPLMDisablePlugin(
                XPLMPluginID         inPluginID);			
                 
 ]]
@@ -126,36 +132,44 @@ local FilePath = ffi.new("char[1024]")
 local Signature = ffi.new("char[1024]")
 local Description = ffi.new("char[1024]")
 
-
--- ispiiv_wnd = float_wnd_create(650, 550, 1, true)
--- float_wnd_set_position(ispiiv_wnd, 100, 100)
--- float_wnd_set_title(ispiiv_wnd, "Imgui Show Plugin Info In VR")
--- float_wnd_set_imgui_builder(ispiiv_wnd, "ispiiv_on_build")
--- float_wnd_set_onclose(ispiiv_wnd, "closed_imgui_show_plugin_info_in_vr")
+-- Not sure if this is needed but seemed unhappy when I removed it.
+local newVal = {}
+local changed = {}
+local plugin_enabled = {}
 
 function ispiiv_on_build(ispiiv_wnd, x, y)
 	local xx = XPLM.XPLMCountPlugins()
 	local id = XPLM.XPLMGetNthPlugin(xx - 1)
-	
 	for i = 1, id do
 		XPLM.XPLMGetPluginInfo(i, Name, FilePath, Signature, Description)
 		local en = XPLM.XPLMIsPluginEnabled(i)
 		if (en == 1) then 
 			en_string = "Enabeled"
+			plugin_enabled[i] = true
 		else
 			en_string = "Disabled"
+			plugin_enabled[i] = false
 		end
-
 		imgui.TextUnformatted(string.format("(%d) %s (%s)", i, ffi.string(Name), en_string))
-		
-		imgui.TextUnformatted(string.format("     %s", ffi.string(FilePath)))
+		imgui.PushID(ffi.string(Name)) 
+		changed[i], newVal[i] = imgui.Checkbox(" ", plugin_enabled[i] == true)
+        if changed[i] then
+			if newVal[i] == true then
+				plugin_enabled[i] = true
+				test = XPLM.XPLMEnablePlugin(i)
+			else
+				plugin_enabled[i] = false
+				XPLM.XPLMDisablePlugin(i)
+			end
+		end
+		imgui.PopID()
+		imgui.SameLine()	
+		imgui.TextUnformatted(string.format("%s", ffi.string(FilePath)))
 		imgui.TextUnformatted(string.format("     Signature: %s", ffi.string(Signature)))
 		imgui.TextUnformatted(string.format("     %s", ffi.string(Description)))
 		imgui.TextUnformatted("")
 	end
-
 end
-
 
 function closed_imgui_show_plugin_info_in_vr(wnd)
     local _ = wnd -- Reference to window, which triggered the call.
@@ -172,9 +186,6 @@ function ispiiv_show_wnd()
 	float_wnd_set_imgui_builder(ispiiv_wnd, "ispiiv_on_build")
 	float_wnd_set_onclose(ispiiv_wnd, "closed_imgui_show_plugin_info_in_vr")
 
---    ibd_wnd = float_wnd_create(640, 480, 1, true)
---    float_wnd_set_title(ibd_wnd, "Imgui Button Demo")
---    float_wnd_set_imgui_builder(ibd_wnd, "ibd_on_build")
 end
 
 function ispiiv_hide_wnd()
@@ -203,12 +214,5 @@ function toggle_imgui_show_plugin_info()
 	end
 end
 
-
-
 add_macro("Imgui Show Plugin Info In VR: open/close", "ispiiv_show_wnd()", "ispiiv_hide_wnd()", "deactivate")
 create_command("FlyWithLua/imgui-show-plugin-info-in-vr/show_toggle", "open/close imgui show plugin info", "toggle_imgui_show_plugin_info()", "", "")
-
-
-
-
-
