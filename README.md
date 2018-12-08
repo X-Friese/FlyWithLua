@@ -1,6 +1,8 @@
 FlyWithLua for X-Plane 11
 =========================
 
+[![Build Status](https://travis-ci.org/nevkontakte/FlyWithLua.svg)](https://travis-ci.org/nevkontakte/FlyWithLua)
+
 This is the official source code repository for the FlyWithLua plugin project.
 
 FlyWithLua offers Lua scripting to X-Plane since X-Plane 9.
