@@ -1,0 +1,20 @@
+Restore Lua 5.1 behavior for lua_tointeger() for non-sol2 code.
+
+Lua 5.3 introduced integer type along with a breaking change to lua_tointeger,
+which refuses to truncate floats to integers anymore. sol2 ships lua-compat-5.3
+library with it, which mimics the same behavior, which breaks current
+FlyWithLua users.
+
+See: https://github.com/X-Friese/FlyWithLua/issues/22
+--- ./upstream/sol.hpp
++++ ./upstream/sol.hpp
+@@ -22066,6 +22066,9 @@ namespace sol {
+ #endif 
+ #endif // Unreal Engine 4 Bullshit
+ 
++#undef lua_tointeger
++#undef lua_tointegerx
++
+ #endif // SOL_HPP
+ // end of sol.hpp
+ 
