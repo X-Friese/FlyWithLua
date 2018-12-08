@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.8 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.9 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -107,6 +107,7 @@
  *  v2.7.7  [added]   New floating window methods by IanQ.
  *  v2.7.8  [changed] Thanks to Jetbrains used CLion to help refactor FlyWithLua.cpp
  *          [added]   Now using sol2 library for high-level C++ to Lua bindings. Thanks nevkontakte.
+ *  v2.7.9  [changed] Restore Lua 5.1 behavior for lua_tointeger() to mitigate issue #22.
  *
  *
  *  Markus (Teddii):
