@@ -10,6 +10,13 @@ Directory `./upstream/` contains single-file version of Sol2 available from
  1. Download sol.hpp from [the master
     branch](https://github.com/ThePhD/sol2/blob/develop/single/sol/sol.hpp) on
     GitHub (or from Releases section) and place it under `./upstream`.
+ 2. Apply a patch for [issue
+    22](https://github.com/X-Friese/FlyWithLua/issues/22) if it hasn't been
+    resolved.
+    
+    ```bash
+    patch -p0 < fix_lua_tointeger.patch
+    ```
 
 Assuming there are no breaking changes, the new version should "just work".
 

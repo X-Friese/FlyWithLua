@@ -22066,6 +22066,9 @@ namespace sol {
 #endif 
 #endif // Unreal Engine 4 Bullshit
 
+#undef lua_tointeger
+#undef lua_tointegerx
+
 #endif // SOL_HPP
 // end of sol.hpp
 
