@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.9 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.10 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -5431,14 +5431,14 @@ static int LuaPlaySound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Play Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Play Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5452,14 +5452,14 @@ static int LuaStopSound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Stop Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Stop Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5473,14 +5473,14 @@ static int LuaRewindSound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Rewind Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Rewind Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5494,14 +5494,14 @@ static int LuaPauseSound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Pause Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Pause Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5515,14 +5515,14 @@ static int LuaLetSoundLoop(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Let Sound Loop source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Let Sound Loop source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5552,14 +5552,14 @@ static int LuaSetSoundPitch(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Set Sound Pitch source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Set Sound Pitch source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5589,14 +5589,14 @@ static int LuaSetSoundGain(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing Set Sound Gain source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: Set Sound Gain source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5641,14 +5641,14 @@ static int LuaReplaceWAVFile(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing sound source number. You will have to give an integer.");
+        logMsg(logToAll, "FlyWithLua Error: Missing UnLoadAll Sounds source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sound source number out of range.");
+        logMsg(logToAll, "FlyWithLua Error: UnLoadAll Sounds source number out of range.");
         LuaIsRunning = false;
         return 0;
     }

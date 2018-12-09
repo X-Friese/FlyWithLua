@@ -477,7 +477,7 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_close = on_close_provider();
         if (!on_close) {
-            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick");
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclose");
             return;
         }
 
