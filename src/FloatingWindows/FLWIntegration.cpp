@@ -440,7 +440,8 @@ void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_click = on_click_provider();
         if (!on_click) {
-            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick");
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick\n"
+                              "FlyWithLua Error: check to see if float_wnd_set_onclick function is defined");
             return;
         }
 
@@ -477,7 +478,8 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_close = on_close_provider();
         if (!on_close) {
-            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclose");
+            flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclose\n"
+                              "FlyWithLua Error: check to see if float_wnd_set_onclose function is defined");
             return;
         }
 
