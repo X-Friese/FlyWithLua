@@ -274,7 +274,7 @@ namespace flywithlua
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
-#define MAXSOUNDS 250            // the number of OpenAL sound buffers
+#define MAXSOUNDS 300            // the number of OpenAL sound buffers
 
 
 // Do we want to access a forbidden DataRef?
@@ -6638,7 +6638,8 @@ bool ReadAllScriptFiles()
                 {
                     logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file ").append(PathAndName));
                     LuaIsRunning = false;
-                    break;
+                    // Removed break trying to find bad scripts and keep Lua running.
+                    // break;
                 }
 
                 // is Lua still running, or are there any problems?
@@ -6647,7 +6648,11 @@ bool ReadAllScriptFiles()
                     logMsg(logToAll,
                            std::string("FlyWithLua Error: The error seems to be inside of script file ").append(
                                    PathAndName));
-                    return false;
+                    // Increase script number found when bad script has been found
+                    k = k + 1;
+                    // Restart Lua after increasing script found number
+                    LuaIsRunning = true;
+                    // return false;
                 }
             }
         }
