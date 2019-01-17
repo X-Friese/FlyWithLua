@@ -984,6 +984,8 @@ void FlyWithLuaMenuHandler(void*, void*);
 XPLMMenuID FlyWithLuaMenuId;
 int        FlyWithLuaMenuItem;
 
+XPLMMenuCheck DevMode;
+
 void MacroMenuHandler(void*, void*);
 
 XPLMMenuID MacroMenuId;
@@ -6532,6 +6534,7 @@ bool ReadAllScriptFiles()
     int TotalNumberOfFiles; // modified by saar
     char* FileIndex[250];
     int result;
+    logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
 
     // get starting time
     clock_t time_start = clock();
@@ -6632,6 +6635,7 @@ bool ReadAllScriptFiles()
                 // sprintf(PathAndName, "%sResources/plugins/FlyWithLua/Scripts/%s", systemDir.c_str(), FileToLoad);
                 sprintf(PathAndName, "%s/%s", scriptDir.c_str(), FileToLoad);
                 logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file ").append(PathAndName));
+                XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
                 if (ReadScriptFile(PathAndName))
                 {
                     logMsg(logToDevCon,
@@ -6639,45 +6643,65 @@ bool ReadAllScriptFiles()
                 } else
                 {
                     logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file ").append(PathAndName));
-                    // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                    sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
-                    result = rename(PathAndName, PathAndBadName);
-                    if (result == 0)
+                    if (DevMode == 2)
                     {
-                        logMsg(logToDevCon,
-                               std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 2"));
+                        LuaIsRunning = false;
+                        break;
                     }
-                    else
+                    if (DevMode == 1)
                     {
-                        logMsg(logToDevCon,
-                               std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
+                        // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
+                        sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
+                        result = rename(PathAndName, PathAndBadName);
+                        if (result == 0)
+                        {
+                            logMsg(logToDevCon,
+                                   std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                        }
+                        else
+                        {
+                            logMsg(logToDevCon,
+                                   std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                        }
+                        LuaIsRunning = false;
+                        ReadAllScriptFiles();
+                        break;
                     }
-                    LuaIsRunning = false;
-                    ReadAllScriptFiles();
-                    break;
                 }
 
                 // is Lua still running, or are there any problems?
                 if (!LuaIsRunning)
                 {
+                    XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
                     logMsg(logToAll,
                            std::string("FlyWithLua Error: The error seems to be inside of script file ").append(
                                    PathAndName));
-                    // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                    sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
-                    result = rename(PathAndName, PathAndBadName);
-                    if (result == 0)
+                    if (DevMode == 2)
                     {
-                        logMsg(logToDevCon,
-                               std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 2"));
+                        return false;
                     }
-                    else
+                    if (DevMode == 1)
                     {
-                        logMsg(logToDevCon,
-                               std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
+                        // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
+                        sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
+                        result = rename(PathAndName, PathAndBadName);
+                        if (result == 0)
+                        {
+                            logMsg(logToDevCon,
+                                   std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                        }
+                        else
+                        {
+                            logMsg(logToDevCon,
+                                   std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                        }
+                        ReadAllScriptFiles();
+                        return false;
                     }
-                    ReadAllScriptFiles();
-                    return false;
                 }
             }
         }
@@ -6963,6 +6987,9 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Write Debug file", (void*) "Debug", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Stop the Lua engine", (void*) "Stop", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Try to resume Lua engine (not recommended)", (void*) "Resume", 1);
+    XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable move bad scripts", (void*) "DevMode", 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
 
     // init the XSB connection
     XSBPluginId             = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
@@ -7666,6 +7693,21 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
     {
         logMsg(logToAll, "FlyWithLua: Lua Engine stopped by user.");
         LuaIsRunning = false;
+        return;
+    }
+    if (!strcmp((char*) iRef, "DevMode"))
+    {
+        XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
+        if (DevMode == 2)
+        {
+            XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
+            logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
+        }
+        else
+        {
+            XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 2);
+            logMsg(logToAll, std::string("FlyWithLua: DevMode == 2"));
+        }
         return;
     }
 }
