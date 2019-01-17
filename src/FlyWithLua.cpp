@@ -6523,6 +6523,7 @@ bool ReadAllScriptFiles()
 {
     char FileToLoad[SHORTSRTING]      = "";
     char PathAndName[NORMALSTRING]    = "";
+    char PathAndBadName[NORMALSTRING]    = "";
     char PlaneICAO[SHORTSRTING]       = "";
     char PlaneTailNumber[SHORTSRTING] = "";
     int  k;
@@ -6530,6 +6531,7 @@ bool ReadAllScriptFiles()
     int NumberOfFiles; // modified by saar
     int TotalNumberOfFiles; // modified by saar
     char* FileIndex[250];
+    int result;
 
     // get starting time
     clock_t time_start = clock();
@@ -6637,9 +6639,22 @@ bool ReadAllScriptFiles()
                 } else
                 {
                     logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file ").append(PathAndName));
+                    // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
+                    sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
+                    result = rename(PathAndName, PathAndBadName);
+                    if (result == 0)
+                    {
+                        logMsg(logToDevCon,
+                               std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                    }
+                    else
+                    {
+                        logMsg(logToDevCon,
+                               std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                    }
                     LuaIsRunning = false;
-                    // Removed break trying to find bad scripts and keep Lua running.
-                    // break;
+                    ReadAllScriptFiles();
+                    break;
                 }
 
                 // is Lua still running, or are there any problems?
@@ -6648,14 +6663,21 @@ bool ReadAllScriptFiles()
                     logMsg(logToAll,
                            std::string("FlyWithLua Error: The error seems to be inside of script file ").append(
                                    PathAndName));
-                    // Increase script number when bad script has been found if not last script
-                    if (k < NumberOfFiles)
+                    // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
+                    sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
+                    result = rename(PathAndName, PathAndBadName);
+                    if (result == 0)
                     {
-                        k = k + 1;
+                        logMsg(logToDevCon,
+                               std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
                     }
-                    // Restart Lua after increasing script found number
-                    LuaIsRunning = true;
-                    // return false;
+                    else
+                    {
+                        logMsg(logToDevCon,
+                               std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                    }
+                    ReadAllScriptFiles();
+                    return false;
                 }
             }
         }
