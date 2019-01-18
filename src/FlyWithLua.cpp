@@ -7,7 +7,7 @@
 #if CREATECOMPLETEEDITION
 
 #define PLUGIN_NAME "FlyWithLua NG"
-#define PLUGIN_DESCRIPTION "Batteries included version of Pandora's box with additional features."
+#define PLUGIN_DESCRIPTION "Batteries included version " PLUGIN_VERSION
 
 #else
 
@@ -6659,6 +6659,7 @@ bool ReadAllScriptFiles()
                         {
                             logMsg(logToDevCon,
                                    std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                            XPLMSpeakString("Moved Bad Script");
                         }
                         else
                         {
@@ -6693,6 +6694,7 @@ bool ReadAllScriptFiles()
                         {
                             logMsg(logToDevCon,
                                    std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                            XPLMSpeakString("Moved Bad Script");
                         }
                         else
                         {
