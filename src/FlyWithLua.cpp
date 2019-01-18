@@ -986,6 +986,8 @@ int        FlyWithLuaMenuItem;
 
 XPLMMenuCheck DevMode;
 
+int bad_script_count = 0;
+
 void MacroMenuHandler(void*, void*);
 
 XPLMMenuID MacroMenuId;
@@ -6534,7 +6536,6 @@ bool ReadAllScriptFiles()
     int TotalNumberOfFiles; // modified by saar
     char* FileIndex[250];
     int result;
-    logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
 
     // get starting time
     clock_t time_start = clock();
@@ -6645,13 +6646,11 @@ bool ReadAllScriptFiles()
                     logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file ").append(PathAndName));
                     if (DevMode == 2)
                     {
-                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 2"));
                         LuaIsRunning = false;
                         break;
                     }
                     if (DevMode == 1)
                     {
-                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
                         sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
                         result = rename(PathAndName, PathAndBadName);
@@ -6659,7 +6658,7 @@ bool ReadAllScriptFiles()
                         {
                             logMsg(logToDevCon,
                                    std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
-                            XPLMSpeakString("Moved Bad Script");
+                            bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
@@ -6667,8 +6666,7 @@ bool ReadAllScriptFiles()
                                    std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
                         }
                         LuaIsRunning = false;
-                        ReadAllScriptFiles();
-                        break;
+                        return ReadAllScriptFiles();
                     }
                 }
 
@@ -6681,12 +6679,10 @@ bool ReadAllScriptFiles()
                                    PathAndName));
                     if (DevMode == 2)
                     {
-                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 2"));
                         return false;
                     }
                     if (DevMode == 1)
                     {
-                        logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
                         sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
                         result = rename(PathAndName, PathAndBadName);
@@ -6694,7 +6690,7 @@ bool ReadAllScriptFiles()
                         {
                             logMsg(logToDevCon,
                                    std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
-                            XPLMSpeakString("Moved Bad Script");
+                            bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
@@ -6707,6 +6703,7 @@ bool ReadAllScriptFiles()
                 }
             }
         }
+
     } else
     {
         logMsg(logToAll, "FlyWithLua Error: Can't read out the subfolder Resources/plugins/FlyWithLua/Scripts.");
@@ -6727,6 +6724,12 @@ bool ReadAllScriptFiles()
         lua_pushnumber(FWLLua, CLOCKS_PER_SEC);
         lua_setglobal(FWLLua, "CLOCKS_PER_SEC");
         logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
+    }
+
+    if (bad_script_count > 0)
+    {
+        XPLMSpeakString("bad fly with lua scripts have been quarantined look in Log dot text file for more information");
+        bad_script_count = 0;
     }
 
     char report_loding_time[1014];
@@ -7703,12 +7706,10 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
         if (DevMode == 2)
         {
             XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
-            logMsg(logToAll, std::string("FlyWithLua: DevMode == 1"));
         }
         else
         {
             XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 2);
-            logMsg(logToAll, std::string("FlyWithLua: DevMode == 2"));
         }
         return;
     }
