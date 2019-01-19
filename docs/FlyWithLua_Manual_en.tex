@@ -3738,9 +3738,19 @@ There is two example scripts "floating\_wnd\_reference\_test.lua" and "imgui\_he
 
 \href{https://github.com/ThePhD/sol2}{Sol2 GitHub}
 
+
+\section{Scripts (Quarantine) folder}
+
+To try to reduce the number of the red "Lua Stopped" posts we are using a new method to find and quarantine bad scripts. When FlyWithLua starts it looks at each script to see if any syntax or dataref issues and if it finds then it will move the script to the "Scripts (Quarantine)" folder. \newline
+
+If it finds at lease one it will say "bad fly with lua scripts have been quarantined look in Log dot text file for more information" and put a information line on the top of the screen. It also adds information to the Log.txt file in as much detail as FlyWithLua can find. \newline
+
+This is our first attempt and there are errors that will be missed and in future versions will find more but at least we have a place to put them. \newline
+
+For developers there is a new menu item allowing them to turn off this feature while developing scripts.
+
+
 \newpage
-
-
 \section{The new 64-bit architecture}
 
 Since X-Plane 10.20 the simulator can run in 64-bit. As the simulator integrates the plugins as dynamic libraries, the plugins will also have to use 64-bit code. FlyWithLua can run under both conditions, 32 and 64 bit. But you will sometimes have to write different code for 32 and 64 bit.
