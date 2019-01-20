@@ -6604,6 +6604,11 @@ bool ReadAllScriptFiles()
                    "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts/ does not exist or it is empty.");
             logMsg(logToAll, "FlyWithLua Info: Nothing to load at all, starting without reading files.");
             CrashReportDisplayed = false;
+            if (bad_script_count > 0)
+            {
+                XPLMSpeakString("bad fly with lua scripts have been quarantined look in Log dot text file for more information");
+                bad_script_count = 0;
+            }
             return true;
         }
 
@@ -7774,6 +7779,7 @@ void initPluginDirectory()
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Scripts Dir: ") + scriptDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Internals Dir: ") + internalsDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Modules Dir: ") + modulesDir); // debug
+    logMsg(logToDevCon, std::string("FlyWithLua: Plugin Version: ") + PLUGIN_VERSION); // debug
 }
 
 

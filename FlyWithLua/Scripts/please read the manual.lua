@@ -5,7 +5,6 @@
 -- script and peace will come back into your simulator.  --
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-if true then return end
 
 DataRef( "sim_time", "sim/network/misc/network_time_sec")
 
