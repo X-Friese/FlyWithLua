@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.10 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.11 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -877,6 +877,7 @@ std::string scriptDir;
 std::string systemDir;
 std::string internalsDir;
 std::string modulesDir;
+std::string quarantineDir;
 // END added by Sparker
 
 // The user will be able to handle the plugin with commands
@@ -893,6 +894,7 @@ void ResetLuaEngine();
 bool RunLuaString(const std::string& LuaCommandString);
 
 bool ReadScriptFile(const char* FileNameToRead);
+bool ReadQtScriptFile(const char* QtFileNameToRead);
 
 bool RunLuaChunk(const char* ChunkName);
 
@@ -987,6 +989,13 @@ int        FlyWithLuaMenuItem;
 XPLMMenuCheck DevMode;
 
 int bad_script_count = 0;
+
+int speak_second_warning = 0;
+
+void send_delayed_quarantined_message();
+
+static float DelayedQuarantinedMessage_Callback(float inElapsed1, float inElapsed2,
+                                      int cntr, void *ref);
 
 void MacroMenuHandler(void*, void*);
 
@@ -6473,6 +6482,8 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "INTERNALS_DIRECTORY");
     lua_pushstring(FWLLua, modulesDir.c_str());
     lua_setglobal(FWLLua, "MODULES_DIRECTORY");
+    lua_pushstring(FWLLua, quarantineDir.c_str());
+    lua_setglobal(FWLLua, "QUARANTINE_DIRECTORY");
     char AircraftFileName[256];
     char AircraftPath[512];
     XPLMGetNthAircraftModel(0, AircraftFileName, AircraftPath);
@@ -6505,7 +6516,7 @@ bool ReadScriptFile(const char* FileNameToRead)
 {
     if (!LuaIsRunning)
     {
-        logMsg(logToDevCon, "FlyWithLua: Lua is not running, can't load script file.");
+        logMsg(logToDevCon, "FlyWithLua Error: ReadScriptFile() failed, Lua is not running, can't load script file.");
         logMsg(logToDevCon, FileNameToRead);
         return false;
     }
@@ -6514,7 +6525,7 @@ bool ReadScriptFile(const char* FileNameToRead)
     if (luaL_dofile(FWLLua, FileNameToRead))
     {
         logMsg(logToDevCon,
-               std::string("FlyWithLua: Lua has crashed, can't execute script file: ").append(FileNameToRead));
+               std::string("FlyWithLua Error: CopyDataRefsToLua() failed, can't execute script file: ").append(FileNameToRead));
         return false;
     }
     CopyDataRefsToXPlane();
@@ -6553,6 +6564,9 @@ bool ReadAllScriptFiles()
 
     // reset DataRefTable (and MacroTable and SwitchTable)
     EraseDataRefTable();
+
+    // delayed message to see if we have any quarantined scripts
+    send_delayed_quarantined_message();
 
     // init the metar callback
     if (luaL_dostring(FWLLua, "XSB_METAR = \"Sorry, no METAR\"\nfunction XSB_METAR_CALLBACK()\nreturn\nend\n"))
@@ -6606,7 +6620,7 @@ bool ReadAllScriptFiles()
             CrashReportDisplayed = false;
             if (bad_script_count > 0)
             {
-                XPLMSpeakString("bad fly with lua scripts have been quarantined look in Log dot text file for more information");
+                XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
                 bad_script_count = 0;
             }
             return true;
@@ -6733,7 +6747,7 @@ bool ReadAllScriptFiles()
 
     if (bad_script_count > 0)
     {
-        XPLMSpeakString("bad fly with lua scripts have been quarantined look in Log dot text file for more information");
+        XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
         bad_script_count = 0;
     }
 
@@ -6743,6 +6757,112 @@ bool ReadAllScriptFiles()
     logMsg(logToDevCon, report_loding_time);
 
     return true; // snagar
+}
+
+bool ReadAllQuarantinedScriptFiles()
+{
+    char QtFileToLoad[SHORTSRTING]      = "";
+    char QtPathAndName[NORMALSTRING]    = "";
+    char OkPathAndName[NORMALSTRING]    = "";
+
+    int  Qt_k;
+    char QtFilesInFolder[5000];
+    int NumberOfQtFiles; // modified by saar
+    int TotalNumberOfQtFiles; // modified by saar
+    char* QtFileIndex[250];
+    int Qt_result;
+
+    // if we are still in boot phase of X-Plane, we do not want to load files
+    if (XPLMInitialized() == 0)
+    {
+        logMsg(logToDevCon, "FlyWithLua Info: X-Plane is still booting, we do not want to read files during startup.");
+        CrashReportDisplayed = false;
+        return true;
+    }
+
+    if (XPLMGetDirectoryContents(quarantineDir.c_str(), 0, QtFilesInFolder, sizeof(QtFilesInFolder), QtFileIndex, 250,
+                                 reinterpret_cast<int *>(&TotalNumberOfQtFiles), reinterpret_cast<int *>(&NumberOfQtFiles)))
+    {
+        logMsg(logToDevCon, "FlyWithLua Info: Searching for Lua quarantined script files");
+
+        // are enough files in the folder to read them out?
+        if (NumberOfQtFiles == 1)
+        {
+            // nothing to load, let's start Lua without reading files
+            logMsg(logToAll,
+                   "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts (Quarantine)/ does not exist or it is empty.");
+
+            return true;
+        }
+
+        if ((NumberOfQtFiles > 1) && (speak_second_warning == 1))
+        {
+            XPLMSpeakString("Please check your quarantined scripts folder");
+            speak_second_warning = 0;
+            return true;
+        }
+
+        logMsg(logToDevCon, "FlyWithLua Info: Sorting Lua quarantined script files");
+        // sorting the files
+        qsort(QtFileIndex, static_cast<size_t>(NumberOfQtFiles), sizeof(char*), compare_filenames);
+
+        // reading out the files into a string step by step
+        for (Qt_k = 0; Qt_k < NumberOfQtFiles; Qt_k++)
+        {
+            strncpy(QtFileToLoad, QtFileIndex[Qt_k], sizeof(QtFileToLoad));
+            if ((QtFileToLoad[0] != '.') and
+                ((strstr(QtFileToLoad, ".fwl") != nullptr and strlen(strstr(QtFileToLoad, ".fwl")) == 4)
+                 or (strstr(QtFileToLoad, ".FWL") != nullptr and strlen(strstr(QtFileToLoad, ".FWL")) == 4)
+                 #if defined(__LP64__) || defined(_WIN64)
+                 or (strstr(QtFileToLoad, ".lua64") != nullptr and strlen(strstr(QtFileToLoad, ".lua64")) == 6)
+                 or (strstr(QtFileToLoad, ".Lua64") != nullptr and strlen(strstr(QtFileToLoad, ".Lua64")) == 6)
+                 or (strstr(QtFileToLoad, ".LUA64") != nullptr and strlen(strstr(QtFileToLoad, ".LUA64")) == 6)
+                 #else
+                 or (strstr(QtFileToLoad, ".lua32") != NULL and strlen(strstr(QtFileToLoad, ".lua32")) == 6)
+                                            or (strstr(QtFileToLoad, ".Lua32") != NULL and strlen(strstr(QtFileToLoad, ".Lua32")) == 6)
+                                            or (strstr(QtFileToLoad, ".LUA32") != NULL and strlen(strstr(QtFileToLoad, ".LUA32")) == 6)
+                 #endif
+                 or (strstr(QtFileToLoad, ".lua") != nullptr and strlen(strstr(QtFileToLoad, ".lua")) == 4)
+                 or (strstr(QtFileToLoad, ".Lua") != nullptr and strlen(strstr(QtFileToLoad, ".Lua")) == 4)
+                 or (strstr(QtFileToLoad, ".LUA") != nullptr and strlen(strstr(QtFileToLoad, ".LUA")) == 4)))
+            {
+                // load the quarantined script file
+                sprintf(QtPathAndName, "%s/%s", quarantineDir.c_str(), QtFileToLoad);
+                // Need to move quarantined script from "Scripts (Quarantine)" to "Scripts"
+                // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
+
+                sprintf(OkPathAndName, "%s/%s", scriptDir.c_str(), QtFileToLoad);
+
+                Qt_result = rename(QtPathAndName, OkPathAndName);
+                if (Qt_result == 0)
+                {
+                    logMsg(logToDevCon,
+                           std::string("FlyWithLua Info: Returning Quarantine Script ").append(OkPathAndName));
+                }
+                else
+                {
+                    logMsg(logToDevCon,
+                           std::string("FlyWithLua Info: Could Not Return Quarantine Script ").append(OkPathAndName));
+                }
+            }
+        }
+    }
+
+    return true; // snagar
+}
+
+
+void send_delayed_quarantined_message()
+{
+    XPLMRegisterFlightLoopCallback(DelayedQuarantinedMessage_Callback, 20, nullptr);
+}
+
+float DelayedQuarantinedMessage_Callback(float /*inElapsed1*/, float /*inElapsed2*/,
+                               int /*cntr*/, void * /*ref*/)
+{
+    speak_second_warning = 1;
+    ReadAllQuarantinedScriptFiles();
+    return 0;
 }
 
 void update_Lua_dataref_variables(XPLMDataRef DataRefID, int Index, float Value)
@@ -6998,7 +7118,8 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Stop the Lua engine", (void*) "Stop", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Try to resume Lua engine (not recommended)", (void*) "Resume", 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
-    XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable move bad scripts", (void*) "DevMode", 1);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Reload all quarantined Lua scripts", (void*) "ReloadQt", 1);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable moving bad scripts to Quarantine", (void*) "DevMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
 
     // init the XSB connection
@@ -7705,6 +7826,12 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
         LuaIsRunning = false;
         return;
     }
+    if (!strcmp((char*) iRef, "ReloadQt"))
+    {
+        ReadAllQuarantinedScriptFiles();
+        return;
+    }
+
     if (!strcmp((char*) iRef, "DevMode"))
     {
         XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
@@ -7767,18 +7894,21 @@ void initPluginDirectory()
     scriptDir.clear();
     internalsDir.clear();
     modulesDir.clear();
+    quarantineDir.clear();
 
     systemDir.append(path);
     pluginMainDir.append(path).append("Resources").append(dirSep).append("plugins").append(dirSep).append("FlyWithLua");
     scriptDir.append(pluginMainDir).append(dirSep).append("Scripts");
     internalsDir.append(pluginMainDir).append(dirSep).append("Internals").append(dirSep);
     modulesDir.append(pluginMainDir).append(dirSep).append("Modules").append(dirSep);
+    quarantineDir.append(pluginMainDir).append(dirSep).append("Scripts (Quarantine)").append(dirSep);
 
     logMsg(logToDevCon, std::string("FlyWithLua: System Dir: ") + systemDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Dir: ") + pluginMainDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Scripts Dir: ") + scriptDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Internals Dir: ") + internalsDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Modules Dir: ") + modulesDir); // debug
+    logMsg(logToDevCon, std::string("FlyWithLua: Plugin Scripts Quarantine Dir: ") + quarantineDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Version: ") + PLUGIN_VERSION); // debug
 }
 
