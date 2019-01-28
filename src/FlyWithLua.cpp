@@ -7118,7 +7118,7 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Stop the Lua engine", (void*) "Stop", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Try to resume Lua engine (not recommended)", (void*) "Resume", 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
-    XPLMAppendMenuItem(FlyWithLuaMenuId, "Reload all quarantined Lua scripts", (void*) "ReloadQt", 1);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Return all quarantined Lua scripts", (void*) "ReturnQt", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable moving bad scripts to Quarantine", (void*) "DevMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
 
@@ -7826,7 +7826,7 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
         LuaIsRunning = false;
         return;
     }
-    if (!strcmp((char*) iRef, "ReloadQt"))
+    if (!strcmp((char*) iRef, "ReturnQt"))
     {
         ReadAllQuarantinedScriptFiles();
         return;
