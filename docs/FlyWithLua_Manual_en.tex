@@ -3739,16 +3739,20 @@ There is two example scripts "floating\_wnd\_reference\_test.lua" and "imgui\_he
 \href{https://github.com/ThePhD/sol2}{Sol2 GitHub}
 
 
+\newpage
 \section{Scripts (Quarantine) folder}
 
 To try to reduce the number of the red "Lua Stopped" posts we are using a new method to find and quarantine bad scripts. When FlyWithLua starts it looks at each script to see if any syntax or dataref issues and if it finds them it will move the script to the "Scripts (Quarantine)" folder. \newline
 
 If it finds at lease one it will say "bad fly with lua scripts have been quarantined look in Log dot text file for more information" and put a information line on the top of the screen. It also adds information to the Log.txt file in as much detail as FlyWithLua can find. \newline
 
-This is our first attempt and there are errors that will be missed and in future versions will find more but at least we have a place to put them. \newline
+This is our first attempt at trying to find errors and we know that there are errors that will be missed but in future versions will try to find more. We now have a common place that if we can find them they will be put preventing FlyWithLua from stopping. \newline
 
-For developers there is a new menu item allowing them to turn off this feature while developing scripts.
+After FlyWithLua has been running for 20 seconds if it finds scripts in the "Scripts (Quarantine)" folder it will say and display "Please check your quarantined scripts folder" to let you know that some of your scripts have been quarantined and you need to find out why. \newline
 
+To help with this a new menu item called "Return all quarantined Lua scripts" moves the scripts found  in "Scripts (Quarantine)" folder to the "Scripts" folder after you have found the issues. I would next turn on the "Show Dev Console" so you can see new entries in the Log.txt file. Then click on the "Reload all Lua script files" and look to see if all the errors are gone. \newline
+
+A second menu item has been added for developers called "Disable moving bad scripts to Quarantine" allowing them to turn off this feature while developing scripts.
 
 \newpage
 \section{The new 64-bit architecture}
