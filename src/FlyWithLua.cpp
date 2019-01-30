@@ -6514,6 +6514,7 @@ void ResetLuaEngine()
 
 bool ReadScriptFile(const char* FileNameToRead)
 {
+    char stack_cstring[NORMALSTRING];
     if (!LuaIsRunning)
     {
         logMsg(logToDevCon, "FlyWithLua Error: ReadScriptFile() failed, Lua is not running, can't load script file.");
@@ -6528,6 +6529,28 @@ bool ReadScriptFile(const char* FileNameToRead)
                std::string("FlyWithLua Error: CopyDataRefsToLua() failed, can't execute script file: ").append(FileNameToRead));
         return false;
     }
+
+    // Trying to get information about what is on the stack here.
+    // The stack seems to be empty here and do not yet know why.
+    int StackSize1 = lua_gettop(FWLLua);
+    if (StackSize1 == 0)
+    {
+        logMsg(logToAll, "FlyWithLua ReadScriptFile Info: Sorry, no script Info on stack.");
+    } else
+    {
+        sprintf(stack_cstring, "FlyWithLua ReadScriptFile Info: StackSize1 = %i", StackSize1);
+        flywithlua::logMsg(logToAll, stack_cstring);
+        logMsg(logToAll, "FlyWithLua ReadScriptFile Info: The Lua stack contains the following elements:");
+        for (auto ii = 1; ii <= StackSize1; ii++)
+        {
+            if (lua_isstring(FWLLua, ii))
+            {
+                logMsg(logToAll,
+                       lua_tostring(FWLLua, ii));
+            }
+        }
+    }
+
     CopyDataRefsToXPlane();
     lua_gc(FWLLua, LUA_GCCOLLECT, 0);
 
@@ -7387,7 +7410,8 @@ float MyFastLoopCallback(
             {
                 if (lua_isstring(FWLLua, i))
                 {
-                    logMsg(logToAll, lua_tostring(FWLLua, i));
+                    logMsg(logToAll,
+                           lua_tostring(FWLLua, i));
                 }
             }
         }

@@ -36,6 +36,9 @@ namespace flwnd {
  */
 typedef std::function<sol::protected_function()> CallbackProvider;
 
+int max_scripts = 0;
+char window_cstring[250];
+
 /**
  * A function, which sets some kind of callback for a floating (or ImGUI) window.
  *
@@ -82,6 +85,32 @@ int LuaCreateFloatingWindow(lua_State *L) {
     int height = lua_tointeger(L, 2);
     int decoration = lua_tointeger(L, 3);
     bool withImgui = lua_toboolean(L, 4);
+
+    // Trying to get information about what is on the stack here.
+    int StackSize1 = lua_gettop(flywithlua::FWLLua);
+    if (StackSize1 == 0)
+    {
+        flywithlua::logMsg(logToAll, "FlyWithLua LuaCreateFloatingWindow Info: Sorry, no LuaCreateFloatingWindow Info on stack.");
+    } else
+    {
+        sprintf(window_cstring, "FlyWithLua LuaCreateFloatingWindow Info: StackSize1 = %i", StackSize1);
+        flywithlua::logMsg(logToAll, window_cstring);
+        flywithlua::logMsg(logToAll, "FlyWithLua LuaCreateFloatingWindow Info: The Lua stack contains the following elements:");
+        for (auto ii = 1; ii <= StackSize1; ii++)
+        {
+            if (lua_isstring(flywithlua::FWLLua, ii))
+            {
+                flywithlua::logMsg(logToAll,
+                       lua_tostring(flywithlua::FWLLua, ii));
+            }
+
+            if (lua_isboolean(flywithlua::FWLLua, ii))
+            {
+                sprintf(window_cstring, "%i", lua_toboolean(flywithlua::FWLLua, ii));
+                flywithlua::logMsg(logToAll, window_cstring);
+            }
+        }
+    }
 
     std::shared_ptr<FloatingWindow> wnd;
 
@@ -183,6 +212,34 @@ void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const
 
         XPLMWindowID window = fwnd.getXWindow();
 
+        if (max_scripts < 10)
+        {
+            sprintf(window_cstring, "FlyWithLua Info: XPLMWindowID window = %i", window);
+            flywithlua::logMsg(logToAll, window_cstring);
+            max_scripts = max_scripts + 1;
+        }
+
+        // Trying to get information about what is on the stack here.
+        // The stack seems to be empty here and do not yet know why.
+        int StackSize1 = lua_gettop(flywithlua::FWLLua);
+        if (StackSize1 == 0)
+        {
+            flywithlua::logMsg(logToAll, "FlyWithLua LuaSetOnDrawCallback Info: Sorry, no callback Info on stack.");
+        } else
+        {
+            sprintf(window_cstring, "FlyWithLua LuaSetOnDrawCallback Info: StackSize1 = %i", StackSize1);
+            flywithlua::logMsg(logToAll, window_cstring);
+            flywithlua::logMsg(logToAll, "FlyWithLua LuaSetOnDrawCallback Info: The Lua stack contains the following elements:");
+            for (auto ii = 1; ii <= StackSize1; ii++)
+            {
+                if (lua_isstring(flywithlua::FWLLua, ii))
+                {
+                    flywithlua::logMsg(logToAll,
+                           lua_tostring(flywithlua::FWLLua, ii));
+                }
+            }
+        }
+
         int left, top, right, bottom;
         XPLMGetWindowGeometry(window, &left, &top, &right, &bottom);
 
@@ -193,6 +250,14 @@ void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const
 
         auto on_draw = on_draw_provider();
         if (!on_draw) {
+            // Need to find out which script created this window.
+            // Once found then we can quarantine it
+
+            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID window = %i is the window that has the following error", window);
+            flywithlua::logMsg(logToAll, window_cstring);
+
+            flywithlua::logMsg(logToAll, "FlyWithLua Error: Need to find a way to match the XPLMWindowID to the Lua script it came from");
+
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_ondraw");
             return;
         }
