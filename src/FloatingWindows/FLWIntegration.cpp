@@ -25,6 +25,8 @@
 
 namespace flwnd {
 
+char window_cstring[250];
+
 /**
  * A function, which returns a Lua callback function.
  *
@@ -88,8 +90,14 @@ int LuaCreateFloatingWindow(lua_State *L) {
     try {
         if (withImgui) {
             wnd = std::make_shared<ImGUIWindow>(width, height, decoration);
+            XPLMWindowID window = wnd->getXWindow();
+            sprintf(window_cstring, "FlyWithLua Info: This XPLMWindowID %i is for LuaCreateFloatingWindow", window);
+            flywithlua::logMsg(logToAll, window_cstring);
         } else {
             wnd = std::make_shared<FloatingWindow>(width, height, decoration);
+            XPLMWindowID window = wnd->getXWindow();
+            sprintf(window_cstring, "FlyWithLua Info: This XPLMWindowID %i is for LuaCreateFloatingWindow", window);
+            flywithlua::logMsg(logToAll, window_cstring);
         }
         floatingWindows.push_back(wnd);
         lua_pushlightuserdata(L, wnd.get());
@@ -193,6 +201,8 @@ void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const
 
         auto on_draw = on_draw_provider();
         if (!on_draw) {
+            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID %i has the following error", window);
+            flywithlua::logMsg(logToAll, window_cstring);
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_ondraw");
             return;
         }
@@ -438,14 +448,16 @@ void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
             return;
         }
 
+        XPLMWindowID window = fwnd.getXWindow();
+
         auto on_click = on_click_provider();
         if (!on_click) {
+            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID %i has the following error", window);
+            flywithlua::logMsg(logToAll, window_cstring);
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick\n"
                               "FlyWithLua Error: check to see if float_wnd_set_onclick function is defined");
             return;
         }
-
-        XPLMWindowID window = fwnd.getXWindow();
 
         int left, top, right, bottom;
         XPLMGetWindowGeometry(window, &left, &top, &right, &bottom);
@@ -476,8 +488,12 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
             return;
         }
 
+        XPLMWindowID window = fwnd.getXWindow();
+
         auto on_close = on_close_provider();
         if (!on_close) {
+            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID %i has the following error", window);
+            flywithlua::logMsg(logToAll, window_cstring);
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclose\n"
                               "FlyWithLua Error: check to see if float_wnd_set_onclose function is defined");
             return;

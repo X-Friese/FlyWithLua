@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.11 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.12 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -108,6 +108,13 @@
  *  v2.7.8  [changed] Thanks to Jetbrains used CLion to help refactor FlyWithLua.cpp
  *          [added]   Now using sol2 library for high-level C++ to Lua bindings. Thanks nevkontakte.
  *  v2.7.9  [changed] Restore Lua 5.1 behavior for lua_tointeger() to mitigate issue #22.
+ *  v2.7.10 [added]   Added a "Scripts (Quarantine)" folder to put bad scripts found on initial reading.
+ *          [added]   When a bad script is found and moved it will speak this and put a information line at the top or the monitor.
+ *          [added]   Added the version to the logging in the Log.txt file.
+ *          [changed] Now supporting 400 sound files.
+ *  v2.7.11 [added]   Added menu item to move scripts from "Scripts (Quarantine)" folder to  "Scripts" folder after you have fixed issues.
+ *          [added]   After 20 seconds if there are scripts in the "Scripts (Quarantine)" folder it will say and display "Please check your quarantined scripts folder".
+ *  v2.7.12 [changed] Improving error reporting in Log.txt file for items I can't yet put into quarantine.
  *
  *
  *  Markus (Teddii):
