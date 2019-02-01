@@ -6662,7 +6662,7 @@ bool ReadAllScriptFiles()
                 // sprintf(PathAndName, "%sResources/plugins/FlyWithLua/Scripts/%s", systemDir.c_str(), FileToLoad);
                 sprintf(PathAndName, "%s/%s", scriptDir.c_str(), FileToLoad);
                 logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file ").append(PathAndName));
-                XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
+                XPLMCheckMenuItemState(FlyWithLuaMenuId, 10, &DevMode);
                 if (ReadScriptFile(PathAndName))
                 {
                     logMsg(logToDevCon,
@@ -6678,7 +6678,7 @@ bool ReadAllScriptFiles()
                     if (DevMode == 1)
                     {
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
+                        sprintf(PathAndBadName, "%s/%s", quarantineDir.c_str(), FileToLoad);
                         result = rename(PathAndName, PathAndBadName);
                         if (result == 0)
                         {
@@ -6690,6 +6690,8 @@ bool ReadAllScriptFiles()
                         {
                             logMsg(logToDevCon,
                                    std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                            LuaIsRunning = false;
+                            break;
                         }
                         LuaIsRunning = false;
                         return ReadAllScriptFiles();
@@ -6699,7 +6701,7 @@ bool ReadAllScriptFiles()
                 // is Lua still running, or are there any problems?
                 if (!LuaIsRunning)
                 {
-                    XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
+                    XPLMCheckMenuItemState(FlyWithLuaMenuId, 10, &DevMode);
                     logMsg(logToAll,
                            std::string("FlyWithLua Error: The error seems to be inside of script file ").append(
                                    PathAndName));
@@ -6710,7 +6712,7 @@ bool ReadAllScriptFiles()
                     if (DevMode == 1)
                     {
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
+                        sprintf(PathAndBadName, "%s/%s", quarantineDir.c_str(), FileToLoad);
                         result = rename(PathAndName, PathAndBadName);
                         if (result == 0)
                         {
@@ -6722,6 +6724,8 @@ bool ReadAllScriptFiles()
                         {
                             logMsg(logToDevCon,
                                    std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                            LuaIsRunning = false;
+                            break;
                         }
                         ReadAllScriptFiles();
                         return false;
@@ -7127,7 +7131,7 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Return all quarantined Lua scripts", (void*) "ReturnQt", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable moving bad scripts to Quarantine", (void*) "DevMode", 1);
-    XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, 10, 1);
 
     // init the XSB connection
     XSBPluginId             = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
@@ -7841,14 +7845,14 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
 
     if (!strcmp((char*) iRef, "DevMode"))
     {
-        XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
+        XPLMCheckMenuItemState(FlyWithLuaMenuId, 10, &DevMode);
         if (DevMode == 2)
         {
-            XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
+            XPLMCheckMenuItem(FlyWithLuaMenuId, 10, 1);
         }
         else
         {
-            XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 2);
+            XPLMCheckMenuItem(FlyWithLuaMenuId, 10, 2);
         }
         return;
     }
