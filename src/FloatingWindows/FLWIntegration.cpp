@@ -25,8 +25,6 @@
 
 namespace flwnd {
 
-char window_cstring[250];
-
 /**
  * A function, which returns a Lua callback function.
  *
@@ -91,13 +89,23 @@ int LuaCreateFloatingWindow(lua_State *L) {
         if (withImgui) {
             wnd = std::make_shared<ImGUIWindow>(width, height, decoration);
             XPLMWindowID window = wnd->getXWindow();
-            sprintf(window_cstring, "FlyWithLua Info: This XPLMWindowID %i is for LuaCreateFloatingWindow", window);
-            flywithlua::logMsg(logToAll, window_cstring);
+
+            std::ostringstream oss_window_id;
+            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
+            std::string window_id;
+            window_id = oss_window_id.str();
+
+            flywithlua::logMsg(logToAll, window_id);
         } else {
             wnd = std::make_shared<FloatingWindow>(width, height, decoration);
             XPLMWindowID window = wnd->getXWindow();
-            sprintf(window_cstring, "FlyWithLua Info: This XPLMWindowID %i is for LuaCreateFloatingWindow", window);
-            flywithlua::logMsg(logToAll, window_cstring);
+
+            std::ostringstream oss_window_id;
+            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
+            std::string window_id;
+            window_id = oss_window_id.str();
+
+            flywithlua::logMsg(logToAll, window_id);
         }
         floatingWindows.push_back(wnd);
         lua_pushlightuserdata(L, wnd.get());
@@ -201,8 +209,12 @@ void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const
 
         auto on_draw = on_draw_provider();
         if (!on_draw) {
-            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID %i has the following error", window);
-            flywithlua::logMsg(logToAll, window_cstring);
+            std::ostringstream oss_window_id;
+            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
+            std::string window_id;
+            window_id = oss_window_id.str();
+
+            flywithlua::logMsg(logToAll, window_id);
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_ondraw");
             return;
         }
@@ -452,8 +464,12 @@ void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_click = on_click_provider();
         if (!on_click) {
-            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID %i has the following error", window);
-            flywithlua::logMsg(logToAll, window_cstring);
+            std::ostringstream oss_window_id;
+            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
+            std::string window_id;
+            window_id = oss_window_id.str();
+
+            flywithlua::logMsg(logToAll, window_id);
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick\n"
                               "FlyWithLua Error: check to see if float_wnd_set_onclick function is defined");
             return;
@@ -492,8 +508,12 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_close = on_close_provider();
         if (!on_close) {
-            sprintf(window_cstring, "FlyWithLua Error: This XPLMWindowID %i has the following error", window);
-            flywithlua::logMsg(logToAll, window_cstring);
+            std::ostringstream oss_window_id;
+            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
+            std::string window_id;
+            window_id = oss_window_id.str();
+
+            flywithlua::logMsg(logToAll, window_id);
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclose\n"
                               "FlyWithLua Error: check to see if float_wnd_set_onclose function is defined");
             return;
