@@ -6521,8 +6521,7 @@ void ResetLuaEngine()
     oss_success_cstring << "FlyWithLua Info: Lua engine (re)started. LUA_RUN =" << LuaResetCount << ", SDK_VERSION = " << VersionSDK <<
                            ", XPLANE_VERSION = " << VersionXP << ", XPLANE_LANGUAGE = " << lua_tostring(FWLLua, -1) <<
                            " and XPLANE_HOSTID = " << HostID;
-    auto success_cstring = oss_success_cstring.str();
-    logMsg(logToDevCon, success_cstring.c_str());
+    logMsg(logToDevCon, oss_success_cstring.str());
     lua_settop(FWLLua, 0);
 
     // restart the HID device API
@@ -6620,7 +6619,7 @@ bool ReadAllScriptFiles()
     auto IntPathAndName = oss_IntPathAndName.str();
 
     logMsg(logToAll, "FlyWithLua Info: FlyWithLua.ini full path ");
-    logMsg(logToAll, IntPathAndName.c_str());
+    logMsg(logToAll, IntPathAndName);
     if (ReadScriptFile(IntPathAndName.c_str()))
     {
         logMsg(logToDevCon, "FlyWithLua Info: Load ini file.");
@@ -6681,15 +6680,15 @@ bool ReadAllScriptFiles()
                 oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
                 auto ScrPathAndName = oss_ScrPathAndName.str();
 
-                logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file ").append(ScrPathAndName.c_str()));
+                logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file " + ScrPathAndName));
                 XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                 if (ReadScriptFile(ScrPathAndName.c_str()))
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Finished loading script file ").append(ScrPathAndName.c_str()));
+                           std::string("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
                 } else
                 {
-                    logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file ").append(ScrPathAndName.c_str()));
+                    logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         LuaIsRunning = false;
@@ -6705,13 +6704,13 @@ bool ReadAllScriptFiles()
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Moved Bad Script to ").append(QuaPathAndName.c_str()));
+                                   std::string("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Could not move bad script to ").append(QuaPathAndName.c_str()));
+                                   std::string("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
                             LuaIsRunning = false;
                             // Added this break to prevent CTD from flooding the Log.txt file.
                             break;
@@ -6726,8 +6725,7 @@ bool ReadAllScriptFiles()
                 {
                     XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                     logMsg(logToAll,
-                           std::string("FlyWithLua Error: The error seems to be inside of script file ").append(
-                                   ScrPathAndName.c_str()));
+                           std::string("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         return false;
@@ -6742,13 +6740,13 @@ bool ReadAllScriptFiles()
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Moved Bad Script to ").append(QuaPathAndName.c_str()));
+                                   std::string("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Could not move bad script to ").append(QuaPathAndName.c_str()));
+                                   std::string("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
                             LuaIsRunning = false;
                             // Added this break to prevent CTD from flooding the Log.txt file.
                             break;
@@ -6876,12 +6874,12 @@ bool ReadAllQuarantinedScriptFiles()
                 if (Qt_result == 0)
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Returning Quarantine Script ").append(OkPathAndName.c_str()));
+                           std::string("FlyWithLua Info: Returning Quarantine Script " + OkPathAndName));
                 }
                 else
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Could Not Return Quarantine Script ").append(OkPathAndName.c_str()));
+                           std::string("FlyWithLua Info: Could Not Return Quarantine Script " + OkPathAndName));
                 }
             }
         }
