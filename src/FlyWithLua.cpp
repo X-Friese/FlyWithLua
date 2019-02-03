@@ -6052,7 +6052,6 @@ void DebugLua()
         std::ostringstream oss_WhatToSay;
         std::string WhatToSay;
 
-
         // sort the switch table
         qsort((void*) &SwitchTable, static_cast<size_t>(SwitchTableLastElement + 1), (size_t) sizeof(struct SwitchTableStructure),
               (compfn) compare_switchtable);
@@ -6293,10 +6292,6 @@ bool RunLuaChunk(const char* ChunkName)
 
 void ResetLuaEngine()
 {
-    std::ostringstream oss_success_cstring;
-    std::string success_cstring;
-
-
     // define some DataRefs
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
     gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);
@@ -6522,10 +6517,11 @@ void ResetLuaEngine()
     LuaIsRunning = true;
     lua_getglobal(FWLLua, "XPLANE_LANGUAGE");
 
+    std::ostringstream oss_success_cstring;
     oss_success_cstring << "FlyWithLua Info: Lua engine (re)started. LUA_RUN =" << LuaResetCount << ", SDK_VERSION = " << VersionSDK <<
                            ", XPLANE_VERSION = " << VersionXP << ", XPLANE_LANGUAGE = " << lua_tostring(FWLLua, -1) <<
                            " and XPLANE_HOSTID = " << HostID;
-    success_cstring = oss_success_cstring.str();
+    auto success_cstring = oss_success_cstring.str();
     logMsg(logToDevCon, success_cstring.c_str());
     lua_settop(FWLLua, 0);
 
@@ -6621,8 +6617,7 @@ bool ReadAllScriptFiles()
     // run through the init script
     std::ostringstream oss_IntPathAndName;
     oss_IntPathAndName << internalsDir << "FlyWithLua.ini";
-    std::string IntPathAndName;
-    IntPathAndName = oss_IntPathAndName.str();
+    auto IntPathAndName = oss_IntPathAndName.str();
 
     logMsg(logToAll, "FlyWithLua Info: FlyWithLua.ini full path ");
     logMsg(logToAll, IntPathAndName.c_str());
@@ -6684,8 +6679,7 @@ bool ReadAllScriptFiles()
                 // load the script file
                 std::ostringstream oss_ScrPathAndName;
                 oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
-                std::string ScrPathAndName;
-                ScrPathAndName = oss_ScrPathAndName.str();
+                auto ScrPathAndName = oss_ScrPathAndName.str();
 
                 logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file ").append(ScrPathAndName.c_str()));
                 XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
@@ -6706,8 +6700,7 @@ bool ReadAllScriptFiles()
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
                         std::ostringstream oss_QuaPathAndName;
                         oss_QuaPathAndName << quarantineDir << FileToLoad;
-                        std::string QuaPathAndName;
-                        QuaPathAndName = oss_QuaPathAndName.str();
+                        auto QuaPathAndName = oss_QuaPathAndName.str();
                         result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
                         if (result == 0)
                         {
@@ -6744,8 +6737,7 @@ bool ReadAllScriptFiles()
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
                         std::ostringstream oss_QuaPathAndName;
                         oss_QuaPathAndName << quarantineDir << FileToLoad;
-                        std::string QuaPathAndName;
-                        QuaPathAndName = oss_QuaPathAndName.str();
+                        auto QuaPathAndName = oss_QuaPathAndName.str();
                         result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
                         if (result == 0)
                         {
@@ -6798,8 +6790,7 @@ bool ReadAllScriptFiles()
 
     std::ostringstream oss_report_loding_time;
     oss_report_loding_time << "FlyWithLua Info: Loading time for all scripts is " << (double) (time_end - time_start) / CLOCKS_PER_SEC << " sec.";
-    std::string report_loding_time;
-    report_loding_time = oss_report_loding_time.str();
+    auto report_loding_time = oss_report_loding_time.str();
     logMsg(logToDevCon, report_loding_time.c_str());
 
     return true; // snagar
@@ -6879,8 +6870,7 @@ bool ReadAllQuarantinedScriptFiles()
                 // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
                 std::ostringstream oss_OkPathAndName;
                 oss_OkPathAndName << scriptDir << "/" << QtFileToLoad;
-                std::string OkPathAndName;
-                OkPathAndName = oss_OkPathAndName.str();
+                auto OkPathAndName = oss_OkPathAndName.str();
 
                 Qt_result = rename(QtPathAndName.c_str(), OkPathAndName.c_str());
                 if (Qt_result == 0)
