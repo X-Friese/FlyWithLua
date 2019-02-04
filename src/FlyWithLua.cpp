@@ -6680,15 +6680,15 @@ bool ReadAllScriptFiles()
                 oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
                 auto ScrPathAndName = oss_ScrPathAndName.str();
 
-                logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file " + ScrPathAndName));
+                logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
                 XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                 if (ReadScriptFile(ScrPathAndName.c_str()))
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
+                           ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
                 } else
                 {
-                    logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
+                    logMsg(logToAll, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         LuaIsRunning = false;
@@ -6704,13 +6704,13 @@ bool ReadAllScriptFiles()
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
+                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
+                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
                             LuaIsRunning = false;
                             // Added this break to prevent CTD from flooding the Log.txt file.
                             break;
@@ -6725,7 +6725,7 @@ bool ReadAllScriptFiles()
                 {
                     XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                     logMsg(logToAll,
-                           std::string("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
+                           ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         return false;
@@ -6740,13 +6740,13 @@ bool ReadAllScriptFiles()
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
+                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
+                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
                             LuaIsRunning = false;
                             // Added this break to prevent CTD from flooding the Log.txt file.
                             break;
@@ -6861,8 +6861,7 @@ bool ReadAllQuarantinedScriptFiles()
                 // load the quarantined script file
                 std::ostringstream oss_QtPathAndName;
                 oss_QtPathAndName << quarantineDir << QtFileToLoad;
-                std::string QtPathAndName;
-                QtPathAndName = oss_QtPathAndName.str();
+                auto QtPathAndName = oss_QtPathAndName.str();
 
                 // Need to move quarantined script from "Scripts (Quarantine)" to "Scripts"
                 // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
@@ -6874,12 +6873,12 @@ bool ReadAllQuarantinedScriptFiles()
                 if (Qt_result == 0)
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Returning Quarantine Script " + OkPathAndName));
+                           ("FlyWithLua Info: Returning Quarantine Script " + OkPathAndName));
                 }
                 else
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Could Not Return Quarantine Script " + OkPathAndName));
+                           ("FlyWithLua Info: Could Not Return Quarantine Script " + OkPathAndName));
                 }
             }
         }
