@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.11 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.12 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -108,6 +108,13 @@
  *  v2.7.8  [changed] Thanks to Jetbrains used CLion to help refactor FlyWithLua.cpp
  *          [added]   Now using sol2 library for high-level C++ to Lua bindings. Thanks nevkontakte.
  *  v2.7.9  [changed] Restore Lua 5.1 behavior for lua_tointeger() to mitigate issue #22.
+ *  v2.7.10 [added]   Added a "Scripts (Quarantine)" folder to put bad scripts found on initial reading.
+ *          [added]   When a bad script is found and moved it will speak this and put a information line at the top or the monitor.
+ *          [added]   Added the version to the logging in the Log.txt file.
+ *          [changed] Now supporting 400 sound files.
+ *  v2.7.11 [added]   Added menu item to move scripts from "Scripts (Quarantine)" folder to  "Scripts" folder after you have fixed issues.
+ *          [added]   After 20 seconds if there are scripts in the "Scripts (Quarantine)" folder it will say and display "Please check your quarantined scripts folder".
+ *  v2.7.12 [changed] Improving error reporting in Log.txt file for items I can't yet put into quarantine.
  *
  *
  *  Markus (Teddii):
@@ -197,6 +204,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <string>
 #include <string.h>
 #include <stdio.h>
@@ -987,6 +995,7 @@ XPLMMenuID FlyWithLuaMenuId;
 int        FlyWithLuaMenuItem;
 
 XPLMMenuCheck DevMode;
+int DevModeCheckedPosition = 10;
 
 int bad_script_count = 0;
 
@@ -1182,7 +1191,6 @@ int FWLDrawWindowCallback(XPLMDrawingPhase /*inPhase*/,
     clock_t time_start = clock();
 
     char buffer[LONGSTRING] = {"Lua stopped!"};
-    //sprintf(buffer, "%.255s", "Lua stopped!");
 
     // reload the scenery when triggered by flag and reactivate Lua system
     if (WeNeedToReloadTheScenery)
@@ -6041,7 +6049,8 @@ void DebugLua()
     DebugFile << "\n\n*** Switches created by Lua ***\n";
     if (SwitchTableLastElement >= 0)
     {
-        char WhatToSay[LONGSTRING];
+        std::ostringstream oss_WhatToSay;
+        std::string WhatToSay;
 
         // sort the switch table
         qsort((void*) &SwitchTable, static_cast<size_t>(SwitchTableLastElement + 1), (size_t) sizeof(struct SwitchTableStructure),
@@ -6051,63 +6060,73 @@ void DebugLua()
         {
             if (SwitchTable[i].SwitchType == Switch)
             {
-                sprintf(WhatToSay, "The button %i switches %s[%i] to %f (if off) or to %f (if on).\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].off_float, SwitchTable[i].on_float);
+                oss_WhatToSay << "The button " << SwitchTable[i].button << " switches " <<  SwitchTable[i].DataRefName.c_str() << "[" <<
+                        SwitchTable[i].index << "] to " << SwitchTable[i].off_float << " (if off) or to " <<
+                        SwitchTable[i].on_float << " (if on).\n";
+                WhatToSay = oss_WhatToSay.str();
             }
             if (SwitchTable[i].SwitchType == PositiveFlip)
             {
-                sprintf(WhatToSay, "The positive edge of button %i flips %s[%i] between %f and %f.\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].off_float, SwitchTable[i].on_float);
+                oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " flips " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] between " << SwitchTable[i].off_float << " and " <<
+                        SwitchTable[i].on_float << ".\n";
+                WhatToSay = oss_WhatToSay.str();
             }
             if (SwitchTable[i].SwitchType == NegativeFlip)
             {
-                sprintf(WhatToSay, "The negative edge of button %i flips %s[%i] between %f and %f.\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].off_float, SwitchTable[i].on_float);
+                oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " flips " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] between " << SwitchTable[i].off_float << " and " <<
+                        SwitchTable[i].on_float << ".\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
             if (SwitchTable[i].SwitchType == PositiveEdge)
             {
-                sprintf(WhatToSay, "The positive edge of button %i sets %s[%i] to %f.\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].on_float);
+                oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " sets " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] to " << SwitchTable[i].on_float << ".\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
             if (SwitchTable[i].SwitchType == NegativeEdge)
             {
-                sprintf(WhatToSay, "The negative edge of button %i sets %s[%i] to %f.\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].on_float);
+                oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " sets " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] to " << SwitchTable[i].on_float << ".\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
             if (SwitchTable[i].SwitchType == PositiveIncrement)
             {
-                sprintf(WhatToSay,
-                        "The positive edge of button %i increments %s[%i] by %f (limit = %f, round to %f).\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].stepping_float, SwitchTable[i].upper_limit_float, SwitchTable[i].round);
+                oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " increments " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
+                        SwitchTable[i].upper_limit_float << ", round to " << SwitchTable[i].round << ").\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
             if (SwitchTable[i].SwitchType == NegativeIncrement)
             {
-                sprintf(WhatToSay,
-                        "The negative edge of button %i increments %s[%i] by %f (limit = %f, round to %f).\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].stepping_float, SwitchTable[i].upper_limit_float, SwitchTable[i].round);
+                oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " increments " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
+                        SwitchTable[i].upper_limit_float << ", round to " << SwitchTable[i].round << ").\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
             if (SwitchTable[i].SwitchType == PositiveDecrement)
             {
-                sprintf(WhatToSay,
-                        "The positive edge of button %i decrements %s[%i] by %f (limit = %f, round to %f).\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].stepping_float, SwitchTable[i].lower_limit_float, SwitchTable[i].round);
+                oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " decrements " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
+                        SwitchTable[i].lower_limit_float << ", round to " << SwitchTable[i].round << ").\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
             if (SwitchTable[i].SwitchType == NegativeDecrement)
             {
-                sprintf(WhatToSay,
-                        "The negative edge of button %i decrements %s[%i] by %f (limit = %f, round to %f).\n",
-                        SwitchTable[i].button, SwitchTable[i].DataRefName.c_str(), SwitchTable[i].index,
-                        SwitchTable[i].stepping_float, SwitchTable[i].lower_limit_float, SwitchTable[i].round);
+                oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " decrements " <<  SwitchTable[i].DataRefName.c_str() <<
+                        "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
+                        SwitchTable[i].lower_limit_float << ", round to " << SwitchTable[i].round << ").\n";
+                WhatToSay = oss_WhatToSay.str();
+
             }
-            DebugFile << WhatToSay;
+            DebugFile << WhatToSay.c_str();
         }
     } else
     {
@@ -6136,21 +6155,26 @@ void DebugLua()
     DebugFile << "\n\n*** OpenAL sound files are stored in a table ***\n";
     if (OpenALTableLastElement >= 0)
     {
-        char     WhatToSay[LONGSTRING];
+        std::ostringstream oss_WhatToSay;
+        std::string WhatToSay;
         for (auto i = 0; i <= OpenALTableLastElement; i++)
         {
             DebugFile << "<<< Sound table element no. " << i << " >>>\n";
             DebugFile << "filename --> \"" << OpenALTable[i].filename << "\"\n";
             if (OpenALTable[i].loop)
             {
-                sprintf(WhatToSay, "pitch    --> %f\ngain     --> %f\nloop     --> true\nsource   --> %i\n\n",
-                        OpenALTable[i].pitch, OpenALTable[i].gain, OpenALSources[i]);
+                oss_WhatToSay << "pitch    --> " << OpenALTable[i].pitch << "\ngain     --> " << OpenALTable[i].gain <<
+                                 "\nloop     --> true\nsource   --> " << OpenALSources[i] << "\n\n";
+
+                WhatToSay = oss_WhatToSay.str();
             } else
             {
-                sprintf(WhatToSay, "pitch    --> %f\ngain     --> %f\nloop     --> false\nsource   --> %i\n\n",
-                        OpenALTable[i].pitch, OpenALTable[i].gain, OpenALSources[i]);
+                oss_WhatToSay << "pitch    --> " << OpenALTable[i].pitch << "\ngain     --> " << OpenALTable[i].gain <<
+                                 "\nloop     --> false\nsource   --> " << OpenALSources[i] << "\n\n";
+
+                WhatToSay = oss_WhatToSay.str();
             }
-            DebugFile << WhatToSay;
+            DebugFile << WhatToSay.c_str();
         }
     } else
     {
@@ -6268,8 +6292,6 @@ bool RunLuaChunk(const char* ChunkName)
 
 void ResetLuaEngine()
 {
-    char success_cstring[NORMALSTRING];
-
     // define some DataRefs
     gXSBMetarStringXDataRef = XPLMFindDataRef(XSB_WEATHER_METAR);
     gXSBTextMessageXDataRef = XPLMFindDataRef(XSB_TEXT_MESSAGE);
@@ -6494,10 +6516,12 @@ void ResetLuaEngine()
 
     LuaIsRunning = true;
     lua_getglobal(FWLLua, "XPLANE_LANGUAGE");
-    sprintf(success_cstring,
-            "FlyWithLua Info: Lua engine (re)started. LUA_RUN = %i, SDK_VERSION = %i, XPLANE_VERSION = %i, XPLANE_LANGUAGE = %s and XPLANE_HOSTID = %i",
-            LuaResetCount, VersionSDK, VersionXP, lua_tostring(FWLLua, -1), HostID);
-    logMsg(logToDevCon, success_cstring);
+
+    std::ostringstream oss_success_cstring;
+    oss_success_cstring << "FlyWithLua Info: Lua engine (re)started. LUA_RUN =" << LuaResetCount << ", SDK_VERSION = " << VersionSDK <<
+                           ", XPLANE_VERSION = " << VersionXP << ", XPLANE_LANGUAGE = " << lua_tostring(FWLLua, -1) <<
+                           " and XPLANE_HOSTID = " << HostID;
+    logMsg(logToDevCon, oss_success_cstring.str());
     lua_settop(FWLLua, 0);
 
     // restart the HID device API
@@ -6537,8 +6561,6 @@ bool ReadScriptFile(const char* FileNameToRead)
 bool ReadAllScriptFiles()
 {
     char FileToLoad[SHORTSRTING]      = "";
-    char PathAndName[NORMALSTRING]    = "";
-    char PathAndBadName[NORMALSTRING]    = "";
     char PlaneICAO[SHORTSRTING]       = "";
     char PlaneTailNumber[SHORTSRTING] = "";
     int  k;
@@ -6592,10 +6614,13 @@ bool ReadAllScriptFiles()
     }
 
     // run through the init script
-    sprintf(PathAndName, "%sResources/plugins/FlyWithLua/Internals/FlyWithLua.ini", systemDir.c_str());
+    std::ostringstream oss_IntPathAndName;
+    oss_IntPathAndName << internalsDir << "FlyWithLua.ini";
+    auto IntPathAndName = oss_IntPathAndName.str();
+
     logMsg(logToAll, "FlyWithLua Info: FlyWithLua.ini full path ");
-    logMsg(logToAll, PathAndName);
-    if (ReadScriptFile(PathAndName))
+    logMsg(logToAll, IntPathAndName);
+    if (ReadScriptFile(IntPathAndName.c_str()))
     {
         logMsg(logToDevCon, "FlyWithLua Info: Load ini file.");
     } else
@@ -6651,18 +6676,19 @@ bool ReadAllScriptFiles()
                  or (strstr(FileToLoad, ".LUA") != nullptr and strlen(strstr(FileToLoad, ".LUA")) == 4)))
             {
                 // load the script file
-                // sprintf(PathAndName, "Resources/plugins/FlyWithLua/Scripts/%s", FileToLoad);
-                // sprintf(PathAndName, "%sResources/plugins/FlyWithLua/Scripts/%s", systemDir.c_str(), FileToLoad);
-                sprintf(PathAndName, "%s/%s", scriptDir.c_str(), FileToLoad);
-                logMsg(logToDevCon, std::string("FlyWithLua Info: Start loading script file ").append(PathAndName));
-                XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
-                if (ReadScriptFile(PathAndName))
+                std::ostringstream oss_ScrPathAndName;
+                oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
+                auto ScrPathAndName = oss_ScrPathAndName.str();
+
+                logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
+                XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
+                if (ReadScriptFile(ScrPathAndName.c_str()))
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Finished loading script file ").append(PathAndName));
+                           ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
                 } else
                 {
-                    logMsg(logToAll, std::string("FlyWithLua Error: Unable to load script file ").append(PathAndName));
+                    logMsg(logToAll, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         LuaIsRunning = false;
@@ -6671,18 +6697,23 @@ bool ReadAllScriptFiles()
                     if (DevMode == 1)
                     {
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
-                        result = rename(PathAndName, PathAndBadName);
+                        std::ostringstream oss_QuaPathAndName;
+                        oss_QuaPathAndName << quarantineDir << FileToLoad;
+                        auto QuaPathAndName = oss_QuaPathAndName.str();
+                        result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
+                            LuaIsRunning = false;
+                            // Added this break to prevent CTD from flooding the Log.txt file.
+                            break;
                         }
                         LuaIsRunning = false;
                         return ReadAllScriptFiles();
@@ -6692,10 +6723,9 @@ bool ReadAllScriptFiles()
                 // is Lua still running, or are there any problems?
                 if (!LuaIsRunning)
                 {
-                    XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
+                    XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                     logMsg(logToAll,
-                           std::string("FlyWithLua Error: The error seems to be inside of script file ").append(
-                                   PathAndName));
+                           ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         return false;
@@ -6703,18 +6733,23 @@ bool ReadAllScriptFiles()
                     if (DevMode == 1)
                     {
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        sprintf(PathAndBadName, "%sResources/plugins/FlyWithLua/Scripts (Quarantine)/%s", systemDir.c_str(), FileToLoad);
-                        result = rename(PathAndName, PathAndBadName);
+                        std::ostringstream oss_QuaPathAndName;
+                        oss_QuaPathAndName << quarantineDir << FileToLoad;
+                        auto QuaPathAndName = oss_QuaPathAndName.str();
+                        result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Moved Bad Script to ").append(PathAndBadName));
+                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
                         {
                             logMsg(logToDevCon,
-                                   std::string("FlyWithLua Info: Could not move bad script to ").append(PathAndBadName));
+                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
+                            LuaIsRunning = false;
+                            // Added this break to prevent CTD from flooding the Log.txt file.
+                            break;
                         }
                         ReadAllScriptFiles();
                         return false;
@@ -6751,10 +6786,10 @@ bool ReadAllScriptFiles()
         bad_script_count = 0;
     }
 
-    char report_loding_time[1014];
-    sprintf(report_loding_time, "FlyWithLua Info: Loading time for all scripts is %3.6g sec.",
-            (double) (time_end - time_start) / CLOCKS_PER_SEC);
-    logMsg(logToDevCon, report_loding_time);
+    std::ostringstream oss_report_loding_time;
+    oss_report_loding_time << "FlyWithLua Info: Loading time for all scripts is " << (double) (time_end - time_start) / CLOCKS_PER_SEC << " sec.";
+    auto report_loding_time = oss_report_loding_time.str();
+    logMsg(logToDevCon, report_loding_time.c_str());
 
     return true; // snagar
 }
@@ -6762,9 +6797,6 @@ bool ReadAllScriptFiles()
 bool ReadAllQuarantinedScriptFiles()
 {
     char QtFileToLoad[SHORTSRTING]      = "";
-    char QtPathAndName[NORMALSTRING]    = "";
-    char OkPathAndName[NORMALSTRING]    = "";
-
     int  Qt_k;
     char QtFilesInFolder[5000];
     int NumberOfQtFiles; // modified by saar
@@ -6827,22 +6859,26 @@ bool ReadAllQuarantinedScriptFiles()
                  or (strstr(QtFileToLoad, ".LUA") != nullptr and strlen(strstr(QtFileToLoad, ".LUA")) == 4)))
             {
                 // load the quarantined script file
-                sprintf(QtPathAndName, "%s/%s", quarantineDir.c_str(), QtFileToLoad);
+                std::ostringstream oss_QtPathAndName;
+                oss_QtPathAndName << quarantineDir << QtFileToLoad;
+                auto QtPathAndName = oss_QtPathAndName.str();
+
                 // Need to move quarantined script from "Scripts (Quarantine)" to "Scripts"
                 // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
+                std::ostringstream oss_OkPathAndName;
+                oss_OkPathAndName << scriptDir << "/" << QtFileToLoad;
+                auto OkPathAndName = oss_OkPathAndName.str();
 
-                sprintf(OkPathAndName, "%s/%s", scriptDir.c_str(), QtFileToLoad);
-
-                Qt_result = rename(QtPathAndName, OkPathAndName);
+                Qt_result = rename(QtPathAndName.c_str(), OkPathAndName.c_str());
                 if (Qt_result == 0)
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Returning Quarantine Script ").append(OkPathAndName));
+                           ("FlyWithLua Info: Returning Quarantine Script " + OkPathAndName));
                 }
                 else
                 {
                     logMsg(logToDevCon,
-                           std::string("FlyWithLua Info: Could Not Return Quarantine Script ").append(OkPathAndName));
+                           ("FlyWithLua Info: Could Not Return Quarantine Script " + OkPathAndName));
                 }
             }
         }
@@ -7120,7 +7156,7 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Return all quarantined Lua scripts", (void*) "ReturnQt", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable moving bad scripts to Quarantine", (void*) "DevMode", 1);
-    XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
 
     // init the XSB connection
     XSBPluginId             = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
@@ -7834,14 +7870,14 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
 
     if (!strcmp((char*) iRef, "DevMode"))
     {
-        XPLMCheckMenuItemState(FlyWithLuaMenuId, 9, &DevMode);
+        XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
         if (DevMode == 2)
         {
-            XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 1);
+            XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
         }
         else
         {
-            XPLMCheckMenuItem(FlyWithLuaMenuId, 9, 2);
+            XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
         }
         return;
     }
