@@ -16,6 +16,7 @@
 #include <GL/glext.h>
 #endif
 #include <XPLMDataAccess.h>
+#include <XPLMUtilities.h>
 #include "FLWIntegration.h"
 #include "FloatingWindow.h"
 #include "ImGUIIntegration.h"
@@ -75,6 +76,7 @@ int loadImage(const std::string&fileName) {
 int LuaCreateFloatingWindow(lua_State *L) {
     if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isboolean(L, 4)) {
         flywithlua::logMsg(logToAll, "FlyWithLua Error: wrong arguments given to float_wnd_create.");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -673,8 +675,9 @@ void deinitFloatingWindowSupport() {
     }
 }
 
-void FindAndQuarantine (lua_State *L)
+bool FindAndQuarantine (lua_State *L)
 {
+    int result = 0;
     lua_Debug debug;
     // 1 here means the function which called the current function.
     if (!lua_getstack(L, 1, &debug)) { /* Oops, panic or something... */ }
@@ -692,15 +695,31 @@ void FindAndQuarantine (lua_State *L)
     oss_script_name << "FlyWithLua Info: Function Script Name From Stack " << ScriptName;
     flywithlua::logMsg(logToAll, oss_script_name.str());
 
-    oss_script_path_name << "FlyWithLua Info: Full Script Path Name " << flywithlua::scriptDir << "/" << ScriptName;
-    flywithlua::logMsg(logToAll, oss_script_path_name.str());
+    oss_script_path_name << flywithlua::scriptDir << "/" << ScriptName;
+    flywithlua::logMsg(logToAll, "FlyWithLua Info: Full Script Path Name " + oss_script_path_name.str());
+    std::string script_path_name = oss_script_path_name.str();
 
-    oss_quarantine_path_name << "FlyWithLua Info: Full Quarantine Path Name " << flywithlua::quarantineDir <<
-                                 ScriptName << std::endl;
-    flywithlua::logMsg(logToAll, oss_quarantine_path_name.str());
+    oss_quarantine_path_name << flywithlua::quarantineDir << ScriptName;
+    flywithlua::logMsg(logToAll, "FlyWithLua Info: Full Quarantine Path Name " + oss_quarantine_path_name.str());
+    std::string quarantine_path_name = oss_quarantine_path_name.str();
 
-    // flywithlua::ReadAllScriptFiles();
-
+    result = rename(script_path_name.c_str(), quarantine_path_name.c_str());
+    if (result == 0)
+    {
+        flywithlua::logMsg(logToDevCon,
+               ("FlyWithLua Info: Moved Bad Script to " + quarantine_path_name));
+    }
+    else
+    {
+        flywithlua::logMsg(logToDevCon,
+               ("FlyWithLua Info: Could not move bad script to " + quarantine_path_name));
+        // LuaIsRunning = false;
+        // Added this break to prevent CTD from flooding the Log.txt file.
+        // break;
+    }
+    XPLMSpeakString("Please reload Your Lua Script files.");
+    // flywithlua::LuaIsRunning = false;
+    // return flywithlua::ReadAllScriptFiles();
 }
 
 void onFlightLoop() {
