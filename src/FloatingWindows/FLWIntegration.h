@@ -18,6 +18,7 @@ namespace flwnd {
 void initFloatingWindowSupport();
 void deinitFloatingWindowSupport();
 void onFlightLoop();
+void FindAndQuarantine (lua_State *L);
 
 }
 
