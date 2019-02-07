@@ -678,6 +678,7 @@ void deinitFloatingWindowSupport() {
 bool FindAndQuarantine (lua_State *L)
 {
     int result = 0;
+    int wait = 0;
     lua_Debug debug;
     // 1 here means the function which called the current function.
     if (!lua_getstack(L, 1, &debug)) { /* Oops, panic or something... */ }
@@ -713,13 +714,9 @@ bool FindAndQuarantine (lua_State *L)
     {
         flywithlua::logMsg(logToDevCon,
                ("FlyWithLua Info: Could not move bad script to " + quarantine_path_name));
-        // LuaIsRunning = false;
-        // Added this break to prevent CTD from flooding the Log.txt file.
-        // break;
     }
-    XPLMSpeakString("Please reload Your Lua Script files.");
-    // flywithlua::LuaIsRunning = false;
-    // return flywithlua::ReadAllScriptFiles();
+    flywithlua::LuaIsRunning = false;
+    flywithlua::found_bad_script = 1;
 }
 
 void onFlightLoop() {

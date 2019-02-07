@@ -36,6 +36,7 @@ extern lua_State   *FWLLua;
 extern std::string scriptDir;
 extern std::string quarantineDir;
 extern bool ReadAllScriptFiles();
+extern int found_bad_script;
 }
 
 #endif

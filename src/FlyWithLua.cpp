@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.12 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.13 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -1002,6 +1002,8 @@ int bad_script_count = 0;
 int speak_second_warning = 0;
 
 void send_delayed_quarantined_message();
+
+int found_bad_script = 0;
 
 static float DelayedQuarantinedMessage_Callback(float inElapsed1, float inElapsed2,
                                       int cntr, void *ref);
@@ -5959,6 +5961,11 @@ void DebugLua()
                 DebugFile << "Element no. " << i << " is: " << lua_tostring(FWLLua, i) << "\n";
             }
         }
+        if (found_bad_script)
+        {
+            found_bad_script = 0;
+            ReadAllScriptFiles();
+        }
     }
     DebugFile << "\n\n*** Every draw loop callback ***\n";
     DebugFile << LuaDrawCommand;
@@ -6587,9 +6594,6 @@ bool ReadAllScriptFiles()
     // reset DataRefTable (and MacroTable and SwitchTable)
     EraseDataRefTable();
 
-    // delayed message to see if we have any quarantined scripts
-    send_delayed_quarantined_message();
-
     // init the metar callback
     if (luaL_dostring(FWLLua, "XSB_METAR = \"Sorry, no METAR\"\nfunction XSB_METAR_CALLBACK()\nreturn\nend\n"))
     {
@@ -6782,15 +6786,15 @@ bool ReadAllScriptFiles()
 
     if (bad_script_count > 0)
     {
-        XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
+        XPLMSpeakString("\n\n\n\nfound bad lua scripts that have been quarantined look in Log dot text file for more information");
         bad_script_count = 0;
+        send_delayed_quarantined_message();
     }
 
     std::ostringstream oss_report_loding_time;
     oss_report_loding_time << "FlyWithLua Info: Loading time for all scripts is " << (double) (time_end - time_start) / CLOCKS_PER_SEC << " sec.";
     auto report_loding_time = oss_report_loding_time.str();
     logMsg(logToDevCon, report_loding_time.c_str());
-
     return true; // snagar
 }
 
@@ -6829,7 +6833,7 @@ bool ReadAllQuarantinedScriptFiles()
 
         if ((NumberOfQtFiles > 1) && (speak_second_warning == 1))
         {
-            XPLMSpeakString("Please check your quarantined scripts folder");
+            XPLMSpeakString("\n\n\n\nPlease check your quarantined scripts folder");
             speak_second_warning = 0;
             return true;
         }
