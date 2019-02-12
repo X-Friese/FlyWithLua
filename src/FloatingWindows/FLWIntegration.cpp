@@ -686,7 +686,7 @@ bool FindAndQuarantine (lua_State *L)
 
     std::ostringstream oss_function_script_path, oss_script_name, oss_script_path_name, oss_quarantine_path_name;
     oss_function_script_path << "FlyWithLua Info: Function Script Path From Stack " << debug.short_src;
-    flywithlua::logMsg(logToAll, oss_function_script_path.str());
+    // flywithlua::logMsg(logToAll, oss_function_script_path.str());
     std::string ScriptName = debug.short_src;
     const size_t last_slash_idx = ScriptName.find_last_of("/");
     if (std::string::npos != last_slash_idx)
@@ -694,14 +694,14 @@ bool FindAndQuarantine (lua_State *L)
         ScriptName.erase(0, last_slash_idx + 1);
     }
     oss_script_name << "FlyWithLua Info: Function Script Name From Stack " << ScriptName;
-    flywithlua::logMsg(logToAll, oss_script_name.str());
+    // flywithlua::logMsg(logToAll, oss_script_name.str());
 
     oss_script_path_name << flywithlua::scriptDir << "/" << ScriptName;
-    flywithlua::logMsg(logToAll, "FlyWithLua Info: Full Script Path Name " + oss_script_path_name.str());
+    // flywithlua::logMsg(logToAll, "FlyWithLua Info: Full Script Path Name " + oss_script_path_name.str());
     std::string script_path_name = oss_script_path_name.str();
 
     oss_quarantine_path_name << flywithlua::quarantineDir << ScriptName;
-    flywithlua::logMsg(logToAll, "FlyWithLua Info: Full Quarantine Path Name " + oss_quarantine_path_name.str());
+    // flywithlua::logMsg(logToAll, "FlyWithLua Info: Full Quarantine Path Name " + oss_quarantine_path_name.str());
     std::string quarantine_path_name = oss_quarantine_path_name.str();
 
     result = rename(script_path_name.c_str(), quarantine_path_name.c_str());
@@ -716,7 +716,9 @@ bool FindAndQuarantine (lua_State *L)
                ("FlyWithLua Info: Could not move bad script to " + quarantine_path_name));
     }
     flywithlua::LuaIsRunning = false;
-    flywithlua::found_bad_script = 1;
+    flywithlua::found_bad_function_script = 1;
+    throw std::logic_error(ScriptName.c_str());
+    flywithlua::DebugLua();
 }
 
 void onFlightLoop() {

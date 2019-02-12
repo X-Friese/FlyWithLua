@@ -998,12 +998,17 @@ XPLMMenuCheck DevMode;
 int DevModeCheckedPosition = 10;
 
 int bad_script_count = 0;
+int bad_scripts_found = 0;
 
 int speak_second_warning = 0;
+int first_pass = 0;
+
 
 void send_delayed_quarantined_message();
 
-int found_bad_script = 0;
+int found_bad_function_script = 0;
+
+clock_t speak_time;
 
 static float DelayedQuarantinedMessage_Callback(float inElapsed1, float inElapsed2,
                                       int cntr, void *ref);
@@ -5961,9 +5966,9 @@ void DebugLua()
                 DebugFile << "Element no. " << i << " is: " << lua_tostring(FWLLua, i) << "\n";
             }
         }
-        if (found_bad_script)
+        if (found_bad_function_script)
         {
-            found_bad_script = 0;
+            found_bad_function_script = 0;
             ReadAllScriptFiles();
         }
     }
@@ -6651,6 +6656,10 @@ bool ReadAllScriptFiles()
             {
                 XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
                 bad_script_count = 0;
+                speak_time = clock();
+                std::ostringstream oss_speak_time;
+                oss_speak_time << "FlyWithLua Info: speak_time " << speak_time;
+                logMsg(logToAll, oss_speak_time.str());
             }
             return true;
         }
@@ -6786,15 +6795,26 @@ bool ReadAllScriptFiles()
 
     if (bad_script_count > 0)
     {
-        XPLMSpeakString("\n\n\n\nfound bad lua scripts that have been quarantined look in Log dot text file for more information");
-        bad_script_count = 0;
-        send_delayed_quarantined_message();
+        bad_scripts_found = 1;
+    }
+    else if (found_bad_function_script)
+    {
+        bad_scripts_found = 1;
     }
 
     std::ostringstream oss_report_loding_time;
     oss_report_loding_time << "FlyWithLua Info: Loading time for all scripts is " << (double) (time_end - time_start) / CLOCKS_PER_SEC << " sec.";
     auto report_loding_time = oss_report_loding_time.str();
     logMsg(logToDevCon, report_loding_time.c_str());
+
+    if ((bad_scripts_found == 1) && (first_pass == 0))
+    {
+        XPLMSpeakString("\n\n\n\nfound bad lua scripts that have been quarantined look in Log dot text file for more information");
+        bad_script_count = 0;
+        bad_scripts_found = 0;
+        first_pass = 1;
+        send_delayed_quarantined_message();
+    }
     return true; // snagar
 }
 
@@ -7844,6 +7864,7 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
     if (!strcmp((char*) iRef, "Reload"))
     {
         logMsg(logToDevCon, "FlyWithLua: User forced a script reload.");
+        first_pass = 0;
         ReadAllScriptFiles();
         return;
     }
