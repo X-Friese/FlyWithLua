@@ -217,6 +217,7 @@
 #include <sol.hpp>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
+#include "runtime.h"
 
 // include OpenGL
 #if IBM
@@ -362,9 +363,14 @@ struct RGBColor
 
 // qsort needs a compare function, let's use strcmp for it
 // as qsort gives void pointers, we have to convert them to char pointers
+// FIXME: Get rid of qsort.
 static int compare_filenames(const void* a, const void* b)
 {
     return strcmp(*(const char**) a, *(const char**) b);
+}
+
+static bool AlphabeticOrder(const char *a, const char *b) {
+    return std::strcmp(a, b) < 0;
 }
 
 //#ifndef APL
@@ -464,7 +470,7 @@ static int                  SwitchTableLastElement   = -1;
 
 
 bool       CrashReportDisplayed = false;
-static int LuaResetCount        = 0;
+static int LuaRunCount        = 0;
 
 
 bool UserWantsANewPlane         = false;
@@ -561,6 +567,7 @@ struct CommandTableStructure
     std::string    EndCommand;
 };
 
+// FIXME: Convert this to std::vector.
 static CommandTableStructure CommandTable[MAXCOMMANDS];
 static int                   CommandTableLastElement = -1;
 
@@ -572,6 +579,7 @@ struct OpenALTableStructure
     bool        loop{};
 };
 
+// FIXME: Convert all of these to std::vector.
 static OpenALTableStructure OpenALTable[MAXSOUNDS];
 static int                  OpenALTableLastElement   = -1;
 static ALuint               OpenALBuffers[MAXSOUNDS];
@@ -878,7 +886,7 @@ static float init_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*counter*
 
 // Modified by Snagar
 std::string pluginMainDir;
-std::string scriptDir;
+std::string ScriptsPath;
 // END modified by Snagar
 
 // Added by Sparker
@@ -901,7 +909,6 @@ void ResetLuaEngine();
 
 bool RunLuaString(const std::string& LuaCommandString);
 
-bool ReadScriptFile(const char* FileNameToRead);
 bool ReadQtScriptFile(const char* QtFileNameToRead);
 
 bool RunLuaChunk(const char* ChunkName);
@@ -953,6 +960,7 @@ float TimeBetweenCallbacks     = 1.0;                // processed every second
 float LongTimeBetweenCallbacks = 10.0;           // not so often processed
 // to increase performance
 bool  LuaIsRunning             = false;                       // Are we working with Lua?
+bool  AutoRestartLua           = false;
 
 int JoystickButtonValues[MAXJOYSTICKBUTTONS];
 int JoystickButtonLastValues[MAXJOYSTICKBUTTONS];
@@ -2493,6 +2501,22 @@ static int LuaCrashTheSim(lua_State* L)
     XPLMSetDatavi(gJoystickButtonAssignments, EveryThingIsZero, 0, 1600);
     XPLMSetDatavi(gJoystickAxisAssignments, EveryThingIsZero, 0, 100);
     return 0;
+}
+
+static int LuaCrashLuaLegacy(lua_State* L)
+{
+    lua_pushstring(L, "Aye, sir! Crashing FlyWithLua the old way.");
+    return lua_error(L);
+}
+
+static int LuaCrashLuaLegacyException(lua_State*)
+{
+    throw std::runtime_error("Aye, sir! Crashing FlyWithLua the old way with C++ exception.");
+}
+
+static void LuaCrashLuaException()
+{
+    throw std::runtime_error("Aye, sir! Crashing FlyWithLua with C++ exception.");
 }
 
 static int LuaCommandOnce(lua_State* L)
@@ -5812,6 +5836,8 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "command_begin", LuaCommandBegin);
     lua_register(L, "command_end", LuaCommandEnd);
     lua_register(L, "crash_the_sim", LuaCrashTheSim);
+    lua_register(L, "crash_lua_legacy", LuaCrashLuaLegacy);
+    lua_register(L, "crash_lua_legacy_exception", LuaCrashLuaLegacyException);
     lua_register(L, "draw_string", LuaDrawString);
     lua_register(L, "draw_string_Helvetica_18", LuaDrawStringHelv18);
     lua_register(L, "draw_string_Helvetica_12", LuaDrawStringHelv12);
@@ -5907,6 +5933,9 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "set_sound_gain", LuaSetSoundGain);
     lua_register(L, "unload_all_sounds", LuaUnloadAllSounds);
     lua_register(L, "replace_WAV_file", LuaReplaceWAVFile);
+
+    sol::state_view lua(L);
+    lua.set_function("crash_lua_exception", LuaCrashLuaException);
 }
 
 // sort DataRefTable by name and index of the DataRef
@@ -6301,12 +6330,27 @@ void ResetLuaEngine()
 
 
     // run through the exit script
-    if ((LuaResetCount > 0) && !ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
+    if (LuaRunCount > 0)
     {
-        logMsg(logToAll, "FlyWithLua Error: Unable to load exit file.");
+        try {
+            // Best effort to shut Lua down. If it fails, we print the error FYI and proceed nevertheless.
+            runtime::ExecFile(FWLLua,
+                              "Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit",
+                              runtime::NO_QUARANTINE);
+        } catch(std::exception const& e) {
+            logMsg(logToAll, "FlyWithLua Warning: en error occurred when executing shutdown file.");
+            logMsg(logToAll, e.what());
+        }
     }
 
     LuaIsRunning = false;
+
+    // reset macro and ATC menu
+    XPLMClearAllMenuItems(MacroMenuId);
+    XPLMClearAllMenuItems(ATCMenuId);
+
+    // reset DataRefTable (and MacroTable and SwitchTable)
+    EraseDataRefTable();
 
     // killing all commands
     if (CommandTableLastElement > -1)
@@ -6355,6 +6399,7 @@ void ResetLuaEngine()
         FWLLua = luaL_newstate();
     }
     sol::set_default_state(FWLLua);
+    sol::state_view L(FWLLua);
 
     LuaDrawCommand.clear();
     EveryFrameCallbackCommand.clear();
@@ -6414,37 +6459,28 @@ void ResetLuaEngine()
     // functions to operate on floating windows
     flwnd::initFloatingWindowSupport();
 
-    lua_pushnumber(FWLLua, ++LuaResetCount);
-    lua_setglobal(FWLLua, "LUA_RUN");
-
-    int mouse_x, mouse_y;
+    L["LUA_RUN"] = ++LuaRunCount;
 
     // if a script wants MOUSE or SCREEN during load, we must provide it
+    int mouse_x, mouse_y;
     XPLMGetMouseLocation(&mouse_x, &mouse_y);
-    lua_pushnumber(FWLLua, mouse_x);
-    lua_setglobal(FWLLua, "MOUSE_X");
-    lua_pushnumber(FWLLua, mouse_y);
-    lua_setglobal(FWLLua, "MOUSE_Y");
-    lua_pushnumber(FWLLua, LAST_SCREEN_WIDTH);
-    lua_setglobal(FWLLua, "SCREEN_WIDTH");
-    lua_pushnumber(FWLLua, LAST_SCREEN_HIGHT);
-    lua_setglobal(FWLLua, "SCREEN_HIGHT");
+    L["MOUSE_X"] = mouse_x;
+    L["MOUSE_Y"] = mouse_y;
+    L["SCREEN_WIDTH"] = LAST_SCREEN_WIDTH;
+    L["SCREEN_HIGHT"] = LAST_SCREEN_HIGHT;
 
     // inform the script what system we are using
 #if IBM
-    lua_pushstring(FWLLua, "IBM");
+    L["SYSTEM"] = "IBM";
 #elif APL
-    lua_pushstring(FWLLua, "APL");
+    L["SYSTEM"] = "APL";
 #else
-    lua_pushstring(FWLLua, "LIN");
+    L["SYSTEM"] = "LIN";
 #endif
-    lua_setglobal(FWLLua, "SYSTEM");
-#if defined(__LP64__) || defined(_WIN64)
-    lua_pushnumber(FWLLua, 64);
-#else
-    lua_pushnumber(FWLLua, 32);
-#endif
-    lua_setglobal(FWLLua, "SYSTEM_ARCHITECTURE");
+
+    // We only support 64-bit architecture.
+    L["SYSTEM_ARCHITECTURE"] = 64;
+
     switch (XPLMGetLanguage())
     {
         case 1:
@@ -6481,317 +6517,189 @@ void ResetLuaEngine()
             lua_pushstring(FWLLua, "Unknown");
     }
     lua_setglobal(FWLLua, "XPLANE_LANGUAGE");
-    int                   VersionXP, VersionSDK;
+
+    int VersionXP, VersionSDK;
     XPLMHostApplicationID HostID;
     XPLMGetVersions(&VersionXP, &VersionSDK, &HostID);
-    lua_pushnumber(FWLLua, VersionXP);
-    lua_setglobal(FWLLua, "XPLANE_VERSION");
-    lua_pushnumber(FWLLua, VersionSDK);
-    lua_setglobal(FWLLua, "SDK_VERSION");
-    lua_pushnumber(FWLLua, HostID);
-    lua_setglobal(FWLLua, "XPLANE_HOSTID");
+    L["XPLANE_VERSION"] = VersionXP;
+    L["SDK_VERSION"] = VersionSDK;
+    L["XPLANE_HOSTID"] = HostID;
+
+    // FIXME: Opt into "native" paths. All modern systems support "/" separator.
     char dirSep[2];
     strcpy(dirSep, XPLMGetDirectorySeparator()); // correct for each OS
-    lua_pushstring(FWLLua, dirSep);
-    lua_setglobal(FWLLua, "DIRECTORY_SEPARATOR");
-    lua_pushstring(FWLLua, systemDir.c_str());
-    lua_setglobal(FWLLua, "SYSTEM_DIRECTORY");
-    lua_pushstring(FWLLua, pluginMainDir.c_str());
-    lua_setglobal(FWLLua, "PLUGIN_MAIN_DIRECTORY");
-    lua_pushstring(FWLLua, scriptDir.c_str());
-    lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
-    lua_pushstring(FWLLua, internalsDir.c_str());
-    lua_setglobal(FWLLua, "INTERNALS_DIRECTORY");
-    lua_pushstring(FWLLua, modulesDir.c_str());
-    lua_setglobal(FWLLua, "MODULES_DIRECTORY");
-    lua_pushstring(FWLLua, quarantineDir.c_str());
-    lua_setglobal(FWLLua, "QUARANTINE_DIRECTORY");
+    L["DIRECTORY_SEPARATOR"] = dirSep;
+    L["SYSTEM_DIRECTORY"] = systemDir.c_str();
+    L["PLUGIN_MAIN_DIRECTORY"] = pluginMainDir.c_str();
+    L["SCRIPT_DIRECTORY"] = ScriptsPath.c_str();
+    L["INTERNALS_DIRECTORY"] = internalsDir.c_str();
+    L["MODULES_DIRECTORY"] = modulesDir.c_str();
+    L["QUARANTINE_DIRECTORY"] = quarantineDir.c_str();
+
+    // Set variable with aircraft information.
     char AircraftFileName[256];
     char AircraftPath[512];
     XPLMGetNthAircraftModel(0, AircraftFileName, AircraftPath);
-    lua_pushstring(FWLLua, AircraftFileName);
-    lua_setglobal(FWLLua, "AIRCRAFT_FILENAME");
-    lua_pushstring(FWLLua, AircraftPath);
-    lua_setglobal(FWLLua, "AIRCRAFT_PATH");
+    L["AIRCRAFT_FILENAME"] = AircraftFileName;
+    L["AIRCRAFT_PATH"] = AircraftPath;
+
+    char PlaneICAO[SHORTSRTING] = "";
+    XPLMGetDatab(gPlaneICAO, PlaneICAO, 0, SHORTSRTING);
+    L["PLANE_ICAO"] = PlaneICAO;
+
+    char PlaneTailNumber[SHORTSRTING] = "";
+    XPLMGetDatab(gPlaneTailNumber, PlaneTailNumber, 0, SHORTSRTING);
+    L["PLANE_TAILNUMBER"] = PlaneTailNumber;
+
+    // init the METAR callback
+    L["XSB_METAR"] = "Sorry, no METAR";
+    L["XSB_METAR_CALLBACK"] = []() {};
 
     LuaIsRunning = true;
     lua_getglobal(FWLLua, "XPLANE_LANGUAGE");
 
     std::ostringstream oss_success_cstring;
-    oss_success_cstring << "FlyWithLua Info: Lua engine (re)started. LUA_RUN =" << LuaResetCount << ", SDK_VERSION = " << VersionSDK <<
-                           ", XPLANE_VERSION = " << VersionXP << ", XPLANE_LANGUAGE = " << lua_tostring(FWLLua, -1) <<
-                           " and XPLANE_HOSTID = " << HostID;
+    oss_success_cstring << "FlyWithLua Info: Lua engine (re)started. LUA_RUN =" << LuaRunCount << ", SDK_VERSION = "
+                        << VersionSDK <<
+                        ", XPLANE_VERSION = " << VersionXP << ", XPLANE_LANGUAGE = " << lua_tostring(FWLLua, -1) <<
+                        " and XPLANE_HOSTID = " << HostID;
     logMsg(logToDevCon, oss_success_cstring.str());
+
+    // Clear out Lua stack from whatever lingers there.
     lua_settop(FWLLua, 0);
 
     // restart the HID device API
-    int hid_checker = 0;
-    hid_checker = hid_init();
-    if (hid_checker == 0)
+    if (hid_init() == 0)
     {
         logMsg(logToDevCon, "FlyWithLua Info: HID access initialized.");
     } else
     {
         logMsg(logToDevCon, "FlyWithLua error: Can't initialize HIDAPI.");
     }
-}
 
-bool ReadScriptFile(const char* FileNameToRead)
-{
-    if (!LuaIsRunning)
-    {
-        logMsg(logToDevCon, "FlyWithLua Error: ReadScriptFile() failed, Lua is not running, can't load script file.");
-        logMsg(logToDevCon, FileNameToRead);
-        return false;
-    }
-
-    CopyDataRefsToLua();
-    if (luaL_dofile(FWLLua, FileNameToRead))
-    {
-        logMsg(logToDevCon,
-               std::string("FlyWithLua Error: CopyDataRefsToLua() failed, can't execute script file: ").append(FileNameToRead));
-        return false;
-    }
-    CopyDataRefsToXPlane();
-    lua_gc(FWLLua, LUA_GCCOLLECT, 0);
-
-    return true;
-}
-
-bool ReadAllScriptFiles()
-{
-    char FileToLoad[SHORTSRTING]      = "";
-    char PlaneICAO[SHORTSRTING]       = "";
-    char PlaneTailNumber[SHORTSRTING] = "";
-    int  k;
-    char FilesInFolder[5000];
-    int NumberOfFiles; // modified by saar
-    int TotalNumberOfFiles; // modified by saar
-    char* FileIndex[250];
-    int result;
-
-    // get starting time
-    clock_t time_start = clock();
-
-    // starting the engine
-    LuaIsRunning         = true;
-    CrashReportDisplayed = false;
-
-    // reset macro and ATC menu
-    XPLMClearAllMenuItems(MacroMenuId);
-    XPLMClearAllMenuItems(ATCMenuId);
-
-    // reset Lua engine
-    ResetLuaEngine();
-
-    // reset DataRefTable (and MacroTable and SwitchTable)
-    EraseDataRefTable();
-
-    // delayed message to see if we have any quarantined scripts
-    send_delayed_quarantined_message();
-
-    // init the metar callback
-    if (luaL_dostring(FWLLua, "XSB_METAR = \"Sorry, no METAR\"\nfunction XSB_METAR_CALLBACK()\nreturn\nend\n"))
-    {
-        logMsg(logToDevCon, "FlyWithLua Error: Can't init the METAR callback.");
-        LuaIsRunning = false;
-    }
-
-    // init some pre defined variables
-    XPLMGetDatab(gPlaneICAO, PlaneICAO, 0, SHORTSRTING);
-    lua_pushstring(FWLLua, PlaneICAO);
-    lua_setglobal(FWLLua, "PLANE_ICAO");
-    XPLMGetDatab(gPlaneTailNumber, PlaneTailNumber, 0, SHORTSRTING);
-    lua_pushstring(FWLLua, PlaneTailNumber);
-    lua_setglobal(FWLLua, "PLANE_TAILNUMBER");
-
-    // if we are still in boot phase of X-Plane, we do not want to load files
-    if (XPLMInitialized() == 0)
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: X-Plane is still booting, we do not want to read files during startup.");
-        CrashReportDisplayed = false;
-        return true;
-    }
-
-    // run through the init script
-    std::ostringstream oss_IntPathAndName;
-    oss_IntPathAndName << internalsDir << "FlyWithLua.ini";
-    auto IntPathAndName = oss_IntPathAndName.str();
-
+    // Run through the init script.
+    auto IntPathAndName = internalsDir + "FlyWithLua.ini";
     logMsg(logToAll, "FlyWithLua Info: FlyWithLua.ini full path ");
     logMsg(logToAll, IntPathAndName);
-    if (ReadScriptFile(IntPathAndName.c_str()))
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: Load ini file.");
-    } else
-    {
+    try {
+        runtime::ExecFile(L, IntPathAndName, runtime::NO_QUARANTINE);
+        logMsg(logToDevCon, "FlyWithLua Info: Loaded ini file.");
+    } catch (std::runtime_error const& e) {
         logMsg(logToAll, "FlyWithLua Error: Unable to load ini file.");
-        LuaIsRunning = false;
+        throw;
+    }
+}
+
+bool IsLuaScript(std::string file_name) {
+    if (file_name.length() == 0 || file_name[0] == '.') {
         return false;
     }
+    // Transform the file name to lower case.
+    std::transform(file_name.begin(), file_name.end(), file_name.begin(), ::tolower);
+    auto ends_with = [&file_name](std::string const &ext) -> bool {
+        return file_name.length() >= ext.length()
+            && file_name.compare(file_name.length() - ext.length(), std::string::npos, ext) == 0;
+    };
+    return ends_with(".lua") || ends_with(".lua64") || ends_with(".fwl");
+}
 
-    if (XPLMGetDirectoryContents(scriptDir.c_str(), 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 250,
-                                 reinterpret_cast<int *>(&TotalNumberOfFiles), reinterpret_cast<int *>(&NumberOfFiles)))
-    {
+bool IsDevMode() {
+    XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
+    return DevMode == 1;
+}
+
+std::vector<std::string> GetDirectoryContents(std::string const &path) {
+    // FIXME: Move this out into a function returning vector of strings.
+    std::array<char, 5000> file_name_buffer{}; // Buffer to store all the file names as NULL-terminated strings.
+    std::array<char *, 250> file_name_index{}; // Map of file name start positions inside file_name_buffer buffer.
+    int file_name_count; // Number of files returned.
+    if (!XPLMGetDirectoryContents(path.c_str(), 0,
+                                  file_name_buffer.data(), file_name_buffer.size(),
+                                  file_name_index.data(), file_name_index.size(),
+                                  nullptr, &file_name_count)) {
+        if (file_name_count == 0) {
+            logMsg(logToAll, "FlyWithLua Error: Can't list files in " + path + ".");
+            logMsg(logToAll, "FlyWithLua Info: To fix this problem, simply create the directory if it doesn't exist.");
+            throw std::runtime_error("Unable to list files in " + path + ".");
+        } else {
+            // This should never happen (hopefully). This code could be modified to call XPLMGetDirectoryContents
+            // in a loop, if this really becomes a problem.
+            throw std::runtime_error("Too many files in " + path + ", file names don't fit into allocated buffer.");
+        }
+    }
+
+    std::vector<std::string> file_names;
+    for (int i = 0; i < file_name_count; i++) {
+        file_names.push_back(file_name_index[i]);
+    }
+
+    std::sort(std::begin(file_names), std::end(file_names));
+    return file_names;
+}
+
+bool ReadAllScriptFiles() {
+    try {
+        // get starting time
+        clock_t time_start = clock();
+
+        // starting the engine
+        LuaIsRunning = true;
+        CrashReportDisplayed = false;
+        AutoRestartLua = false;
+
+        // reset Lua engine
+        ResetLuaEngine();
+
+        sol::state_view L(FWLLua);
+
         logMsg(logToDevCon, "FlyWithLua Info: Searching for Lua script files");
+        auto file_names = GetDirectoryContents(ScriptsPath);
 
-        // are enough files in the folder to read them out?
-        if (NumberOfFiles == 0)
-        {
-            // nothing to load, let's start Lua without reading files
+        if (file_names.empty()) {
+            // Nothing to load, let's start Lua without reading any user scripts.
             logMsg(logToAll,
                    "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts/ does not exist or it is empty.");
             logMsg(logToAll, "FlyWithLua Info: Nothing to load at all, starting without reading files.");
-            CrashReportDisplayed = false;
-            if (bad_script_count > 0)
-            {
-                XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
-                bad_script_count = 0;
-            }
-            return true;
         }
-
-        logMsg(logToDevCon, "FlyWithLua Info: Sorting Lua script files");
-        // sorting the files
-        qsort(FileIndex, static_cast<size_t>(NumberOfFiles), sizeof(char*), compare_filenames);
 
         // reading out the files into a string step by step
-        for (k = 0; k < NumberOfFiles; k++)
-        {
-            strncpy(FileToLoad, FileIndex[k], sizeof(FileToLoad));
-            if ((FileToLoad[0] != '.') and
-                ((strstr(FileToLoad, ".fwl") != nullptr and strlen(strstr(FileToLoad, ".fwl")) == 4)
-                 or (strstr(FileToLoad, ".FWL") != nullptr and strlen(strstr(FileToLoad, ".FWL")) == 4)
-                 #if defined(__LP64__) || defined(_WIN64)
-                 or (strstr(FileToLoad, ".lua64") != nullptr and strlen(strstr(FileToLoad, ".lua64")) == 6)
-                 or (strstr(FileToLoad, ".Lua64") != nullptr and strlen(strstr(FileToLoad, ".Lua64")) == 6)
-                 or (strstr(FileToLoad, ".LUA64") != nullptr and strlen(strstr(FileToLoad, ".LUA64")) == 6)
-                 #else
-                 or (strstr(FileToLoad, ".lua32") != NULL and strlen(strstr(FileToLoad, ".lua32")) == 6)
-                                            or (strstr(FileToLoad, ".Lua32") != NULL and strlen(strstr(FileToLoad, ".Lua32")) == 6)
-                                            or (strstr(FileToLoad, ".LUA32") != NULL and strlen(strstr(FileToLoad, ".LUA32")) == 6)
-                 #endif
-                 or (strstr(FileToLoad, ".lua") != nullptr and strlen(strstr(FileToLoad, ".lua")) == 4)
-                 or (strstr(FileToLoad, ".Lua") != nullptr and strlen(strstr(FileToLoad, ".Lua")) == 4)
-                 or (strstr(FileToLoad, ".LUA") != nullptr and strlen(strstr(FileToLoad, ".LUA")) == 4)))
-            {
-                // load the script file
-                std::ostringstream oss_ScrPathAndName;
-                oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
-                auto ScrPathAndName = oss_ScrPathAndName.str();
-
-                logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
-                XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
-                if (ReadScriptFile(ScrPathAndName.c_str()))
-                {
-                    logMsg(logToDevCon,
-                           ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
-                } else
-                {
-                    logMsg(logToAll, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
-                    if (DevMode == 2)
-                    {
-                        LuaIsRunning = false;
-                        break;
-                    }
-                    if (DevMode == 1)
-                    {
-                        // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        std::ostringstream oss_QuaPathAndName;
-                        oss_QuaPathAndName << quarantineDir << FileToLoad;
-                        auto QuaPathAndName = oss_QuaPathAndName.str();
-                        result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
-                        if (result == 0)
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
-                            bad_script_count = bad_script_count + 1;
-                        }
-                        else
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
-                            LuaIsRunning = false;
-                            // Added this break to prevent CTD from flooding the Log.txt file.
-                            break;
-                        }
-                        LuaIsRunning = false;
-                        return ReadAllScriptFiles();
-                    }
-                }
-
-                // is Lua still running, or are there any problems?
-                if (!LuaIsRunning)
-                {
-                    XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
-                    logMsg(logToAll,
-                           ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
-                    if (DevMode == 2)
-                    {
-                        return false;
-                    }
-                    if (DevMode == 1)
-                    {
-                        // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        std::ostringstream oss_QuaPathAndName;
-                        oss_QuaPathAndName << quarantineDir << FileToLoad;
-                        auto QuaPathAndName = oss_QuaPathAndName.str();
-                        result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
-                        if (result == 0)
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
-                            bad_script_count = bad_script_count + 1;
-                        }
-                        else
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
-                            LuaIsRunning = false;
-                            // Added this break to prevent CTD from flooding the Log.txt file.
-                            break;
-                        }
-                        ReadAllScriptFiles();
-                        return false;
-                    }
-                }
+        for (auto const &file_name : file_names) {
+            if (!IsLuaScript(file_name)) {
+                continue;
+            }
+            // load the script file
+            auto file_path = std::string(ScriptsPath).append("/").append(file_name);
+            try {
+                logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + file_path));
+                runtime::ExecFile(L, file_path, runtime::OptIf(IsDevMode(), runtime::NO_QUARANTINE));
+                logMsg(logToDevCon, "FlyWithLua Info: Finished loading script file " + file_path);
+            } catch (std::exception const &e) {
+                logMsg(logToAll, ("FlyWithLua Error: Unable to load script file " + file_path));
+                throw;
             }
         }
 
-    } else
-    {
-        logMsg(logToAll, "FlyWithLua Error: Can't read out the subfolder Resources/plugins/FlyWithLua/Scripts.");
-        logMsg(logToAll,
-               "FlyWithLua Info: To fix this problem, simply create the subfolder Resources/plugins/FlyWithLua/Scripts.");
+        // get time after execution
+        clock_t time_end = clock();
+        double load_sec = (double) (time_end - time_start) / CLOCKS_PER_SEC;
+
+        // write time difference and memory usage into global variables
+        L["SCRIPTS_LOADING_TIME_SEC"] = load_sec;
+        L["CLOCKS_PER_SEC"] = CLOCKS_PER_SEC;
+
+        logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
+        std::ostringstream report_loading_time;
+        report_loading_time << "FlyWithLua Info: Loading time for all scripts is "
+                            << load_sec << " sec.";
+        logMsg(logToDevCon, report_loading_time.str());
+
+        return true;
+    } catch (std::exception const &e) {
         LuaIsRunning = false;
+        logMsg(logToAll, "FlyWithLua Error: fatal error while loading scripts!");
+        logMsg(logToDevCon, e.what());
         return false;
     }
-
-    // get time after execution
-    clock_t time_end = clock();
-
-    // write time difference and memory usage into global variables
-    if (LuaIsRunning)
-    {
-        lua_pushnumber(FWLLua, (double) (time_end - time_start) / CLOCKS_PER_SEC);
-        lua_setglobal(FWLLua, "SCRIPTS_LOADING_TIME_SEC");
-        lua_pushnumber(FWLLua, CLOCKS_PER_SEC);
-        lua_setglobal(FWLLua, "CLOCKS_PER_SEC");
-        logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
-    }
-
-    if (bad_script_count > 0)
-    {
-        XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
-        bad_script_count = 0;
-    }
-
-    std::ostringstream oss_report_loding_time;
-    oss_report_loding_time << "FlyWithLua Info: Loading time for all scripts is " << (double) (time_end - time_start) / CLOCKS_PER_SEC << " sec.";
-    auto report_loding_time = oss_report_loding_time.str();
-    logMsg(logToDevCon, report_loding_time.c_str());
-
-    return true; // snagar
 }
 
 bool ReadAllQuarantinedScriptFiles()
@@ -6866,7 +6774,7 @@ bool ReadAllQuarantinedScriptFiles()
                 // Need to move quarantined script from "Scripts (Quarantine)" to "Scripts"
                 // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
                 std::ostringstream oss_OkPathAndName;
-                oss_OkPathAndName << scriptDir << "/" << QtFileToLoad;
+                oss_OkPathAndName << ScriptsPath << "/" << QtFileToLoad;
                 auto OkPathAndName = oss_OkPathAndName.str();
 
                 Qt_result = rename(QtPathAndName.c_str(), OkPathAndName.c_str());
@@ -6884,22 +6792,9 @@ bool ReadAllQuarantinedScriptFiles()
         }
     }
 
-    return true; // snagar
+    return true;
 }
 
-
-void send_delayed_quarantined_message()
-{
-    XPLMRegisterFlightLoopCallback(DelayedQuarantinedMessage_Callback, 20, nullptr);
-}
-
-float DelayedQuarantinedMessage_Callback(float /*inElapsed1*/, float /*inElapsed2*/,
-                               int /*cntr*/, void * /*ref*/)
-{
-    speak_second_warning = 1;
-    ReadAllQuarantinedScriptFiles();
-    return 0;
-}
 
 void update_Lua_dataref_variables(XPLMDataRef DataRefID, int Index, float Value)
 {
@@ -6972,7 +6867,7 @@ PLUGIN_API int XPluginStart(
     gPlaneTailNumber           = XPLMFindDataRef("sim/aircraft/view/acf_tailnum");
 
     // Lua run numbering starts at zero (no runs) when X-Plane starts
-    LuaResetCount = 0;
+    LuaRunCount = 0;
 
     // init the menu item index
     FlyWithLuaMenuItem = -1;
@@ -7010,12 +6905,11 @@ PLUGIN_API void XPluginDisable(void)
     flwnd::deinitFloatingWindowSupport();
 
     // run through the exit script
-    if (ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: Load exit file.");
-    } else
-    {
-        logMsg(logToAll, "FlyWithLua Error: Unable to load exit file.");
+    try {
+        runtime::ExecFile(FWLLua, "Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit", runtime::NO_QUARANTINE);
+    } catch(std::exception const& e) {
+        logMsg(logToAll, "FlyWithLua Error: Unable to execute exit file.");
+        logMsg(logToAll, e.what());
     }
 
     // close Lua
@@ -7203,7 +7097,7 @@ PLUGIN_API int XPluginEnable(void)
     luaL_openlibs(FWLLua);
 
     // reload all script files, if the plugin is re-enabled via X-Plane's plugin manager menu
-    if (LuaResetCount > 0)
+    if (LuaRunCount > 0)
     {
         ReadAllScriptFiles();
     }
@@ -7366,82 +7260,52 @@ float MyFastLoopCallback(
         int /*inCounter*/,
         void* /*inRefcon*/)
 {
-    // get time before execution
-    clock_t time_start = clock();
-
-    // stack overflow? pull the emergency brake!
-    if ((lua_gettop(FWLLua) > 100) && LuaIsRunning)
-    {
-        logMsg(logToAll, "FlyWithLua Debug Info: Stack overflow, more than 100 elements on stack.");
+    if (UserWantsANewPlane || UserWantsToReplaceAircraft || UserWantsToLoadASituation) {
+        if (UserWantsANewPlane) {
+            XPLMSetUsersAircraft(UserWantedFilename);
+        } else if (UserWantsToReplaceAircraft) {
+            XPLMPlaceUserAtAirport(UserWantedFilename);
+        } else if (UserWantsToLoadASituation) {
+            XPLMLoadDataFile(xplm_DataFile_Situation, UserWantedFilename);
+            logMsg(logToDevCon, "FlyWithLua: A situation file was loaded. Script files have to be reloaded.");
+            // FIXME: Is this redundant?
+            ReadAllScriptFiles();
+        }
+        UserWantsANewPlane = false;
+        UserWantsToLoadASituation = false;
+        UserWantsToReplaceAircraft = false;
         LuaIsRunning = false;
-    }
-    if (UserWantsANewPlane)
-    {
-        UserWantsANewPlane         = false;
-        UserWantsToLoadASituation  = false;
-        UserWantsToReplaceAircraft = false;
-        LuaIsRunning               = false;
-        XPLMSetUsersAircraft(UserWantedFilename);
         return TimeBetweenCallbacks;
     }
-    if (UserWantsToReplaceAircraft)
-    {
-        UserWantsANewPlane         = false;
-        UserWantsToLoadASituation  = false;
-        UserWantsToReplaceAircraft = false;
-        LuaIsRunning               = false;
-        XPLMPlaceUserAtAirport(UserWantedFilename);
-        return TimeBetweenCallbacks;
+
+    sol::state_view L(FWLLua);
+
+    try {
+        if (LuaIsRunning) {
+            clock_t time_start = clock();
+
+            runtime::ExecChunk(FWLLua, "DO_OFTEN_CHUNK", CallbackCommand);
+            flwnd::onFlightLoop();
+
+            // Write time difference into global variable.
+            clock_t time_end = clock();
+            L["DO_OFTEN_TIME_SEC"] = (double) (time_end - time_start) / CLOCKS_PER_SEC;
+        }
+    } catch (std::exception const &e) {
+        logMsg(logToAll, "FlyWithLua Error: fatal error in the fast loop callback!");
+        logMsg(logToDevCon, e.what());
     }
-    if (UserWantsToLoadASituation)
-    {
-        UserWantsANewPlane         = false;
-        UserWantsToLoadASituation  = false;
-        UserWantsToReplaceAircraft = false;
-        LuaIsRunning               = false;
-        XPLMLoadDataFile(xplm_DataFile_Situation, UserWantedFilename);
-        logMsg(logToDevCon, "FlyWithLua: A situation file was loaded. Script files have to be reloaded.");
-        ReadAllScriptFiles();
-        return TimeBetweenCallbacks;
-    }
-    if ((CallbackCommand.length() > 1) && LuaIsRunning)
-    {
-        RunLuaChunk("DO_OFTEN_CHUNK");
-    }
+
     if (!LuaIsRunning && !CrashReportDisplayed)
     {
-        // TODO: Reconcile this code with flywithlua::panic()
-        CrashReportDisplayed = true;
-        int StackSize = lua_gettop(FWLLua);
-        if (StackSize == 0)
-        {
-            logMsg(logToAll, "FlyWithLua Debug Info: Sorry, no debug Info on stack.");
-        } else
-        {
-            logMsg(logToAll, "FlyWithLua Debug Info: The Lua stack contains the following elements:");
-            for (auto i = 1; i <= StackSize; i++)
-            {
-                if (lua_isstring(FWLLua, i))
-                {
-                    logMsg(logToAll, lua_tostring(FWLLua, i));
-                }
-            }
+        try {
+            CrashReportDisplayed = true;
+            DebugLua();
+            runtime::ExecString(L, "FLYWITHLUA_DEBUG()", "[dbg]", runtime::NO_QUARANTINE | runtime::IGNORE_STOPPED_LUA);
+        } catch (std::exception const &e) {
+            logMsg(logToDevCon, std::string("Fatal error while trying to record debugging information: ") + e.what());
         }
-        DebugLua();
-        luaL_dostring(FWLLua, "FLYWITHLUA_DEBUG()");
     }
-
-    // get time after execution
-    clock_t time_end = clock();
-
-    // write time difference and memory usage into global variables
-    if (LuaIsRunning)
-    {
-        lua_pushnumber(FWLLua, (double) (time_end - time_start) / CLOCKS_PER_SEC);
-        lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
-    }
-
-    flwnd::onFlightLoop();
 
     return TimeBetweenCallbacks;
 }
@@ -7804,8 +7668,11 @@ int MyReloadScriptsCommandHandler(XPLMCommandRef /*inCommand*/,
 {
     if (inPhase == xplm_CommandBegin)
     {
-        ReadAllScriptFiles();
-        XPLMSpeakString("All Lua Script files loaded.");
+        if (ReadAllScriptFiles()) {
+            XPLMSpeakString("All Lua Script files loaded.");
+        } else {
+            XPLMSpeakString("An error occurred while reloading Lua. Check FlyWithLua_Debug.txt for details.");
+        }
     }
     return 0; // we resume the command
 }
@@ -7927,21 +7794,21 @@ void initPluginDirectory()
 
     systemDir.clear();
     pluginMainDir.clear();
-    scriptDir.clear();
+    ScriptsPath.clear();
     internalsDir.clear();
     modulesDir.clear();
     quarantineDir.clear();
 
     systemDir.append(path);
     pluginMainDir.append(path).append("Resources").append(dirSep).append("plugins").append(dirSep).append("FlyWithLua");
-    scriptDir.append(pluginMainDir).append(dirSep).append("Scripts");
+    ScriptsPath.append(pluginMainDir).append(dirSep).append("Scripts");
     internalsDir.append(pluginMainDir).append(dirSep).append("Internals").append(dirSep);
     modulesDir.append(pluginMainDir).append(dirSep).append("Modules").append(dirSep);
     quarantineDir.append(pluginMainDir).append(dirSep).append("Scripts (Quarantine)").append(dirSep);
 
     logMsg(logToDevCon, std::string("FlyWithLua: System Dir: ") + systemDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Dir: ") + pluginMainDir); // debug
-    logMsg(logToDevCon, std::string("FlyWithLua: Plugin Scripts Dir: ") + scriptDir); // debug
+    logMsg(logToDevCon, std::string("FlyWithLua: Plugin Scripts Dir: ") + ScriptsPath); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Internals Dir: ") + internalsDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Modules Dir: ") + modulesDir); // debug
     logMsg(logToDevCon, std::string("FlyWithLua: Plugin Scripts Quarantine Dir: ") + quarantineDir); // debug

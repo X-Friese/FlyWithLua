@@ -69,12 +69,18 @@ add_compile_options(-fvisibility=hidden)
 add_compile_options(-Wall -Wpedantic -Wshadow -Wfloat-equal -Wextra)
 add_compile_options(-Wno-unused)
 
-# Always use position-independent code and highest optimization level (FPS!).
-add_compile_options(-O3 -fPIC)
+# Always use position-independent code.
+add_compile_options(-fPIC)
+if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    # Use and highest optimization level in release builds (FPS!)
+    add_compile_options(-O3)
+else()
+    add_compile_options(-O0)
+endif()
 
 # X-Plane plugin
 # FIXME: Split this into individual targets.
-list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp)
+list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp runtime.cpp runtime.h)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/ImGUIIntegration.cpp FloatingWindows/FloatingWindow.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_lua_bindings.cpp)
 if (WIN32)
