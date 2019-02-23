@@ -115,6 +115,10 @@
  *  v2.7.11 [added]   Added menu item to move scripts from "Scripts (Quarantine)" folder to  "Scripts" folder after you have fixed issues.
  *          [added]   After 20 seconds if there are scripts in the "Scripts (Quarantine)" folder it will say and display "Please check your quarantined scripts folder".
  *  v2.7.12 [changed] Improving error reporting in Log.txt file for items I can't yet put into quarantine.
+ *  v2.7.13 [changed] Only speak once no mater how many bad scripts found.
+ *          [removed] Unneeded window ID logging info.
+ *          [added]   Throw execption after moving bad function script.
+ *          [added]   Even if no bad scripts are found on startup look in the "Scripts (Quarantine)" folder and speak if some are found.
  *
  *
  *  Markus (Teddii):
@@ -6815,6 +6819,14 @@ bool ReadAllScriptFiles()
         first_pass = 1;
         send_delayed_quarantined_message();
     }
+    if ((bad_scripts_found == 0) && (first_pass == 0))
+    {
+        bad_script_count = 0;
+        bad_scripts_found = 0;
+        first_pass = 1;
+        send_delayed_quarantined_message();
+    }
+
     return true; // snagar
 }
 
