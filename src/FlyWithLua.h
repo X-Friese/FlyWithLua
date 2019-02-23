@@ -30,8 +30,12 @@ void CopyDataRefsToXPlane( void );
 void panic(const std::string& message);
 
 extern bool LuaIsRunning;                       // Are we working with Lua?
+extern bool AutoRestartLua;
 extern bool WeAreNotInDrawingState;
 extern lua_State   *FWLLua;
+
+extern std::string ScriptsPath;
+extern std::string quarantineDir;
 }
 
 #endif
