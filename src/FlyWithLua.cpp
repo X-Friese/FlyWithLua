@@ -1158,7 +1158,7 @@ int FWLCommandCallback(
     }
     if (CommandNumber == -1) // no Lua Command found
     {
-        logMsg(logToAll, "FlyWithLua Error: Somebody has stolen a command. Ask your admin or call the police!");
+        logMsg(logToDevCon, "FlyWithLua Error: Somebody has stolen a command. Ask your admin or call the police!");
         LuaIsRunning = false;
         return 1;
     }
@@ -1527,7 +1527,7 @@ static int Luahid_open(lua_State* L)
 
     if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: hid_open() need two numbers as arguments.");
+        logMsg(logToDevCon, "FlyWithLua Error: hid_open() need two numbers as arguments.");
         LuaIsRunning = false;
         lua_pushnil(L);
         return 1;
@@ -1537,7 +1537,7 @@ static int Luahid_open(lua_State* L)
     id = luaL_checkinteger(L, 1);
     if (id < 0 || id > 0xFFFF)
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong argument range for hid_open().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong argument range for hid_open().");
         LuaIsRunning = false;
         lua_pushnil(L);
         return 1;
@@ -1547,7 +1547,7 @@ static int Luahid_open(lua_State* L)
     id = luaL_checkinteger(L, 2);
     if (id < 0 || id > 0xFFFF)
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong argument range for hid_open().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong argument range for hid_open().");
         LuaIsRunning = false;
         lua_pushnil(L);
         return 1;
@@ -1557,7 +1557,7 @@ static int Luahid_open(lua_State* L)
     // space enough in the sloppy table?
     if (++LAST_SLOPPY_HID >= MAXHIDDEVICES)
     {
-        logMsg(logToAll, "FlyWithLua Error: Max devices to be open at the same time reached.");
+        logMsg(logToDevCon, "FlyWithLua Error: Max devices to be open at the same time reached.");
         LuaIsRunning = false;
         lua_pushnil(L);
         LAST_SLOPPY_HID--;
@@ -1591,7 +1591,7 @@ static int Luahid_open_path(lua_State* L)
 
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong argument for hid_open_path().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong argument for hid_open_path().");
         LuaIsRunning = false;
         lua_pushnil(L);
         return 1;
@@ -1600,7 +1600,7 @@ static int Luahid_open_path(lua_State* L)
     // space enough in the sloppy table?
     if (++LAST_SLOPPY_HID >= MAXHIDDEVICES)
     {
-        logMsg(logToAll, "FlyWithLua Error: Max devices to be open at the same time reached.");
+        logMsg(logToDevCon, "FlyWithLua Error: Max devices to be open at the same time reached.");
         LuaIsRunning = false;
         lua_pushnil(L);
         LAST_SLOPPY_HID--;
@@ -1649,7 +1649,7 @@ static int Luahid_close(lua_State* L)
         return 0;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_close().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_close().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1664,7 +1664,7 @@ static int Luahid_write(lua_State* L)
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_write().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_write().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1672,7 +1672,7 @@ static int Luahid_write(lua_State* L)
     int noa = lua_gettop(L);  // number of arguments
     if (noa > USB_STR_MAXLEN)
     {
-        logMsg(logToAll, "FlyWithLua Error: Too many arguments to function hid_write().");
+        logMsg(logToDevCon, "FlyWithLua Error: Too many arguments to function hid_write().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1685,7 +1685,7 @@ static int Luahid_write(lua_State* L)
     int result = hid_write((hid_device*) lua_touserdata(L, 1), BlockToWrite, static_cast<size_t>(noa - 1));
     if (result == -1)
     {
-        logMsg(logToAll, "FlyWithLua Error: hid_write() failed.");
+        logMsg(logToDevCon, "FlyWithLua Error: hid_write() failed.");
         LuaIsRunning = false;
     }
     lua_pushnumber(L, result);
@@ -1701,7 +1701,7 @@ static int Luahid_read_timeout(lua_State* L)
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_read_timeout().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_read_timeout().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1709,7 +1709,7 @@ static int Luahid_read_timeout(lua_State* L)
     auto nov = static_cast<int>(lua_tonumber(L, 2));  // number of values wanted
     if ((nov >= USB_STR_MAXLEN) || (nov < 1))
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: Sorry, hid_read_timeout() can not handle the number of values you want to get.");
         LuaIsRunning = false;
         return 0;
@@ -1742,7 +1742,7 @@ static int Luahid_read(lua_State* L)
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_read().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_read().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1750,7 +1750,7 @@ static int Luahid_read(lua_State* L)
     auto nov = static_cast<int>(lua_tonumber(L, 2));  // number of values wanted
     if ((nov >= USB_STR_MAXLEN) || (nov < 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Sorry, hid_read() can not handle the number of values you want to get.");
+        logMsg(logToDevCon, "FlyWithLua Error: Sorry, hid_read() can not handle the number of values you want to get.");
         LuaIsRunning = false;
         return 0;
     }
@@ -1780,7 +1780,7 @@ static int Luahid_set_nonblocking(lua_State* L)
     // check arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_set_nonblocking().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_set_nonblocking().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1792,7 +1792,7 @@ static int Luahid_set_nonblocking(lua_State* L)
         return 1;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: The second argument to function hid_set_nonblocking() must be 1 or 0.");
+        logMsg(logToDevCon, "FlyWithLua Error: The second argument to function hid_set_nonblocking() must be 1 or 0.");
         LuaIsRunning = false;
         return 0;
     }
@@ -1809,7 +1809,7 @@ static int Luahid_send_feature_report(lua_State* L)
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_send_feature_report().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_send_feature_report().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1817,7 +1817,7 @@ static int Luahid_send_feature_report(lua_State* L)
     int noa = lua_gettop(L);  // number of arguments
     if (noa > USB_STR_MAXLEN)
     {
-        logMsg(logToAll, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
+        logMsg(logToDevCon, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1831,7 +1831,7 @@ static int Luahid_send_feature_report(lua_State* L)
                                               static_cast<size_t>(noa - 1));
     if (result == -1)
     {
-        logMsg(logToAll, "FlyWithLua Error: hid_send_feature_report() failed.");
+        logMsg(logToDevCon, "FlyWithLua Error: hid_send_feature_report() failed.");
         LuaIsRunning = false;
     }
     lua_pushnumber(L, result);
@@ -1849,7 +1849,7 @@ static int Luahid_send_filled_feature_report(lua_State* L)
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_send_feature_report().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_send_feature_report().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1857,7 +1857,7 @@ static int Luahid_send_filled_feature_report(lua_State* L)
     int noa = lua_gettop(L);  // number of arguments
     if ((noa - 1 > USB_STR_MAXLEN) || (luaL_checknumber(L, 3) > USB_STR_MAXLEN))
     {
-        logMsg(logToAll, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
+        logMsg(logToDevCon, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1871,7 +1871,7 @@ static int Luahid_send_filled_feature_report(lua_State* L)
                                               static_cast<size_t>(luaL_checknumber(L, 3)));
     if (result == -1)
     {
-        logMsg(logToAll, "FlyWithLua Error: hid_send_feature_report() failed.");
+        logMsg(logToDevCon, "FlyWithLua Error: hid_send_feature_report() failed.");
         LuaIsRunning = false;
     }
     lua_pushnumber(L, result);
@@ -1889,7 +1889,7 @@ static int Luahid_get_feature_report(lua_State* L)
     // check minimum arguments
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function hid_get_feature_report().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function hid_get_feature_report().");
         LuaIsRunning = false;
         return 0;
     }
@@ -1897,7 +1897,7 @@ static int Luahid_get_feature_report(lua_State* L)
     auto nov = static_cast<int>(lua_tonumber(L, 2));  // number of values wanted
     if ((nov >= USB_STR_MAXLEN) || (nov < 1))
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: Sorry, hid_get_feature_report() can not handle the number of values you want to get.");
         LuaIsRunning = false;
         return 0;
@@ -2004,7 +2004,7 @@ void PushDataRefToLuaVariable(char* VariableWantedCString,
     }
 
 
-    logMsg(logToAll,
+    logMsg(logToDevCon,
            std::string("FlyWithLua Error: The type of the DataRef variable \"").append(VariableWantedCString).append(
                    "\" is unknown or impossible."));
     LuaIsRunning = false;
@@ -2189,7 +2189,7 @@ static int LuaDrawString(lua_State* L)
 
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: draw_string() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -2197,7 +2197,7 @@ static int LuaDrawString(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to draw_string().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2243,7 +2243,7 @@ static int LuaDrawStringHelv18(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: draw_string_Helvetica_18() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -2253,7 +2253,7 @@ static int LuaDrawStringHelv18(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_18().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_18().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2282,7 +2282,7 @@ static int LuaDrawStringHelv12(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: draw_string_Helvetica_12() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -2292,7 +2292,7 @@ static int LuaDrawStringHelv12(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_12().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_12().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2321,7 +2321,7 @@ static int LuaDrawStringHelv10(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: draw_string_Helvetica_10() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -2331,7 +2331,7 @@ static int LuaDrawStringHelv10(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_10().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to draw_string_Helvetica_10().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2360,7 +2360,7 @@ static int LuaDrawStringTimes10(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: draw_string_Times_Roman_10() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -2370,7 +2370,7 @@ static int LuaDrawStringTimes10(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Times_Roman_10().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to draw_string_Times_Roman_10().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2399,7 +2399,7 @@ static int LuaDrawStringTimes24(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: draw_string_Times_Roman_24() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -2409,7 +2409,7 @@ static int LuaDrawStringTimes24(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isstring(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to draw_string_Times_Roman_24().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to draw_string_Times_Roman_24().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2440,7 +2440,7 @@ static int LuaMeasureString(lua_State* L)
     // output:     float:  length of string in screen pixel
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments given to measure_string().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to measure_string().");
         LuaIsRunning = false;
         return 0;
     }
@@ -2510,7 +2510,7 @@ static int LuaCommandOnce(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string for CommandOnce.");
+        logMsg(logToDevCon, "FlyWithLua Error: nothing to do. You will have to give a string for CommandOnce.");
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
@@ -2518,7 +2518,7 @@ static int LuaCommandOnce(lua_State* L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == nullptr)
     {
-        logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append(
+        logMsg(logToDevCon, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append(
                 "\" is unknown."));
         return 0;
     }
@@ -2530,7 +2530,7 @@ static int LuaCommandBegin(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string for CommandBegin.");
+        logMsg(logToDevCon, "FlyWithLua Error: nothing to do. You will have to give a string for CommandBegin.");
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
@@ -2538,7 +2538,7 @@ static int LuaCommandBegin(lua_State* L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == nullptr)
     {
-        logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append(
+        logMsg(logToDevCon, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append(
                 "\" is unknown."));
         return 0;
     }
@@ -2550,7 +2550,7 @@ static int LuaCommandEnd(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: nothing to do. You will have to give a string for CommandEnd.");
+        logMsg(logToDevCon, "FlyWithLua Error: nothing to do. You will have to give a string for CommandEnd.");
         return 0;
     }
     char LuaWantsToDo[NORMALSTRING];
@@ -2558,7 +2558,7 @@ static int LuaCommandEnd(lua_State* L)
     XPLMCommandRef CommandId = XPLMFindCommand(LuaWantsToDo);
     if (CommandId == nullptr)
     {
-        logMsg(logToAll, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append(
+        logMsg(logToDevCon, std::string("FlyWithLua Error: nothing to do. The command \"").append(LuaWantsToDo).append(
                 "\" is unknown."));
         return 0;
     }
@@ -2602,7 +2602,7 @@ static int LuaAddMacro(lua_State* L)
     }
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong parameters to AddMacro function.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong parameters to AddMacro function.");
         return 0;
     }
     std::string MacroName = lua_tostring(L, 1);
@@ -2625,7 +2625,7 @@ static int LuaAddATCMacro(lua_State* L)
     // ATC Menu Entries are never checkable
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong parameters to AddATCMacro function.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong parameters to AddATCMacro function.");
         return 0;
     }
     std::string MacroName = lua_tostring(L, 1);
@@ -2641,7 +2641,7 @@ static int LuaActivateMacro(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Your argument is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: Your argument is not a string.");
         return 0;
     }
     if (MacroTableLastElement < 0) return 0;
@@ -2661,7 +2661,7 @@ static int LuaDeactivateMacro(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Your argument is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: Your argument is not a string.");
         return 0;
     }
     if (MacroTableLastElement < 0) return 0;
@@ -2697,7 +2697,7 @@ static int LuaDoEveryKeystroke(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryKeystroke command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoEveryKeystroke command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2710,7 +2710,7 @@ static int LuaDoEveryMouseClick(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2723,7 +2723,7 @@ static int LuaDoEveryMouseWheel(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoEveryMouseClick command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2736,7 +2736,7 @@ static int LuaDoEveryDrawCallback(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryDrawCallback command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoEveryDrawCallback command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2749,7 +2749,7 @@ static int LuaDoEveryMETARCallback(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryMETARCallback command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoEveryMETARCallback command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2762,7 +2762,7 @@ static int LuaDoOnNewXSBTextCallback(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoOnNewXSBTextCallback command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoOnNewXSBTextCallback command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2775,7 +2775,7 @@ static int LuaDoEveryFrame(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoEveryFrame command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoEveryFrame command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2788,7 +2788,7 @@ static int LuaDoOften(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoOften command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoOften command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2801,7 +2801,7 @@ static int LuaDoSometimes(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong thing to do? Your DoSometimes command is not a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong thing to do? Your DoSometimes command is not a string.");
         return 0;
     }
     std::string LuaShouldDoCommand = lua_tostring(L, 1);
@@ -2844,14 +2844,14 @@ static int LuaSetButtonAssignment(lua_State* L)
     char CommandWanted[NORMALSTRING];
     if (!(lua_isstring(L, 2) && lua_isnumber(FWLLua, 1)))
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: wrong argument types. We need a string and an integer to set a button assignment.");
         return 0;
     }
     auto ButtonNumber = static_cast<int>(lua_tointeger(L, 1));
     if (ButtonNumber < 0 || ButtonNumber > 3199)
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong argument range. Button number has to be from 0 to 3199.");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong argument range. Button number has to be from 0 to 3199.");
         return 0;
     }
     strncpy(CommandWanted, lua_tostring(L, 2), sizeof(CommandWanted));
@@ -2886,7 +2886,7 @@ static int LuaSetAxisAssignment(lua_State* L)
     int CommandRefIdWanted = 0;
     if (!(lua_isstring(L, 3) && lua_isstring(L, 2) && lua_isnumber(FWLLua, 1)))
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: wrong argument types. We need two strings and an integer to set an axis assignment.");
         return 0;
     }
@@ -2894,12 +2894,12 @@ static int LuaSetAxisAssignment(lua_State* L)
 
     if ((AxisNumber < 0 || AxisNumber > 99) && (VersionXP < 11000))
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: wrong argument range. Before X-Plane 11 axis number has to be from 0 to 99.");
         return 0;
     } else if (AxisNumber < 0 || AxisNumber > 499)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: wrong argument range. Since X-Plane 11 axis number has to be from 0 to 499.");
         return 0;
     }
@@ -3052,7 +3052,7 @@ static int LuaLastButton(lua_State* L)
 {
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: function last_button() needs an integer argument.");
+        logMsg(logToDevCon, "FlyWithLua Error: function last_button() needs an integer argument.");
         LuaIsRunning = false;
         return 0;  // this will force Lua to crash...
     }
@@ -3067,7 +3067,7 @@ static int LuaGet(lua_State* L)
 
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function get().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function get().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3077,7 +3077,7 @@ static int LuaGet(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3140,7 +3140,7 @@ static int LuaSet(lua_State* L)
 
     if (!(lua_isstring(L, 1) && lua_isnumber(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function set().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function set().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3150,7 +3150,7 @@ static int LuaSet(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3185,7 +3185,7 @@ static int LuaSetArray(lua_State* L)
 
     if (!(lua_isstring(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function set_array().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function set_array().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3196,7 +3196,7 @@ static int LuaSetArray(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3225,7 +3225,7 @@ static int LuaGetDataRefBinding(lua_State* L)
 
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong argument to function get_dataref_binding().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong argument to function get_dataref_binding().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3257,7 +3257,7 @@ static int LuaDefineSharedDataRef(lua_State* L)
 
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function define_shared_DataRef().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function define_shared_DataRef().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3267,7 +3267,7 @@ static int LuaDefineSharedDataRef(lua_State* L)
     // check if the name is okay
     if (strncmp(DataRefNameWanted, "sim/", 4) == 0)
     {
-        logMsg(logToAll, "FlyWithLua Error: You are not allowed to define a shared DataRef starting with \"sim/\".");
+        logMsg(logToDevCon, "FlyWithLua Error: You are not allowed to define a shared DataRef starting with \"sim/\".");
         LuaIsRunning = false;
         return 0;
     }
@@ -3293,10 +3293,10 @@ static int LuaDefineSharedDataRef(lua_State* L)
         XPLMDataRefTypeWanted = xplmType_Data;
     } else
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: Unknown type for the shared DataRef \"").append(DataRefNameWanted).append(
                        "\"."));
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: We do not know what \"").append(DataRefTypeWanted).append("\" is."));
         LuaIsRunning = false;
         return 0;
@@ -3305,7 +3305,7 @@ static int LuaDefineSharedDataRef(lua_State* L)
     // share the data
     if (XPLMShareData(DataRefNameWanted, XPLMDataRefTypeWanted, nullptr, nullptr) == 0)
     {
-        logMsg(logToAll, std::string("FlyWithLua Error: Wrong type for the existing shared DataRef \"").append(
+        logMsg(logToDevCon, std::string("FlyWithLua Error: Wrong type for the existing shared DataRef \"").append(
                 DataRefNameWanted).append("\"."));
         LuaIsRunning = false;
         return 0;
@@ -3332,7 +3332,7 @@ static int LuaDataRef(lua_State* L)
 
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function DataRef().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function DataRef().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3370,7 +3370,7 @@ static int LuaDataRef(lua_State* L)
                     // everything is fine?
                     if (IndexWanted != DataRefTable[i].Index)
                     {
-                        logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append(
+                        logMsg(logToDevCon, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append(
                                 "\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append(
                                 "\", but the index is different."));
                         LuaIsRunning = false;
@@ -3381,7 +3381,7 @@ static int LuaDataRef(lua_State* L)
                     }
                 } else
                 {
-                    logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append(
+                    logMsg(logToDevCon, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append(
                             "\" is still defined as DataRef \"").append(DataRefTable[i].DataRefName).append("\"."));
                     LuaIsRunning = false;
                     return 0;
@@ -3404,7 +3404,7 @@ static int LuaDataRef(lua_State* L)
                        "FlyWithLua Info: As long as only one variable wants writable access to the DataRef, it is okay (but you loose performance).");
                 if (ReadOnlyWanted == 0 && !DataRefTable[i].IsReadOnly)
                 {
-                    logMsg(logToAll, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append(
+                    logMsg(logToDevCon, std::string("FlyWithLua Error: The variable \"").append(VariableWanted).append(
                             "\" wants to write a DataRef, that is already handled by another variable."));
                     LuaIsRunning = false;
                     return 0;
@@ -3417,7 +3417,7 @@ static int LuaDataRef(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3427,13 +3427,13 @@ static int LuaDataRef(lua_State* L)
     {
         if (!lua_isnumber(L, 4))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef \"").append(DataRefWanted).append(
                     "\" should have an index. I set it to 0."));
         }
     }
     if (ReadOnlyWanted == 0 && XPLMCanWriteDataRef(DataRefIdWanted) == 0)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" is not writeable."));
         LuaIsRunning = false;
         return 0;
@@ -3442,7 +3442,7 @@ static int LuaDataRef(lua_State* L)
     // add it to the table
     if (++DataRefTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more DataRefs than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more DataRefs than I can handle!");
         LuaIsRunning            = false;
         DataRefTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3469,7 +3469,7 @@ static int LuaCreateSwitch(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_switch().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_switch().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3490,7 +3490,7 @@ static int LuaCreateSwitch(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3500,7 +3500,7 @@ static int LuaCreateSwitch(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -3508,7 +3508,7 @@ static int LuaCreateSwitch(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3542,7 +3542,7 @@ static int LuaCreateAxisMedian(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_axis_median().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_axis_median().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3560,7 +3560,7 @@ static int LuaCreateAxisMedian(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3584,7 +3584,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_positive_edge_trigger().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_positive_edge_trigger().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3605,7 +3605,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3615,7 +3615,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -3623,7 +3623,7 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3651,7 +3651,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_positive_edge_trigger().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_positive_edge_trigger().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3672,7 +3672,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3682,7 +3682,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -3690,7 +3690,7 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3718,7 +3718,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_positive_edge_increment().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_positive_edge_increment().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3739,7 +3739,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3749,7 +3749,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -3757,7 +3757,7 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3801,7 +3801,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_positive_edge_increment().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_positive_edge_increment().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3822,7 +3822,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3832,7 +3832,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -3840,7 +3840,7 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3884,7 +3884,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_positive_edge_increment().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_positive_edge_increment().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3905,7 +3905,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -3915,7 +3915,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -3923,7 +3923,7 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -3970,7 +3970,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_negative_edge_increment().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_negative_edge_increment().");
         LuaIsRunning = false;
         return 0;
     }
@@ -3991,7 +3991,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -4001,7 +4001,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -4009,7 +4009,7 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -4056,7 +4056,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_positive_edge_decrement().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_positive_edge_decrement().");
         LuaIsRunning = false;
         return 0;
     }
@@ -4077,7 +4077,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -4087,7 +4087,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -4095,7 +4095,7 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -4142,7 +4142,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
 
     if (!(lua_isnumber(L, 1) && lua_isstring(L, 2)))
     {
-        logMsg(logToAll, "FlyWithLua Error: wrong arguments to function create_negative_edge_decrement().");
+        logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function create_negative_edge_decrement().");
         LuaIsRunning = false;
         return 0;
     }
@@ -4163,7 +4163,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                std::string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" does not exist."));
         LuaIsRunning = false;
         return 0;
@@ -4173,7 +4173,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     {
         if (!lua_isnumber(L, 3))
         {
-            logMsg(logToAll, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
+            logMsg(logToDevCon, std::string("FlyWithLua Warning: The DataRef ").append(DataRefWanted).append(
                     " should have an index. I set it to 0."));
         }
     }
@@ -4181,7 +4181,7 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     // add it to the table
     if (++SwitchTableLastElement >= MAXDATAREFS)
     {
-        logMsg(logToAll, "FlyWithLua Error: You want more switches than I can handle!");
+        logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
         SwitchTableLastElement = MAXDATAREFS - 1;
     } else
@@ -4226,7 +4226,7 @@ static int LuaSetPilotsHead(lua_State* L)
 {
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5)))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function set_pilots_head().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function set_pilots_head().");
         LuaIsRunning = false;
         return 0;
     }
@@ -4262,7 +4262,7 @@ static int LuaXPLMSetGraphicsState(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: XPLMSetGraphicsState() cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4271,7 +4271,7 @@ static int LuaXPLMSetGraphicsState(lua_State* L)
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5) &&
           lua_isnumber(L, 6) && lua_isnumber(L, 7)))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetGraphicsState.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetGraphicsState.");
         LuaIsRunning = false;
     }
     XPLMSetGraphicsState(static_cast<int>(lua_tointeger(L, 1)), static_cast<int>(lua_tointeger(L, 2)),
@@ -4289,7 +4289,7 @@ static int LuaglBegin_POINTS(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4303,7 +4303,7 @@ static int LuaglBegin_LINES(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4317,7 +4317,7 @@ static int LuaglBegin_LINE_STRIP(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4331,7 +4331,7 @@ static int LuaglBegin_LINE_LOOP(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4345,7 +4345,7 @@ static int LuaglBegin_POLYGON(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4359,7 +4359,7 @@ static int LuaglBegin_TRIANGLES(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4373,7 +4373,7 @@ static int LuaglBegin_TRIANGLE_STRIP(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4387,7 +4387,7 @@ static int LuaglBegin_TRIANGLE_FAN(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4401,7 +4401,7 @@ static int LuaglBegin_QUADS(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4415,7 +4415,7 @@ static int LuaglBegin_QUAD_STRIP(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4429,7 +4429,7 @@ static int LuaglEnd(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4443,7 +4443,7 @@ static int LuaglVertex2f(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4459,7 +4459,7 @@ static int LuaglVertex3f(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4476,7 +4476,7 @@ static int LuaglLineWidth(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4491,7 +4491,7 @@ static int LuaglColor3f(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4508,7 +4508,7 @@ static int LuaglColor4f(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4526,7 +4526,7 @@ static int LuaglRectf(lua_State* L)
 {
     if (WeAreNotInDrawingState)
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: An OpenGL function cannot be executed outside a drawing loopback. Put the function call inside the do_every_draw() string argument to solve this issue.");
         LuaIsRunning = false;
         return 0;
@@ -4570,7 +4570,7 @@ static int LuaXPLMFindFirstNavAidOfType(lua_State* L)
         NavType = static_cast<int>(lua_tointeger(L, 1));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMFindFirstNavAidOfType.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMFindFirstNavAidOfType.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4586,7 +4586,7 @@ static int LuaXPLMFindLastNavAidOfType(lua_State* L)
         NavType = static_cast<int>(lua_tointeger(L, 1));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMFindLastNavAidOfType.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMFindLastNavAidOfType.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4602,7 +4602,7 @@ static int LuaXPLMGetNextNavAid(lua_State* L)
         NavID = static_cast<int>(lua_tointeger(L, 1));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetNextNavAid.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetNextNavAid.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4687,7 +4687,7 @@ static int LuaXPLMGetNavAidInfo(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetNavAidInfo.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetNavAidInfo.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4729,7 +4729,7 @@ static int LuaXPLMSetDisplayedFMSEntry(lua_State* L)
 {
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDisplayedFMSEntry.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDisplayedFMSEntry.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4741,7 +4741,7 @@ static int LuaXPLMSetDestinationFMSEntry(lua_State* L)
 {
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDestinationFMSEntry.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDestinationFMSEntry.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4753,7 +4753,7 @@ static int LuaXPLMClearFMSEntry(lua_State* L)
 {
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMClearFMSEntry.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMClearFMSEntry.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4765,7 +4765,7 @@ static int LuaXPLMSetFMSEntryLatLon(lua_State* L)
 {
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4)))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetFMSEntryLatLon.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetFMSEntryLatLon.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4778,7 +4778,7 @@ static int LuaXPLMSetFMSEntryInfo(lua_State* L)
 {
     if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3)))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetFMSEntryInfo.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetFMSEntryInfo.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4790,7 +4790,7 @@ static int LuaXPLMGetFMSEntryInfo(lua_State* L)
 {
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetFMSEntryInfo.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetFMSEntryInfo.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4841,7 +4841,7 @@ static int LuaXPLMGetDatai(lua_State* L)
         lua_pushnumber(L, XPLMGetDatai(lua_touserdata(L, 1)));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetDatai.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetDatai.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4855,7 +4855,7 @@ static int LuaXPLMGetDataf(lua_State* L)
         lua_pushnumber(L, XPLMGetDataf(lua_touserdata(L, 1)));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetDataf.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetDataf.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4869,7 +4869,7 @@ static int LuaXPLMGetDatad(lua_State* L)
         lua_pushnumber(L, XPLMGetDatad(lua_touserdata(L, 1)));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetDatad.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetDatad.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4885,7 +4885,7 @@ static int LuaXPLMGetDatavf(lua_State* L)
         auto StartFrom            = static_cast<int>(lua_tointeger(L, 2));
         if (inMax > 100)
         {
-            logMsg(logToAll, "FlyWithLua Error: Can't handle more than 100 values in function XPLMGetDatavf.");
+            logMsg(logToDevCon, "FlyWithLua Error: Can't handle more than 100 values in function XPLMGetDatavf.");
             LuaIsRunning = false;
             return 0;
         }
@@ -4900,7 +4900,7 @@ static int LuaXPLMGetDatavf(lua_State* L)
         return 1;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetDatavf.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetDatavf.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4915,7 +4915,7 @@ static int LuaXPLMGetDatavi(lua_State* L)
         auto StartFrom          = static_cast<int>(lua_tointeger(L, 2));
         if (inMax > 100)
         {
-            logMsg(logToAll, "FlyWithLua Error: Can't handle more than 100 values in function XPLMGetDatavi.");
+            logMsg(logToDevCon, "FlyWithLua Error: Can't handle more than 100 values in function XPLMGetDatavi.");
             LuaIsRunning = false;
             return 0;
         }
@@ -4930,7 +4930,7 @@ static int LuaXPLMGetDatavi(lua_State* L)
         return 1;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMGetDatavi.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMGetDatavi.");
         LuaIsRunning = false;
         return 0;
     }
@@ -4944,7 +4944,7 @@ static int LuaXPLMSetDatai(lua_State* L)
         update_Lua_dataref_variables(lua_touserdata(L, 1), 0, static_cast<float>(lua_tonumber(L, 2)));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDatai.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDatai.");
         LuaIsRunning = false;
     }
     return 0;
@@ -4958,7 +4958,7 @@ static int LuaXPLMSetDataf(lua_State* L)
         update_Lua_dataref_variables(lua_touserdata(L, 1), 0, static_cast<float>(lua_tonumber(L, 2)));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDataf.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDataf.");
         LuaIsRunning = false;
     }
     return 0;
@@ -4972,7 +4972,7 @@ static int LuaXPLMSetDatad(lua_State* L)
         update_Lua_dataref_variables(lua_touserdata(L, 1), 0, static_cast<float>(lua_tonumber(L, 2)));
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDatad.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDatad.");
         LuaIsRunning = false;
     }
     return 0;
@@ -4988,7 +4988,7 @@ static int LuaXPLMSetDatavi(lua_State* L)
         XPLMDataRef DataRefWanted       = lua_touserdata(L, 1);
         if (inMax > 100)
         {
-            logMsg(logToAll, "FlyWithLua Error: Can't handle more than 100 values in function XPLMSetDatavi.");
+            logMsg(logToDevCon, "FlyWithLua Error: Can't handle more than 100 values in function XPLMSetDatavi.");
             LuaIsRunning = false;
             return 0;
         }
@@ -5005,7 +5005,7 @@ static int LuaXPLMSetDatavi(lua_State* L)
         return 0;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDatavi.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDatavi.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5021,7 +5021,7 @@ static int LuaXPLMSetDatavf(lua_State* L)
         XPLMDataRef DataRefWanted       = lua_touserdata(L, 1);
         if (inMax > 100)
         {
-            logMsg(logToAll, "FlyWithLua Error: Can't handle more than 100 values in function XPLMSetDatavf.");
+            logMsg(logToDevCon, "FlyWithLua Error: Can't handle more than 100 values in function XPLMSetDatavf.");
             LuaIsRunning = false;
             return 0;
         }
@@ -5038,7 +5038,7 @@ static int LuaXPLMSetDatavf(lua_State* L)
         return 0;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function XPLMSetDatavf.");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMSetDatavf.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5055,7 +5055,7 @@ static int LuaXPLMGetDataRefTypes(lua_State* L)
         return 1;
     } else
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: Wrong argument to function XPLMGetDataRefTypes, expecting a single userdata as a reference.");
         LuaIsRunning = false;
         return 0;
@@ -5246,7 +5246,7 @@ static int Luapeek(lua_State* L)
         }
     } else
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: Wrong argument to function peek, expecting a userdata as a reference, the type of the DataRef and an index.");
         LuaIsRunning = false;
         return 0;
@@ -5308,7 +5308,7 @@ static int Luapoke(lua_State* L)
         }
     } else
     {
-        logMsg(logToAll,
+        logMsg(logToDevCon,
                "FlyWithLua Error: Wrong argument to function poke, expecting a userdata as a reference, the type of the DataRef, an index and the value to set.");
         LuaIsRunning = false;
         return 0;
@@ -5336,19 +5336,19 @@ static int LuaCreateCommand(lua_State* L)
     // usage: create_command( "name", "description", "begin command", "continue command", "end command" )
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2) && lua_isstring(L, 3) && lua_isstring(L, 4) && lua_isstring(L, 5)))
     {
-        logMsg(logToAll, "FlyWithLua Error: Wrong arguments to function create_command().");
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function create_command().");
         LuaIsRunning = false;
         return 0;
     }
     if (++CommandTableLastElement >= MAXCOMMANDS)
     {
-        logMsg(logToAll, "FlyWithLua Error: Too much functions create_command().");
+        logMsg(logToDevCon, "FlyWithLua Error: Too much functions create_command().");
         LuaIsRunning = false;
         return 0;
     }
     if (strncmp(lua_tostring(L, 1), "sim/", 4) == 0)
     {
-        logMsg(logToAll, "FlyWithLua Error: Custom commands are prohibited to start with \"sim/\".");
+        logMsg(logToDevCon, "FlyWithLua Error: Custom commands are prohibited to start with \"sim/\".");
         LuaIsRunning = false;
         return 0;
     }
@@ -5414,7 +5414,7 @@ static int LuaLoadWAVFile(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing filename of WAV file to load. You will have to give a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing filename of WAV file to load. You will have to give a string.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5422,7 +5422,7 @@ static int LuaLoadWAVFile(lua_State* L)
     strncpy(FileNameToLoad, lua_tostring(L, 1), sizeof(FileNameToLoad));
     if (++OpenALTableLastElement >= MAXSOUNDS)
     {
-        logMsg(logToAll, "FlyWithLua Error: Too much sounds to handle.");
+        logMsg(logToDevCon, "FlyWithLua Error: Too much sounds to handle.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5463,14 +5463,14 @@ static int LuaPlaySound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Play Sound source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Play Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Play Sound source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Play Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5484,14 +5484,14 @@ static int LuaStopSound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Stop Sound source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Stop Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Stop Sound source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Stop Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5505,14 +5505,14 @@ static int LuaRewindSound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Rewind Sound source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Rewind Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Rewind Sound source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Rewind Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5526,14 +5526,14 @@ static int LuaPauseSound(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Pause Sound source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Pause Sound source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Pause Sound source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Pause Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5547,20 +5547,20 @@ static int LuaLetSoundLoop(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Let Sound Loop source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Let Sound Loop source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Let Sound Loop source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Let Sound Loop source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
     if (!lua_isboolean(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing boolean value if sound should loop.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing boolean value if sound should loop.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5584,20 +5584,20 @@ static int LuaSetSoundPitch(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Set Sound Pitch source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Set Sound Pitch source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Set Sound Pitch source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Set Sound Pitch source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
     if (!lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing float value to set the sound pitch.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing float value to set the sound pitch.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5609,7 +5609,7 @@ static int LuaSetSoundPitch(lua_State* L)
         OpenALTable[SourceNo].pitch = PitchToSet;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Float value to set the sound pitch must be greater than zero.");
+        logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound pitch must be greater than zero.");
         LuaIsRunning = false;
     }
     return 0;
@@ -5621,20 +5621,20 @@ static int LuaSetSoundGain(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing Set Sound Gain source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing Set Sound Gain source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: Set Sound Gain source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: Set Sound Gain source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
     if (!lua_isnumber(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing float value to set the sound gain.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing float value to set the sound gain.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5646,7 +5646,7 @@ static int LuaSetSoundGain(lua_State* L)
         OpenALTable[SourceNo].gain = GainToSet;
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Float value to set the sound gain must be greater than zero.");
+        logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound gain must be greater than zero.");
         LuaIsRunning = false;
     }
     return 0;
@@ -5673,20 +5673,20 @@ static int LuaReplaceWAVFile(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing UnLoadAll Sounds source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing UnLoadAll Sounds source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
     {
-        logMsg(logToAll, "FlyWithLua Error: UnLoadAll Sounds source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: UnLoadAll Sounds source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
     if (!lua_isstring(L, 2))
     {
-        logMsg(logToAll, "FlyWithLua Error: Missing filename of WAV file to load. You will have to give a string.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing filename of WAV file to load. You will have to give a string.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5946,7 +5946,7 @@ void DebugLua()
 {
     time_t DebugZeit;
     time(&DebugZeit);
-    logMsg(logToAll, std::string("FlyWithLua Debug Info From Plugin: SystemPath \"").append(systemDir).append("\""));
+    logMsg(logToDevCon, std::string("FlyWithLua Debug Info From Plugin: SystemPath \"").append(systemDir).append("\""));
     std::ofstream DebugFile(systemDir + "FlyWithLua_Debug.txt");
     if (!DebugFile.is_open())
     {
@@ -6319,7 +6319,7 @@ void ResetLuaEngine()
     // run through the exit script
     if ((LuaResetCount > 0) && !ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
     {
-        logMsg(logToAll, "FlyWithLua Error: Unable to load exit file.");
+        logMsg(logToDevCon, "FlyWithLua Error: Unable to load exit file.");
     }
 
     LuaIsRunning = false;
@@ -6631,14 +6631,14 @@ bool ReadAllScriptFiles()
     oss_IntPathAndName << internalsDir << "FlyWithLua.ini";
     auto IntPathAndName = oss_IntPathAndName.str();
 
-    logMsg(logToAll, "FlyWithLua Info: FlyWithLua.ini full path ");
-    logMsg(logToAll, IntPathAndName);
+    logMsg(logToDevCon, "FlyWithLua Info: FlyWithLua.ini full path ");
+    logMsg(logToDevCon, IntPathAndName);
     if (ReadScriptFile(IntPathAndName.c_str()))
     {
         logMsg(logToDevCon, "FlyWithLua Info: Load ini file.");
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Unable to load ini file.");
+        logMsg(logToDevCon, "FlyWithLua Error: Unable to load ini file.");
         LuaIsRunning = false;
         return false;
     }
@@ -6652,9 +6652,9 @@ bool ReadAllScriptFiles()
         if (NumberOfFiles == 0)
         {
             // nothing to load, let's start Lua without reading files
-            logMsg(logToAll,
+            logMsg(logToDevCon,
                    "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts/ does not exist or it is empty.");
-            logMsg(logToAll, "FlyWithLua Info: Nothing to load at all, starting without reading files.");
+            logMsg(logToDevCon, "FlyWithLua Info: Nothing to load at all, starting without reading files.");
             CrashReportDisplayed = false;
             if (bad_script_count > 0)
             {
@@ -6663,7 +6663,7 @@ bool ReadAllScriptFiles()
                 speak_time = clock();
                 std::ostringstream oss_speak_time;
                 oss_speak_time << "FlyWithLua Info: speak_time " << speak_time;
-                logMsg(logToAll, oss_speak_time.str());
+                logMsg(logToDevCon, oss_speak_time.str());
             }
             return true;
         }
@@ -6705,7 +6705,7 @@ bool ReadAllScriptFiles()
                            ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
                 } else
                 {
-                    logMsg(logToAll, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
+                    logMsg(logToDevCon, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
                         LuaIsRunning = false;
@@ -6741,7 +6741,7 @@ bool ReadAllScriptFiles()
                 if (!LuaIsRunning)
                 {
                     XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
-                    logMsg(logToAll,
+                    logMsg(logToDevCon,
                            ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
                     if (DevMode == 2)
                     {
@@ -6777,8 +6777,8 @@ bool ReadAllScriptFiles()
 
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Can't read out the subfolder Resources/plugins/FlyWithLua/Scripts.");
-        logMsg(logToAll,
+        logMsg(logToDevCon, "FlyWithLua Error: Can't read out the subfolder Resources/plugins/FlyWithLua/Scripts.");
+        logMsg(logToDevCon,
                "FlyWithLua Info: To fix this problem, simply create the subfolder Resources/plugins/FlyWithLua/Scripts.");
         LuaIsRunning = false;
         return false;
@@ -6857,7 +6857,7 @@ bool ReadAllQuarantinedScriptFiles()
         if (NumberOfQtFiles == 1)
         {
             // nothing to load, let's start Lua without reading files
-            logMsg(logToAll,
+            logMsg(logToDevCon,
                    "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts (Quarantine)/ does not exist or it is empty.");
 
             return true;
@@ -7051,7 +7051,7 @@ PLUGIN_API void XPluginDisable(void)
         logMsg(logToDevCon, "FlyWithLua Info: Load exit file.");
     } else
     {
-        logMsg(logToAll, "FlyWithLua Error: Unable to load exit file.");
+        logMsg(logToDevCon, "FlyWithLua Error: Unable to load exit file.");
     }
 
     // close Lua
@@ -7408,7 +7408,7 @@ float MyFastLoopCallback(
     // stack overflow? pull the emergency brake!
     if ((lua_gettop(FWLLua) > 100) && LuaIsRunning)
     {
-        logMsg(logToAll, "FlyWithLua Debug Info: Stack overflow, more than 100 elements on stack.");
+        logMsg(logToDevCon, "FlyWithLua Debug Info: Stack overflow, more than 100 elements on stack.");
         LuaIsRunning = false;
     }
     if (UserWantsANewPlane)
@@ -7451,15 +7451,15 @@ float MyFastLoopCallback(
         int StackSize = lua_gettop(FWLLua);
         if (StackSize == 0)
         {
-            logMsg(logToAll, "FlyWithLua Debug Info: Sorry, no debug Info on stack.");
+            logMsg(logToDevCon, "FlyWithLua Debug Info: Sorry, no debug Info on stack.");
         } else
         {
-            logMsg(logToAll, "FlyWithLua Debug Info: The Lua stack contains the following elements:");
+            logMsg(logToDevCon, "FlyWithLua Debug Info: The Lua stack contains the following elements:");
             for (auto i = 1; i <= StackSize; i++)
             {
                 if (lua_isstring(FWLLua, i))
                 {
-                    logMsg(logToAll, lua_tostring(FWLLua, i));
+                    logMsg(logToDevCon, lua_tostring(FWLLua, i));
                 }
             }
         }
@@ -7895,7 +7895,7 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
     }
     if (!strcmp((char*) iRef, "Stop"))
     {
-        logMsg(logToAll, "FlyWithLua: Lua Engine stopped by user.");
+        logMsg(logToDevCon, "FlyWithLua: Lua Engine stopped by user.");
         LuaIsRunning = false;
         return;
     }
@@ -7949,7 +7949,7 @@ void logMsg(ELogType logType, std::string message)
 void panic(const std::string& message)
 {
     LuaIsRunning = false;
-    logMsg(logToAll, message);
+    logMsg(logToDevCon, message);
 }
 
 void initPluginDirectory()
