@@ -8,6 +8,7 @@
 #include <memory>
 #include <stdexcept>
 #include <sol.hpp>
+#include <iostream>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
@@ -15,6 +16,7 @@
 #include <GL/glext.h>
 #endif
 #include <XPLMDataAccess.h>
+#include <XPLMUtilities.h>
 #include "FLWIntegration.h"
 #include "FloatingWindow.h"
 #include "ImGUIIntegration.h"
@@ -73,7 +75,8 @@ int loadImage(const std::string&fileName) {
 
 int LuaCreateFloatingWindow(lua_State *L) {
     if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isboolean(L, 4)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: wrong arguments given to float_wnd_create.");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to float_wnd_create.");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -88,22 +91,15 @@ int LuaCreateFloatingWindow(lua_State *L) {
     try {
         if (withImgui) {
             wnd = std::make_shared<ImGUIWindow>(width, height, decoration);
-            XPLMWindowID window = wnd->getXWindow();
-            std::ostringstream oss_window_id;
-            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
-            flywithlua::logMsg(logToAll, oss_window_id.str());
         } else {
             wnd = std::make_shared<FloatingWindow>(width, height, decoration);
-            XPLMWindowID window = wnd->getXWindow();
-            std::ostringstream oss_window_id;
-            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
-            flywithlua::logMsg(logToAll, oss_window_id.str());
         }
         floatingWindows.push_back(wnd);
         lua_pushlightuserdata(L, wnd.get());
         return 1;
     } catch (const std::exception &e) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Couldn't create floating window");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Couldn't create floating window");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -111,7 +107,8 @@ int LuaCreateFloatingWindow(lua_State *L) {
 
 int LuaDestroyFloatingWindow(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: wrong arguments given to float_wnd_destroy.");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to float_wnd_destroy.");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -129,7 +126,8 @@ int LuaDestroyFloatingWindow(lua_State *L) {
 
 int LuaSetFloatingWindowTitle(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_title");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_title");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -142,7 +140,8 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
 
 int LuaSetFloatingWindowPosition(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_position");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_position");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -156,7 +155,8 @@ int LuaSetFloatingWindowPosition(lua_State *L) {
 
 int LuaLoadFloatinWindowImage(lua_State *L) {
     if (!lua_isstring(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_load_image");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_load_image");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -168,8 +168,9 @@ int LuaLoadFloatinWindowImage(lua_State *L) {
         return 1;
     } catch (const std::exception &e) {
         std::string err = std::string("FlyWithLua Error: Couldn't load image: ") + e.what() + " in " + name;
-        flywithlua::logMsg(logToAll, err);
+        flywithlua::logMsg(logToDevCon, err);
         lua_pushstring(flywithlua::FWLLua, err.c_str());
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -201,10 +202,9 @@ void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const
 
         auto on_draw = on_draw_provider();
         if (!on_draw) {
-            std::ostringstream oss_window_id;
-            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
-            flywithlua::logMsg(logToAll, oss_window_id.str());
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_ondraw");
+            // Need to find a way for this to work when we are using sol.
+            // FindAndQuarantine (L);
             return;
         }
         auto result = on_draw(sol::light<FloatingWindow>(fwnd), left, bottom);
@@ -220,7 +220,8 @@ void LuaSetOnDrawCallback(sol::light<FloatingWindow> wnd, CallbackProvider const
 
 int LuaGetXPLMWindowHandle(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_xplm_handle.");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_get_xplm_handle.");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -233,7 +234,8 @@ int LuaGetXPLMWindowHandle(lua_State *L) {
 
 int LuaGetFloatingWindowDimensions(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_get_dimensions");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_get_dimensions");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -252,7 +254,8 @@ int LuaGetFloatingWindowDimensions(lua_State *L) {
 
 int LuaFloatingWindowGetVisible(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_visible");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_get_visible");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -266,7 +269,8 @@ int LuaFloatingWindowGetVisible(lua_State *L) {
 
 int LuaFloatingWindowSetVisible(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_visible");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_visible");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -281,7 +285,8 @@ int LuaFloatingWindowSetVisible(lua_State *L) {
 
 int LuaFloatingWindowIsPopped(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_is_popped");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_is_popped");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -295,7 +300,8 @@ int LuaFloatingWindowIsPopped(lua_State *L) {
 
 int LuaFloatingWindowIsFront(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_is_front");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_is_front");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -309,7 +315,8 @@ int LuaFloatingWindowIsFront(lua_State *L) {
 
 int LuaFloatingWindowBringToFront(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_bring_to_front");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_bring_to_front");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -323,7 +330,8 @@ int LuaFloatingWindowBringToFront(lua_State *L) {
 
 int LuaFloatingWindowIsVR(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_is_vr");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_is_vr");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -337,7 +345,8 @@ int LuaFloatingWindowIsVR(lua_State *L) {
 
 int LuaSetFloatingWindowResizingLimits(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 5)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_resizing_limits");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_resizing_limits");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -351,7 +360,8 @@ int LuaSetFloatingWindowResizingLimits(lua_State *L) {
 
 int LuaSetFloatingWindowPositioningMode(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_positioning_mode");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_positioning_mode");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -365,7 +375,8 @@ int LuaSetFloatingWindowPositioningMode(lua_State *L) {
 
 int LuaSetFloatingWindowGravity(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 5)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_gravity");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_gravity");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -379,7 +390,8 @@ int LuaSetFloatingWindowGravity(lua_State *L) {
 
 int LuaGetFloatingWindowGeometry(lua_State *L) {
     if (!lua_islightuserdata(L, 1)) {
-        flywithlua::logMsg(logToAll, "FlyWithLua Error: Can't execute float_wnd_get_geometry");
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Can't execute float_wnd_get_geometry");
+        FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
         return 0;
     }
@@ -430,7 +442,8 @@ int LuaSetFloatingWindowGeometry(lua_State *L) {
         }
     }
 
-    flywithlua::logMsg(logToAll, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_geometry");
+    flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_geometry");
+    FindAndQuarantine (L);
     flywithlua::LuaIsRunning = false;
     return 0;
 }
@@ -453,11 +466,10 @@ void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_click = on_click_provider();
         if (!on_click) {
-            std::ostringstream oss_window_id;
-            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
-            flywithlua::logMsg(logToAll, oss_window_id.str());
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclick\n"
                               "FlyWithLua Error: check to see if float_wnd_set_onclick function is defined");
+            // Need to find a way for this to work when we are using sol.
+            // FindAndQuarantine (L);
             return;
         }
 
@@ -494,11 +506,10 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         auto on_close = on_close_provider();
         if (!on_close) {
-            std::ostringstream oss_window_id;
-            oss_window_id << "FlyWithLua Info: This XPLMWindowID " << window << " is for LuaCreateFloatingWindow";
-            flywithlua::logMsg(logToAll, oss_window_id.str());
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_onclose\n"
                               "FlyWithLua Error: check to see if float_wnd_set_onclose function is defined");
+            // Need to find a way for this to work when we are using sol.
+            // FindAndQuarantine (L);
             return;
         }
 
@@ -545,6 +556,8 @@ void LuaSetImguiBuilder(sol::light<FloatingWindow> fwnd, CallbackProvider const&
         auto builder = builder_provider();
         if (!builder) {
             flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_imgui_builder");
+            // Need to find a way for this to work when we are using sol.
+            // FindAndQuarantine (L);
             return;
         }
 
@@ -563,8 +576,10 @@ void LuaSetImguiBuilder(sol::light<FloatingWindow> fwnd, CallbackProvider const&
     });
 
     wnd->setErrorHandler([] (const std::string &errorMsg) {
-        flywithlua::logMsg(logToAll, "FlyWithLua imgui error: " + errorMsg);
+        flywithlua::logMsg(logToDevCon, "FlyWithLua imgui error: " + errorMsg);
         lua_pushstring(flywithlua::FWLLua, errorMsg.c_str());
+        // Need to find a way for this to work when we are using sol.
+        // FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
     });
 }
@@ -583,6 +598,8 @@ template<CallbackSetter setter>
 void LuaSetCallbackByRef(::sol::light<FloatingWindow> fwnd, ::sol::protected_function const& callback) {
     if (!callback) {
         flywithlua::panic("FlyWithLua Error: invalid or nil window builder passed to float_wnd_set_imgui_builder");
+        // Need to find a way for this to work when we are using sol..
+        // FindAndQuarantine (L);
         return;
     }
     setter(fwnd, [callback]() -> auto { return callback; });
@@ -656,6 +673,48 @@ void deinitFloatingWindowSupport() {
     if (!textureIDs.empty()) {
         glDeleteTextures(textureIDs.size(), textureIDs.data());
     }
+}
+
+bool FindAndQuarantine (lua_State *L)
+{
+    int result = 0;
+    int wait = 0;
+    lua_Debug debug;
+    // 1 here means the function which called the current function.
+    if (!lua_getstack(L, 1, &debug)) { /* Oops, panic or something... */ }
+    if (!lua_getinfo(L, "S", &debug)) { /* Oops, panic again! */ }
+
+    std::ostringstream oss_function_script_path, oss_script_name, oss_script_path_name, oss_quarantine_path_name;
+    oss_function_script_path << "FlyWithLua Info: Function Script Path From Stack " << debug.short_src;
+    std::string ScriptName = debug.short_src;
+    const size_t last_slash_idx = ScriptName.find_last_of("/");
+    if (std::string::npos != last_slash_idx)
+    {
+        ScriptName.erase(0, last_slash_idx + 1);
+    }
+    oss_script_name << "FlyWithLua Info: Function Script Name From Stack " << ScriptName;
+
+    oss_script_path_name << flywithlua::scriptDir << "/" << ScriptName;
+    std::string script_path_name = oss_script_path_name.str();
+
+    oss_quarantine_path_name << flywithlua::quarantineDir << ScriptName;
+    std::string quarantine_path_name = oss_quarantine_path_name.str();
+
+    result = rename(script_path_name.c_str(), quarantine_path_name.c_str());
+    if (result == 0)
+    {
+        flywithlua::logMsg(logToDevCon,
+               ("FlyWithLua Info: Moved Bad Script to " + quarantine_path_name));
+    }
+    else
+    {
+        flywithlua::logMsg(logToDevCon,
+               ("FlyWithLua Info: Could not move bad script to " + quarantine_path_name));
+    }
+    flywithlua::LuaIsRunning = false;
+    flywithlua::found_bad_function_script = 1;
+    throw std::logic_error(ScriptName.c_str());
+    flywithlua::DebugLua();
 }
 
 void onFlightLoop() {

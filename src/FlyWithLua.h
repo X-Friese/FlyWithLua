@@ -32,6 +32,12 @@ void panic(const std::string& message);
 extern bool LuaIsRunning;                       // Are we working with Lua?
 extern bool WeAreNotInDrawingState;
 extern lua_State   *FWLLua;
+
+extern std::string scriptDir;
+extern std::string quarantineDir;
+extern bool ReadAllScriptFiles();
+extern int found_bad_function_script;
+extern void DebugLua();
 }
 
 #endif
