@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.13 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.14 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -119,6 +119,7 @@
  *          [removed] Unneeded window ID logging info.
  *          [added]   Throw execption after moving bad function script.
  *          [added]   Even if no bad scripts are found on startup look in the "Scripts (Quarantine)" folder and speak if some are found.
+ *          [changed] Most of the logToAll to logToDevCon to prevent flooding of XSquawkBox window.
  *
  *
  *  Markus (Teddii):
@@ -2160,11 +2161,11 @@ static int LuaSpeakString(lua_State* L)
 {
     if (!lua_isstring(L, 1))
     {
-        logMsg(logToSqkBox, "FlyWithLua Error: nothing to say."); //fallback to DevCon
+        logMsg(logToDevCon, "FlyWithLua Error: nothing to say."); //fallback to DevCon
         return 0;
     }
     std::string LuaWantsToSpeak = lua_tostring(L, 1);
-    logMsg(logToSqkBox, LuaWantsToSpeak); //fallback to DevCon
+    logMsg(logToDevCon, LuaWantsToSpeak); //fallback to DevCon
     XPLMSpeakString(LuaWantsToSpeak.c_str());
     return 0;
 }
