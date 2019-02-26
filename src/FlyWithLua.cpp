@@ -120,6 +120,8 @@
  *          [added]   Throw execption after moving bad function script.
  *          [added]   Even if no bad scripts are found on startup look in the "Scripts (Quarantine)" folder and speak if some are found.
  *          [changed] Most of the logToAll to logToDevCon to prevent flooding of XSquawkBox window.
+ *  v2.7.14 [changed] from logToAll to logToDevCon for XPLMSpeakString.
+ *          [changed] If Devmode enabled do not speak or display messages about quarantine folder.
  *
  *
  *  Markus (Teddii):
@@ -6659,7 +6661,10 @@ bool ReadAllScriptFiles()
             CrashReportDisplayed = false;
             if (bad_script_count > 0)
             {
-                XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
+                if (DevMode == 1)
+                {
+                    XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
+                }
                 bad_script_count = 0;
                 speak_time = clock();
                 std::ostringstream oss_speak_time;
@@ -6814,7 +6819,10 @@ bool ReadAllScriptFiles()
 
     if ((bad_scripts_found == 1) && (first_pass == 0))
     {
-        XPLMSpeakString("\n\n\n\nfound bad lua scripts that have been quarantined look in Log dot text file for more information");
+        if (DevMode == 1)
+        {
+            XPLMSpeakString("\n\n\n\nfound bad lua scripts that have been quarantined look in Log dot text file for more information");
+        }
         bad_script_count = 0;
         bad_scripts_found = 0;
         first_pass = 1;
@@ -6866,7 +6874,10 @@ bool ReadAllQuarantinedScriptFiles()
 
         if ((NumberOfQtFiles > 1) && (speak_second_warning == 1))
         {
-            XPLMSpeakString("\n\n\n\nPlease check your quarantined scripts folder");
+            if (DevMode == 1)
+            {
+                XPLMSpeakString("\n\n\n\nPlease check your quarantined scripts folder");
+            }
             speak_second_warning = 0;
             return true;
         }
