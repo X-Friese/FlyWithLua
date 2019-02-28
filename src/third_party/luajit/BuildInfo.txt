@@ -1,0 +1,432 @@
+bill@billsim-64-1604:~$ cd /home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ make clean
+make -C src clean
+make[1]: Entering directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+rm -f luajit libluajit.a libluajit.so host/minilua host/buildvm lj_vm.s lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h host/buildvm_arch.h jit/vmdef.lua *.o host/*.o *.obj *.lib *.exp *.dll *.exe *.manifest *.pdb *.ilk
+make[1]: Leaving directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ make VERBOSE=1 PREFIX=/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201
+==== Building LuaJIT 2.0.1 ====
+make -C src
+make[1]: Entering directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+HOSTCC    host/minilua.o
+HOSTLINK  host/minilua
+DYNASM    host/buildvm_arch.h
+HOSTCC    host/buildvm.o
+HOSTCC    host/buildvm_asm.o
+HOSTCC    host/buildvm_peobj.o
+HOSTCC    host/buildvm_lib.o
+HOSTCC    host/buildvm_fold.o
+HOSTLINK  host/buildvm
+BUILDVM   lj_vm.s
+ASM       lj_vm.o
+CC        lj_gc.o
+BUILDVM   lj_ffdef.h
+CC        lj_err.o
+CC        lj_char.o
+BUILDVM   lj_bcdef.h
+CC        lj_bc.o
+CC        lj_obj.o
+CC        lj_str.o
+CC        lj_tab.o
+CC        lj_func.o
+CC        lj_udata.o
+CC        lj_meta.o
+CC        lj_debug.o
+CC        lj_state.o
+CC        lj_dispatch.o
+CC        lj_vmevent.o
+CC        lj_vmmath.o
+CC        lj_strscan.o
+CC        lj_api.o
+CC        lj_lex.o
+CC        lj_parse.o
+CC        lj_bcread.o
+CC        lj_bcwrite.o
+CC        lj_load.o
+CC        lj_ir.o
+CC        lj_opt_mem.o
+BUILDVM   lj_folddef.h
+CC        lj_opt_fold.o
+CC        lj_opt_narrow.o
+CC        lj_opt_dce.o
+CC        lj_opt_loop.o
+CC        lj_opt_split.o
+CC        lj_opt_sink.o
+CC        lj_mcode.o
+CC        lj_snap.o
+CC        lj_record.o
+CC        lj_crecord.o
+BUILDVM   lj_recdef.h
+CC        lj_ffrecord.o
+CC        lj_asm.o
+CC        lj_trace.o
+CC        lj_gdbjit.o
+CC        lj_ctype.o
+CC        lj_cdata.o
+CC        lj_cconv.o
+CC        lj_ccall.o
+CC        lj_ccallback.o
+CC        lj_carith.o
+CC        lj_clib.o
+CC        lj_cparse.o
+CC        lj_lib.o
+CC        lj_alloc.o
+CC        lib_aux.o
+BUILDVM   lj_libdef.h
+CC        lib_base.o
+CC        lib_math.o
+CC        lib_bit.o
+CC        lib_string.o
+CC        lib_table.o
+CC        lib_io.o
+CC        lib_os.o
+CC        lib_package.o
+CC        lib_debug.o
+CC        lib_jit.o
+CC        lib_ffi.o
+CC        lib_init.o
+AR        libluajit.a
+ar: `u' modifier ignored since `D' is the default (see `U')
+CC        luajit.o
+BUILDVM   jit/vmdef.lua
+DYNLINK   libluajit.so
+LINK      luajit
+OK        Successfully built LuaJIT
+make[1]: Leaving directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+==== Successfully built LuaJIT 2.0.1 ====
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ make clean
+make -C src clean
+make[1]: Entering directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+rm -f luajit libluajit.a libluajit.so host/minilua host/buildvm lj_vm.s lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h host/buildvm_arch.h jit/vmdef.lua *.o host/*.o *.obj *.lib *.exp *.dll *.exe *.manifest *.pdb *.ilk
+make[1]: Leaving directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ make PREFIX=/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201 VERBOSE=1==== Building LuaJIT 2.0.1 ====
+make -C src
+make[1]: Entering directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+HOSTCC    host/minilua.o
+HOSTLINK  host/minilua
+DYNASM    host/buildvm_arch.h
+HOSTCC    host/buildvm.o
+HOSTCC    host/buildvm_asm.o
+HOSTCC    host/buildvm_peobj.o
+HOSTCC    host/buildvm_lib.o
+HOSTCC    host/buildvm_fold.o
+HOSTLINK  host/buildvm
+BUILDVM   lj_vm.s
+ASM       lj_vm.o
+CC        lj_gc.o
+BUILDVM   lj_ffdef.h
+CC        lj_err.o
+CC        lj_char.o
+BUILDVM   lj_bcdef.h
+CC        lj_bc.o
+CC        lj_obj.o
+CC        lj_str.o
+CC        lj_tab.o
+CC        lj_func.o
+CC        lj_udata.o
+CC        lj_meta.o
+CC        lj_debug.o
+CC        lj_state.o
+CC        lj_dispatch.o
+CC        lj_vmevent.o
+CC        lj_vmmath.o
+CC        lj_strscan.o
+CC        lj_api.o
+CC        lj_lex.o
+CC        lj_parse.o
+CC        lj_bcread.o
+CC        lj_bcwrite.o
+CC        lj_load.o
+CC        lj_ir.o
+CC        lj_opt_mem.o
+BUILDVM   lj_folddef.h
+CC        lj_opt_fold.o
+CC        lj_opt_narrow.o
+CC        lj_opt_dce.o
+CC        lj_opt_loop.o
+CC        lj_opt_split.o
+CC        lj_opt_sink.o
+CC        lj_mcode.o
+CC        lj_snap.o
+CC        lj_record.o
+CC        lj_crecord.o
+BUILDVM   lj_recdef.h
+CC        lj_ffrecord.o
+CC        lj_asm.o
+CC        lj_trace.o
+CC        lj_gdbjit.o
+CC        lj_ctype.o
+CC        lj_cdata.o
+CC        lj_cconv.o
+CC        lj_ccall.o
+CC        lj_ccallback.o
+CC        lj_carith.o
+CC        lj_clib.o
+CC        lj_cparse.o
+CC        lj_lib.o
+CC        lj_alloc.o
+CC        lib_aux.o
+BUILDVM   lj_libdef.h
+CC        lib_base.o
+CC        lib_math.o
+CC        lib_bit.o
+CC        lib_string.o
+CC        lib_table.o
+CC        lib_io.o
+CC        lib_os.o
+CC        lib_package.o
+CC        lib_debug.o
+CC        lib_jit.o
+CC        lib_ffi.o
+CC        lib_init.o
+AR        libluajit.a
+ar: `u' modifier ignored since `D' is the default (see `U')
+CC        luajit.o
+BUILDVM   jit/vmdef.lua
+DYNLINK   libluajit.so
+LINK      luajit
+OK        Successfully built LuaJIT
+make[1]: Leaving directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+==== Successfully built LuaJIT 2.0.1 ====
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ make clean
+make -C src clean
+make[1]: Entering directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+rm -f luajit libluajit.a libluajit.so host/minilua host/buildvm lj_vm.s lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h host/buildvm_arch.h jit/vmdef.lua *.o host/*.o *.obj *.lib *.exp *.dll *.exe *.manifest *.pdb *.ilk
+make[1]: Leaving directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ make -n PREFIX=/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201
+echo "==== Building LuaJIT 2.0.1 ===="
+make -C src
+make[1]: Entering directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+echo "HOSTCC    host/minilua.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -I. -DLUAJIT_TARGET=LUAJIT_ARCH_x64 -DLJ_ARCH_HASFPU=1 -DLJ_ABI_SOFTFP=0  -c -o host/minilua.o host/minilua.c
+echo "HOSTLINK  host/minilua"
+gcc     -o host/minilua host/minilua.o -lm   
+echo "DYNASM    host/buildvm_arch.h"
+host/minilua ../dynasm/dynasm.lua   -D P64 -D JIT -D FFI -D FPU -D HFABI -D VER= -o host/buildvm_arch.h vm_x86.dasc
+echo "HOSTCC    host/buildvm.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -I. -DLUAJIT_TARGET=LUAJIT_ARCH_x64 -DLJ_ARCH_HASFPU=1 -DLJ_ABI_SOFTFP=0  -c -o host/buildvm.o host/buildvm.c
+echo "HOSTCC    host/buildvm_asm.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -I. -DLUAJIT_TARGET=LUAJIT_ARCH_x64 -DLJ_ARCH_HASFPU=1 -DLJ_ABI_SOFTFP=0  -c -o host/buildvm_asm.o host/buildvm_asm.c
+echo "HOSTCC    host/buildvm_peobj.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -I. -DLUAJIT_TARGET=LUAJIT_ARCH_x64 -DLJ_ARCH_HASFPU=1 -DLJ_ABI_SOFTFP=0  -c -o host/buildvm_peobj.o host/buildvm_peobj.c
+echo "HOSTCC    host/buildvm_lib.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -I. -DLUAJIT_TARGET=LUAJIT_ARCH_x64 -DLJ_ARCH_HASFPU=1 -DLJ_ABI_SOFTFP=0  -c -o host/buildvm_lib.o host/buildvm_lib.c
+echo "HOSTCC    host/buildvm_fold.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -I. -DLUAJIT_TARGET=LUAJIT_ARCH_x64 -DLJ_ARCH_HASFPU=1 -DLJ_ABI_SOFTFP=0  -c -o host/buildvm_fold.o host/buildvm_fold.c
+echo "HOSTLINK  host/buildvm"
+gcc     -o host/buildvm host/buildvm.o host/buildvm_asm.o host/buildvm_peobj.o host/buildvm_lib.o host/buildvm_fold.o   
+echo "BUILDVM   lj_vm.s"
+host/buildvm -m elfasm -o lj_vm.s
+echo "ASM       lj_vm.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_vm_dyn.o lj_vm.s
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_vm.o lj_vm.s
+echo "CC        lj_gc.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_gc_dyn.o lj_gc.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_gc.o lj_gc.c
+echo "BUILDVM   lj_ffdef.h"
+host/buildvm -m ffdef -o lj_ffdef.h lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c
+echo "CC        lj_err.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_err_dyn.o lj_err.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_err.o lj_err.c
+echo "CC        lj_char.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_char_dyn.o lj_char.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_char.o lj_char.c
+echo "BUILDVM   lj_bcdef.h"
+host/buildvm -m bcdef -o lj_bcdef.h lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c
+echo "CC        lj_bc.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_bc_dyn.o lj_bc.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_bc.o lj_bc.c
+echo "CC        lj_obj.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_obj_dyn.o lj_obj.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_obj.o lj_obj.c
+echo "CC        lj_str.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_str_dyn.o lj_str.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_str.o lj_str.c
+echo "CC        lj_tab.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_tab_dyn.o lj_tab.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_tab.o lj_tab.c
+echo "CC        lj_func.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_func_dyn.o lj_func.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_func.o lj_func.c
+echo "CC        lj_udata.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_udata_dyn.o lj_udata.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_udata.o lj_udata.c
+echo "CC        lj_meta.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_meta_dyn.o lj_meta.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_meta.o lj_meta.c
+echo "CC        lj_debug.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_debug_dyn.o lj_debug.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_debug.o lj_debug.c
+echo "CC        lj_state.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_state_dyn.o lj_state.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_state.o lj_state.c
+echo "CC        lj_dispatch.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_dispatch_dyn.o lj_dispatch.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_dispatch.o lj_dispatch.c
+echo "CC        lj_vmevent.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_vmevent_dyn.o lj_vmevent.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_vmevent.o lj_vmevent.c
+echo "CC        lj_vmmath.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_vmmath_dyn.o lj_vmmath.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_vmmath.o lj_vmmath.c
+echo "CC        lj_strscan.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_strscan_dyn.o lj_strscan.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_strscan.o lj_strscan.c
+echo "CC        lj_api.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_api_dyn.o lj_api.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_api.o lj_api.c
+echo "CC        lj_lex.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_lex_dyn.o lj_lex.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_lex.o lj_lex.c
+echo "CC        lj_parse.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_parse_dyn.o lj_parse.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_parse.o lj_parse.c
+echo "CC        lj_bcread.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_bcread_dyn.o lj_bcread.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_bcread.o lj_bcread.c
+echo "CC        lj_bcwrite.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_bcwrite_dyn.o lj_bcwrite.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_bcwrite.o lj_bcwrite.c
+echo "CC        lj_load.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_load_dyn.o lj_load.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_load.o lj_load.c
+echo "CC        lj_ir.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ir_dyn.o lj_ir.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ir.o lj_ir.c
+echo "CC        lj_opt_mem.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_mem_dyn.o lj_opt_mem.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_mem.o lj_opt_mem.c
+echo "BUILDVM   lj_folddef.h"
+host/buildvm -m folddef -o lj_folddef.h lj_opt_fold.c
+echo "CC        lj_opt_fold.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_fold_dyn.o lj_opt_fold.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_fold.o lj_opt_fold.c
+echo "CC        lj_opt_narrow.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_narrow_dyn.o lj_opt_narrow.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_narrow.o lj_opt_narrow.c
+echo "CC        lj_opt_dce.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_dce_dyn.o lj_opt_dce.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_dce.o lj_opt_dce.c
+echo "CC        lj_opt_loop.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_loop_dyn.o lj_opt_loop.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_loop.o lj_opt_loop.c
+echo "CC        lj_opt_split.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_split_dyn.o lj_opt_split.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_split.o lj_opt_split.c
+echo "CC        lj_opt_sink.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_sink_dyn.o lj_opt_sink.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_opt_sink.o lj_opt_sink.c
+echo "CC        lj_mcode.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_mcode_dyn.o lj_mcode.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_mcode.o lj_mcode.c
+echo "CC        lj_snap.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_snap_dyn.o lj_snap.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_snap.o lj_snap.c
+echo "CC        lj_record.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_record_dyn.o lj_record.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_record.o lj_record.c
+echo "CC        lj_crecord.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_crecord_dyn.o lj_crecord.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_crecord.o lj_crecord.c
+echo "BUILDVM   lj_recdef.h"
+host/buildvm -m recdef -o lj_recdef.h lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c
+echo "CC        lj_ffrecord.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ffrecord_dyn.o lj_ffrecord.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ffrecord.o lj_ffrecord.c
+echo "CC        lj_asm.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_asm_dyn.o lj_asm.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_asm.o lj_asm.c
+echo "CC        lj_trace.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_trace_dyn.o lj_trace.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_trace.o lj_trace.c
+echo "CC        lj_gdbjit.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_gdbjit_dyn.o lj_gdbjit.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_gdbjit.o lj_gdbjit.c
+echo "CC        lj_ctype.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ctype_dyn.o lj_ctype.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ctype.o lj_ctype.c
+echo "CC        lj_cdata.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_cdata_dyn.o lj_cdata.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_cdata.o lj_cdata.c
+echo "CC        lj_cconv.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_cconv_dyn.o lj_cconv.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_cconv.o lj_cconv.c
+echo "CC        lj_ccall.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ccall_dyn.o lj_ccall.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ccall.o lj_ccall.c
+echo "CC        lj_ccallback.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ccallback_dyn.o lj_ccallback.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_ccallback.o lj_ccallback.c
+echo "CC        lj_carith.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_carith_dyn.o lj_carith.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_carith.o lj_carith.c
+echo "CC        lj_clib.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_clib_dyn.o lj_clib.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_clib.o lj_clib.c
+echo "CC        lj_cparse.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_cparse_dyn.o lj_cparse.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_cparse.o lj_cparse.c
+echo "CC        lj_lib.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_lib_dyn.o lj_lib.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_lib.o lj_lib.c
+echo "CC        lj_alloc.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_alloc_dyn.o lj_alloc.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lj_alloc.o lj_alloc.c
+echo "CC        lib_aux.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_aux_dyn.o lib_aux.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_aux.o lib_aux.c
+echo "BUILDVM   lj_libdef.h"
+host/buildvm -m libdef -o lj_libdef.h lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c
+echo "CC        lib_base.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_base_dyn.o lib_base.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_base.o lib_base.c
+echo "CC        lib_math.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_math_dyn.o lib_math.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_math.o lib_math.c
+echo "CC        lib_bit.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_bit_dyn.o lib_bit.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_bit.o lib_bit.c
+echo "CC        lib_string.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_string_dyn.o lib_string.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_string.o lib_string.c
+echo "CC        lib_table.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_table_dyn.o lib_table.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_table.o lib_table.c
+echo "CC        lib_io.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_io_dyn.o lib_io.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_io.o lib_io.c
+echo "CC        lib_os.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_os_dyn.o lib_os.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_os.o lib_os.c
+echo "CC        lib_package.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_package_dyn.o lib_package.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_package.o lib_package.c
+echo "CC        lib_debug.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_debug_dyn.o lib_debug.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_debug.o lib_debug.c
+echo "CC        lib_jit.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_jit_dyn.o lib_jit.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_jit.o lib_jit.c
+echo "CC        lib_ffi.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_ffi_dyn.o lib_ffi.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_ffi.o lib_ffi.c
+echo "CC        lib_init.o"
+gcc -fPIC  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_init_dyn.o lib_init.c
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o lib_init.o lib_init.c
+echo "AR        libluajit.a"
+ar rcus libluajit.a lj_vm.o lj_gc.o lj_err.o lj_char.o lj_bc.o lj_obj.o lj_str.o lj_tab.o lj_func.o lj_udata.o lj_meta.o lj_debug.o lj_state.o lj_dispatch.o lj_vmevent.o lj_vmmath.o lj_strscan.o lj_api.o lj_lex.o lj_parse.o lj_bcread.o lj_bcwrite.o lj_load.o lj_ir.o lj_opt_mem.o lj_opt_fold.o lj_opt_narrow.o lj_opt_dce.o lj_opt_loop.o lj_opt_split.o lj_opt_sink.o lj_mcode.o lj_snap.o lj_record.o lj_crecord.o lj_ffrecord.o lj_asm.o lj_trace.o lj_gdbjit.o lj_ctype.o lj_cdata.o lj_cconv.o lj_ccall.o lj_ccallback.o lj_carith.o lj_clib.o lj_cparse.o lj_lib.o lj_alloc.o lib_aux.o lib_base.o lib_math.o lib_bit.o lib_string.o lib_table.o lib_io.o lib_os.o lib_package.o lib_debug.o lib_jit.o lib_ffi.o lib_init.o
+echo "CC        luajit.o"
+gcc  -O2 -fomit-frame-pointer -fPIC -Wall   -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -U_FORTIFY_SOURCE  -DLUA_XROOT=\"/home/bill/X-Plane_LuaJIT_201/X-Plane11_LuaJIT_64bit_201/\" -fno-stack-protector   -c -o luajit.o luajit.c
+echo "BUILDVM   jit/vmdef.lua"
+host/buildvm -m vmdef -o jit/vmdef.lua lib_base.c lib_math.c lib_bit.c lib_string.c lib_table.c lib_io.c lib_os.c lib_package.c lib_debug.c lib_jit.c lib_ffi.c
+echo "DYNLINK   libluajit.so"
+gcc   -shared -fPIC -Wl,-soname,libluajit-5.1.so.2   -o libluajit.so lj_vm_dyn.o lj_gc_dyn.o lj_err_dyn.o lj_char_dyn.o lj_bc_dyn.o lj_obj_dyn.o lj_str_dyn.o lj_tab_dyn.o lj_func_dyn.o lj_udata_dyn.o lj_meta_dyn.o lj_debug_dyn.o lj_state_dyn.o lj_dispatch_dyn.o lj_vmevent_dyn.o lj_vmmath_dyn.o lj_strscan_dyn.o lj_api_dyn.o lj_lex_dyn.o lj_parse_dyn.o lj_bcread_dyn.o lj_bcwrite_dyn.o lj_load_dyn.o lj_ir_dyn.o lj_opt_mem_dyn.o lj_opt_fold_dyn.o lj_opt_narrow_dyn.o lj_opt_dce_dyn.o lj_opt_loop_dyn.o lj_opt_split_dyn.o lj_opt_sink_dyn.o lj_mcode_dyn.o lj_snap_dyn.o lj_record_dyn.o lj_crecord_dyn.o lj_ffrecord_dyn.o lj_asm_dyn.o lj_trace_dyn.o lj_gdbjit_dyn.o lj_ctype_dyn.o lj_cdata_dyn.o lj_cconv_dyn.o lj_ccall_dyn.o lj_ccallback_dyn.o lj_carith_dyn.o lj_clib_dyn.o lj_cparse_dyn.o lj_lib_dyn.o lj_alloc_dyn.o lib_aux_dyn.o lib_base_dyn.o lib_math_dyn.o lib_bit_dyn.o lib_string_dyn.o lib_table_dyn.o lib_io_dyn.o lib_os_dyn.o lib_package_dyn.o lib_debug_dyn.o lib_jit_dyn.o lib_ffi_dyn.o lib_init_dyn.o -lm -ldl  
+strip libluajit.so
+echo "LINK      luajit"
+gcc    -Wl,-E   -o luajit luajit.o libluajit.a -lm -ldl  
+strip luajit
+echo "OK        Successfully built LuaJIT"
+make[1]: Leaving directory '/home/bill/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched/src'
+echo "==== Successfully built LuaJIT 2.0.1 ===="
+bill@billsim-64-1604:~/X-Plane_LuaJIT_201/LuaJIT-2.0.1-patched$ 
+
