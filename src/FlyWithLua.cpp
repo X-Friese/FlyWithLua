@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.14 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.15 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
