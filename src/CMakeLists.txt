@@ -103,6 +103,7 @@ find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.
+add_subdirectory(third_party/luajit)
 find_library(LUAJIT_LIBRARY NAMES lua51 libluajit-5.1.a)
 target_link_libraries(FlyWithLua ${LUAJIT_LIBRARY})
 add_subdirectory(third_party/luaxml)
