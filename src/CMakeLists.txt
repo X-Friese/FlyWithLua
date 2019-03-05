@@ -40,7 +40,6 @@ elseif (APPLE)
     list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Mac")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/mac_libs")
 elseif (UNIX)
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/luajit/64")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/OpenAL")
 endif ()
 
@@ -71,6 +70,9 @@ add_compile_options(-Wno-unused)
 
 # Always use position-independent code and highest optimization level (FPS!).
 add_compile_options(-O3 -fPIC)
+
+# Turn on Debug mode
+# add_compile_options(-g)
 
 # X-Plane plugin
 # FIXME: Split this into individual targets.
@@ -103,11 +105,10 @@ find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.
-find_library(LUAJIT_LIBRARY NAMES lua51 libluajit-5.1.a)
-target_link_libraries(FlyWithLua ${LUAJIT_LIBRARY})
+add_subdirectory(third_party/luajit)
 add_subdirectory(third_party/luaxml)
 add_subdirectory(third_party/luasocket)
-target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial)
+target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial luajit::LuaJIT)
 
 # Add Sol2 library for C++ <-> Lua bindings
 add_subdirectory(third_party/sol2)
