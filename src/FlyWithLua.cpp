@@ -122,6 +122,9 @@
  *          [changed] Most of the logToAll to logToDevCon to prevent flooding of XSquawkBox window.
  *  v2.7.14 [changed] from logToAll to logToDevCon for XPLMSpeakString.
  *          [changed] If Devmode enabled do not speak or display messages about quarantine folder.
+ *  v2.7.15 [changed] from building on LuaJit 2.0.1 to building on LuaJit 2.0.5.
+ *
+ *  v2.7.16 [added]   support for PPL from. https://github.com/PhilippMuenzel/PPL
  *
  *
  *  Markus (Teddii):
