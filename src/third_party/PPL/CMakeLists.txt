@@ -50,16 +50,16 @@ else()
         LIN=0
         IBM=1
         FREETYPE2_STATIC
-        _USE_MATH_DEFINES
-        NOMINMAX
-        WIN32_LEAN_AND_MEAN
+#        _USE_MATH_DEFINES
+#        NOMINMAX
+#        WIN32_LEAN_AND_MEAN
         GLEW_STATIC=1)
     set(PLATFORM_INCLUDE_DIRECTORIES
-        upstream/include/glew/include
-        upstream/include/openal-soft/include
-        upstream/include/freetype2/include)
-    set(PLATFORM_DEBUG_OPTIONS "-MTd")
-    set(PLATFORM_RELEASE_OPTIONS "-MT")
+        ${CMAKE_CURRENT_SOURCE_DIR}/upstream/include/glew/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/upstream/include/openal-soft/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/upstream/include/freetype2/include)
+#    set(PLATFORM_DEBUG_OPTIONS "-MTd")
+#    set(PLATFORM_RELEASE_OPTIONS "-MT")
 endif()
 endif()
 
@@ -77,24 +77,24 @@ include_directories(${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/XPLM
                     ${PLATFORM_INCLUDE_DIRECTORIES})
 
 set(SOURCES
-#    upstream/src/pluginpath.cpp
-    upstream/src/settings.cpp)
-#    upstream/src/dataref.cpp
-#    upstream/src/messagewindow.cpp
-#    upstream/src/onscreendisplay.cpp
-#    upstream/src/owneddata.cpp
-#    upstream/src/logichandler.cpp
-#    upstream/src/texture.cpp
-#    upstream/src/overlaygauge.cpp
-#    upstream/src/log.cpp
-#    upstream/src/logwriter.cpp
-#    upstream/src/menuitem.cpp
-#    upstream/src/processor.cpp
-#    upstream/src/vertexbuffer.cpp)
-#    upstream/src/alsoundbuffer.cpp
-#    upstream/src/alcontextmanager.cpp)
-#    upstream/src/alcontextchanger.cpp
-#    upstream/src/fontmgr.cpp)
+    upstream/src/pluginpath.cpp
+    upstream/src/settings.cpp
+    upstream/src/dataref.cpp
+    upstream/src/messagewindow.cpp
+    upstream/src/onscreendisplay.cpp
+    upstream/src/owneddata.cpp
+    upstream/src/logichandler.cpp
+#    upstream/src/texture.cpp # Not building on Windows
+#    upstream/src/overlaygauge.cpp # Not building on Linux
+    upstream/src/log.cpp
+    upstream/src/logwriter.cpp
+    upstream/src/menuitem.cpp
+    upstream/src/processor.cpp
+#    upstream/src/vertexbuffer.cpp) # Not building on Linux
+    upstream/src/alsoundbuffer.cpp
+#    upstream/src/alcontextmanager.cpp) # Not building on Mac
+    upstream/src/alcontextchanger.cpp
+    upstream/src/fontmgr.cpp)
 
 add_library(PPL STATIC ${SOURCES})
 target_compile_options(PPL PUBLIC ${PLATFORM_COMPILE_OPTIONS})
