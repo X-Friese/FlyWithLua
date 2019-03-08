@@ -117,7 +117,7 @@ target_link_libraries(FlyWithLua sol2::sol2)
 # Add support for PPL.
 # The Plugin Patterns Library provides classes for common tasks with the XPLM SDK for the X-Plane flight simulator.
 # Currently can't get this to build the library so have to comment it out.
-# add_subdirectory(third_party/PPL)
+add_subdirectory(third_party/PPL)
 
 
 # Link X-Plane plugin system libraries. They are only provided for OS X and Windows.
