@@ -6566,26 +6566,20 @@ void ResetLuaEngine()
 
 bool ReadPrefFile()
 {
-  logMsg(logToDevCon, "FlyWithLua Info: Trying to create pref file called fwl_prefs.ini.");
-  auto plugin_path = PPL::PluginPath::prependPluginPath("");
-  auto plane_path = PPL::PluginPath::prependPlanePath("");
-  auto resources_path = PPL::PluginPath::prependPluginResourcesPath("");
-  auto xplane_path = PPL::PluginPath::prependXPlanePath("");
-  auto pref_filename = PPL::PluginPath::prependXPlanePath("Resources/plugins/FlyWithLua/fwl_prefs.ini");
-  bool fwl_create_if_not_exists = false;
-  bool fwl_write_new_file = false;
-  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependPluginPath ").append(plugin_path));
-  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependPlanePath ").append(plane_path));
-  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependPluginResourcesPath ").append(resources_path));
-  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependXPlanePath ").append(xplane_path));
-  logMsg(logToDevCon, std::string("FlyWithLua: Plugin Dir: ") + pluginMainDir);
-  logMsg(logToDevCon, std::string("FlyWithLua: pref_filename ").append(pref_filename));
-
-  PPL::Settings(pref_filename, fwl_create_if_not_exists = false, fwl_write_new_file = false);
-  // File is not showing up so think I need this to work.
-  // But Not sure how this should work.
-  //PPL::Settings::loadFromFile();
-
+  auto pref_filename = PPL::PluginPath::prependPluginPath("FlyWithLua/fwl_prefs.ini");
+  PPL::Settings fwlsettings(pref_filename, true, true);
+  fwlsettings.setLong("General", "DevMode", 0); // by default, we want Developer Mode off
+  fwlsettings.loadFromFile(); // if file exists, load settings from it. Otherwise stick with default values.
+  int dev_mode = fwlsettings.getLong("General", "DevMode");
+  if (dev_mode == 0)
+  {
+    DevMode = 1;
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
+  } else {
+    DevMode = 2;
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
+  }
+  fwlsettings.setLong("General", "DevMode", dev_mode);
 }
 
 bool ReadScriptFile(const char* FileNameToRead)

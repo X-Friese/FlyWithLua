@@ -51,7 +51,7 @@ std::string PluginPath::prependXPlanePath(const std::string& file)
 
 std::string PluginPath::prependPluginPath(const std::string& file)
 {
-    std::string path = "/Resources/plugins/";
+    std::string path = "Resources/plugins";
     path.append(plugin_directory).append("/").append(file);
     return prependXPlanePath(path);
 }
@@ -60,7 +60,7 @@ std::string PluginPath::prependPluginResourcesPath(const std::string& file)
 {
     std::string res_path("Resources/");
     res_path.append(file);
-    return prependPluginPath(res_path);
+    return prependXPlanePath(res_path);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
