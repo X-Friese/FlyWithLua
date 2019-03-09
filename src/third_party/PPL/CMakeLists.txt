@@ -79,22 +79,22 @@ include_directories(${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/XPLM
 set(SOURCES
     upstream/src/pluginpath.cpp
     upstream/src/settings.cpp
-    upstream/src/dataref.cpp
-    upstream/src/messagewindow.cpp
-    upstream/src/onscreendisplay.cpp
-    upstream/src/owneddata.cpp
-    upstream/src/logichandler.cpp
+#    upstream/src/dataref.cpp
+#    upstream/src/messagewindow.cpp
+#    upstream/src/onscreendisplay.cpp
+#    upstream/src/owneddata.cpp
+#    upstream/src/logichandler.cpp
 #    upstream/src/texture.cpp # Not building on Windows
 #    upstream/src/overlaygauge.cpp # Not building on Linux
     upstream/src/log.cpp
-    upstream/src/logwriter.cpp
-    upstream/src/menuitem.cpp
-    upstream/src/processor.cpp
+    upstream/src/logwriter.cpp)
+#    upstream/src/menuitem.cpp
+#    upstream/src/processor.cpp
 #    upstream/src/vertexbuffer.cpp) # Not building on Linux
-    upstream/src/alsoundbuffer.cpp
+#    upstream/src/alsoundbuffer.cpp
 #    upstream/src/alcontextmanager.cpp) # Not building on Mac
-    upstream/src/alcontextchanger.cpp
-    upstream/src/fontmgr.cpp)
+#    upstream/src/alcontextchanger.cpp
+#    upstream/src/fontmgr.cpp)
 
 add_library(PPL STATIC ${SOURCES})
 target_compile_options(PPL PUBLIC ${PLATFORM_COMPILE_OPTIONS})

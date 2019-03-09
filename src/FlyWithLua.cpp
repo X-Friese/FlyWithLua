@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.15 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.16 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -227,6 +227,12 @@
 #include <sol.hpp>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
+
+// PPL
+#include <log.h>
+#include <logwriter.h>
+#include <pluginpath.h>
+#include "settings.h"
 
 // include OpenGL
 #if IBM
@@ -6558,6 +6564,30 @@ void ResetLuaEngine()
     }
 }
 
+bool ReadPrefFile()
+{
+  logMsg(logToDevCon, "FlyWithLua Info: Trying to create pref file called fwl_prefs.ini.");
+  auto plugin_path = PPL::PluginPath::prependPluginPath("");
+  auto plane_path = PPL::PluginPath::prependPlanePath("");
+  auto resources_path = PPL::PluginPath::prependPluginResourcesPath("");
+  auto xplane_path = PPL::PluginPath::prependXPlanePath("");
+  auto pref_filename = PPL::PluginPath::prependXPlanePath("Resources/plugins/FlyWithLua/fwl_prefs.ini");
+  bool fwl_create_if_not_exists = false;
+  bool fwl_write_new_file = false;
+  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependPluginPath ").append(plugin_path));
+  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependPlanePath ").append(plane_path));
+  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependPluginResourcesPath ").append(resources_path));
+  logMsg(logToDevCon, std::string("FlyWithLua: PluginPath::prependXPlanePath ").append(xplane_path));
+  logMsg(logToDevCon, std::string("FlyWithLua: Plugin Dir: ") + pluginMainDir);
+  logMsg(logToDevCon, std::string("FlyWithLua: pref_filename ").append(pref_filename));
+
+  PPL::Settings(pref_filename, fwl_create_if_not_exists = false, fwl_write_new_file = false);
+  // File is not showing up so think I need this to work.
+  // But Not sure how this should work.
+  //PPL::Settings::loadFromFile();
+
+}
+
 bool ReadScriptFile(const char* FileNameToRead)
 {
     if (!LuaIsRunning)
@@ -7309,6 +7339,7 @@ PLUGIN_API void XPluginReceiveMessage(
     {
         logMsg(logToDevCon,
                "FlyWithLua: User switched to a new airport (or changed the plane). Script files have to be reloaded.");
+        ReadPrefFile();
         ReadAllScriptFiles();
     }
     if (inMessage == XSB_MSG_TEXT)
