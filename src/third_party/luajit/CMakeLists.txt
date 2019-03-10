@@ -8,12 +8,19 @@ if ("${lua_version}" STREQUAL "")
   set(luajit_version 2.0.5)
 endif()
 
+# Only set cross-compiling prefix when cross-compiling on Linux.
+# Use unprefixed cmpiler name when building natively with MinGW on Windows or with clang on Mac.
+set(CROSS_PREFIX "")
+if(${TOOLCHAIN_PREFIX})
+  set(CROSS_PREFIX "${TOOLCHAIN_PREFIX}-")
+endif()
+
 set(build_options "")
 if (UNIX AND NOT APPLE)
 elseif (WIN32)
-  set(build_options "CC=gcc" "CROSS=${TOOLCHAIN_PREFIX}-" "TARGET_SYS=Windows")
+  set(build_options "CC=gcc" "CROSS=${CROSS_PREFIX}" "TARGET_SYS=Windows")
 elseif (APPLE)
-  set(build_options "CC=clang" "CROSS=${TOOLCHAIN_PREFIX}-" "TARGET_SYS=Darwin")
+  set(build_options "CC=clang" "CROSS=${CROSS_PREFIX}" "TARGET_SYS=Darwin")
 endif ()
 
 set(luajit_prefix ${CMAKE_CURRENT_BINARY_DIR}/luajit-${luajit_version})
