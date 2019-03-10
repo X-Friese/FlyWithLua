@@ -6568,18 +6568,20 @@ bool ReadPrefFile()
 {
   auto pref_filename = PPL::PluginPath::prependPluginPath("FlyWithLua/fwl_prefs.ini");
   PPL::Settings fwlsettings(pref_filename, true, true);
-  fwlsettings.setLong("General", "DevMode", 0); // by default, we want Developer Mode off
+  fwlsettings.setLong("Advanced", "DeveloperMode", 0); // by default, we want Developer Mode off
   fwlsettings.loadFromFile(); // if file exists, load settings from it. Otherwise stick with default values.
-  int dev_mode = fwlsettings.getLong("General", "DevMode");
-  if (dev_mode == 0)
+  auto developer_mode = fwlsettings.getLong("Advanced", "DeveloperMode");
+  if (developer_mode == 0)
   {
+    // No developer mode from prefs file so uncheck menu item.
     DevMode = 1;
-    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, DevMode);
   } else {
+    // Developer mode on from prefs file so check menu item.
     DevMode = 2;
-    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, DevMode);
   }
-  fwlsettings.setLong("General", "DevMode", dev_mode);
+  fwlsettings.setLong("Advanced", "DeveloperMode", developer_mode);
 }
 
 bool ReadScriptFile(const char* FileNameToRead)

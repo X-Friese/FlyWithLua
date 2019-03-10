@@ -50,16 +50,11 @@ else()
         LIN=0
         IBM=1
         FREETYPE2_STATIC
-#        _USE_MATH_DEFINES
-#        NOMINMAX
-#        WIN32_LEAN_AND_MEAN
         GLEW_STATIC=1)
     set(PLATFORM_INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}/upstream/include/glew/include
         ${CMAKE_CURRENT_SOURCE_DIR}/upstream/include/openal-soft/include
         ${CMAKE_CURRENT_SOURCE_DIR}/upstream/include/freetype2/include)
-#    set(PLATFORM_DEBUG_OPTIONS "-MTd")
-#    set(PLATFORM_RELEASE_OPTIONS "-MT")
 endif()
 endif()
 
