@@ -76,7 +76,7 @@ add_compile_options(-O3 -fPIC)
 
 # X-Plane plugin
 # FIXME: Split this into individual targets.
-list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp)
+list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/ImGUIIntegration.cpp FloatingWindows/FloatingWindow.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_lua_bindings.cpp)
 if (WIN32)

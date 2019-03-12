@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.15 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.16 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -122,6 +122,8 @@
  *          [changed] Most of the logToAll to logToDevCon to prevent flooding of XSquawkBox window.
  *  v2.7.14 [changed] from logToAll to logToDevCon for XPLMSpeakString.
  *          [changed] If Devmode enabled do not speak or display messages about quarantine folder.
+ *  v2.7.15 [changed] from building on LuaJit 2.0.1 to building on LuaJit 2.0.5.
+ *  v2.7.16 [added]   using iniReader for a preference file
  *
  *
  *  Markus (Teddii):
@@ -187,6 +189,7 @@
  */
 
 #include "FlyWithLua.h"
+
 
 #if IBM
 
@@ -895,6 +898,8 @@ std::string modulesDir;
 std::string quarantineDir;
 // END added by Sparker
 
+void process_read_ini_file();
+
 // The user will be able to handle the plugin with commands
 XPLMCommandRef MyReloadScriptsCommand = nullptr;
 
@@ -1001,7 +1006,7 @@ void FlyWithLuaMenuHandler(void*, void*);
 XPLMMenuID FlyWithLuaMenuId;
 int        FlyWithLuaMenuItem;
 
-XPLMMenuCheck DevMode;
+XPLMMenuCheck DevMenuMode;
 int DevModeCheckedPosition = 10;
 
 int bad_script_count = 0;
@@ -1014,6 +1019,8 @@ int first_pass = 0;
 void send_delayed_quarantined_message();
 
 int found_bad_function_script = 0;
+
+int developer_mode = 0;
 
 clock_t speak_time;
 
@@ -6555,6 +6562,20 @@ void ResetLuaEngine()
     }
 }
 
+bool ReadPrefFile()
+{
+  process_read_ini_file();
+  if (developer_mode == 0)
+  {
+    // No developer mode from prefs file so uncheck menu item.
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
+  } else {
+    // Developer mode on from prefs file so check menu item.
+    XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
+  }
+  return true;
+}
+
 bool ReadScriptFile(const char* FileNameToRead)
 {
     if (!LuaIsRunning)
@@ -6661,7 +6682,7 @@ bool ReadAllScriptFiles()
             CrashReportDisplayed = false;
             if (bad_script_count > 0)
             {
-                if (DevMode == 1)
+                if (developer_mode == 0)
                 {
                     XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
                 }
@@ -6704,7 +6725,7 @@ bool ReadAllScriptFiles()
                 auto ScrPathAndName = oss_ScrPathAndName.str();
 
                 logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
-                XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
+                // XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                 if (ReadScriptFile(ScrPathAndName.c_str()))
                 {
                     logMsg(logToDevCon,
@@ -6712,12 +6733,12 @@ bool ReadAllScriptFiles()
                 } else
                 {
                     logMsg(logToDevCon, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
-                    if (DevMode == 2)
+                    if (developer_mode == 1)
                     {
                         LuaIsRunning = false;
                         break;
                     }
-                    if (DevMode == 1)
+                    if (developer_mode == 0)
                     {
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
                         std::ostringstream oss_QuaPathAndName;
@@ -6746,14 +6767,13 @@ bool ReadAllScriptFiles()
                 // is Lua still running, or are there any problems?
                 if (!LuaIsRunning)
                 {
-                    XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
                     logMsg(logToDevCon,
                            ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
-                    if (DevMode == 2)
+                    if (developer_mode == 1)
                     {
                         return false;
                     }
-                    if (DevMode == 1)
+                    if (developer_mode == 0)
                     {
                         // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
                         std::ostringstream oss_QuaPathAndName;
@@ -6819,7 +6839,7 @@ bool ReadAllScriptFiles()
 
     if ((bad_scripts_found == 1) && (first_pass == 0))
     {
-        if (DevMode == 1)
+        if (developer_mode == 0)
         {
             XPLMSpeakString("\n\n\n\nfound bad lua scripts that have been quarantined look in Log dot text file for more information");
         }
@@ -6874,7 +6894,7 @@ bool ReadAllQuarantinedScriptFiles()
 
         if ((NumberOfQtFiles > 1) && (speak_second_warning == 1))
         {
-            if (DevMode == 1)
+            if (developer_mode == 0)
             {
                 XPLMSpeakString("\n\n\n\nPlease check your quarantined scripts folder");
             }
@@ -7306,6 +7326,7 @@ PLUGIN_API void XPluginReceiveMessage(
     {
         logMsg(logToDevCon,
                "FlyWithLua: User switched to a new airport (or changed the plane). Script files have to be reloaded.");
+        ReadPrefFile();
         ReadAllScriptFiles();
     }
     if (inMessage == XSB_MSG_TEXT)
@@ -7919,14 +7940,16 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
 
     if (!strcmp((char*) iRef, "DevMode"))
     {
-        XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
-        if (DevMode == 2)
+        XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMenuMode);
+        if (DevMenuMode == 2)
         {
             XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
+            developer_mode = 0;
         }
         else
         {
             XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
+            developer_mode = 1;
         }
         return;
     }

@@ -38,6 +38,8 @@ extern std::string quarantineDir;
 extern bool ReadAllScriptFiles();
 extern int found_bad_function_script;
 extern void DebugLua();
+extern void process_read_ini_file();
+extern int developer_mode;
 }
 
 #endif
