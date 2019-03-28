@@ -50,6 +50,17 @@ private:
 
     void translateImguiToBoxel(float inX, float inY, int &outX, int &outY);
     void translateToImguiSpace(int inX, int inY, float &outX, float &outY);
+    ImFont* font0;
+    ImFont* font1;
+    ImFont* font2;
+    ImFont* font3;
+    ImFont* font4;
+    ImFont* font5;
+    ImFont* font6;
+    ImFont* font7;
+    ImFont* font8;
+    ImFont* font9;
+    ImFont* font10;
 };
 
 } /* namespace flwnd */
