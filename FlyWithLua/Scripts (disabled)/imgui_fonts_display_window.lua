@@ -8,6 +8,7 @@ if not SUPPORTS_FLOATING_WINDOWS then
 end
 
 ifdw_wnd = float_wnd_create(800, 500, 1, true)
+float_wnd_set_imgui_font(ifdw_wnd, 0)
 float_wnd_set_position(ifdw_wnd, 100, 500)
 float_wnd_set_title(ifdw_wnd, "Imgui Fonts Display Window")
 float_wnd_set_imgui_builder(ifdw_wnd, "ifdw_on_build")
@@ -15,7 +16,7 @@ float_wnd_set_onclose(ifdw_wnd, "closed_hello_world")
 
 function ifdw_on_build(ifdw_wnd, x, y)
 	imgui.PushFont(font1)
-	imgui.SetWindowFontScale(1.0)
+	imgui.SetWindowFontScale(1.5)
 	imgui.TextUnformatted("Font 1 SetWindowFontScale(1.0)\n")
 	imgui.PopFont()
 	imgui.PushFont(font2)
