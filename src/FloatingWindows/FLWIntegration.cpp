@@ -153,6 +153,23 @@ int LuaSetFloatingWindowPosition(lua_State *L) {
     return 0;
 }
 
+
+int LuaSetImguiFloatingWindowFont(lua_State *L) {
+  if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2)) {
+    flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_imgui_font");
+    FindAndQuarantine (L);
+    flywithlua::LuaIsRunning = false;
+    return 0;
+  }
+
+  FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+
+  wnd->setFontNumber(lua_tonumber(L, 2));
+
+  return 0;
+}
+
+
 int LuaLoadFloatinWindowImage(lua_State *L) {
     if (!lua_isstring(L, 1)) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_load_image");
@@ -638,6 +655,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
     lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
+    lua_register(L, "float_wnd_set_imgui_font", LuaSetImguiFloatingWindowFont);
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
@@ -654,7 +672,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
 
-	::sol::state_view lua(L);
+    ::sol::state_view lua(L);
     lua.set_function("float_wnd_set_imgui_builder", sol::overload(LuaSetCallbackByName<LuaSetImguiBuilder>,
                                                                   LuaSetCallbackByRef<LuaSetImguiBuilder>));
     lua.set_function("float_wnd_set_ondraw", sol::overload(LuaSetCallbackByName<LuaSetOnDrawCallback>,

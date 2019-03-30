@@ -125,6 +125,12 @@ void FloatingWindow::setPosition(int posx, int posy) {
     }
 }
 
+void FloatingWindow::setFontNumber(int fontx) {
+
+  flywithlua::imgui_font_number = fontx;
+
+}
+
 bool FloatingWindow::isPopped() {
     return XPLMWindowIsPoppedOut(window);
 }

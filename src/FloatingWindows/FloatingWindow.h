@@ -32,6 +32,7 @@ public:
 
     void setTitle(const char *title);
     void setPosition(int posx, int posy);
+    void setFontNumber(int fontx);
     bool isVisible() const;
     void setVisible(bool visible);
     void moveFromOrToVR();

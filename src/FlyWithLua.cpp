@@ -1021,6 +1021,7 @@ void send_delayed_quarantined_message();
 int found_bad_function_script = 0;
 
 int developer_mode = 0;
+int imgui_font_number = 0;
 
 clock_t speak_time;
 

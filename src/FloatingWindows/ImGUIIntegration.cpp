@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cctype>
 #include "ImGUIIntegration.h"
+#include "FlyWithLua.h"
 
 namespace flwnd {
 
@@ -54,16 +55,27 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     io.KeyMap[ImGuiKey_Y] = XPLM_VK_Y;
     io.KeyMap[ImGuiKey_Z] = XPLM_VK_Z;
 
-    font0 = io.Fonts->AddFontDefault();
-    font1 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSans.ttf", 13.0f);
-    font2 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSansMono.ttf", 13.0f);
-    font3 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Inconsolata.ttf", 13.0f);
-    font4 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/ProFontWindows.ttf", 13.0f);
-    font5 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Bold.ttf", 13.0f);
-    font6 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/RobotoCondensed-Regular.ttf", 13.0f);
-    font7 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Light.ttf", 13.0f);
-    font8 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Regular.ttf", 13.0f);
-    font9 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/tahomabd.ttf", 13.0f);
+    if (flywithlua::imgui_font_number == 0) {
+      font0 = io.Fonts->AddFontDefault();
+    } else if (flywithlua::imgui_font_number == 1) {
+      font1 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSans.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 2) {
+      font2 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSansMono.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 3) {
+      font3 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Inconsolata.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 4) {
+      font4 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/ProFontWindows.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 5) {
+      font5 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Bold.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 6) {
+      font6 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/RobotoCondensed-Regular.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 7) {
+      font7 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Light.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 8) {
+      font8 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Regular.ttf", 13.0f);
+    } else if (flywithlua::imgui_font_number == 9) {
+      font9 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/tahomabd.ttf", 13.0f);
+    }
 
     uint8_t *pixels;
     int fontTexWidth, fontTexHeight;
