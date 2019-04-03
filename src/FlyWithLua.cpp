@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.16 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.17 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -124,6 +124,8 @@
  *          [changed] If Devmode enabled do not speak or display messages about quarantine folder.
  *  v2.7.15 [changed] from building on LuaJit 2.0.1 to building on LuaJit 2.0.5.
  *  v2.7.16 [added]   using iniReader for a preference file
+ *  v2.7.17 [fixed]   issue when Devmode is enabled still speaking some messages.
+ *          [fixed]   issue when Devmode is enabled still moving some scripts to quarantine folder.
  *
  *
  *  Markus (Teddii):
@@ -6748,7 +6750,7 @@ bool ReadAllScriptFiles()
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
+                                   ("FlyWithLua Info: 1st Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
@@ -6783,7 +6785,7 @@ bool ReadAllScriptFiles()
                         if (result == 0)
                         {
                             logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Moved Bad Script to " + QuaPathAndName));
+                                   ("FlyWithLua Info: 2nd Moved Bad Script to " + QuaPathAndName));
                             bad_script_count = bad_script_count + 1;
                         }
                         else
@@ -7874,7 +7876,10 @@ int MyReloadScriptsCommandHandler(XPLMCommandRef /*inCommand*/,
     if (inPhase == xplm_CommandBegin)
     {
         ReadAllScriptFiles();
-        XPLMSpeakString("All Lua Script files loaded.");
+        if  (developer_mode == 0)
+        {
+          XPLMSpeakString("All Lua Script files loaded.");
+        }
     }
     return 0; // we resume the command
 }

@@ -677,44 +677,51 @@ void deinitFloatingWindowSupport() {
 
 bool FindAndQuarantine (lua_State *L)
 {
-    int result = 0;
-    int wait = 0;
-    lua_Debug debug;
-    // 1 here means the function which called the current function.
-    if (!lua_getstack(L, 1, &debug)) { /* Oops, panic or something... */ }
-    if (!lua_getinfo(L, "S", &debug)) { /* Oops, panic again! */ }
+  if (flywithlua::developer_mode == 1)
+  {
+    return false;
+  }
 
-    std::ostringstream oss_function_script_path, oss_script_name, oss_script_path_name, oss_quarantine_path_name;
-    oss_function_script_path << "FlyWithLua Info: Function Script Path From Stack " << debug.short_src;
-    std::string ScriptName = debug.short_src;
-    const size_t last_slash_idx = ScriptName.find_last_of("/");
-    if (std::string::npos != last_slash_idx)
-    {
-        ScriptName.erase(0, last_slash_idx + 1);
-    }
-    oss_script_name << "FlyWithLua Info: Function Script Name From Stack " << ScriptName;
+  int result = 0;
+  int wait = 0;
+  lua_Debug debug;
+  // 1 here means the function which called the current function.
+  if (!lua_getstack(L, 1, &debug)) { /* Oops, panic or something... */ }
+  if (!lua_getinfo(L, "S", &debug)) { /* Oops, panic again! */ }
 
-    oss_script_path_name << flywithlua::scriptDir << "/" << ScriptName;
-    std::string script_path_name = oss_script_path_name.str();
+  std::ostringstream oss_function_script_path, oss_script_name, oss_script_path_name, oss_quarantine_path_name;
+  oss_function_script_path << "FlyWithLua Info: Function Script Path From Stack " << debug.short_src;
+  std::string ScriptName = debug.short_src;
+  const size_t last_slash_idx = ScriptName.find_last_of("/");
+  if (std::string::npos != last_slash_idx)
+  {
+    ScriptName.erase(0, last_slash_idx + 1);
+  }
 
-    oss_quarantine_path_name << flywithlua::quarantineDir << ScriptName;
-    std::string quarantine_path_name = oss_quarantine_path_name.str();
+  oss_script_name << "FlyWithLua Info: Function Script Name From Stack " << ScriptName;
 
-    result = rename(script_path_name.c_str(), quarantine_path_name.c_str());
-    if (result == 0)
-    {
-        flywithlua::logMsg(logToDevCon,
-               ("FlyWithLua Info: Moved Bad Script to " + quarantine_path_name));
-    }
-    else
-    {
-        flywithlua::logMsg(logToDevCon,
-               ("FlyWithLua Info: Could not move bad script to " + quarantine_path_name));
-    }
-    flywithlua::LuaIsRunning = false;
-    flywithlua::found_bad_function_script = 1;
-    throw std::logic_error(ScriptName.c_str());
-    flywithlua::DebugLua();
+  oss_script_path_name << flywithlua::scriptDir << "/" << ScriptName;
+  std::string script_path_name = oss_script_path_name.str();
+
+  oss_quarantine_path_name << flywithlua::quarantineDir << ScriptName;
+  std::string quarantine_path_name = oss_quarantine_path_name.str();
+
+  result = rename(script_path_name.c_str(), quarantine_path_name.c_str());
+  if (result == 0)
+  {
+    flywithlua::logMsg(logToDevCon,
+                         ("FlyWithLua Info: 3rd Moved Bad Script to " + quarantine_path_name));
+  }
+  else
+  {
+    flywithlua::logMsg(logToDevCon,
+                         ("FlyWithLua Info: Could not move bad script to " + quarantine_path_name));
+  }
+
+  flywithlua::LuaIsRunning = false;
+  flywithlua::found_bad_function_script = 1;
+  throw std::logic_error(ScriptName.c_str());
+  flywithlua::DebugLua();
 }
 
 void onFlightLoop() {
