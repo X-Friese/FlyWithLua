@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <sol.hpp>
 #include <iostream>
+#include <cstdint>
+#include <cctype>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
@@ -21,6 +23,7 @@
 #include "FloatingWindow.h"
 #include "ImGUIIntegration.h"
 #include "../FlyWithLua.h"
+#include "imgui/imgui.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -635,6 +638,8 @@ void initFloatingWindowSupport() {
     lState = L;
     LoadImguiBindings();
 
+    LoadImguiFonts();
+
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
     lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
@@ -722,6 +727,26 @@ bool FindAndQuarantine (lua_State *L)
   flywithlua::found_bad_function_script = 1;
   throw std::logic_error(ScriptName.c_str());
   flywithlua::DebugLua();
+}
+
+void LoadImguiFonts() {
+  flywithlua::logMsg(logToDevCon, "FlyWithLua Info: LoadImguiFonts()");
+  // I am trying to just get the fonts to load but big roadblock so far.
+  // This is causing a CTD
+  // auto &io = ImGui::GetIO();
+
+  // need to get auto &io = ImGui::GetIO(); working for the rest to work.
+  // ImFont* font0 = io.Fonts->AddFontDefault();
+  // ImFont* font1 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSans.ttf", 13.0f);
+  // ImFont* font2 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSansMono.ttf", 13.0f);
+  // ImFont* font3 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Inconsolata.ttf", 13.0f);
+  // ImFont* font4 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/ProFontWindows.ttf", 13.0f);
+  // ImFont* font5 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Bold.ttf", 13.0f);
+  // ImFont* font6 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/RobotoCondensed-Regular.ttf", 13.0f);
+  // ImFont* font7 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Light.ttf", 13.0f);
+  // ImFont* font8 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Regular.ttf", 13.0f);
+  // ImFont* font9 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/tahomabd.ttf", 13.0f);
+
 }
 
 void onFlightLoop() {
