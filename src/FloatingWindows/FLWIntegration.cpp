@@ -756,7 +756,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
-    // lua_register(L, "SetGlobalFontFromFileTTF", fwl_SetGlobalFontFromFileTTF);
+    lua_register(L, "SetGlobalFontFromFileTTF", fwl_SetGlobalFontFromFileTTF);
     lua_register(L, "AddFontFromFileTTF", fwl_AddFontFromFileTTF);
 
 	::sol::state_view lua(L);
@@ -829,8 +829,6 @@ bool FindAndQuarantine (lua_State *L)
   flywithlua::DebugLua();
 }
 
-
-
 void onFlightLoop() {
     for (auto it = floatingWindows.begin(); it != floatingWindows.end(); ) {
         auto wnd = *it;
@@ -842,6 +840,18 @@ void onFlightLoop() {
             ++it;
         }
     }
+}
+
+// Fonts
+void SetGlobalFontFromFileTTF(const char *path, float size_pixels, float spacing_x, float spacing_y, float oversample_x, float oversample_y)
+{
+  ImGuiIO& io = ImGui::GetIO();
+  ImFontConfig conf;
+  conf.OversampleH = oversample_x;
+  conf.OversampleV = oversample_y;
+  conf.GlyphExtraSpacing.x = spacing_x;
+  conf.GlyphExtraSpacing.y = spacing_y;
+  io.Fonts->AddFontFromFileTTF(path, size_pixels, &conf);
 }
 
 } // namespace flwnd
