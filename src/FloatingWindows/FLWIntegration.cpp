@@ -9,8 +9,6 @@
 #include <stdexcept>
 #include <sol.hpp>
 #include <iostream>
-#include <cstdint>
-#include <cctype>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
 #else
@@ -23,10 +21,25 @@
 #include "FloatingWindow.h"
 #include "ImGUIIntegration.h"
 #include "../FlyWithLua.h"
-#include "imgui/imgui.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#if defined(_WIN32) || defined(_WIN64)
+
+#include <math.h>
+
+// strndup() is not available on Windows
+char *strndup( const char *s1, size_t n)
+{
+    char *copy= (char*)malloc( n+1 );
+    memcpy( copy, s1, n );
+    copy[n] = 0;
+    return copy;
+};
+
+#endif
+
 
 namespace flwnd {
 
@@ -629,6 +642,93 @@ void LuaSetCallbackByName(sol::light<FloatingWindow> fwnd, std::string const& ca
     });
 }
 
+// Util
+const char* getRealDirectoryIfExists(lua_State *L, const char* relativePath)
+{
+  if (L == nullptr || relativePath == nullptr)
+  {
+    return nullptr;
+  }
+
+  int originalStackSize = lua_gettop(L);
+  lua_getglobal(L, "love");
+  if (lua_isnil(L, -1))
+  {
+    lua_pop(L, 1);
+    return nullptr;
+  }
+
+  lua_getfield(L, -1, "filesystem");
+  lua_getfield(L, -1, "getRealDirectory");
+  lua_pushstring(L, relativePath);
+  lua_call(L, 1, 1);
+
+  char* result = nullptr;
+  if (!lua_isnil(L, -1))
+  {
+    size_t size = 0;
+    const char* tmp = lua_tolstring(L, -1, &size);
+    result = strndup(tmp, size);
+  }
+
+  lua_pop(L, lua_gettop(L) - originalStackSize);
+  return result;
+}
+
+static int fwl_SetGlobalFontFromFileTTF(lua_State *L)
+{
+  size_t size;
+  const char *path = luaL_checklstring(L, 1, &size);
+  float size_pixels = luaL_checknumber(L, 2);
+  float spacing_x = luaL_optnumber(L, 3, 0);
+  float spacing_y = luaL_optnumber(L, 4, 0);
+  float oversample_x = luaL_optnumber(L, 5, 1);
+  float oversample_y = luaL_optnumber(L, 6, 1);
+
+  const char* basePath = getRealDirectoryIfExists(L, path);
+  if (basePath == nullptr) {
+    lua_pushstring(L, "File does not exist.");
+    lua_error(L);
+    return 0;
+  }
+
+  char fullPath[4096] = {0};
+  snprintf(&(fullPath[0]), sizeof(fullPath) - 1, "%s/%s", basePath, path);
+  SetGlobalFontFromFileTTF(&(fullPath[0]), size_pixels, spacing_x, spacing_y,
+                           oversample_x, oversample_y);
+  lua_settop(L, 0);
+  return 0;
+}
+
+static int fwl_AddFontFromFileTTF(lua_State *L) {
+  size_t filenameSize;
+  const char* filename = luaL_checklstring(L, 1, &filenameSize);
+  float pixelSize = luaL_checknumber(L, 2);
+
+  const char* basePath = getRealDirectoryIfExists(L, filename);
+  if (basePath == nullptr) {
+    lua_pushstring(L, "File does not exist.");
+    lua_error(L);
+    return 0;
+  }
+
+  char fullPath[4096] = {0};
+  snprintf(&(fullPath[0]), sizeof(fullPath) - 1, "%s/%s", basePath, filename);
+
+  ImFontConfig* fontCfg = (ImFontConfig*)lua_touserdata(L, 3);
+
+  ImGuiIO& io = ImGui::GetIO();
+  ImFont* font = io.Fonts->AddFontFromFileTTF(&(fullPath[0]), pixelSize);
+  lua_settop(L, 0);
+
+  if (font == nullptr) {
+    return luaL_error(L, "Could not load font");
+  } else {
+    lua_pushlightuserdata(L, (void*)font);
+    return 1;
+  }
+}
+
 void initFloatingWindowSupport() {
     // destroy old windows
     deinitFloatingWindowSupport();
@@ -637,8 +737,6 @@ void initFloatingWindowSupport() {
 
     lState = L;
     LoadImguiBindings();
-
-    LoadImguiFonts();
 
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
@@ -658,6 +756,8 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
+    // lua_register(L, "SetGlobalFontFromFileTTF", fwl_SetGlobalFontFromFileTTF);
+    lua_register(L, "AddFontFromFileTTF", fwl_AddFontFromFileTTF);
 
 	::sol::state_view lua(L);
     lua.set_function("float_wnd_set_imgui_builder", sol::overload(LuaSetCallbackByName<LuaSetImguiBuilder>,
@@ -729,25 +829,7 @@ bool FindAndQuarantine (lua_State *L)
   flywithlua::DebugLua();
 }
 
-void LoadImguiFonts() {
-  flywithlua::logMsg(logToDevCon, "FlyWithLua Info: LoadImguiFonts()");
-  // I am trying to just get the fonts to load but big roadblock so far.
-  // This is causing a CTD
-  // auto &io = ImGui::GetIO();
 
-  // need to get auto &io = ImGui::GetIO(); working for the rest to work.
-  // ImFont* font0 = io.Fonts->AddFontDefault();
-  // ImFont* font1 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSans.ttf", 13.0f);
-  // ImFont* font2 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/DejaVuSansMono.ttf", 13.0f);
-  // ImFont* font3 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Inconsolata.ttf", 13.0f);
-  // ImFont* font4 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/ProFontWindows.ttf", 13.0f);
-  // ImFont* font5 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Bold.ttf", 13.0f);
-  // ImFont* font6 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/RobotoCondensed-Regular.ttf", 13.0f);
-  // ImFont* font7 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Light.ttf", 13.0f);
-  // ImFont* font8 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/Roboto-Regular.ttf", 13.0f);
-  // ImFont* font9 = io.Fonts->AddFontFromFileTTF("./Resources/fonts/tahomabd.ttf", 13.0f);
-
-}
 
 void onFlightLoop() {
     for (auto it = floatingWindows.begin(); it != floatingWindows.end(); ) {

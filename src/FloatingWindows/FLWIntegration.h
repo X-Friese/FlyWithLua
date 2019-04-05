@@ -20,7 +20,8 @@ void initFloatingWindowSupport();
 void deinitFloatingWindowSupport();
 void onFlightLoop();
 bool FindAndQuarantine (lua_State *L);
-void LoadImguiFonts();
+void SetGlobalFontFromFileTTF(const char *path, float size_pixels,
+                              float spacing_x, float spacing_y, float oversample_x, float oversample_y);
 
 }
 
