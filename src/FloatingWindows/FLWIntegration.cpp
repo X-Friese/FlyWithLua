@@ -642,83 +642,25 @@ void LuaSetCallbackByName(sol::light<FloatingWindow> fwnd, std::string const& ca
     });
 }
 
-// Util
-const char* getRealDirectoryIfExists(lua_State *L, const char* relativePath)
-{
-  if (L == nullptr || relativePath == nullptr)
-  {
-    return nullptr;
-  }
-
-  int originalStackSize = lua_gettop(L);
-  lua_getglobal(L, "love");
-  if (lua_isnil(L, -1))
-  {
-    lua_pop(L, 1);
-    return nullptr;
-  }
-
-  lua_getfield(L, -1, "filesystem");
-  lua_getfield(L, -1, "getRealDirectory");
-  lua_pushstring(L, relativePath);
-  lua_call(L, 1, 1);
-
-  char* result = nullptr;
-  if (!lua_isnil(L, -1))
-  {
-    size_t size = 0;
-    const char* tmp = lua_tolstring(L, -1, &size);
-    result = strndup(tmp, size);
-  }
-
-  lua_pop(L, lua_gettop(L) - originalStackSize);
-  return result;
-}
-
-static int fwl_SetGlobalFontFromFileTTF(lua_State *L)
-{
-  size_t size;
-  const char *path = luaL_checklstring(L, 1, &size);
-  float size_pixels = luaL_checknumber(L, 2);
-  float spacing_x = luaL_optnumber(L, 3, 0);
-  float spacing_y = luaL_optnumber(L, 4, 0);
-  float oversample_x = luaL_optnumber(L, 5, 1);
-  float oversample_y = luaL_optnumber(L, 6, 1);
-
-  const char* basePath = getRealDirectoryIfExists(L, path);
-  if (basePath == nullptr) {
-    lua_pushstring(L, "File does not exist.");
-    lua_error(L);
-    return 0;
-  }
-
-  char fullPath[4096] = {0};
-  snprintf(&(fullPath[0]), sizeof(fullPath) - 1, "%s/%s", basePath, path);
-  SetGlobalFontFromFileTTF(&(fullPath[0]), size_pixels, spacing_x, spacing_y,
-                           oversample_x, oversample_y);
-  lua_settop(L, 0);
-  return 0;
-}
 
 static int fwl_AddFontFromFileTTF(lua_State *L) {
   size_t filenameSize;
   const char* filename = luaL_checklstring(L, 1, &filenameSize);
   float pixelSize = luaL_checknumber(L, 2);
 
-  const char* basePath = getRealDirectoryIfExists(L, filename);
-  if (basePath == nullptr) {
-    lua_pushstring(L, "File does not exist.");
-    lua_error(L);
-    return 0;
-  }
+  const char* font_path = "./Resources/fonts/";
+  std::string full_path (std::string(font_path) + filename);
 
-  char fullPath[4096] = {0};
-  snprintf(&(fullPath[0]), sizeof(fullPath) - 1, "%s/%s", basePath, filename);
+  flywithlua::logMsg(logToDevCon, "FlyWithLua Info: full path name.");
+  flywithlua::logMsg(logToDevCon, full_path.c_str());
 
   ImFontConfig* fontCfg = (ImFontConfig*)lua_touserdata(L, 3);
 
+  // there is a issue with the next function
+  // Element no. 1 is: ImGUI assertion failed: GImGui != NULL && "No current context.
+  // Did you call ImGui::CreateContext() or ImGui::SetCurrentContext()?"
   ImGuiIO& io = ImGui::GetIO();
-  ImFont* font = io.Fonts->AddFontFromFileTTF(&(fullPath[0]), pixelSize);
+  ImFont* font = io.Fonts->AddFontFromFileTTF(full_path.c_str(), pixelSize);
   lua_settop(L, 0);
 
   if (font == nullptr) {
@@ -756,7 +698,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
-    lua_register(L, "SetGlobalFontFromFileTTF", fwl_SetGlobalFontFromFileTTF);
+    // lua_register(L, "SetGlobalFontFromFileTTF", fwl_SetGlobalFontFromFileTTF);
     lua_register(L, "AddFontFromFileTTF", fwl_AddFontFromFileTTF);
 
 	::sol::state_view lua(L);
@@ -840,18 +782,6 @@ void onFlightLoop() {
             ++it;
         }
     }
-}
-
-// Fonts
-void SetGlobalFontFromFileTTF(const char *path, float size_pixels, float spacing_x, float spacing_y, float oversample_x, float oversample_y)
-{
-  ImGuiIO& io = ImGui::GetIO();
-  ImFontConfig conf;
-  conf.OversampleH = oversample_x;
-  conf.OversampleV = oversample_y;
-  conf.GlyphExtraSpacing.x = spacing_x;
-  conf.GlyphExtraSpacing.y = spacing_y;
-  io.Fonts->AddFontFromFileTTF(path, size_pixels, &conf);
 }
 
 } // namespace flwnd

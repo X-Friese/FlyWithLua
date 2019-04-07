@@ -7,8 +7,7 @@ if not SUPPORTS_FLOATING_WINDOWS then
     return
 end
 
--- Not sure why this is returning a nil value.
--- local DejaVuSansMono = imgui.AddFontFromFileTTF(SYSTEM_DIRECTORY .. "Resources/fonts/DejaVuSansMono.ttf", 13)
+-- local DejaVuSansMono = AddFontFromFileTTF(DejaVuSansMono.ttf", 13)
 
 ilfp_wnd = float_wnd_create(400, 400, 1, true)
 float_wnd_set_position(ilfp_wnd, 100, 100)

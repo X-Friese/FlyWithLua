@@ -6213,17 +6213,18 @@ void DebugLua()
 
 void CopyDataRefsToLua()
 {
-    if (!LuaIsRunning) return;
-    if (DataRefTableLastElement >= 0)
+  if (!LuaIsRunning) return;
+
+  if (DataRefTableLastElement >= 0)
+  {
+    for (auto i = 0; i <= DataRefTableLastElement; i++)
     {
-        for (auto i = 0; i <= DataRefTableLastElement; i++)
-        {
-            PushDataRefToLuaVariable(DataRefTable[i].LuaVariable,
-                                     DataRefTable[i].DataRefId,
-                                     DataRefTable[i].DataRefTypeId,
-                                     DataRefTable[i].Index);
-        }
+      PushDataRefToLuaVariable(DataRefTable[i].LuaVariable,
+                               DataRefTable[i].DataRefId,
+                               DataRefTable[i].DataRefTypeId,
+                               DataRefTable[i].Index);
     }
+  }
 }
 
 void CopyDataRefsToXPlane()
