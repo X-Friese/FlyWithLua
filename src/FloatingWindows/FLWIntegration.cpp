@@ -89,6 +89,7 @@ int loadImage(const std::string&fileName) {
     return id;
 }
 
+
 int LuaCreateFloatingWindow(lua_State *L) {
     if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isboolean(L, 4)) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: wrong arguments given to float_wnd_create.");
@@ -190,6 +191,33 @@ int LuaLoadFloatinWindowImage(lua_State *L) {
         flywithlua::LuaIsRunning = false;
         return 0;
     }
+}
+
+int LuaLoadFloatinWindowFont(lua_State *L) {
+  if (!lua_islightuserdata(L, 1) || !lua_isstring(L, 2) || !lua_isnumber(L, 3)){
+    flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_load_font");
+    FindAndQuarantine (L);
+    flywithlua::LuaIsRunning = false;
+    return 0;
+  }
+
+  FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+  auto fontName = lua_tostring(L, 2);
+  auto fontSize = lua_tonumber(L, 3);
+
+  ImGuiIO& io = ImGui::GetIO();
+  ImFont* fontID = io.Fonts->AddFontFromFileTTF(fontName, fontSize);
+
+  std::ostringstream oss_log_font_info;
+  oss_log_font_info << "FlyWithLua Info: fontName = " << fontName << "  fontSize = " << fontSize << "  fontID = " << fontID;
+
+  std::string log_font_info = oss_log_font_info.str();
+
+  flywithlua::logMsg(logToDevCon, log_font_info.c_str());
+
+  // Think I need to return fontID but not sure how at this point in time.
+  return 0;
+
 }
 
 /**
@@ -642,35 +670,6 @@ void LuaSetCallbackByName(sol::light<FloatingWindow> fwnd, std::string const& ca
     });
 }
 
-
-static int fwl_AddFontFromFileTTF(lua_State *L) {
-  size_t filenameSize;
-  const char* filename = luaL_checklstring(L, 1, &filenameSize);
-  float pixelSize = luaL_checknumber(L, 2);
-
-  const char* font_path = "./Resources/fonts/";
-  std::string full_path (std::string(font_path) + filename);
-
-  flywithlua::logMsg(logToDevCon, "FlyWithLua Info: full path name.");
-  flywithlua::logMsg(logToDevCon, full_path.c_str());
-
-  ImFontConfig* fontCfg = (ImFontConfig*)lua_touserdata(L, 3);
-
-  // there is a issue with the next function
-  // Element no. 1 is: ImGUI assertion failed: GImGui != NULL && "No current context.
-  // Did you call ImGui::CreateContext() or ImGui::SetCurrentContext()?"
-  ImGuiIO& io = ImGui::GetIO();
-  ImFont* font = io.Fonts->AddFontFromFileTTF(full_path.c_str(), pixelSize);
-  lua_settop(L, 0);
-
-  if (font == nullptr) {
-    return luaL_error(L, "Could not load font");
-  } else {
-    lua_pushlightuserdata(L, (void*)font);
-    return 1;
-  }
-}
-
 void initFloatingWindowSupport() {
     // destroy old windows
     deinitFloatingWindowSupport();
@@ -686,6 +685,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
+    lua_register(L, "float_wnd_load_font", LuaLoadFloatinWindowFont);
     lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);
     lua_register(L, "float_wnd_get_visible", LuaFloatingWindowGetVisible);
     lua_register(L, "float_wnd_set_visible", LuaFloatingWindowSetVisible);
@@ -698,8 +698,6 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
-    // lua_register(L, "SetGlobalFontFromFileTTF", fwl_SetGlobalFontFromFileTTF);
-    lua_register(L, "AddFontFromFileTTF", fwl_AddFontFromFileTTF);
 
 	::sol::state_view lua(L);
     lua.set_function("float_wnd_set_imgui_builder", sol::overload(LuaSetCallbackByName<LuaSetImguiBuilder>,
