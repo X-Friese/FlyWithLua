@@ -13,6 +13,7 @@
 #include <XPLMUtilities.h>
 #include <cstdint>
 #include <cctype>
+#include <iostream>
 #include "ImGUIIntegration.h"
 
 namespace flwnd {
@@ -309,6 +310,13 @@ void ImGUIWindow::translateToImguiSpace(int inX, int inY, float& outX, float& ou
         outY = -FLT_MAX;
         return;
     }
+}
+
+ImFont* ImGUIWindow::loadFont(const char *fontName, int fontSize) {
+  ImGui::SetCurrentContext(imGuiContext);
+  auto &io = ImGui::GetIO();
+  ImFont* fontID = io.Fonts->AddFontFromFileTTF(fontName, fontSize);
+  return fontID;
 }
 
 ImGUIWindow::~ImGUIWindow() {

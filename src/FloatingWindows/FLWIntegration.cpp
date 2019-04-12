@@ -40,7 +40,6 @@ char *strndup( const char *s1, size_t n)
 
 #endif
 
-
 namespace flwnd {
 
 /**
@@ -88,7 +87,6 @@ int loadImage(const std::string&fileName) {
 
     return id;
 }
-
 
 int LuaCreateFloatingWindow(lua_State *L) {
     if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isboolean(L, 4)) {
@@ -201,23 +199,10 @@ int LuaLoadFloatinWindowFont(lua_State *L) {
     return 0;
   }
 
-  FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-  auto fontName = lua_tostring(L, 2);
-  auto fontSize = lua_tonumber(L, 3);
-
-  ImGuiIO& io = ImGui::GetIO();
-  ImFont* fontID = io.Fonts->AddFontFromFileTTF(fontName, fontSize);
-
-  std::ostringstream oss_log_font_info;
-  oss_log_font_info << "FlyWithLua Info: fontName = " << fontName << "  fontSize = " << fontSize << "  fontID = " << fontID;
-
-  std::string log_font_info = oss_log_font_info.str();
-
-  flywithlua::logMsg(logToDevCon, log_font_info.c_str());
-
-  // Think I need to return fontID but not sure how at this point in time.
-  return 0;
-
+  ImGUIWindow *wnd = (ImGUIWindow *) lua_touserdata(L, 1);
+  auto font = wnd->loadFont(lua_tostring(L, 2), lua_tonumber(L, 3));
+  lua_pushlightuserdata(L, font);
+  return 1;
 }
 
 /**

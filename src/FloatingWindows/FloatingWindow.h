@@ -31,7 +31,6 @@ public:
     void setKeyCallback(KeyCallback cb);
 
     void setTitle(const char *title);
-    void setFont(const char *font);
     void setPosition(int posx, int posy);
     bool isVisible() const;
     void setVisible(bool visible);

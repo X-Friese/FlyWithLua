@@ -30,6 +30,7 @@ public:
     ImGUIWindow(int width, int height, int decoration);
     void setErrorHandler(ErrorHandler eh);
     void setBuildCallback(BuildCallback cb);
+    ImFont* loadFont(const char *font, int size);
     ~ImGUIWindow();
 protected:
     void onDraw() override;
