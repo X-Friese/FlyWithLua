@@ -126,6 +126,7 @@
  *  v2.7.16 [added]   using iniReader for a preference file
  *  v2.7.17 [fixed]   issue when Devmode is enabled still speaking some messages.
  *          [fixed]   issue when Devmode is enabled still moving some scripts to quarantine folder.
+ *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
  *
  *
  *  Markus (Teddii):
