@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.17 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.18 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -126,6 +126,7 @@
  *  v2.7.16 [added]   using iniReader for a preference file
  *  v2.7.17 [fixed]   issue when Devmode is enabled still speaking some messages.
  *          [fixed]   issue when Devmode is enabled still moving some scripts to quarantine folder.
+ *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
  *
  *
  *  Markus (Teddii):
@@ -5381,15 +5382,19 @@ static int Luadirectory_to_table(lua_State* L)
 {
     char DirectoryPath[LONGSTRING] = "";
     int  k;
-    char FilesInFolder[15000];
+    // max number of characters of the files or folders names in directory modified by sparker
+    // this is a average of 30 characters for each name * the number of names.
+    char FilesInFolder[45000];
     int NumberOfFiles; // modified by saar -- debug
     int TotalNumberOfFiles; // modified by saar -- debug
 
-    char* FileIndex[1000];
+    // max number of files or folders in directory modified by sparker
+    char* FileIndex[1500];
 
     strncpy(DirectoryPath, luaL_checkstring(L, 1), sizeof(DirectoryPath));
 
-    if (XPLMGetDirectoryContents(DirectoryPath, 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 1000,
+    if (XPLMGetDirectoryContents(DirectoryPath, 0, FilesInFolder, sizeof(FilesInFolder), FileIndex,
+                                 sizeof(FileIndex) / sizeof(char *),
                                  &TotalNumberOfFiles, &NumberOfFiles))
     {
         // create an empty table on stack
