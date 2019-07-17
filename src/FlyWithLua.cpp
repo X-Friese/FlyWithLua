@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.18 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.19 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -127,6 +127,7 @@
  *  v2.7.17 [fixed]   issue when Devmode is enabled still speaking some messages.
  *          [fixed]   issue when Devmode is enabled still moving some scripts to quarantine folder.
  *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
+ *  v2.7.19 [fixed]   issue with Arcaze not being found.
  *
  *
  *  Markus (Teddii):
