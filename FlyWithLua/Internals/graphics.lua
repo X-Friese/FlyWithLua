@@ -133,6 +133,29 @@ function draw_angle_line(x, y, a, l, w)
     draw_line(x, y, x2, y2)
 end
 
+function draw_arc_line(x, y, a1, a2, r, w)
+    w = w or 1
+    local x1
+    local y1
+    local x2
+    local y2
+    local step
+    glLineWidth(w)
+    if r > 50 then
+        step = 750 / r
+    else
+        step = 15
+    end
+    glBegin_LINES()
+    for i = a1, a2 - step, step do
+        x1, y1 = move_angle(x, y, i, r)
+        glVertex2f(x1, y1)
+        x2, y2 = move_angle(x, y, i + step, r)
+        glVertex2f(x2, y2)
+    end
+    glEnd()
+end
+
 function draw_angle_arrow(x, y, a, r, l, w)
     l = l or 7.5
     w = w or 1
