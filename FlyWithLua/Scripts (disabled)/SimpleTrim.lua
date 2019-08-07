@@ -27,7 +27,7 @@ function simple_trim_init()
 	local i
 	
 	-- take a look where the right axis are
-	for i = 0, 99 do
+	for i = 0, 499 do
 		axis_function_type_is = get("sim/joystick/joystick_axis_assignments", i)
 		if axis_function_type_is == 1 then
 			DataRef("std_elv_value", "sim/joystick/joystick_axis_values", "readonly", i)

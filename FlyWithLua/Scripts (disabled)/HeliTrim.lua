@@ -1,13 +1,14 @@
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Script:  HeliTrim
 -- Author:  Carsten Lynker
--- Version: 1.1
--- Build:   2014-06-15
+-- Version: 1.2
+-- Build:   2019-07-19
 -- Licence: Same as FlyWithLua (MIT licence)
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 -- Description:
 -- Display steering information and provide a logical center for joystick axis.
 -- Please read the manual, you find it inside the Documentation subfolder.
+-- Updated for X-Plane 11 by Daikan from x-plane.org
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 require "graphics"
 
@@ -89,32 +90,10 @@ dataref("frame_rate_period","sim/operation/misc/frame_rate_period")
 -- the next function is copied from SimpleTrim
 -- we use the same name as SimpleTrim, to avoid multiple access to a dataref, even if it's allowed when readonly
 function heli_trim_init()
-	local axis_function_type_is = 0
-	local i
-	
-	-- preset all axis
-	local found_elv = 0
-	local found_ail = 0
-	local found_rud = 0
-	
-	-- take a look where the right axis are
-	for i = 0, 99 do
-		axis_function_type_is = get("sim/joystick/joystick_axis_assignments", i)
-		if axis_function_type_is == 1 then
-			found_elv = i
-		end
-		if axis_function_type_is == 2 then
-			found_ail = i
-		end
-		if axis_function_type_is == 3 then
-			found_rud = i
-		end
-	end
-	
 	-- set the DataRefs
-	DataRef("std_elv_value", "sim/joystick/joystick_axis_values", "readonly", found_elv)
-	DataRef("std_ail_value", "sim/joystick/joystick_axis_values", "readonly", found_ail)
-	DataRef("std_rud_value", "sim/joystick/joystick_axis_values", "readonly", found_rud)
+	DataRef("std_elv_value", "sim/joystick/joy_mapped_axis_value", "readonly", 1)
+	DataRef("std_ail_value", "sim/joystick/joy_mapped_axis_value", "readonly", 2)
+	DataRef("std_rud_value", "sim/joystick/joy_mapped_axis_value", "readonly", 3)
 end
 
 -- and we have to run the init function one time
@@ -164,9 +143,9 @@ function heli_overlay_tweak()
         xp_override_joystick = 1
         -- the values from std_..._value range from 0.0 to 1.0, but we need -1.0 to 1.0
         -- these inputs from the stick(s) are reduced by the sesitivity factor and added to the logical center values
-        yoke_pitch_ratio   = (std_elv_value * 2 - 1) * HeliTrim_sensitivity + HT_overlay_elv
-        yoke_roll_ratio    = (std_ail_value * 2 - 1) * HeliTrim_sensitivity + HT_overlay_ail
-        yoke_heading_ratio = (std_rud_value * 2 - 1) * HeliTrim_sensitivity + HT_overlay_rud
+        yoke_pitch_ratio   = std_elv_value * HeliTrim_sensitivity + HT_overlay_elv
+        yoke_roll_ratio    = std_ail_value * HeliTrim_sensitivity + HT_overlay_ail
+        yoke_heading_ratio = std_rud_value * HeliTrim_sensitivity + HT_overlay_rud
         -- are we beyond the range -1.0 to 1.0, the limits of X-Plane?
         if yoke_pitch_ratio   < -1 then yoke_pitch_ratio   = -1 end
         if yoke_pitch_ratio   >  1 then yoke_pitch_ratio   =  1 end
