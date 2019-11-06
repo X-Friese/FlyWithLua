@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.19 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.20 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -128,6 +128,7 @@
  *          [fixed]   issue when Devmode is enabled still moving some scripts to quarantine folder.
  *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
  *  v2.7.19 [fixed]   issue with Arcaze not being found.
+ *  v2.7.20 [changed] Remove the limit on the number of sounds.
  *
  *
  *  Markus (Teddii):
@@ -296,7 +297,6 @@ namespace flywithlua
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
-#define MAXSOUNDS 400            // the number of OpenAL sound buffers
 
 
 // Do we want to access a forbidden DataRef?
@@ -578,18 +578,17 @@ struct CommandTableStructure
 static CommandTableStructure CommandTable[MAXCOMMANDS];
 static int                   CommandTableLastElement = -1;
 
-struct OpenALTableStructure
+struct OpenALSoundsStructure
 {
     std::string filename;
     float       pitch{};
     float       gain{};
     bool        loop{};
+    ALuint      buffer{};
+    ALuint      source{};
 };
 
-static OpenALTableStructure OpenALTable[MAXSOUNDS];
-static int                  OpenALTableLastElement   = -1;
-static ALuint               OpenALBuffers[MAXSOUNDS];
-static ALuint               OpenALSources[MAXSOUNDS];
+static std::vector<OpenALSoundsStructure> OpenALSounds;
 
 lua_State* FWLLua;
 void     * ud;
@@ -767,17 +766,18 @@ ALuint load_wave(const char* file_name)
     // Finally, the OpenAL crud.  Build a new OpenAL buffer and send the data to OpenAL, passing in
     // OpenAL format enums based on the format chunk.
 
-    OpenALBuffers[OpenALTableLastElement] = 0;
-    alGenBuffers(1, &OpenALBuffers[OpenALTableLastElement]);
-    if (OpenALBuffers[OpenALTableLastElement] == 0) FAIL("Could not generate buffer id.\n");
+    // We expect that the OpenALSounds array has already been expanded to accomodate the new sound.
 
-    alBufferData(OpenALBuffers[OpenALTableLastElement], fmt->bits_per_sample == 16 ?
+    alGenBuffers(1, &OpenALSounds.back().buffer);
+    if (OpenALSounds.back().buffer == 0) FAIL("Could not generate buffer id.\n");
+
+    alBufferData(OpenALSounds.back().buffer, fmt->bits_per_sample == 16 ?
                                                         (fmt->num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16)
                                                                                    :
                                                         (fmt->num_channels == 2 ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8),
                  data, data_bytes, fmt->sample_rate);
     free(mem);
-    return OpenALBuffers[OpenALTableLastElement];
+    return OpenALSounds.back().buffer;
 }
 
 
@@ -5438,40 +5438,37 @@ static int LuaLoadWAVFile(lua_State* L)
     }
     char FileNameToLoad[NORMALSTRING];
     strncpy(FileNameToLoad, lua_tostring(L, 1), sizeof(FileNameToLoad));
-    if (++OpenALTableLastElement >= MAXSOUNDS)
-    {
-        logMsg(logToDevCon, "FlyWithLua Error: Too much sounds to handle.");
-        LuaIsRunning = false;
-        return 0;
-    }
+
+
+    OpenALSounds.emplace_back(); // Make space to store information about the sound.
 
     // fill the debug table with information
-    OpenALTable[OpenALTableLastElement].filename = FileNameToLoad;
-    OpenALTable[OpenALTableLastElement].pitch    = 1.0f;
-    OpenALTable[OpenALTableLastElement].gain     = 1.0f;
-    OpenALTable[OpenALTableLastElement].loop     = false;
+    OpenALSounds.back().filename = FileNameToLoad;
+    OpenALSounds.back().pitch    = 1.0f;
+    OpenALSounds.back().gain     = 1.0f;
+    OpenALSounds.back().loop     = false;
 
     // the following code comes from the SDK example
     ALfloat zero[3] = {0};
 
     // Generate source and load a buffer of audio.
-    alGenSources(1, &OpenALSources[OpenALTableLastElement]);
-    OpenALBuffers[OpenALTableLastElement] = load_wave(FileNameToLoad);
+    alGenSources(1, &OpenALSounds.back().source);
+    load_wave(FileNameToLoad);
     logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
     CHECK_ERR();
 
     // Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
     // sound parameters. This doesn't play the sound - it's just one-time initialization.
-    alSourcei(OpenALSources[OpenALTableLastElement], AL_BUFFER, OpenALBuffers[OpenALTableLastElement]);
-    alSourcef(OpenALSources[OpenALTableLastElement], AL_PITCH, 1.0f);
-    alSourcef(OpenALSources[OpenALTableLastElement], AL_GAIN, 1.0f);
-    alSourcei(OpenALSources[OpenALTableLastElement], AL_LOOPING, 0);
-    alSourcefv(OpenALSources[OpenALTableLastElement], AL_POSITION, zero);
-    alSourcefv(OpenALSources[OpenALTableLastElement], AL_VELOCITY, zero);
+    alSourcei(OpenALSounds.back().source, AL_BUFFER, OpenALSounds.back().buffer);
+    alSourcef(OpenALSounds.back().source, AL_PITCH, 1.0f);
+    alSourcef(OpenALSounds.back().source, AL_GAIN, 1.0f);
+    alSourcei(OpenALSounds.back().source, AL_LOOPING, 0);
+    alSourcefv(OpenALSounds.back().source, AL_POSITION, zero);
+    alSourcefv(OpenALSounds.back().source, AL_VELOCITY, zero);
     CHECK_ERR();
 
     // give back to source number
-    lua_pushnumber(FWLLua, OpenALTableLastElement);
+    lua_pushnumber(FWLLua, OpenALSounds.size() - 1);
     return 1;
 }
 
@@ -5486,13 +5483,13 @@ static int LuaPlaySound(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Play Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
-    alSourcePlay(OpenALSources[SourceNo]);
+    alSourcePlay(OpenALSounds[SourceNo].source);
     return 0;
 }
 
@@ -5507,13 +5504,13 @@ static int LuaStopSound(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Stop Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
-    alSourceStop(OpenALSources[SourceNo]);
+    alSourceStop(OpenALSounds[SourceNo].source);
     return 0;
 }
 
@@ -5528,13 +5525,13 @@ static int LuaRewindSound(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Rewind Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
-    alSourceRewind(OpenALSources[SourceNo]);
+    alSourceRewind(OpenALSounds[SourceNo].source);
     return 0;
 }
 
@@ -5549,13 +5546,13 @@ static int LuaPauseSound(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Pause Sound source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
-    alSourcePause(OpenALSources[SourceNo]);
+    alSourcePause(OpenALSounds[SourceNo].source);
     return 0;
 }
 
@@ -5570,7 +5567,7 @@ static int LuaLetSoundLoop(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Let Sound Loop source number out of range.");
         LuaIsRunning = false;
@@ -5586,12 +5583,12 @@ static int LuaLetSoundLoop(lua_State* L)
     LoopOrNot = static_cast<bool>(lua_toboolean(L, 2));
     if (LoopOrNot)
     {
-        alSourcei(OpenALSources[SourceNo], AL_LOOPING, 1);
-        OpenALTable[SourceNo].loop = true;
+        alSourcei(OpenALSounds[SourceNo].source, AL_LOOPING, 1);
+        OpenALSounds[SourceNo].loop = true;
     } else
     {
-        alSourcei(OpenALSources[SourceNo], AL_LOOPING, 0);
-        OpenALTable[SourceNo].loop = false;
+        alSourcei(OpenALSounds[SourceNo].source, AL_LOOPING, 0);
+        OpenALSounds[SourceNo].loop = false;
     }
     return 0;
 }
@@ -5607,7 +5604,7 @@ static int LuaSetSoundPitch(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Set Sound Pitch source number out of range.");
         LuaIsRunning = false;
@@ -5623,8 +5620,8 @@ static int LuaSetSoundPitch(lua_State* L)
     PitchToSet = static_cast<float>(lua_tonumber(L, 2));
     if (PitchToSet > 0)
     {
-        alSourcef(OpenALSources[SourceNo], AL_PITCH, PitchToSet);
-        OpenALTable[SourceNo].pitch = PitchToSet;
+        alSourcef(OpenALSounds[SourceNo].source, AL_PITCH, PitchToSet);
+        OpenALSounds[SourceNo].pitch = PitchToSet;
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound pitch must be greater than zero.");
@@ -5644,7 +5641,7 @@ static int LuaSetSoundGain(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Set Sound Gain source number out of range.");
         LuaIsRunning = false;
@@ -5660,8 +5657,8 @@ static int LuaSetSoundGain(lua_State* L)
     GainToSet = static_cast<float>(lua_tonumber(L, 2));
     if (GainToSet > 0)
     {
-        alSourcef(OpenALSources[SourceNo], AL_GAIN, GainToSet);
-        OpenALTable[SourceNo].gain = GainToSet;
+        alSourcef(OpenALSounds[SourceNo].source, AL_GAIN, GainToSet);
+        OpenALSounds[SourceNo].gain = GainToSet;
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound gain must be greater than zero.");
@@ -5673,15 +5670,12 @@ static int LuaSetSoundGain(lua_State* L)
 static int LuaUnloadAllSounds(lua_State* L)
 {
     // release memory for OpenAL buffers
-    if (OpenALTableLastElement > -1)
+    for (const OpenALSoundsStructure & sound: OpenALSounds)
     {
-        for (auto i = 0; i <= OpenALTableLastElement; i++)
-        {
-            alDeleteSources(1, &OpenALSources[i]);
-            alDeleteBuffers(1, &OpenALBuffers[i]);
-        }
+        alDeleteSources(1, &sound.source);
+        alDeleteBuffers(1, &sound.buffer);
     }
-    OpenALTableLastElement = -1;
+    OpenALSounds.clear();
     return 0;
 }
 
@@ -5696,7 +5690,7 @@ static int LuaReplaceWAVFile(lua_State* L)
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
-    if ((SourceNo < 0) || (SourceNo > OpenALTableLastElement))
+    if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
         logMsg(logToDevCon, "FlyWithLua Error: UnLoadAll Sounds source number out of range.");
         LuaIsRunning = false;
@@ -5712,29 +5706,29 @@ static int LuaReplaceWAVFile(lua_State* L)
     strncpy(FileNameToLoad, lua_tostring(L, 2), sizeof(FileNameToLoad));
 
     // free memory
-    alDeleteSources(1, &OpenALSources[SourceNo]);
-    alDeleteBuffers(1, &OpenALBuffers[SourceNo]);
+    alDeleteSources(1, &OpenALSounds[SourceNo].source);
+    alDeleteBuffers(1, &OpenALSounds[SourceNo].buffer);
 
     // fill the debug table with information
-    OpenALTable[SourceNo].filename = FileNameToLoad;
+    OpenALSounds[SourceNo].filename = FileNameToLoad;
 
     // the following code comes from the SDK example
     ALfloat zero[3] = {0};
 
     // Generate source and load a buffer of audio.
-    alGenSources(1, &OpenALSources[SourceNo]);
-    OpenALBuffers[SourceNo] = load_wave(FileNameToLoad);
+    alGenSources(1, &OpenALSounds[SourceNo].source);
+    OpenALSounds[SourceNo].buffer = load_wave(FileNameToLoad);
     logMsg(logToDevCon, std::string("FlyWithLua: Replaced sound by new file \"").append(FileNameToLoad).append("\"."));
     CHECK_ERR();
 
     // Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
     // sound parameters. This doesn't play the sound - it's just one-time initialization.
-    alSourcei(OpenALSources[SourceNo], AL_BUFFER, OpenALBuffers[SourceNo]);
-    alSourcef(OpenALSources[SourceNo], AL_PITCH, OpenALTable[SourceNo].pitch);
-    alSourcef(OpenALSources[SourceNo], AL_GAIN, OpenALTable[SourceNo].gain);
-    alSourcei(OpenALSources[SourceNo], AL_LOOPING, OpenALTable[SourceNo].loop);
-    alSourcefv(OpenALSources[SourceNo], AL_POSITION, zero);
-    alSourcefv(OpenALSources[SourceNo], AL_VELOCITY, zero);
+    alSourcei(OpenALSounds[SourceNo].source, AL_BUFFER, OpenALSounds[SourceNo].buffer);
+    alSourcef(OpenALSounds[SourceNo].source, AL_PITCH, OpenALSounds[SourceNo].pitch);
+    alSourcef(OpenALSounds[SourceNo].source, AL_GAIN, OpenALSounds[SourceNo].gain);
+    alSourcei(OpenALSounds[SourceNo].source, AL_LOOPING, OpenALSounds[SourceNo].loop);
+    alSourcefv(OpenALSounds[SourceNo].source, AL_POSITION, zero);
+    alSourcefv(OpenALSounds[SourceNo].source, AL_VELOCITY, zero);
     CHECK_ERR();
 
     return 0;
@@ -6187,24 +6181,24 @@ void DebugLua()
         }
     }
     DebugFile << "\n\n*** OpenAL sound files are stored in a table ***\n";
-    if (OpenALTableLastElement >= 0)
+    if (!OpenALSounds.empty())
     {
         std::ostringstream oss_WhatToSay;
         std::string WhatToSay;
-        for (auto i = 0; i <= OpenALTableLastElement; i++)
+        for (const OpenALSoundsStructure & sound : OpenALSounds)
         {
-            DebugFile << "<<< Sound table element no. " << i << " >>>\n";
-            DebugFile << "filename --> \"" << OpenALTable[i].filename << "\"\n";
-            if (OpenALTable[i].loop)
+            DebugFile << "<<< Sound table element >>>\n";
+            DebugFile << "filename --> \"" << sound.filename << "\"\n";
+            if (sound.loop)
             {
-                oss_WhatToSay << "pitch    --> " << OpenALTable[i].pitch << "\ngain     --> " << OpenALTable[i].gain <<
-                                 "\nloop     --> true\nsource   --> " << OpenALSources[i] << "\n\n";
+                oss_WhatToSay << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
+                                 "\nloop     --> true\nsource   --> " << sound.source << "\n\n";
 
                 WhatToSay = oss_WhatToSay.str();
             } else
             {
-                oss_WhatToSay << "pitch    --> " << OpenALTable[i].pitch << "\ngain     --> " << OpenALTable[i].gain <<
-                                 "\nloop     --> false\nsource   --> " << OpenALSources[i] << "\n\n";
+                oss_WhatToSay << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
+                                 "\nloop     --> false\nsource   --> " << sound.source << "\n\n";
 
                 WhatToSay = oss_WhatToSay.str();
             }
@@ -6360,15 +6354,12 @@ void ResetLuaEngine()
     CommandTableLastElement = -1;
 
     // release memory for OpenAL buffers
-    if (OpenALTableLastElement > -1)
+    for (const OpenALSoundsStructure & sound: OpenALSounds)
     {
-        for (auto i = 0; i <= OpenALTableLastElement; i++)
-        {
-            alDeleteSources(1, &OpenALSources[i]);
-            alDeleteBuffers(1, &OpenALBuffers[i]);
-        }
+        alDeleteSources(1, &sound.source);
+        alDeleteBuffers(1, &sound.buffer);
     }
-    OpenALTableLastElement = -1;
+    OpenALSounds.clear();
 
     lua_close(FWLLua);
     lj_alloc_destroy(ud);
