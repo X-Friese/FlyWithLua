@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.19 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.20 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -5467,7 +5467,7 @@ static int LuaLoadWAVFile(lua_State* L)
     CHECK_ERR();
 
     // give back to source number
-    lua_pushnumber(FWLLua, OpenALSounds.size());
+    lua_pushnumber(FWLLua, OpenALSounds.size() - 1);
     return 1;
 }
 
