@@ -128,6 +128,7 @@
  *          [fixed]   issue when Devmode is enabled still moving some scripts to quarantine folder.
  *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
  *  v2.7.19 [fixed]   issue with Arcaze not being found.
+ *  v2.7.20 [changed] Remove the limit on the number of sounds.
  *
  *
  *  Markus (Teddii):
