@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.20 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.21 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -129,6 +129,7 @@
  *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
  *  v2.7.19 [fixed]   issue with Arcaze not being found.
  *  v2.7.20 [changed] Remove the limit on the number of sounds.
+ *  v2.7.21 [added]   Support for XPLMFindCommand.
  *
  *
  *  Markus (Teddii):
