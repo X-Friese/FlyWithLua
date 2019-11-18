@@ -2336,6 +2336,15 @@ The same as above, but for float array DataRefs.
 
 The Lua variable will be filled with a >>userdata<<. This means, that you can't do anything with it's value. It's only needed for the XPLM functions.
 
+\subsubsection{\emph{userdata variable} = XPLMFindCommand( \emph{Command Name} )}
+
+\begin{enumerate}
+	\item \emph{userdata variable} = The lua variable, you want the reference to be pushed in.
+	\item \emph{Command name} = The name of the Command you want to know as a string.
+\end{enumerate}
+
+The Lua variable will be filled with a >>userdata<<. This means, that you can't do anything with it's value. One use case would be to wait until the specified command is not NIL before doing a set\_button\_assignment as some plugins may create commands during load time. This is an alternative to waiting for a fixed duration in the script for the Command to be created. 
+
 \subsubsection{\emph{datatype variable} = XPLMGetDataRefTypes( \emph{DataRef reference} )}
 
 \begin{enumerate}
