@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.20 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.21 build " __DATE__ " " __TIME__
 
 #if CREATECOMPLETEEDITION
 
@@ -129,6 +129,7 @@
  *  v2.7.18 [changed] the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
  *  v2.7.19 [fixed]   issue with Arcaze not being found.
  *  v2.7.20 [changed] Remove the limit on the number of sounds.
+ *  v2.7.21 [added]   Support for XPLMFindCommand.
  *
  *
  *  Markus (Teddii):
@@ -4848,6 +4849,25 @@ static int LuaXPLMFindDataRef(lua_State* L)
     return 1;
 }
 
+// The core access to Commands (for advanced users of FlyWithLua)
+static int LuaXPLMFindCommand(lua_State* L)
+{
+    char        CommandWanted[NORMALSTRING];
+    XPLMCommandRef CommandID;
+
+    strncpy(CommandWanted, luaL_checkstring(L, 1), sizeof(CommandWanted));
+
+    CommandID = XPLMFindCommand(CommandWanted);
+    if (CommandID != nullptr)
+    {
+        lua_pushlightuserdata(L, CommandID);
+    } else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
 static int LuaXPLMGetDatai(lua_State* L)
 {
     if (lua_islightuserdata(L, 1))
@@ -5878,6 +5898,7 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "begin_classic_mode", Luabegin_classic_mode);
     lua_register(L, "end_classic_mode", Luaend_classic_mode);
     lua_register(L, "XPLMFindDataRef", LuaXPLMFindDataRef);
+    lua_register(L, "XPLMFindCommand", LuaXPLMFindCommand);
     lua_register(L, "XPLMGetDatai", LuaXPLMGetDatai);
     lua_register(L, "XPLMGetDataf", LuaXPLMGetDataf);
     lua_register(L, "XPLMGetDatad", LuaXPLMGetDatad);
