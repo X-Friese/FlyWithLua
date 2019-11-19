@@ -3,8 +3,7 @@ set -e
 
 function build() {
   local src_dir="$1"
-  local complete_edition="$2"
-  local platform="$3"
+  local platform="$2"
   echo "----------------- Building for $platform -----------------"
 
   local build_dir="$src_dir/build-$platform"
@@ -26,8 +25,6 @@ function build() {
       return
   esac
 
-  flags+=("-DCREATECOMPLETEEDITION=$complete_edition")
-
   (
     export PATH="$PATH:/usr/osxcross/bin"
     mkdir -p "$build_dir" && cd "$build_dir"
@@ -36,13 +33,7 @@ function build() {
   )
 }
 
-complete_edition=1
-if [[ "$1" == "--complete" ]]; then
-  complete_edition="$2"
-  shift 2
-fi
-
 src_dir="$(pwd)"
 for platform in $@; do
-  build "$src_dir" "$complete_edition" "$platform"
+  build "$src_dir" "$platform"
 done

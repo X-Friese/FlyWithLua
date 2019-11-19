@@ -4,18 +4,8 @@
 
 #define PLUGIN_VERSION "2.7.21 build " __DATE__ " " __TIME__
 
-#if CREATECOMPLETEEDITION
-
 #define PLUGIN_NAME "FlyWithLua NG"
-#define PLUGIN_DESCRIPTION "Batteries included version " PLUGIN_VERSION
-
-#else
-
-#define PLUGIN_NAME "FlyWithLua Core"
-#define PLUGIN_DESCRIPTION "Core version of FlyWithLua with full support but less features."
-
-#endif // CREATECOMPLETEEDITION
-
+#define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
 
 // Copyright (c) 2012 Carsten Lynker
 //
@@ -32,7 +22,6 @@
 // THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
 // CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
-
 
 
 /***** (this is old stuff reused from FlyVFR)
@@ -130,6 +119,7 @@
  *  v2.7.19 [fixed]   issue with Arcaze not being found.
  *  v2.7.20 [changed] Remove the limit on the number of sounds.
  *  v2.7.21 [added]   Support for XPLMFindCommand.
+ *          [removed] Removed support for building core and complete versions as we only build the NG version.
  *
  *
  *  Markus (Teddii):
@@ -298,22 +288,6 @@ namespace flywithlua
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
-
-
-// Do we want to access a forbidden DataRef?
-#if CREATECOMPLETEEDITION
-#define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) // we only want to check DataRefWanted in Core Edition
-#else
-#define CHECK_IF_DATAREF_ALLOWED(DataRefWanted) if (strncmp(DataRefWanted, "sim/private/", 12)==0) \
-    { \
-        logMsg(logToAll, string("FlyWithLua Error: The DataRef \"").append(DataRefWanted).append("\" can not be accessed from FlyWithLua, as it is a private DataRef. Reading or writing private DataRefs is prohibited by Laminar Research.")); \
-        logMsg(logToAll, string("FlyWithLua Info: Ben Supnik told us this:    (Please see http://developer.x-plane.com/2014/05/art-controls-are-an-active-volcano/ for more details.)")); \
-        logMsg(logToAll, string("FlyWithLua Info: The art controls are not a public interface to make X-Plane add-ons. They are an internal development tool. They are unsupported, undocumented, unsafe, and most importantly subject to change with every patch of X-Plane.")); \
-        logMsg(logToAll, string("FlyWithLua Info: If you create an add-on that requires reading or writing the art controls, you can expect that your add-on will stop working when X-Plane is updated. When your add-on breaks, please do not complain or file a bug.")); \
-        LuaIsRunning = false; \
-        return 0; \
-    }
-#endif // CREATECOMPLETEEDITION
 
 
 // a flag to reload the scenery
@@ -3087,8 +3061,7 @@ static int LuaGet(lua_State* L)
         return 0;
     }
     strncpy(DataRefWanted, lua_tostring(L, 1), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
+
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
@@ -3160,8 +3133,7 @@ static int LuaSet(lua_State* L)
         return 0;
     }
     strncpy(DataRefWanted, lua_tostring(L, 1), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
+
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
     {
@@ -3205,8 +3177,6 @@ static int LuaSetArray(lua_State* L)
         return 0;
     }
     strncpy(DataRefWanted, lua_tostring(L, 1), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     XPLMDataRef DataRefIdWanted = XPLMFindDataRef(DataRefWanted);
     if (DataRefIdWanted == nullptr)
@@ -3370,8 +3340,6 @@ static int LuaDataRef(lua_State* L)
         IndexWanted = static_cast<int>(lua_tointeger(L, 4));
     }
 
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     // Did we already know the variable?
     if (DataRefTableLastElement >= 0)
@@ -3490,8 +3458,6 @@ static int LuaCreateSwitch(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3563,8 +3529,6 @@ static int LuaCreateAxisMedian(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     IndexWanted = static_cast<int>(lua_tointeger(L, 1));
 
@@ -3605,8 +3569,6 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3672,8 +3634,6 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3739,8 +3699,6 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3822,8 +3780,6 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3905,8 +3861,6 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -3991,8 +3945,6 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -4077,8 +4029,6 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -4163,8 +4113,6 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     }
 
     strncpy(DataRefWanted, lua_tostring(L, 2), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     if (!lua_isnumber(L, 3))
     {
@@ -4835,8 +4783,6 @@ static int LuaXPLMFindDataRef(lua_State* L)
     XPLMDataRef DataRefID;
 
     strncpy(DataRefWanted, luaL_checkstring(L, 1), sizeof(DataRefWanted));
-    // Do we want to access a forbidden DataRef?
-    CHECK_IF_DATAREF_ALLOWED(DataRefWanted)
 
     DataRefID = XPLMFindDataRef(DataRefWanted);
     if (DataRefID != nullptr)
@@ -7028,11 +6974,7 @@ PLUGIN_API int XPluginStart(
 
     // Plugin Info
     strcpy(outName, PLUGIN_NAME " " PLUGIN_VERSION);
-#if CREATECOMPLETEEDITION
     strcpy(outSig, "CarstenLynker.FlyWithLua.NG");
-#else
-    strcpy(outSig, "CarstenLynker.FlyWithLua.Core");
-#endif // CREATECOMPLETEEDITION
     strcpy(outDesc, PLUGIN_DESCRIPTION);
 
     // use posix path on Mac OSX

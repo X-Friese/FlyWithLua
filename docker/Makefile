@@ -1,8 +1,8 @@
-COMPLETE_EDITION=1
-
 platforms=win mac lin
 container=fwl-cross-compile-env
 
+# all: mac lin win
+# all: mac lin win
 all: mac win lin
 
 .image: Dockerfile build.sh
@@ -13,6 +13,6 @@ bash: .image
 	docker run -it --rm -v "$(realpath ../src):/src" --entrypoint bash $(container):latest
 
 $(platforms): .image
-	docker run -i --rm -v "$(realpath ../src):/src" $(container):latest --complete $(COMPLETE_EDITION) $@
+	docker run -i --rm -v "$(realpath ../src):/src" $(container):latest $@
 
 .PHONY: $(platforms) bash
