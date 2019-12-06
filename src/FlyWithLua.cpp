@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.21 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.22 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -120,6 +120,8 @@
  *  v2.7.20 [changed] Remove the limit on the number of sounds.
  *  v2.7.21 [added]   Support for XPLMFindCommand.
  *          [removed] Removed support for building core and complete versions as we only build the NG version.
+ *  v2.7.22 [added]   Verbose logging mode to keep the Log.txt cleaner unless needed for troubleshooting.
+ *          [changed] Remove the limit on the number of datarefs.
  *
  *
  *  Markus (Teddii):
@@ -988,6 +990,9 @@ int        FlyWithLuaMenuItem;
 XPLMMenuCheck DevMenuMode;
 int DevModeCheckedPosition = 10;
 
+XPLMMenuCheck VerboseMenuMode;
+int VerboseModeCheckedPosition = 12;
+
 int bad_script_count = 0;
 int bad_scripts_found = 0;
 
@@ -1000,6 +1005,7 @@ void send_delayed_quarantined_message();
 int found_bad_function_script = 0;
 
 int developer_mode = 0;
+int verbose_logging_mode = 0;
 
 clock_t speak_time;
 
@@ -5420,7 +5426,10 @@ static int LuaLoadWAVFile(lua_State* L)
     // Generate source and load a buffer of audio.
     alGenSources(1, &OpenALSounds.back().source);
     load_wave(FileNameToLoad);
-    logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
+    if (verbose_logging_mode == 1)
+    {
+        logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
+    }
     CHECK_ERR();
 
     // Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
@@ -6539,6 +6548,15 @@ bool ReadPrefFile()
     // Developer mode on from prefs file so check menu item.
     XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
   }
+
+  if (verbose_logging_mode == 0)
+  {
+     // No verbose mode from prefs file so uncheck menu item.
+     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
+  } else {
+     // Developer mode on from prefs file so check menu item.
+     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
+  }
   return true;
 }
 
@@ -7187,6 +7205,9 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Return all quarantined Lua scripts", (void*) "ReturnQt", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable moving bad scripts to Quarantine", (void*) "DevMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
+    XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Enable Verbose Logging Mode", (void*) "VerboseMode", 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
 
     // init the XSB connection
     XSBPluginId             = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
@@ -7915,6 +7936,22 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
         {
             XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
             developer_mode = 1;
+        }
+        return;
+    }
+
+    if (!strcmp((char*) iRef, "VerboseMode"))
+    {
+        XPLMCheckMenuItemState(FlyWithLuaMenuId, VerboseModeCheckedPosition, &VerboseMenuMode);
+        if (VerboseMenuMode == 2)
+        {
+            XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
+            verbose_logging_mode = 0;
+        }
+        else
+        {
+            XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
+            verbose_logging_mode = 1;
         }
         return;
     }

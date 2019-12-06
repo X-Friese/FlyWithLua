@@ -40,6 +40,7 @@ extern int found_bad_function_script;
 extern void DebugLua();
 extern void process_read_ini_file();
 extern int developer_mode;
+extern int verbose_logging_mode;
 }
 
 #endif
