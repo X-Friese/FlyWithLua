@@ -121,7 +121,8 @@
  *  v2.7.21 [added]   Support for XPLMFindCommand.
  *          [removed] Removed support for building core and complete versions as we only build the NG version.
  *  v2.7.22 [added]   Verbose logging mode to keep the Log.txt cleaner unless needed for troubleshooting.
- *          [changed] Remove the limit on the number of datarefs.
+ *          [added]   #define MAXSWITCHES 400.
+ *          [changed] #define MAXDATAREFS from 400 to 600.
  *
  *
  *  Markus (Teddii):
@@ -286,7 +287,8 @@ namespace flywithlua
 #define NORMALSTRING 250
 #define SHORTSRTING 80
 #define LONGSTRING 1024
-#define MAXDATAREFS 400
+#define MAXDATAREFS 600 // sparker256 changed this from 400 to 600 as a stopgap. We need to convert this to a vector.
+#define MAXSWITCHES 400 // We also need to convert this to a vector. sparker256 does not have the skillset to do this.
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
@@ -450,7 +452,7 @@ struct SwitchTableStructure
     int            stepping_int{};
 };
 
-static SwitchTableStructure SwitchTable[MAXDATAREFS];
+static SwitchTableStructure SwitchTable[MAXSWITCHES];
 static int                  SwitchTableLastElement   = -1;
 
 
@@ -3493,11 +3495,11 @@ static int LuaCreateSwitch(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = Switch;
@@ -3543,11 +3545,11 @@ static int LuaCreateAxisMedian(lua_State* L)
     XPLMGetDatavf(gJoystickAxisValues, &axis_value, IndexWanted, 1);
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType        = AxisMedian;
@@ -3604,11 +3606,11 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveEdge;
@@ -3669,11 +3671,11 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeEdge;
@@ -3734,11 +3736,11 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveFlip;
@@ -3815,11 +3817,11 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeFlip;
@@ -3896,11 +3898,11 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveIncrement;
@@ -3980,11 +3982,11 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeIncrement;
@@ -4064,11 +4066,11 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveDecrement;
@@ -4148,11 +4150,11 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeDecrement;
@@ -7060,7 +7062,7 @@ PLUGIN_API void XPluginDisable(void)
     // run through the exit script
     if (ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
     {
-        logMsg(logToDevCon, "FlyWithLua Info: Load exit file.");
+        logMsg(logToDevCon, "FlyWithLua Info: Exit file loaded.");
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Unable to load exit file.");
