@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.21 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.22 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -120,6 +120,9 @@
  *  v2.7.20 [changed] Remove the limit on the number of sounds.
  *  v2.7.21 [added]   Support for XPLMFindCommand.
  *          [removed] Removed support for building core and complete versions as we only build the NG version.
+ *  v2.7.22 [added]   Verbose logging mode to keep the Log.txt cleaner unless needed for troubleshooting.
+ *          [added]   #define MAXSWITCHES 400.
+ *          [changed] #define MAXDATAREFS from 400 to 600.
  *
  *
  *  Markus (Teddii):
@@ -284,7 +287,8 @@ namespace flywithlua
 #define NORMALSTRING 250
 #define SHORTSRTING 80
 #define LONGSTRING 1024
-#define MAXDATAREFS 400
+#define MAXDATAREFS 600 // sparker256 changed this from 400 to 600 as a stopgap. We need to convert this to a vector.
+#define MAXSWITCHES 400 // We also need to convert this to a vector. sparker256 does not have the skillset to do this.
 #define MAXMACROS 150
 #define MAXCOMMANDS 250
 #define MAXJOYSTICKBUTTONS 3200  // this value is set by the length of DataRef sim/joystick/joystick_button_values
@@ -448,7 +452,7 @@ struct SwitchTableStructure
     int            stepping_int{};
 };
 
-static SwitchTableStructure SwitchTable[MAXDATAREFS];
+static SwitchTableStructure SwitchTable[MAXSWITCHES];
 static int                  SwitchTableLastElement   = -1;
 
 
@@ -988,6 +992,9 @@ int        FlyWithLuaMenuItem;
 XPLMMenuCheck DevMenuMode;
 int DevModeCheckedPosition = 10;
 
+XPLMMenuCheck VerboseMenuMode;
+int VerboseModeCheckedPosition = 12;
+
 int bad_script_count = 0;
 int bad_scripts_found = 0;
 
@@ -1000,6 +1007,7 @@ void send_delayed_quarantined_message();
 int found_bad_function_script = 0;
 
 int developer_mode = 0;
+int verbose_logging_mode = 0;
 
 clock_t speak_time;
 
@@ -3487,11 +3495,11 @@ static int LuaCreateSwitch(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = Switch;
@@ -3537,11 +3545,11 @@ static int LuaCreateAxisMedian(lua_State* L)
     XPLMGetDatavf(gJoystickAxisValues, &axis_value, IndexWanted, 1);
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType        = AxisMedian;
@@ -3598,11 +3606,11 @@ static int LuaCreatePositiveEdgeTrigger(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveEdge;
@@ -3663,11 +3671,11 @@ static int LuaCreateNegativeEdgeTrigger(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeEdge;
@@ -3728,11 +3736,11 @@ static int LuaCreatePositiveEdgeFlip(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveFlip;
@@ -3809,11 +3817,11 @@ static int LuaCreateNegativeEdgeFlip(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeFlip;
@@ -3890,11 +3898,11 @@ static int LuaCreatePositiveEdgeIncrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveIncrement;
@@ -3974,11 +3982,11 @@ static int LuaCreateNegativeEdgeIncrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeIncrement;
@@ -4058,11 +4066,11 @@ static int LuaCreatePositiveEdgeDecrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = PositiveDecrement;
@@ -4142,11 +4150,11 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     }
 
     // add it to the table
-    if (++SwitchTableLastElement >= MAXDATAREFS)
+    if (++SwitchTableLastElement >= MAXSWITCHES)
     {
         logMsg(logToDevCon, "FlyWithLua Error: You want more switches than I can handle!");
         LuaIsRunning           = false;
-        SwitchTableLastElement = MAXDATAREFS - 1;
+        SwitchTableLastElement = MAXSWITCHES - 1;
     } else
     {
         SwitchTable[SwitchTableLastElement].SwitchType  = NegativeDecrement;
@@ -5420,7 +5428,10 @@ static int LuaLoadWAVFile(lua_State* L)
     // Generate source and load a buffer of audio.
     alGenSources(1, &OpenALSounds.back().source);
     load_wave(FileNameToLoad);
-    logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
+    if (verbose_logging_mode == 1)
+    {
+        logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
+    }
     CHECK_ERR();
 
     // Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
@@ -6539,6 +6550,15 @@ bool ReadPrefFile()
     // Developer mode on from prefs file so check menu item.
     XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
   }
+
+  if (verbose_logging_mode == 0)
+  {
+     // No verbose mode from prefs file so uncheck menu item.
+     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
+  } else {
+     // Developer mode on from prefs file so check menu item.
+     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
+  }
   return true;
 }
 
@@ -7042,7 +7062,7 @@ PLUGIN_API void XPluginDisable(void)
     // run through the exit script
     if (ReadScriptFile("Resources/plugins/FlyWithLua/Internals/FlyWithLua.exit"))
     {
-        logMsg(logToDevCon, "FlyWithLua Info: Load exit file.");
+        logMsg(logToDevCon, "FlyWithLua Info: Exit file loaded.");
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Unable to load exit file.");
@@ -7187,6 +7207,9 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Return all quarantined Lua scripts", (void*) "ReturnQt", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Disable moving bad scripts to Quarantine", (void*) "DevMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 1);
+    XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Enable Verbose Logging Mode", (void*) "VerboseMode", 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
 
     // init the XSB connection
     XSBPluginId             = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
@@ -7915,6 +7938,22 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
         {
             XPLMCheckMenuItem(FlyWithLuaMenuId, DevModeCheckedPosition, 2);
             developer_mode = 1;
+        }
+        return;
+    }
+
+    if (!strcmp((char*) iRef, "VerboseMode"))
+    {
+        XPLMCheckMenuItemState(FlyWithLuaMenuId, VerboseModeCheckedPosition, &VerboseMenuMode);
+        if (VerboseMenuMode == 2)
+        {
+            XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
+            verbose_logging_mode = 0;
+        }
+        else
+        {
+            XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
+            verbose_logging_mode = 1;
         }
         return;
     }

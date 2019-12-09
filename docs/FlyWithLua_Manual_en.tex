@@ -3783,7 +3783,7 @@ Lua will stop and also create a FlyWithLua\_Debug.txt file that hopefully you ca
 \newpage
 \section{fwl\_prefs.ini file}
 
-We have started to use iniReader so FlyWithLua can have a preference file. The preference file allows the user change the default behavior of FlyWithLua. Currently there is only one parameter that you can change and that is the developer mode. If a line starts with a ; it will be ignored and used as a comment. \newline
+We have started to use iniReader so FlyWithLua can have a preference file. The preference file allows the user change the default behavior of FlyWithLua. Currently there are two parameters that you can change and that is the developer mode and Verbose mode. If a line starts with a ; it will be ignored and used as a comment. \newline
 
 ;FlyWithLua Preference file \newline
 ; \newline
@@ -3793,6 +3793,9 @@ We have started to use iniReader so FlyWithLua can have a preference file. The p
 ; \newline
 ;DeveloperMode = 0 Disabeled  = 1 Enabeled \newline
 DeveloperMode = 0 \newline
+; \newline
+;VerboseMode = 0 Disabeled  = 1 Enabeled \newline
+VerboseMode = 0 \newline
 
 If you change the 0 to a 1 you will be in developer mode and will disable the (Quarantine) folder
 functions. This will be this way until you change it back to the default of 0.

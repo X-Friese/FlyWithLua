@@ -36,4 +36,7 @@ void flywithlua::process_read_ini_file()
   }
   // Do we want to enable developer mode?
   readOptionAsInt("DeveloperMode", &developer_mode);
+
+  // Do we want to enable verbose logging mode?
+  readOptionAsInt("VerboseMode", &verbose_logging_mode);
 }
