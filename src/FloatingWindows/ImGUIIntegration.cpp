@@ -6,8 +6,13 @@
  */
 
 /*
- * This file is based on code by Christopher Collins, https://github.com/kuroneko/xsb_public
+ * portions copied with permission from https://github.com/kuroneko/xsb_public
  *
+ * ImgWindow.cpp
+ *
+ * Integration for dear imgui into X-Plane.
+ *
+ * Copyright (C) 2018, Christopher Collins
  */
 #include <XPLMGraphics.h>
 #include <XPLMUtilities.h>
