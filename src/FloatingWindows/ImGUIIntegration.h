@@ -4,6 +4,16 @@
  *   Released as public domain code.
  *
  */
+
+/*
+ * portions copied with permission from https://github.com/kuroneko/xsb_public
+ *
+ * ImgWindow.h
+ *
+ * Integration for dear imgui into X-Plane.
+ *
+ * Copyright (C) 2018, Christopher Collins
+ */
 #ifndef FLOATINGWINDOWS_IMGUIINTEGRATION_H_
 #define FLOATINGWINDOWS_IMGUIINTEGRATION_H_
 
