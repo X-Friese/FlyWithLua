@@ -236,7 +236,7 @@ function build_demo(wnd, x, y)
 
         -- BeginCombo starts a combo box. The first parameter is the label, the
         -- second parameter the text of the currently selected choice.
-        if imgui.BeginCombo("Combo Box", choices[choice]) then
+        if imgui.BeginCombo("Combo Box", "", choices[choice]) then
             -- Loop over all choices
             for i = 1, #choices do
                 -- The Selectable function adds a choice to a combobox.
