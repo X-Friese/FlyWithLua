@@ -1,5 +1,6 @@
 -- imgui demo script
 -- Folke Will 2018-07-15
+-- Willian R. Good 2020-05-14 Updated to reflect now using Imgui 1.70
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -221,8 +222,8 @@ function build_demo(wnd, x, y)
             sliderVal = newVal
         end
         
-        -- For angles:
-        local changed, newVal = imgui.SliderAngle("Angle Slider", angle, -180, 180)
+        -- For angles: 
+        local changed, newVal = imgui.SliderAngle("Angle Slider", angle, -180, 180, "Value: %.0f")
         if changed then
             angle = newVal
         end

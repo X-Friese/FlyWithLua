@@ -146,6 +146,7 @@ sub generateImguiGeneric {
   my %funcNames;
   my %endTypeToInt;
   my @endTypes;
+  my @functionsAlreadyAdded;
   foreach $line (split /\n/, $imguiCodeBlock) {
     #replace ImVec2(x, y) with ImVec2 x, y so it's easier for regex (and ImVec4)
     $line =~ s/ImVec2\(([^,]*),([^\)]*)\)/ImVec2 $1 $2/g;
@@ -166,6 +167,13 @@ sub generateImguiGeneric {
       my @after;
       # real c++ function name
       my $funcName = $5;
+
+	  #say STDERR "Parsing function: " . $funcName;
+	  if (grep(/^$funcName$/, @functionsAlreadyAdded)) {
+		  #say STDERR $funcName;
+	  }
+	  push @functionsAlreadyAdded, $funcName;
+	  
       if (defined($bannedNames{$funcName})) {
         print "//Not allowed to use this function\n";
         $shouldPrint = 0;
@@ -455,9 +463,17 @@ my ($blocksref, $blocknamesref) = parse_blocks();
 my @blocks = @$blocksref;
 my @blocknames = @$blocknamesref;
 
+# @spaderthomas 3/1/2020: ImGui also puts its deprecated functions in namespace ImGui,
+# so we'll end up parsing a couple functions twice and causing compiler errors.
+#
+# This flag just means that we've parsed the main one, so don't parse the next one. If ImGui
+# splits up its header to multiple instances of namespace ImGui, this would break.
+my $alreadyParsedMainImguiNamespace = 0;
+
 for (my $i=0; $i < scalar @blocks; $i++) {
   print "//" . $blocknames[$i] . "\n";
-  if ($blocknames[$i] eq "namespace ImGui\n") {
+  if (($blocknames[$i] eq "namespace ImGui\n") and not $alreadyParsedMainImguiNamespace) {
+	$alreadyParsedMainImguiNamespace = 1;
     generateNamespaceImgui($blocks[$i]);
   }
   if ($blocknames[$i] =~ m/enum ImGui(.*)_\n/) {

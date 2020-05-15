@@ -34,7 +34,9 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     auto &io = ImGui::GetIO();
     io.RenderDrawListsFn = nullptr;
     io.IniFilename = nullptr;
-    io.OptMacOSXBehaviors = false;
+    // io.OptMacOSXBehaviors = false;
+    // disable OSX-like keyboard behaviours always - we don't have the keymapping for it.
+    io.ConfigMacOSXBehaviors = false; // This is the new version above Imgui 1.60
     io.ConfigFlags = ImGuiConfigFlags_NavNoCaptureKeyboard;
 
     io.KeyMap[ImGuiKey_Tab] = XPLM_VK_TAB;
