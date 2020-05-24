@@ -20,7 +20,7 @@ function i170d_on_build(i170d_wnd, x, y)
 end
 
 
-function closed_hello_world(wnd)
+function closed_imgui_170_demo(wnd)
     local _ = wnd -- Reference to window, which triggered the call.
     -- This function is called when the user closes the window. Drawing or calling imgui
     -- functions is not allowed in this function as the window is already destroyed.
