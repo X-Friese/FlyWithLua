@@ -26,7 +26,13 @@ do_on_keystroke("keystroke_sniffer_event_handler()")
 
 function print_keystroke_sniffer_result()
 	if keystroke_sniffer_active then
-		draw_string(50, 900, keystroke_debug_string)
+		glColor4f(0, 0, 0, 255)
+        draw_string_Helvetica_18(50-1, SCREEN_HIGHT-130-1, keystroke_debug_string)
+        draw_string_Helvetica_18(50+1, SCREEN_HIGHT-130+1, keystroke_debug_string)
+        draw_string_Helvetica_18(50+1, SCREEN_HIGHT-130-1, keystroke_debug_string)
+        draw_string_Helvetica_18(50-1, SCREEN_HIGHT-130+1, keystroke_debug_string)
+        glColor4f(255, 255, 255, 255)
+		draw_string_Helvetica_18(50, SCREEN_HIGHT-130, keystroke_debug_string)
 	end
 end
 
