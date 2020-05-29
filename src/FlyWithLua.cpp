@@ -463,7 +463,9 @@ static int LuaResetCount        = 0;
 bool UserWantsANewPlane         = false;
 bool UserWantsToLoadASituation  = false;
 bool UserWantsToReplaceAircraft = false;
+bool UserWantsToMoveAircraft    = false;
 char UserWantedFilename[LONGSTRING];
+double UserWantedPosHdgSpd[5];
 
 bool WeAreNotInDrawingState     = true;
 
@@ -2023,6 +2025,30 @@ static int LuaPlaceUserAtAirport(lua_State* L)
     UserWantsANewPlane         = false;
     UserWantsToLoadASituation  = false;
     UserWantsToReplaceAircraft = true;
+    UserWantsToMoveAircraft    = false;
+    LuaIsRunning               = false;
+    return 0;
+}
+
+static int LuaPlaceUserAtLocation(lua_State* L)
+{
+    if (!(lua_isnumber(L, 1) && lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5)))
+    {
+        logMsg(logToDevCon, "FlyWithLua Error: Wrong arguments to function XPLMPlaceUserAtLocation.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    UserWantedPosHdgSpd[0] = static_cast<double>(lua_tonumber(L, 1));
+    UserWantedPosHdgSpd[1] = static_cast<double>(lua_tonumber(L, 2));
+    UserWantedPosHdgSpd[2] = static_cast<float>(lua_tonumber(L, 3));
+    UserWantedPosHdgSpd[3] = static_cast<float>(lua_tonumber(L, 4));
+    UserWantedPosHdgSpd[4] = static_cast<float>(lua_tonumber(L, 5));
+
+    UserWantsANewPlane         = false;
+    UserWantsToLoadASituation  = false;
+    UserWantsToReplaceAircraft = false;
+    UserWantsToMoveAircraft    = true;
     LuaIsRunning               = false;
     return 0;
 }
@@ -2041,6 +2067,7 @@ static int LuaLoadAircraft(lua_State* L)
     UserWantsANewPlane         = true;
     UserWantsToLoadASituation  = false;
     UserWantsToReplaceAircraft = false;
+    UserWantsToMoveAircraft    = false;
     LuaIsRunning               = false;
     return 0;
 }
@@ -2059,6 +2086,7 @@ static int LuaLoadSituation(lua_State* L)
     UserWantsANewPlane         = false;
     UserWantsToLoadASituation  = true;
     UserWantsToReplaceAircraft = false;
+    UserWantsToMoveAircraft    = false;
     LuaIsRunning               = false;
     return 0;
 }
@@ -5874,6 +5902,7 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "set_pilots_head", LuaSetPilotsHead);
     lua_register(L, "get_pilots_head", LuaGetPilotsHead);
     lua_register(L, "place_aircraft_at", LuaPlaceUserAtAirport);
+    lua_register(L, "place_aircraft_at_location", LuaPlaceUserAtLocation);
     lua_register(L, "load_situation", LuaLoadSituation);
     lua_register(L, "save_situation", LuaSaveSituation);
     lua_register(L, "load_aircraft", LuaLoadAircraft);
@@ -6408,6 +6437,7 @@ void ResetLuaEngine()
     UserWantsANewPlane         = false;
     UserWantsToLoadASituation  = false;
     UserWantsToReplaceAircraft = false;
+    UserWantsToMoveAircraft    = false;
 
     luaL_openlibs(FWLLua);
     RegisterEmbeddedModules(FWLLua);
@@ -7434,6 +7464,7 @@ float MyFastLoopCallback(
         UserWantsANewPlane         = false;
         UserWantsToLoadASituation  = false;
         UserWantsToReplaceAircraft = false;
+        UserWantsToMoveAircraft    = false;
         LuaIsRunning               = false;
         XPLMSetUsersAircraft(UserWantedFilename);
         return TimeBetweenCallbacks;
@@ -7443,8 +7474,25 @@ float MyFastLoopCallback(
         UserWantsANewPlane         = false;
         UserWantsToLoadASituation  = false;
         UserWantsToReplaceAircraft = false;
+        UserWantsToMoveAircraft    = false;
         LuaIsRunning               = false;
         XPLMPlaceUserAtAirport(UserWantedFilename);
+        return TimeBetweenCallbacks;
+    }
+    if (UserWantsToMoveAircraft)
+    {
+        UserWantsANewPlane         = false;
+        UserWantsToLoadASituation  = false;
+        UserWantsToReplaceAircraft = false;
+        UserWantsToMoveAircraft    = false;
+        LuaIsRunning               = false;
+        XPLMPlaceUserAtLocation(
+            UserWantedPosHdgSpd[0], 
+            UserWantedPosHdgSpd[1],
+            UserWantedPosHdgSpd[2],
+            UserWantedPosHdgSpd[3],
+            UserWantedPosHdgSpd[4]
+        );
         return TimeBetweenCallbacks;
     }
     if (UserWantsToLoadASituation)
@@ -7452,6 +7500,7 @@ float MyFastLoopCallback(
         UserWantsANewPlane         = false;
         UserWantsToLoadASituation  = false;
         UserWantsToReplaceAircraft = false;
+        UserWantsToMoveAircraft    = false;
         LuaIsRunning               = false;
         XPLMLoadDataFile(xplm_DataFile_Situation, UserWantedFilename);
         logMsg(logToDevCon, "FlyWithLua: A situation file was loaded. Script files have to be reloaded.");
