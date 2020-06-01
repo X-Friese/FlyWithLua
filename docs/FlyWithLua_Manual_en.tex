@@ -1584,6 +1584,10 @@ If you leave the \emph{line width} argument away, a line width of 1.0 will be us
 
 Draws a circle filled with the actual color.
 
+\subsubsection{graphics.draw\_arc\_line( \emph{x}, \emph{y}, \emph{start angle}, \emph{end angle}, \emph{radius}, \emph{line width} )}
+
+Draws an arc line but without direct internal lines going to the center position defined by a start and an end angle. If you leave the \emph{line width} argument away, a line width of 1.0 will be used.
+
 \subsubsection{graphics.draw\_arc( \emph{x}, \emph{y}, \emph{start angle}, \emph{end angle}, \emph{radius}, \emph{line width} )}
 
 Draws an arc defined by a start and an end angle. If you leave the \emph{line width} argument away, a line width of 1.0 will be used.
@@ -2315,7 +2319,7 @@ Reading out a double DataRef. If the DataRef is not readable as a double, the si
 
 Reading out an integer DataRef array. If the DataRef is not readable as an integer array, or are you using index values outside the range of the DataRef, the simulator may blow up without a warning! The lua table will store the values with correct index seen from the world of X-Plane. The first value can be indexed 0 (zero), if you start from the first entry of an array DataRef. This is cool for C/C++ code, but uncool for Lua. So avoid ipairs() on tables made by \verb|XPLMGetDatavi()| commands.
 
-\subsubsection{\emph{table} = XPLMGetDatavf( \emph{DataRef} )}
+\subsubsection{\emph{table} = XPLMGetDatavf( \emph{DataRef} \emph{inIndex} \emph{inMax})}
 
 \begin{enumerate}
 	\item \emph{table} = The lua table, you want the value to be pushed in.
