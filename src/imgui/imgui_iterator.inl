@@ -13,41 +13,34 @@
 // Unsupported return type ImGuiContext*
 //    IMGUI_API void          SetCurrentContext(ImGuiContext* ctx);
 // Unsupported arg type ImGuiContext* ctx
-//    IMGUI_API bool          DebugCheckVersionAndDataLayout(const char* version_str, size_t sz_io, size_t sz_style, size_t sz_vec2, size_t sz_vec4, size_t sz_drawvert, size_t sz_drawidx);
-// Unsupported arg type  size_t sz_io
-// Unsupported arg type  size_t sz_style
-// Unsupported arg type  size_t sz_vec2
-// Unsupported arg type  size_t sz_vec4
-// Unsupported arg type  size_t sz_drawvert
-// Unsupported arg type  size_t sz_drawidx
 //    IMGUI_API ImGuiIO&      GetIO();                                    // access the IO structure (mouse/keyboard/gamepad inputs, time, various configuration options/flags)
 // Unsupported return type ImGuiIO&
-//    IMGUI_API ImGuiStyle&   GetStyle();                                 // access the Style structure (colors, sizes). Always use PushStyleCol(), PushStyleVar() to modify style mid-frame.
+//    IMGUI_API ImGuiStyle&   GetStyle();                                 // access the Style structure (colors, sizes). Always use PushStyleCol(), PushStyleVar() to modify style mid-frame!
 // Unsupported return type ImGuiStyle&
 //    IMGUI_API void          NewFrame();                                 // start a new Dear ImGui frame, you can submit any command from this point until Render()/EndFrame().
 //Not allowed to use this function
-//    IMGUI_API void          EndFrame();                                 // ends the Dear ImGui frame. automatically called by Render(), you likely don't need to call that yourself directly. If you don't need to render data (skipping rendering) you may call EndFrame() but you'll have wasted CPU already! If you don't need to render, better to not create any imgui windows and not call NewFrame() at all!
+//    IMGUI_API void          EndFrame();                                 // ends the Dear ImGui frame. automatically called by Render(). If you don't need to render data (skipping rendering) you may call EndFrame() without Render()... but you'll have wasted CPU already! If you don't need to render, better to not create any windows and not call NewFrame() at all!
 IMGUI_FUNCTION(EndFrame)
 CALL_FUNCTION_NO_RET(EndFrame)
 POP_END_STACK(0)
 END_IMGUI_FUNC
-//    IMGUI_API void          Render();                                   // ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function. (Obsolete: this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.)
+//    IMGUI_API void          Render();                                   // ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function (up to v1.60, this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.)
 //Not allowed to use this function
 //    IMGUI_API ImDrawData*   GetDrawData();                              // valid after Render() and until the next call to NewFrame(). this is what you have to render.
 // Unsupported return type ImDrawData*
-//    IMGUI_API void          ShowDemoWindow(bool* p_open = NULL);        // create demo/test window (previously called ShowTestWindow). demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application!
+//    IMGUI_API void          ShowDemoWindow(bool* p_open = NULL);        // create Demo window (previously called ShowTestWindow). demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application!
 IMGUI_FUNCTION(ShowDemoWindow)
 OPTIONAL_BOOL_POINTER_ARG(p_open)
 CALL_FUNCTION_NO_RET(ShowDemoWindow, p_open)
 END_BOOL_POINTER(p_open)
 END_IMGUI_FUNC
-//    IMGUI_API void          ShowAboutWindow(bool* p_open = NULL);       // create about window. display Dear ImGui version, credits and build/system information.
+//    IMGUI_API void          ShowAboutWindow(bool* p_open = NULL);       // create About window. display Dear ImGui version, credits and build/system information.
 IMGUI_FUNCTION(ShowAboutWindow)
 OPTIONAL_BOOL_POINTER_ARG(p_open)
 CALL_FUNCTION_NO_RET(ShowAboutWindow, p_open)
 END_BOOL_POINTER(p_open)
 END_IMGUI_FUNC
-//    IMGUI_API void          ShowMetricsWindow(bool* p_open = NULL);     // create metrics/debug window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc.
+//    IMGUI_API void          ShowMetricsWindow(bool* p_open = NULL);     // create Debug/Metrics window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc.
 IMGUI_FUNCTION(ShowMetricsWindow)
 OPTIONAL_BOOL_POINTER_ARG(p_open)
 CALL_FUNCTION_NO_RET(ShowMetricsWindow, p_open)
@@ -131,10 +124,18 @@ IMGUI_FUNCTION(IsWindowCollapsed)
 CALL_FUNCTION(IsWindowCollapsed, bool)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsWindowFocused(ImGuiFocusedFlags flags=0); // is current window focused? or its root/child, depending on flags. see flags for options.
-// Unsupported arg type ImGuiFocusedFlags flags=0
-//    IMGUI_API bool          IsWindowHovered(ImGuiHoveredFlags flags=0); // is current window hovered (and typically: not blocked by a popup/modal)? see flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app, you should use the 'io.WantCaptureMouse' boolean for that! Please read the FAQ!
-// Unsupported arg type ImGuiHoveredFlags flags=0
+//    IMGUI_API bool          IsWindowFocused(ImGuiFocusedFlags flags = 0); // is current window focused? or its root/child, depending on flags. see flags for options.
+IMGUI_FUNCTION(IsWindowFocused)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(IsWindowFocused, bool, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          IsWindowHovered(ImGuiHoveredFlags flags = 0); // is current window hovered (and typically: not blocked by a popup/modal)? see flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app, you should use the 'io.WantCaptureMouse' boolean for that! Please read the FAQ!
+IMGUI_FUNCTION(IsWindowHovered)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(IsWindowHovered, bool, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImDrawList*   GetWindowDrawList();                        // get draw list associated to the current window, to append your own drawing primitives
 // Unsupported return type ImDrawList*
 //    IMGUI_API ImVec2        GetWindowPos();                             // get current window position in screen space (useful if you want to do your own drawing via the DrawList API)
@@ -175,7 +176,7 @@ END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowSizeConstraints(const ImVec2& size_min, const ImVec2& size_max, ImGuiSizeCallback custom_callback = NULL, void* custom_callback_data = NULL); // set next window size limits. use -1,-1 on either X/Y axis to preserve the current size. Sizes will be rounded down. Use callback to apply non-trivial programmatic constraints.
 // Unsupported arg type  ImGuiSizeCallback custom_callback = NULL
 // Unsupported arg type  void* custom_callback_data = NULL
-//    IMGUI_API void          SetNextWindowContentSize(const ImVec2& size);                               // set next window content size (~ enforce the range of scrollbars). not including window decorations (title bar, menu bar, etc.). set an axis to 0.0f to leave it automatic. call before Begin()
+//    IMGUI_API void          SetNextWindowContentSize(const ImVec2& size);                               // set next window content size (~ scrollable client area, which enforce the range of scrollbars). Not including window decorations (title bar, menu bar, etc.) nor WindowPadding. set an axis to 0.0f to leave it automatic. call before Begin()
 IMGUI_FUNCTION(SetNextWindowContentSize)
 IM_VEC_2_ARG(size)
 CALL_FUNCTION_NO_RET(SetNextWindowContentSize, size)
@@ -186,11 +187,11 @@ BOOL_ARG(collapsed)
 OPTIONAL_INT_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetNextWindowCollapsed, collapsed, cond)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetNextWindowFocus();                                                       // set next window to be focused / front-most. call before Begin()
+//    IMGUI_API void          SetNextWindowFocus();                                                       // set next window to be focused / top-most. call before Begin()
 IMGUI_FUNCTION(SetNextWindowFocus)
 CALL_FUNCTION_NO_RET(SetNextWindowFocus)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetNextWindowBgAlpha(float alpha);                                          // set next window background color alpha. helper to easily modify ImGuiCol_WindowBg/ChildBg/PopupBg. you may also use ImGuiWindowFlags_NoBackground.
+//    IMGUI_API void          SetNextWindowBgAlpha(float alpha);                                          // set next window background color alpha. helper to easily override the Alpha component of ImGuiCol_WindowBg/ChildBg/PopupBg. you may also use ImGuiWindowFlags_NoBackground.
 IMGUI_FUNCTION(SetNextWindowBgAlpha)
 NUMBER_ARG(alpha)
 CALL_FUNCTION_NO_RET(SetNextWindowBgAlpha, alpha)
@@ -213,11 +214,11 @@ BOOL_ARG(collapsed)
 OPTIONAL_INT_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetWindowCollapsed, collapsed, cond)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetWindowFocus();                                                           // (not recommended) set current window to be focused / front-most. prefer using SetNextWindowFocus().
+//    IMGUI_API void          SetWindowFocus();                                                           // (not recommended) set current window to be focused / top-most. prefer using SetNextWindowFocus().
 IMGUI_FUNCTION(SetWindowFocus)
 CALL_FUNCTION_NO_RET(SetWindowFocus)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetWindowFontScale(float scale);                                            // set font scale. Adjust IO.FontGlobalScale if you want to scale all windows
+//    IMGUI_API void          SetWindowFontScale(float scale);                                            // set font scale. Adjust IO.FontGlobalScale if you want to scale all windows. This is an old API! For correct scaling, prefer to reload font + rebuild ImFontAtlas + call style.ScaleAllSizes().
 IMGUI_FUNCTION(SetWindowFontScale)
 NUMBER_ARG(scale)
 CALL_FUNCTION_NO_RET(SetWindowFontScale, scale)
@@ -243,7 +244,7 @@ BOOL_ARG(collapsed)
 OPTIONAL_INT_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetWindowCollapsed, name, collapsed, cond)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetWindowFocus(const char* name);                                           // set named window to be focused / front-most. use NULL to remove focus.
+//    IMGUI_API void          SetWindowFocus(const char* name);                                           // set named window to be focused / top-most. use NULL to remove focus.
 IMGUI_FUNCTION(SetWindowFocus_1)
 LABEL_ARG(name)
 CALL_FUNCTION_NO_RET(SetWindowFocus, name)
@@ -307,10 +308,21 @@ IMGUI_FUNCTION(SetScrollY)
 NUMBER_ARG(scroll_y)
 CALL_FUNCTION_NO_RET(SetScrollY, scroll_y)
 END_IMGUI_FUNC
+//    IMGUI_API void          SetScrollHereX(float center_x_ratio = 0.5f);                    // adjust scrolling amount to make current cursor position visible. center_x_ratio=0.0: left, 0.5: center, 1.0: right. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead.
+IMGUI_FUNCTION(SetScrollHereX)
+OPTIONAL_NUMBER_ARG(center_x_ratio, 0.5f)
+CALL_FUNCTION_NO_RET(SetScrollHereX, center_x_ratio)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetScrollHereY(float center_y_ratio = 0.5f);                    // adjust scrolling amount to make current cursor position visible. center_y_ratio=0.0: top, 0.5: center, 1.0: bottom. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead.
 IMGUI_FUNCTION(SetScrollHereY)
 OPTIONAL_NUMBER_ARG(center_y_ratio, 0.5f)
 CALL_FUNCTION_NO_RET(SetScrollHereY, center_y_ratio)
+END_IMGUI_FUNC
+//    IMGUI_API void          SetScrollFromPosX(float local_x, float center_x_ratio = 0.5f);  // adjust scrolling amount to make given position visible. Generally GetCursorStartPos() + offset to compute a valid position.
+IMGUI_FUNCTION(SetScrollFromPosX)
+NUMBER_ARG(local_x)
+OPTIONAL_NUMBER_ARG(center_x_ratio, 0.5f)
+CALL_FUNCTION_NO_RET(SetScrollFromPosX, local_x, center_x_ratio)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetScrollFromPosY(float local_y, float center_y_ratio = 0.5f);  // adjust scrolling amount to make given position visible. Generally GetCursorStartPos() + offset to compute a valid position.
 IMGUI_FUNCTION(SetScrollFromPosY)
@@ -395,7 +407,7 @@ UINT_ARG(col)
 CALL_FUNCTION(GetColorU32, unsigned int, col)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
-//    IMGUI_API void          PushItemWidth(float item_width);                                // set width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, 
+//    IMGUI_API void          PushItemWidth(float item_width);                                // push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width,
 IMGUI_FUNCTION(PushItemWidth)
 NUMBER_ARG(item_width)
 CALL_FUNCTION_NO_RET(PushItemWidth, item_width)
@@ -409,12 +421,12 @@ IMGUI_FUNCTION(SetNextItemWidth)
 NUMBER_ARG(item_width)
 CALL_FUNCTION_NO_RET(SetNextItemWidth, item_width)
 END_IMGUI_FUNC
-//    IMGUI_API float         CalcItemWidth();                                                // width of item given pushed settings and current cursor position
+//    IMGUI_API float         CalcItemWidth();                                                // width of item given pushed settings and current cursor position. NOT necessarily the width of last item unlike most 'Item' functions.
 IMGUI_FUNCTION(CalcItemWidth)
 CALL_FUNCTION(CalcItemWidth, float)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
-//    IMGUI_API void          PushTextWrapPos(float wrap_local_pos_x = 0.0f);                 // word-wrapping for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space
+//    IMGUI_API void          PushTextWrapPos(float wrap_local_pos_x = 0.0f);                 // push word-wrapping position for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space
 IMGUI_FUNCTION(PushTextWrapPos)
 OPTIONAL_NUMBER_ARG(wrap_local_pos_x, 0.0f)
 CALL_FUNCTION_NO_RET(PushTextWrapPos, wrap_local_pos_x)
@@ -593,13 +605,13 @@ PUSH_NUMBER(ret)
 END_IMGUI_FUNC
 //    IMGUI_API ImGuiID       GetID(const void* ptr_id);
 // Unsupported arg type const void* ptr_id
-//    IMGUI_API void          TextUnformatted(const char* text, const char* text_end = NULL);                // raw text without formatting. Roughly equivalent to Text("%s", text) but: A) doesn't require null terminated string if 'text_end' is specified, B) it's faster, no memory copy is done, no buffer size limits, recommended for long chunks of text.
+//    IMGUI_API void          TextUnformatted(const char* text, const char* text_end = NULL); // raw text without formatting. Roughly equivalent to Text("%s", text) but: A) doesn't require null terminated string if 'text_end' is specified, B) it's faster, no memory copy is done, no buffer size limits, recommended for long chunks of text.
 IMGUI_FUNCTION(TextUnformatted)
 LABEL_ARG(text)
 OPTIONAL_LABEL_ARG(text_end)
 CALL_FUNCTION_NO_RET(TextUnformatted, text, text_end)
 END_IMGUI_FUNC
-//    IMGUI_API void          Text(const char* fmt, ...)                                      IM_FMTARGS(1); // simple formatted text
+//    IMGUI_API void          Text(const char* fmt, ...)                                      IM_FMTARGS(1); // formatted text
 // Unsupported arg type  ...)                                      IM_FMTARGS(1
 //    IMGUI_API void          TextV(const char* fmt, va_list args)                            IM_FMTLIST(1);
 // Unsupported arg type  va_list args)                            IM_FMTLIST(1
@@ -644,7 +656,12 @@ CALL_FUNCTION(InvisibleButton, bool, str_id, size)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          ArrowButton(const char* str_id, ImGuiDir dir);                  // square button with an arrow shape
-// Unsupported arg type  ImGuiDir dir
+IMGUI_FUNCTION(ArrowButton)
+LABEL_ARG(str_id)
+INT_ARG(dir)
+CALL_FUNCTION(ArrowButton, bool, str_id, dir)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          Image(ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0 = ImVec2 0 0, const ImVec2& uv1 = ImVec2 1 1, const ImVec4& tint_col = ImVec4 1 1 1 1, const ImVec4& border_col = ImVec4 0 0 0 0);
 IMGUI_FUNCTION(Image)
 IM_TEXTURE_ID_ARG(user_texture_id)
@@ -809,16 +826,14 @@ PUSH_BOOL(ret)
 END_INT_POINTER(v_current_min)
 END_INT_POINTER(v_current_max)
 END_IMGUI_FUNC
-//    IMGUI_API bool          DragScalar(const char* label, ImGuiDataType data_type, void* v, float v_speed, const void* v_min = NULL, const void* v_max = NULL, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* v_min = NULL
-// Unsupported arg type  const void* v_max = NULL
-//    IMGUI_API bool          DragScalarN(const char* label, ImGuiDataType data_type, void* v, int components, float v_speed, const void* v_min = NULL, const void* v_max = NULL, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* v_min = NULL
-// Unsupported arg type  const void* v_max = NULL
+//    IMGUI_API bool          DragScalar(const char* label, ImGuiDataType data_type, void* p_data, float v_speed, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, float power = 1.0f);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_min = NULL
+// Unsupported arg type  const void* p_max = NULL
+//    IMGUI_API bool          DragScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, float power = 1.0f);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_min = NULL
+// Unsupported arg type  const void* p_max = NULL
 //    IMGUI_API bool          SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. Use power!=1.0 for power curve sliders
 IMGUI_FUNCTION(SliderFloat)
 LABEL_ARG(label)
@@ -865,16 +880,14 @@ END_IMGUI_FUNC
 // Unsupported arg type  int v[3]
 //    IMGUI_API bool          SliderInt4(const char* label, int v[4], int v_min, int v_max, const char* format = "%d");
 // Unsupported arg type  int v[4]
-//    IMGUI_API bool          SliderScalar(const char* label, ImGuiDataType data_type, void* v, const void* v_min, const void* v_max, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* v_min
-// Unsupported arg type  const void* v_max
-//    IMGUI_API bool          SliderScalarN(const char* label, ImGuiDataType data_type, void* v, int components, const void* v_min, const void* v_max, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* v_min
-// Unsupported arg type  const void* v_max
+//    IMGUI_API bool          SliderScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, float power = 1.0f);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_min
+// Unsupported arg type  const void* p_max
+//    IMGUI_API bool          SliderScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, float power = 1.0f);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_min
+// Unsupported arg type  const void* p_max
 //    IMGUI_API bool          VSliderFloat(const char* label, const ImVec2& size, float* v, float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);
 IMGUI_FUNCTION(VSliderFloat)
 LABEL_ARG(label)
@@ -900,11 +913,10 @@ CALL_FUNCTION(VSliderInt, bool, label, size, v, v_min, v_max, format)
 PUSH_BOOL(ret)
 END_INT_POINTER(v)
 END_IMGUI_FUNC
-//    IMGUI_API bool          VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* v, const void* v_min, const void* v_max, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* v_min
-// Unsupported arg type  const void* v_max
+//    IMGUI_API bool          VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, float power = 1.0f);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_min
+// Unsupported arg type  const void* p_max
 //    IMGUI_API bool          InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 // Unsupported arg type  char* buf
 // Unsupported arg type  size_t buf_size
@@ -959,33 +971,37 @@ END_IMGUI_FUNC
 // Unsupported arg type  double* v
 // Unsupported arg type  double step = 0.0
 // Unsupported arg type  double step_fast = 0.0
-//    IMGUI_API bool          InputScalar(const char* label, ImGuiDataType data_type, void* v, const void* step = NULL, const void* step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* step = NULL
-// Unsupported arg type  const void* step_fast = NULL
-//    IMGUI_API bool          InputScalarN(const char* label, ImGuiDataType data_type, void* v, int components, const void* step = NULL, const void* step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  ImGuiDataType data_type
-// Unsupported arg type  void* v
-// Unsupported arg type  const void* step = NULL
-// Unsupported arg type  const void* step_fast = NULL
+//    IMGUI_API bool          InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_step = NULL
+// Unsupported arg type  const void* p_step_fast = NULL
+//    IMGUI_API bool          InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+// Unsupported arg type  void* p_data
+// Unsupported arg type  const void* p_step = NULL
+// Unsupported arg type  const void* p_step_fast = NULL
 //    IMGUI_API bool          ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
 // Unsupported arg type  float col[3]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
 //    IMGUI_API bool          ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0);
 // Unsupported arg type  float col[4]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
 //    IMGUI_API bool          ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
 // Unsupported arg type  float col[3]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
 //    IMGUI_API bool          ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
 // Unsupported arg type  float col[4]
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
 // Unsupported arg type  const float* ref_col = NULL
 //    IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, ImVec2 size = ImVec2 0 0);  // display a colored square/button, hover for details, return true when pressed.
-// Unsupported arg type  ImGuiColorEditFlags flags = 0
+IMGUI_FUNCTION(ColorButton)
+LABEL_ARG(desc_id)
+IM_VEC_4_ARG(col)
+OPTIONAL_INT_ARG(flags, 0)
+OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
+CALL_FUNCTION(ColorButton, bool, desc_id, col, flags, size)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetColorEditOptions(ImGuiColorEditFlags flags);                     // initialize current options (generally on application startup) if you want to select a default format, picker type, etc. User will be able to change many settings, unless you pass the _NoOptions flag to your calls.
-// Unsupported arg type ImGuiColorEditFlags flags
+IMGUI_FUNCTION(SetColorEditOptions)
+INT_ARG(flags)
+CALL_FUNCTION_NO_RET(SetColorEditOptions, flags)
+END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNode(const char* label);
 IMGUI_FUNCTION(TreeNode)
 LABEL_ARG(label)
@@ -1004,20 +1020,21 @@ END_IMGUI_FUNC
 // Unsupported arg type const void* ptr_id
 // Unsupported arg type  va_list args) IM_FMTLIST(2
 //    IMGUI_API bool          TreeNodeEx(const char* label, ImGuiTreeNodeFlags flags = 0);
-// Unsupported arg type  ImGuiTreeNodeFlags flags = 0
+IMGUI_FUNCTION(TreeNodeEx)
+LABEL_ARG(label)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(TreeNodeEx, bool, label, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNodeEx(const char* str_id, ImGuiTreeNodeFlags flags, const char* fmt, ...) IM_FMTARGS(3);
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Unsupported arg type  ...) IM_FMTARGS(3
 //    IMGUI_API bool          TreeNodeEx(const void* ptr_id, ImGuiTreeNodeFlags flags, const char* fmt, ...) IM_FMTARGS(3);
 // Unsupported arg type const void* ptr_id
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Unsupported arg type  ...) IM_FMTARGS(3
 //    IMGUI_API bool          TreeNodeExV(const char* str_id, ImGuiTreeNodeFlags flags, const char* fmt, va_list args) IM_FMTLIST(3);
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Unsupported arg type  va_list args) IM_FMTLIST(3
 //    IMGUI_API bool          TreeNodeExV(const void* ptr_id, ImGuiTreeNodeFlags flags, const char* fmt, va_list args) IM_FMTLIST(3);
 // Unsupported arg type const void* ptr_id
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Unsupported arg type  va_list args) IM_FMTLIST(3
 //    IMGUI_API void          TreePush(const char* str_id);                                       // ~ Indent()+PushId(). Already called by TreeNode() when returning true, but you can call TreePush/TreePop yourself if desired.
 IMGUI_FUNCTION(TreePush)
@@ -1032,25 +1049,33 @@ IMGUI_FUNCTION(TreePop)
 CALL_FUNCTION_NO_RET(TreePop)
 POP_END_STACK(6)
 END_IMGUI_FUNC
-//    IMGUI_API void          TreeAdvanceToLabelPos();                                            // advance cursor x position by GetTreeNodeToLabelSpacing()
-IMGUI_FUNCTION(TreeAdvanceToLabelPos)
-CALL_FUNCTION_NO_RET(TreeAdvanceToLabelPos)
-END_IMGUI_FUNC
 //    IMGUI_API float         GetTreeNodeToLabelSpacing();                                        // horizontal distance preceding label when using TreeNode*() or Bullet() == (g.FontSize + style.FramePadding.x*2) for a regular unframed TreeNode
 IMGUI_FUNCTION(GetTreeNodeToLabelSpacing)
 CALL_FUNCTION(GetTreeNodeToLabelSpacing, float)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetNextTreeNodeOpen(bool is_open, ImGuiCond cond = 0);              // set next TreeNode/CollapsingHeader open state.
-IMGUI_FUNCTION(SetNextTreeNodeOpen)
+//    IMGUI_API bool          CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);  // if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop().
+IMGUI_FUNCTION(CollapsingHeader)
+LABEL_ARG(label)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(CollapsingHeader, bool, label, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags flags = 0); // when 'p_open' isn't NULL, display an additional small close button on upper right of the header
+IMGUI_FUNCTION(CollapsingHeader_3)
+LABEL_ARG(label)
+BOOL_POINTER_ARG(p_open)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(CollapsingHeader, bool, label, p_open, flags)
+PUSH_BOOL(ret)
+END_BOOL_POINTER(p_open)
+END_IMGUI_FUNC
+//    IMGUI_API void          SetNextItemOpen(bool is_open, ImGuiCond cond = 0);                  // set next TreeNode/CollapsingHeader open state.
+IMGUI_FUNCTION(SetNextItemOpen)
 BOOL_ARG(is_open)
 OPTIONAL_INT_ARG(cond, 0)
-CALL_FUNCTION_NO_RET(SetNextTreeNodeOpen, is_open, cond)
+CALL_FUNCTION_NO_RET(SetNextItemOpen, is_open, cond)
 END_IMGUI_FUNC
-//    IMGUI_API bool          CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);  // if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop().
-// Unsupported arg type  ImGuiTreeNodeFlags flags = 0
-//    IMGUI_API bool          CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags flags = 0); // when 'p_open' isn't NULL, display an additional small close button on upper right of the header
-// Unsupported arg type  ImGuiTreeNodeFlags flags = 0
 //    IMGUI_API bool          Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2 0 0);  // "bool selected" carry the selection state (read-only). Selectable() is clicked is returns true so you can modify your selection state. size.x==0.0: use remaining width, size.x>0.0: specify width. size.y==0.0: use label height, size.y>0.0: specify height
 IMGUI_FUNCTION(Selectable)
 LABEL_ARG(label)
@@ -1132,26 +1157,26 @@ NUMBER_ARG(v)
 OPTIONAL_LABEL_ARG(float_format)
 CALL_FUNCTION_NO_RET(Value, prefix, v, float_format)
 END_IMGUI_FUNC
-//    IMGUI_API bool          BeginMainMenuBar();                                                 // create and append to a full screen menu-bar.
-IMGUI_FUNCTION(BeginMainMenuBar)
-CALL_FUNCTION(BeginMainMenuBar, bool)
-IF_RET_ADD_END_STACK(7)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
-//    IMGUI_API void          EndMainMenuBar();                                                   // only call EndMainMenuBar() if BeginMainMenuBar() returns true!
-IMGUI_FUNCTION(EndMainMenuBar)
-CALL_FUNCTION_NO_RET(EndMainMenuBar)
-POP_END_STACK(7)
-END_IMGUI_FUNC
 //    IMGUI_API bool          BeginMenuBar();                                                     // append to menu-bar of current window (requires ImGuiWindowFlags_MenuBar flag set on parent window).
 IMGUI_FUNCTION(BeginMenuBar)
 CALL_FUNCTION(BeginMenuBar, bool)
-IF_RET_ADD_END_STACK(8)
+IF_RET_ADD_END_STACK(7)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API void          EndMenuBar();                                                       // only call EndMenuBar() if BeginMenuBar() returns true!
 IMGUI_FUNCTION(EndMenuBar)
 CALL_FUNCTION_NO_RET(EndMenuBar)
+POP_END_STACK(7)
+END_IMGUI_FUNC
+//    IMGUI_API bool          BeginMainMenuBar();                                                 // create and append to a full screen menu-bar.
+IMGUI_FUNCTION(BeginMainMenuBar)
+CALL_FUNCTION(BeginMainMenuBar, bool)
+IF_RET_ADD_END_STACK(8)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API void          EndMainMenuBar();                                                   // only call EndMainMenuBar() if BeginMainMenuBar() returns true!
+IMGUI_FUNCTION(EndMainMenuBar)
+CALL_FUNCTION_NO_RET(EndMainMenuBar)
 POP_END_STACK(8)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginMenu(const char* label, bool enabled = true);                  // create a sub-menu entry. only call EndMenu() if this returns true!
@@ -1213,31 +1238,12 @@ CALL_FUNCTION(BeginPopup, bool, str_id, flags)
 IF_RET_ADD_END_STACK(11)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          BeginPopupContextItem(const char* str_id = NULL, int mouse_button = 1);                                 // helper to open and begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp!
-IMGUI_FUNCTION(BeginPopupContextItem)
-OPTIONAL_LABEL_ARG(str_id)
-OPTIONAL_INT_ARG(mouse_button, 1)
-CALL_FUNCTION(BeginPopupContextItem, bool, str_id, mouse_button)
-IF_RET_ADD_END_STACK(11)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
-//    IMGUI_API bool          BeginPopupContextWindow(const char* str_id = NULL, int mouse_button = 1, bool also_over_items = true);  // helper to open and begin popup when clicked on current window.
-IMGUI_FUNCTION(BeginPopupContextWindow)
-OPTIONAL_LABEL_ARG(str_id)
-OPTIONAL_INT_ARG(mouse_button, 1)
-OPTIONAL_BOOL_ARG(also_over_items, true)
-CALL_FUNCTION(BeginPopupContextWindow, bool, str_id, mouse_button, also_over_items)
-IF_RET_ADD_END_STACK(11)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
-//    IMGUI_API bool          BeginPopupContextVoid(const char* str_id = NULL, int mouse_button = 1);                                 // helper to open and begin popup when clicked in void (where there are no imgui windows).
-IMGUI_FUNCTION(BeginPopupContextVoid)
-OPTIONAL_LABEL_ARG(str_id)
-OPTIONAL_INT_ARG(mouse_button, 1)
-CALL_FUNCTION(BeginPopupContextVoid, bool, str_id, mouse_button)
-IF_RET_ADD_END_STACK(11)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
+//    IMGUI_API bool          BeginPopupContextItem(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1);                    // helper to open and begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp!
+// Unsupported arg type  ImGuiMouseButton mouse_button = 1
+//    IMGUI_API bool          BeginPopupContextWindow(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1, bool also_over_items = true);  // helper to open and begin popup when clicked on current window.
+// Unsupported arg type  ImGuiMouseButton mouse_button = 1
+//    IMGUI_API bool          BeginPopupContextVoid(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1);                    // helper to open and begin popup when clicked in void (where there are no imgui windows).
+// Unsupported arg type  ImGuiMouseButton mouse_button = 1
 //    IMGUI_API bool          BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0);                     // modal dialog (regular window with title bar, block interactions behind the modal window, can't close the modal window by clicking outside)
 IMGUI_FUNCTION(BeginPopupModal)
 LABEL_ARG(name)
@@ -1253,13 +1259,8 @@ IMGUI_FUNCTION(EndPopup)
 CALL_FUNCTION_NO_RET(EndPopup)
 POP_END_STACK(11)
 END_IMGUI_FUNC
-//    IMGUI_API bool          OpenPopupOnItemClick(const char* str_id = NULL, int mouse_button = 1);                                  // helper to open popup when clicked on last item (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors). return true when just opened.
-IMGUI_FUNCTION(OpenPopupOnItemClick)
-OPTIONAL_LABEL_ARG(str_id)
-OPTIONAL_INT_ARG(mouse_button, 1)
-CALL_FUNCTION(OpenPopupOnItemClick, bool, str_id, mouse_button)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
+//    IMGUI_API bool          OpenPopupOnItemClick(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1);                     // helper to open popup when clicked on last item (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors). return true when just opened.
+// Unsupported arg type  ImGuiMouseButton mouse_button = 1
 //    IMGUI_API bool          IsPopupOpen(const char* str_id);                                    // return true if the popup is open at the current begin-ed level of the popup stack.
 IMGUI_FUNCTION(IsPopupOpen)
 LABEL_ARG(str_id)
@@ -1310,14 +1311,28 @@ END_IMGUI_FUNC
 //    IMGUI_API int           GetColumnsCount();
 // Unsupported return type int
 //    IMGUI_API bool          BeginTabBar(const char* str_id, ImGuiTabBarFlags flags = 0);        // create and append into a TabBar
-// Unsupported arg type  ImGuiTabBarFlags flags = 0
+IMGUI_FUNCTION(BeginTabBar)
+LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(BeginTabBar, bool, str_id, flags)
+IF_RET_ADD_END_STACK(12)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          EndTabBar();                                                        // only call EndTabBar() if BeginTabBar() returns true!
 IMGUI_FUNCTION(EndTabBar)
 CALL_FUNCTION_NO_RET(EndTabBar)
 POP_END_STACK(12)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginTabItem(const char* label, bool* p_open = NULL, ImGuiTabItemFlags flags = 0);// create a Tab. Returns true if the Tab is selected.
-// Unsupported arg type  ImGuiTabItemFlags flags = 0
+IMGUI_FUNCTION(BeginTabItem)
+LABEL_ARG(label)
+OPTIONAL_BOOL_POINTER_ARG(p_open)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(BeginTabItem, bool, label, p_open, flags)
+IF_RET_ADD_END_STACK(13)
+PUSH_BOOL(ret)
+END_BOOL_POINTER(p_open)
+END_IMGUI_FUNC
 //    IMGUI_API void          EndTabItem();                                                       // only call EndTabItem() if BeginTabItem() returns true!
 IMGUI_FUNCTION(EndTabItem)
 CALL_FUNCTION_NO_RET(EndTabItem)
@@ -1355,7 +1370,12 @@ END_IMGUI_FUNC
 //    IMGUI_API void          LogText(const char* fmt, ...) IM_FMTARGS(1);                        // pass text data straight to log (without being displayed)
 // Unsupported arg type  ...) IM_FMTARGS(1
 //    IMGUI_API bool          BeginDragDropSource(ImGuiDragDropFlags flags = 0);                                      // call when the current item is active. If this return true, you can call SetDragDropPayload() + EndDragDropSource()
-// Unsupported arg type ImGuiDragDropFlags flags = 0
+IMGUI_FUNCTION(BeginDragDropSource)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(BeginDragDropSource, bool, flags)
+IF_RET_ADD_END_STACK(14)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          SetDragDropPayload(const char* type, const void* data, size_t sz, ImGuiCond cond = 0);  // type is a user defined string of maximum 32 characters. Strings starting with '_' are reserved for dear imgui internal types. Data is copied and held by imgui.
 // Unsupported arg type  const void* data
 // Unsupported arg type  size_t sz
@@ -1372,7 +1392,6 @@ PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API const ImGuiPayload*   AcceptDragDropPayload(const char* type, ImGuiDragDropFlags flags = 0);          // accept contents of a given type. If ImGuiDragDropFlags_AcceptBeforeDelivery is set you can peek into the payload before the mouse button is released.
 // Unsupported return type const
-// Unsupported arg type  ImGuiDragDropFlags flags = 0
 //    IMGUI_API void                  EndDragDropTarget();                                                            // only call EndDragDropTarget() if BeginDragDropTarget() returns true!
 IMGUI_FUNCTION(EndDragDropTarget)
 CALL_FUNCTION_NO_RET(EndDragDropTarget)
@@ -1401,7 +1420,11 @@ OPTIONAL_INT_ARG(offset, 0)
 CALL_FUNCTION_NO_RET(SetKeyboardFocusHere, offset)
 END_IMGUI_FUNC
 //    IMGUI_API bool          IsItemHovered(ImGuiHoveredFlags flags = 0);                         // is the last item hovered? (and usable, aka not blocked by a popup, etc.). See ImGuiHoveredFlags for more options.
-// Unsupported arg type ImGuiHoveredFlags flags = 0
+IMGUI_FUNCTION(IsItemHovered)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(IsItemHovered, bool, flags)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          IsItemActive();                                                     // is the last item active? (e.g. button being held, text field being edited. This will continuously return true while holding mouse button on an item. Items that don't interact will always return false)
 IMGUI_FUNCTION(IsItemActive)
 CALL_FUNCTION(IsItemActive, bool)
@@ -1412,7 +1435,7 @@ IMGUI_FUNCTION(IsItemFocused)
 CALL_FUNCTION(IsItemFocused, bool)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsItemClicked(int mouse_button = 0);                                // is the last item clicked? (e.g. button/node just clicked on) == IsMouseClicked(mouse_button) && IsItemHovered()
+//    IMGUI_API bool          IsItemClicked(ImGuiMouseButton mouse_button = 0);                   // is the last item clicked? (e.g. button/node just clicked on) == IsMouseClicked(mouse_button) && IsItemHovered()
 IMGUI_FUNCTION(IsItemClicked)
 OPTIONAL_INT_ARG(mouse_button, 0)
 CALL_FUNCTION(IsItemClicked, bool, mouse_button)
@@ -1441,6 +1464,11 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          IsItemDeactivatedAfterEdit();                                       // was the last item just made inactive and made a value change when it was active? (e.g. Slider/Drag moved). Useful for Undo/Redo patterns with widgets that requires continuous editing. Note that you may get false positives (some widgets such as Combo()/ListBox()/Selectable() will return true even when clicking an already selected item).
 IMGUI_FUNCTION(IsItemDeactivatedAfterEdit)
 CALL_FUNCTION(IsItemDeactivatedAfterEdit, bool)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          IsItemToggledOpen();                                                // was the last item open state toggled? set by TreeNode().
+IMGUI_FUNCTION(IsItemToggledOpen)
+CALL_FUNCTION(IsItemToggledOpen, bool)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          IsAnyItemHovered();                                                 // is any item hovered?
@@ -1494,7 +1522,10 @@ CALL_FUNCTION(IsRectVisible, bool, rect_min, rect_max)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API double        GetTime();                                                          // get global imgui time. incremented by io.DeltaTime every frame.
-// Unsupported return type double
+IMGUI_FUNCTION(GetTime)
+CALL_FUNCTION(GetTime, double)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API int           GetFrameCount();                                                    // get global imgui frame count. incremented by 1 every frame.
 // Unsupported return type int
 //    IMGUI_API ImDrawList*   GetBackgroundDrawList();                                            // this draw list will be the first rendering one. Useful to quickly draw shapes/text behind dear imgui contents.
@@ -1513,16 +1544,6 @@ END_IMGUI_FUNC
 // Unsupported arg type ImGuiStorage* storage
 //    IMGUI_API ImGuiStorage* GetStateStorage();
 // Unsupported return type ImGuiStorage*
-//    IMGUI_API ImVec2        CalcTextSize(const char* text, const char* text_end = NULL, bool hide_text_after_double_hash = false, float wrap_width = -1.0f);
-IMGUI_FUNCTION(CalcTextSize)
-LABEL_ARG(text)
-OPTIONAL_LABEL_ARG(text_end)
-OPTIONAL_BOOL_ARG(hide_text_after_double_hash, false)
-OPTIONAL_NUMBER_ARG(wrap_width, -1.0f)
-CALL_FUNCTION(CalcTextSize, ImVec2, text, text_end, hide_text_after_double_hash, wrap_width)
-PUSH_NUMBER(ret.x)
-PUSH_NUMBER(ret.y)
-END_IMGUI_FUNC
 //    IMGUI_API void          CalcListClipping(int items_count, float items_height, int* out_items_display_start, int* out_items_display_end);    // calculate coarse clipping for large list of evenly sized items. Prefer using the ImGuiListClipper higher-level helper if you can.
 IMGUI_FUNCTION(CalcListClipping)
 INT_ARG(items_count)
@@ -1547,6 +1568,16 @@ IMGUI_FUNCTION(EndChildFrame)
 CALL_FUNCTION_NO_RET(EndChildFrame)
 POP_END_STACK(16)
 END_IMGUI_FUNC
+//    IMGUI_API ImVec2        CalcTextSize(const char* text, const char* text_end = NULL, bool hide_text_after_double_hash = false, float wrap_width = -1.0f);
+IMGUI_FUNCTION(CalcTextSize)
+LABEL_ARG(text)
+OPTIONAL_LABEL_ARG(text_end)
+OPTIONAL_BOOL_ARG(hide_text_after_double_hash, false)
+OPTIONAL_NUMBER_ARG(wrap_width, -1.0f)
+CALL_FUNCTION(CalcTextSize, ImVec2, text, text_end, hide_text_after_double_hash, wrap_width)
+PUSH_NUMBER(ret.x)
+PUSH_NUMBER(ret.y)
+END_IMGUI_FUNC
 //    IMGUI_API ImVec4        ColorConvertU32ToFloat4(ImU32 in);
 // Unsupported return type ImVec4
 //    IMGUI_API ImU32         ColorConvertFloat4ToU32(const ImVec4& in);
@@ -1565,20 +1596,20 @@ END_IMGUI_FUNC
 // Unsupported arg type  float& out_b
 //    IMGUI_API int           GetKeyIndex(ImGuiKey imgui_key);                                    // map ImGuiKey_* values into user's key index. == io.KeyMap[key]
 // Unsupported return type int
-//    IMGUI_API bool          IsKeyDown(int user_key_index);                                      // is key being held. == io.KeysDown[user_key_index]. note that imgui doesn't know the semantic of each entry of io.KeysDown[]. Use your own indices/enums according to how your backend/engine stored them into io.KeysDown[]!
+//    IMGUI_API bool          IsKeyDown(int user_key_index);                                      // is key being held. == io.KeysDown[user_key_index].
 IMGUI_FUNCTION(IsKeyDown)
 INT_ARG(user_key_index)
 CALL_FUNCTION(IsKeyDown, bool, user_key_index)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsKeyPressed(int user_key_index, bool repeat = true);               // was key pressed (went from !Down to Down). if repeat=true, uses io.KeyRepeatDelay / KeyRepeatRate
+//    IMGUI_API bool          IsKeyPressed(int user_key_index, bool repeat = true);               // was key pressed (went from !Down to Down)? if repeat=true, uses io.KeyRepeatDelay / KeyRepeatRate
 IMGUI_FUNCTION(IsKeyPressed)
 INT_ARG(user_key_index)
 OPTIONAL_BOOL_ARG(repeat, true)
 CALL_FUNCTION(IsKeyPressed, bool, user_key_index, repeat)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsKeyReleased(int user_key_index);                                  // was key released (went from Down to !Down)..
+//    IMGUI_API bool          IsKeyReleased(int user_key_index);                                  // was key released (went from Down to !Down)?
 IMGUI_FUNCTION(IsKeyReleased)
 INT_ARG(user_key_index)
 CALL_FUNCTION(IsKeyReleased, bool, user_key_index)
@@ -1586,44 +1617,37 @@ PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API int           GetKeyPressedAmount(int key_index, float repeat_delay, float rate); // uses provided repeat rate/delay. return a count, most often 0 or 1 but might be >1 if RepeatRate is small enough that DeltaTime > RepeatRate
 // Unsupported return type int
-//    IMGUI_API bool          IsMouseDown(int button);                                            // is mouse button held (0=left, 1=right, 2=middle)
+//    IMGUI_API void          CaptureKeyboardFromApp(bool want_capture_keyboard_value = true);    // attention: misleading name! manually override io.WantCaptureKeyboard flag next frame (said flag is entirely left for your application to handle). e.g. force capture keyboard when your widget is being hovered. This is equivalent to setting "io.WantCaptureKeyboard = want_capture_keyboard_value"; after the next NewFrame() call.
+IMGUI_FUNCTION(CaptureKeyboardFromApp)
+OPTIONAL_BOOL_ARG(want_capture_keyboard_value, true)
+CALL_FUNCTION_NO_RET(CaptureKeyboardFromApp, want_capture_keyboard_value)
+END_IMGUI_FUNC
+//    IMGUI_API bool          IsMouseDown(ImGuiMouseButton button);                               // is mouse button held?
 IMGUI_FUNCTION(IsMouseDown)
 INT_ARG(button)
 CALL_FUNCTION(IsMouseDown, bool, button)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsAnyMouseDown();                                                   // is any mouse button held
-IMGUI_FUNCTION(IsAnyMouseDown)
-CALL_FUNCTION(IsAnyMouseDown, bool)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
-//    IMGUI_API bool          IsMouseClicked(int button, bool repeat = false);                    // did mouse button clicked (went from !Down to Down) (0=left, 1=right, 2=middle)
+//    IMGUI_API bool          IsMouseClicked(ImGuiMouseButton button, bool repeat = false);       // did mouse button clicked? (went from !Down to Down)
 IMGUI_FUNCTION(IsMouseClicked)
 INT_ARG(button)
 OPTIONAL_BOOL_ARG(repeat, false)
 CALL_FUNCTION(IsMouseClicked, bool, button, repeat)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsMouseDoubleClicked(int button);                                   // did mouse button double-clicked. a double-click returns false in IsMouseClicked(). uses io.MouseDoubleClickTime.
-IMGUI_FUNCTION(IsMouseDoubleClicked)
-INT_ARG(button)
-CALL_FUNCTION(IsMouseDoubleClicked, bool, button)
-PUSH_BOOL(ret)
-END_IMGUI_FUNC
-//    IMGUI_API bool          IsMouseReleased(int button);                                        // did mouse button released (went from Down to !Down)
+//    IMGUI_API bool          IsMouseReleased(ImGuiMouseButton button);                           // did mouse button released? (went from Down to !Down)
 IMGUI_FUNCTION(IsMouseReleased)
 INT_ARG(button)
 CALL_FUNCTION(IsMouseReleased, bool, button)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsMouseDragging(int button = 0, float lock_threshold = -1.0f);      // is mouse dragging. if lock_threshold < -1.0f uses io.MouseDraggingThreshold
-IMGUI_FUNCTION(IsMouseDragging)
-OPTIONAL_INT_ARG(button, 0)
-OPTIONAL_NUMBER_ARG(lock_threshold, -1.0f)
-CALL_FUNCTION(IsMouseDragging, bool, button, lock_threshold)
+//    IMGUI_API bool          IsMouseDoubleClicked(ImGuiMouseButton button);                      // did mouse button double-clicked? a double-click returns false in IsMouseClicked(). uses io.MouseDoubleClickTime.
+IMGUI_FUNCTION(IsMouseDoubleClicked)
+INT_ARG(button)
+CALL_FUNCTION(IsMouseDoubleClicked, bool, button)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsMouseHoveringRect(const ImVec2& r_min, const ImVec2& r_max, bool clip = true);  // is mouse hovering given bounding rect (in screen space). clipped by current clipping settings, but disregarding of other consideration of focus/window ordering/popup-block.
+//    IMGUI_API bool          IsMouseHoveringRect(const ImVec2& r_min, const ImVec2& r_max, bool clip = true);// is mouse hovering given bounding rect (in screen space). clipped by current clipping settings, but disregarding of other consideration of focus/window ordering/popup-block.
 IMGUI_FUNCTION(IsMouseHoveringRect)
 IM_VEC_2_ARG(r_min)
 IM_VEC_2_ARG(r_max)
@@ -1631,21 +1655,33 @@ OPTIONAL_BOOL_ARG(clip, true)
 CALL_FUNCTION(IsMouseHoveringRect, bool, r_min, r_max, clip)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsMousePosValid(const ImVec2* mouse_pos = NULL);                    // by convention we use (-FLT_MAX,-FLT_MAX) to denote that there is no mouse
+//    IMGUI_API bool          IsMousePosValid(const ImVec2* mouse_pos = NULL);                    // by convention we use (-FLT_MAX,-FLT_MAX) to denote that there is no mouse available
 // Unsupported arg type const ImVec2* mouse_pos = NULL
+//    IMGUI_API bool          IsAnyMouseDown();                                                   // is any mouse button held?
+IMGUI_FUNCTION(IsAnyMouseDown)
+CALL_FUNCTION(IsAnyMouseDown, bool)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImVec2        GetMousePos();                                                      // shortcut to ImGui::GetIO().MousePos provided by user, to be consistent with other calls
 IMGUI_FUNCTION(GetMousePos)
 CALL_FUNCTION(GetMousePos, ImVec2)
 PUSH_NUMBER(ret.x)
 PUSH_NUMBER(ret.y)
 END_IMGUI_FUNC
-//    IMGUI_API ImVec2        GetMousePosOnOpeningCurrentPopup();                                 // retrieve backup of mouse position at the time of opening popup we have BeginPopup() into
+//    IMGUI_API ImVec2        GetMousePosOnOpeningCurrentPopup();                                 // retrieve mouse position at the time of opening popup we have BeginPopup() into (helper to avoid user backing that value themselves)
 IMGUI_FUNCTION(GetMousePosOnOpeningCurrentPopup)
 CALL_FUNCTION(GetMousePosOnOpeningCurrentPopup, ImVec2)
 PUSH_NUMBER(ret.x)
 PUSH_NUMBER(ret.y)
 END_IMGUI_FUNC
-//    IMGUI_API ImVec2        GetMouseDragDelta(int button = 0, float lock_threshold = -1.0f);    // return the delta from the initial clicking position while the mouse button is pressed or was just released. This is locked and return 0.0f until the mouse moves past a distance threshold at least once. If lock_threshold < -1.0f uses io.MouseDraggingThreshold.
+//    IMGUI_API bool          IsMouseDragging(ImGuiMouseButton button, float lock_threshold = -1.0f);         // is mouse dragging? (if lock_threshold < -1.0f, uses io.MouseDraggingThreshold)
+IMGUI_FUNCTION(IsMouseDragging)
+INT_ARG(button)
+OPTIONAL_NUMBER_ARG(lock_threshold, -1.0f)
+CALL_FUNCTION(IsMouseDragging, bool, button, lock_threshold)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API ImVec2        GetMouseDragDelta(ImGuiMouseButton button = 0, float lock_threshold = -1.0f);   // return the delta from the initial clicking position while the mouse button is pressed or was just released. This is locked and return 0.0f until the mouse moves past a distance threshold at least once (if lock_threshold < -1.0f, uses io.MouseDraggingThreshold)
 IMGUI_FUNCTION(GetMouseDragDelta)
 OPTIONAL_INT_ARG(button, 0)
 OPTIONAL_NUMBER_ARG(lock_threshold, -1.0f)
@@ -1653,22 +1689,17 @@ CALL_FUNCTION(GetMouseDragDelta, ImVec2, button, lock_threshold)
 PUSH_NUMBER(ret.x)
 PUSH_NUMBER(ret.y)
 END_IMGUI_FUNC
-//    IMGUI_API void          ResetMouseDragDelta(int button = 0);                                //
+//    IMGUI_API void          ResetMouseDragDelta(ImGuiMouseButton button = 0);                   //
 IMGUI_FUNCTION(ResetMouseDragDelta)
 OPTIONAL_INT_ARG(button, 0)
 CALL_FUNCTION_NO_RET(ResetMouseDragDelta, button)
 END_IMGUI_FUNC
 //    IMGUI_API ImGuiMouseCursor GetMouseCursor();                                                // get desired cursor type, reset in ImGui::NewFrame(), this is updated during the frame. valid before Render(). If you use software rendering by setting io.MouseDrawCursor ImGui will render those for you
 // Unsupported return type ImGuiMouseCursor
-//    IMGUI_API void          SetMouseCursor(ImGuiMouseCursor type);                              // set desired cursor type
+//    IMGUI_API void          SetMouseCursor(ImGuiMouseCursor cursor_type);                       // set desired cursor type
 IMGUI_FUNCTION(SetMouseCursor)
-INT_ARG(type)
-CALL_FUNCTION_NO_RET(SetMouseCursor, type)
-END_IMGUI_FUNC
-//    IMGUI_API void          CaptureKeyboardFromApp(bool want_capture_keyboard_value = true);    // attention: misleading name! manually override io.WantCaptureKeyboard flag next frame (said flag is entirely left for your application to handle). e.g. force capture keyboard when your widget is being hovered. This is equivalent to setting "io.WantCaptureKeyboard = want_capture_keyboard_value"; after the next NewFrame() call.
-IMGUI_FUNCTION(CaptureKeyboardFromApp)
-OPTIONAL_BOOL_ARG(want_capture_keyboard_value, true)
-CALL_FUNCTION_NO_RET(CaptureKeyboardFromApp, want_capture_keyboard_value)
+INT_ARG(cursor_type)
+CALL_FUNCTION_NO_RET(SetMouseCursor, cursor_type)
 END_IMGUI_FUNC
 //    IMGUI_API void          CaptureMouseFromApp(bool want_capture_mouse_value = true);          // attention: misleading name! manually override io.WantCaptureMouse flag next frame (said flag is entirely left for your application to handle). This is equivalent to setting "io.WantCaptureMouse = want_capture_mouse_value;" after the next NewFrame() call.
 IMGUI_FUNCTION(CaptureMouseFromApp)
@@ -1699,6 +1730,13 @@ CALL_FUNCTION_NO_RET(SaveIniSettingsToDisk, ini_filename)
 END_IMGUI_FUNC
 //    IMGUI_API const char*   SaveIniSettingsToMemory(size_t* out_ini_size = NULL);               // return a zero-terminated string with the .ini data which you can save by your own mean. call when io.WantSaveIniSettings is set, then save data by your own mean and clear io.WantSaveIniSettings.
 // Unsupported arg type size_t* out_ini_size = NULL
+//    IMGUI_API bool          DebugCheckVersionAndDataLayout(const char* version_str, size_t sz_io, size_t sz_style, size_t sz_vec2, size_t sz_vec4, size_t sz_drawvert, size_t sz_drawidx); // This is called by IMGUI_CHECKVERSION() macro.
+// Unsupported arg type  size_t sz_io
+// Unsupported arg type  size_t sz_style
+// Unsupported arg type  size_t sz_vec2
+// Unsupported arg type  size_t sz_vec4
+// Unsupported arg type  size_t sz_drawvert
+// Unsupported arg type  size_t sz_drawidx
 //    IMGUI_API void          SetAllocatorFunctions(void* (*alloc_func)(size_t sz, void* user_data), void (*free_func)(void* ptr, void* user_data), void* user_data = NULL);
 // Unsupported arg type void* (*alloc_func)(size_t sz
 // Unsupported arg type  void* user_data)
@@ -1718,8 +1756,8 @@ END_STACK_OPTION(3, PopStyleVar)
 END_STACK_OPTION(4, EndGroup)
 END_STACK_OPTION(5, EndCombo)
 END_STACK_OPTION(6, TreePop)
-END_STACK_OPTION(7, EndMainMenuBar)
-END_STACK_OPTION(8, EndMenuBar)
+END_STACK_OPTION(7, EndMenuBar)
+END_STACK_OPTION(8, EndMainMenuBar)
 END_STACK_OPTION(9, EndMenu)
 END_STACK_OPTION(10, EndTooltip)
 END_STACK_OPTION(11, EndPopup)
@@ -1836,8 +1874,10 @@ MAKE_ENUM(ImGuiInputTextFlags_NoUndoRedo,NoUndoRedo)
 MAKE_ENUM(ImGuiInputTextFlags_CharsScientific,CharsScientific)
 //    ImGuiInputTextFlags_CallbackResize      = 1 << 18,  // Callback on buffer capacity changes request (beyond 'buf_size' parameter value), allowing the string to grow. Notify when the string wants to be resized (for string types which hold a cache of their Size). You will be provided a new BufSize in the callback and NEED to honor it. (see misc/cpp/imgui_stdlib.h for an example of using this)
 MAKE_ENUM(ImGuiInputTextFlags_CallbackResize,CallbackResize)
-//    ImGuiInputTextFlags_Multiline           = 1 << 20   // For internal use by InputTextMultiline()
+//    ImGuiInputTextFlags_Multiline           = 1 << 20,  // For internal use by InputTextMultiline()
 MAKE_ENUM(ImGuiInputTextFlags_Multiline,Multiline)
+//    ImGuiInputTextFlags_NoMarkEdited        = 1 << 21   // For internal use by functions using InputText() before reformatting data
+MAKE_ENUM(ImGuiInputTextFlags_NoMarkEdited,NoMarkEdited)
 END_ENUM(InputTextFlags)
 //enum ImGuiTreeNodeFlags_
 
@@ -1866,6 +1906,10 @@ MAKE_ENUM(ImGuiTreeNodeFlags_Leaf,Leaf)
 MAKE_ENUM(ImGuiTreeNodeFlags_Bullet,Bullet)
 //    ImGuiTreeNodeFlags_FramePadding         = 1 << 10,  // Use FramePadding (even for an unframed text node) to vertically align text baseline to regular widget height. Equivalent to calling AlignTextToFramePadding().
 MAKE_ENUM(ImGuiTreeNodeFlags_FramePadding,FramePadding)
+//    ImGuiTreeNodeFlags_SpanAvailWidth       = 1 << 11,  // Extend hit box to the right-most edge, even if not framed. This is not the default in order to allow adding other items on the same line. In the future we may refactor the hit system to be front-to-back, allowing natural overlaps and then this can become the default.
+MAKE_ENUM(ImGuiTreeNodeFlags_SpanAvailWidth,SpanAvailWidth)
+//    ImGuiTreeNodeFlags_SpanFullWidth        = 1 << 12,  // Extend hit box to the left-most and right-most edges (bypass the indented area).
+MAKE_ENUM(ImGuiTreeNodeFlags_SpanFullWidth,SpanFullWidth)
 //    ImGuiTreeNodeFlags_NavLeftJumpsBackHere = 1 << 13,  // (WIP) Nav: left direction may move to this TreeNode() from any of its child (items submitted between TreeNode and TreePop)
 MAKE_ENUM(ImGuiTreeNodeFlags_NavLeftJumpsBackHere,NavLeftJumpsBackHere)
 //    ImGuiTreeNodeFlags_CollapsingHeader     = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog
@@ -1882,8 +1926,10 @@ MAKE_ENUM(ImGuiSelectableFlags_DontClosePopups,DontClosePopups)
 MAKE_ENUM(ImGuiSelectableFlags_SpanAllColumns,SpanAllColumns)
 //    ImGuiSelectableFlags_AllowDoubleClick   = 1 << 2,   // Generate press events on double clicks too
 MAKE_ENUM(ImGuiSelectableFlags_AllowDoubleClick,AllowDoubleClick)
-//    ImGuiSelectableFlags_Disabled           = 1 << 3    // Cannot be selected, display greyed out text
+//    ImGuiSelectableFlags_Disabled           = 1 << 3,   // Cannot be selected, display grayed out text
 MAKE_ENUM(ImGuiSelectableFlags_Disabled,Disabled)
+//    ImGuiSelectableFlags_AllowItemOverlap   = 1 << 4    // (WIP) Hit testing to allow subsequent widgets to overlap this one
+MAKE_ENUM(ImGuiSelectableFlags_AllowItemOverlap,AllowItemOverlap)
 END_ENUM(SelectableFlags)
 //enum ImGuiComboFlags_
 
@@ -1914,11 +1960,11 @@ MAKE_ENUM(ImGuiTabBarFlags_None,None)
 MAKE_ENUM(ImGuiTabBarFlags_Reorderable,Reorderable)
 //    ImGuiTabBarFlags_AutoSelectNewTabs              = 1 << 1,   // Automatically select new tabs when they appear
 MAKE_ENUM(ImGuiTabBarFlags_AutoSelectNewTabs,AutoSelectNewTabs)
-//    ImGuiTabBarFlags_TabListPopupButton             = 1 << 2,
+//    ImGuiTabBarFlags_TabListPopupButton             = 1 << 2,   // Disable buttons to open the tab list popup
 MAKE_ENUM(ImGuiTabBarFlags_TabListPopupButton,TabListPopupButton)
 //    ImGuiTabBarFlags_NoCloseWithMiddleMouseButton   = 1 << 3,   // Disable behavior of closing tabs (that are submitted with p_open != NULL) with middle mouse button. You can still repro this behavior on user's side with if (IsItemHovered() && IsMouseClicked(2)) *p_open = false.
 MAKE_ENUM(ImGuiTabBarFlags_NoCloseWithMiddleMouseButton,NoCloseWithMiddleMouseButton)
-//    ImGuiTabBarFlags_NoTabListScrollingButtons      = 1 << 4,
+//    ImGuiTabBarFlags_NoTabListScrollingButtons      = 1 << 4,   // Disable scrolling buttons (apply when fitting policy is ImGuiTabBarFlags_FittingPolicyScroll)
 MAKE_ENUM(ImGuiTabBarFlags_NoTabListScrollingButtons,NoTabListScrollingButtons)
 //    ImGuiTabBarFlags_NoTooltip                      = 1 << 5,   // Disable tooltips when hovering a tab
 MAKE_ENUM(ImGuiTabBarFlags_NoTooltip,NoTooltip)
@@ -1950,7 +1996,7 @@ MAKE_ENUM(ImGuiFocusedFlags_None,None)
 MAKE_ENUM(ImGuiFocusedFlags_ChildWindows,ChildWindows)
 //    ImGuiFocusedFlags_RootWindow                    = 1 << 1,   // IsWindowFocused(): Test from root window (top most parent of the current hierarchy)
 MAKE_ENUM(ImGuiFocusedFlags_RootWindow,RootWindow)
-//    ImGuiFocusedFlags_AnyWindow                     = 1 << 2,   // IsWindowFocused(): Return true if any window is focused. Important: If you are trying to tell how to dispatch your low-level inputs, do NOT use this. Use ImGui::GetIO().WantCaptureMouse instead.
+//    ImGuiFocusedFlags_AnyWindow                     = 1 << 2,   // IsWindowFocused(): Return true if any window is focused. Important: If you are trying to tell how to dispatch your low-level inputs, do NOT use this. Use 'io.WantCaptureMouse' instead! Please read the FAQ!
 MAKE_ENUM(ImGuiFocusedFlags_AnyWindow,AnyWindow)
 //    ImGuiFocusedFlags_RootAndChildWindows           = ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows
 MAKE_ENUM(ImGuiFocusedFlags_RootAndChildWindows,RootAndChildWindows)
@@ -1970,7 +2016,7 @@ MAKE_ENUM(ImGuiHoveredFlags_AnyWindow,AnyWindow)
 MAKE_ENUM(ImGuiHoveredFlags_AllowWhenBlockedByPopup,AllowWhenBlockedByPopup)
 //    ImGuiHoveredFlags_AllowWhenBlockedByActiveItem  = 1 << 5,   // Return true even if an active item is blocking access to this item/window. Useful for Drag and Drop patterns.
 MAKE_ENUM(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem,AllowWhenBlockedByActiveItem)
-//    ImGuiHoveredFlags_AllowWhenOverlapped           = 1 << 6,   // Return true even if the position is overlapped by another window
+//    ImGuiHoveredFlags_AllowWhenOverlapped           = 1 << 6,   // Return true even if the position is obstructed or overlapped by another window
 MAKE_ENUM(ImGuiHoveredFlags_AllowWhenOverlapped,AllowWhenOverlapped)
 //    ImGuiHoveredFlags_AllowWhenDisabled             = 1 << 7,   // Return true even if the item is disabled
 MAKE_ENUM(ImGuiHoveredFlags_AllowWhenDisabled,AllowWhenDisabled)
@@ -1992,7 +2038,7 @@ MAKE_ENUM(ImGuiDragDropFlags_SourceNoDisableHover,SourceNoDisableHover)
 MAKE_ENUM(ImGuiDragDropFlags_SourceNoHoldToOpenOthers,SourceNoHoldToOpenOthers)
 //    ImGuiDragDropFlags_SourceAllowNullID            = 1 << 3,   // Allow items such as Text(), Image() that have no unique identifier to be used as drag source, by manufacturing a temporary identifier based on their window-relative position. This is extremely unusual within the dear imgui ecosystem and so we made it explicit.
 MAKE_ENUM(ImGuiDragDropFlags_SourceAllowNullID,SourceAllowNullID)
-//    ImGuiDragDropFlags_SourceExtern                 = 1 << 4,   // External source (from outside of imgui), won't attempt to read current item/window info. Will always return true. Only one Extern source can be active simultaneously.
+//    ImGuiDragDropFlags_SourceExtern                 = 1 << 4,   // External source (from outside of dear imgui), won't attempt to read current item/window info. Will always return true. Only one Extern source can be active simultaneously.
 MAKE_ENUM(ImGuiDragDropFlags_SourceExtern,SourceExtern)
 //    ImGuiDragDropFlags_SourceAutoExpirePayload      = 1 << 5,   // Automatically expire the payload if the source cease to be submitted (otherwise payloads are persisting while being dragged)
 MAKE_ENUM(ImGuiDragDropFlags_SourceAutoExpirePayload,SourceAutoExpirePayload)
@@ -2008,7 +2054,7 @@ END_ENUM(DragDropFlags)
 //enum ImGuiDataType_
 
 START_ENUM(DataType)
-//    ImGuiDataType_S8,       // char
+//    ImGuiDataType_S8,       // signed char / char (with sensible compilers)
 MAKE_ENUM(ImGuiDataType_S8,S8)
 //    ImGuiDataType_U8,       // unsigned char
 MAKE_ENUM(ImGuiDataType_U8,U8)
@@ -2080,21 +2126,37 @@ MAKE_ENUM(ImGuiKey_Space,Space)
 MAKE_ENUM(ImGuiKey_Enter,Enter)
 //    ImGuiKey_Escape,
 MAKE_ENUM(ImGuiKey_Escape,Escape)
-//    ImGuiKey_A,         // for text edit CTRL+A: select all
+//    ImGuiKey_KeyPadEnter,
+MAKE_ENUM(ImGuiKey_KeyPadEnter,KeyPadEnter)
+//    ImGuiKey_A,                 // for text edit CTRL+A: select all
 MAKE_ENUM(ImGuiKey_A,A)
-//    ImGuiKey_C,         // for text edit CTRL+C: copy
+//    ImGuiKey_C,                 // for text edit CTRL+C: copy
 MAKE_ENUM(ImGuiKey_C,C)
-//    ImGuiKey_V,         // for text edit CTRL+V: paste
+//    ImGuiKey_V,                 // for text edit CTRL+V: paste
 MAKE_ENUM(ImGuiKey_V,V)
-//    ImGuiKey_X,         // for text edit CTRL+X: cut
+//    ImGuiKey_X,                 // for text edit CTRL+X: cut
 MAKE_ENUM(ImGuiKey_X,X)
-//    ImGuiKey_Y,         // for text edit CTRL+Y: redo
+//    ImGuiKey_Y,                 // for text edit CTRL+Y: redo
 MAKE_ENUM(ImGuiKey_Y,Y)
-//    ImGuiKey_Z,         // for text edit CTRL+Z: undo
+//    ImGuiKey_Z,                 // for text edit CTRL+Z: undo
 MAKE_ENUM(ImGuiKey_Z,Z)
 //    ImGuiKey_COUNT
 MAKE_ENUM(ImGuiKey_COUNT,COUNT)
 END_ENUM(Key)
+//enum ImGuiKeyModFlags_
+
+START_ENUM(KeyModFlags)
+//    ImGuiKeyModFlags_None       = 0,
+MAKE_ENUM(ImGuiKeyModFlags_None,None)
+//    ImGuiKeyModFlags_Ctrl       = 1 << 0,
+MAKE_ENUM(ImGuiKeyModFlags_Ctrl,Ctrl)
+//    ImGuiKeyModFlags_Shift      = 1 << 1,
+MAKE_ENUM(ImGuiKeyModFlags_Shift,Shift)
+//    ImGuiKeyModFlags_Alt        = 1 << 2,
+MAKE_ENUM(ImGuiKeyModFlags_Alt,Alt)
+//    ImGuiKeyModFlags_Super      = 1 << 3
+MAKE_ENUM(ImGuiKeyModFlags_Super,Super)
+END_ENUM(KeyModFlags)
 //enum ImGuiNavInput_
 
 START_ENUM(NavInput)
@@ -2160,12 +2222,14 @@ END_ENUM(ConfigFlags)
 START_ENUM(BackendFlags)
 //    ImGuiBackendFlags_None                  = 0,
 MAKE_ENUM(ImGuiBackendFlags_None,None)
-//    ImGuiBackendFlags_HasGamepad            = 1 << 0,   // Back-end supports gamepad and currently has one connected.
+//    ImGuiBackendFlags_HasGamepad            = 1 << 0,   // Back-end Platform supports gamepad and currently has one connected.
 MAKE_ENUM(ImGuiBackendFlags_HasGamepad,HasGamepad)
-//    ImGuiBackendFlags_HasMouseCursors       = 1 << 1,   // Back-end supports honoring GetMouseCursor() value to change the OS cursor shape.
+//    ImGuiBackendFlags_HasMouseCursors       = 1 << 1,   // Back-end Platform supports honoring GetMouseCursor() value to change the OS cursor shape.
 MAKE_ENUM(ImGuiBackendFlags_HasMouseCursors,HasMouseCursors)
-//    ImGuiBackendFlags_HasSetMousePos        = 1 << 2    // Back-end supports io.WantSetMousePos requests to reposition the OS mouse position (only used if ImGuiConfigFlags_NavEnableSetMousePos is set).
+//    ImGuiBackendFlags_HasSetMousePos        = 1 << 2,   // Back-end Platform supports io.WantSetMousePos requests to reposition the OS mouse position (only used if ImGuiConfigFlags_NavEnableSetMousePos is set).
 MAKE_ENUM(ImGuiBackendFlags_HasSetMousePos,HasSetMousePos)
+//    ImGuiBackendFlags_RendererHasVtxOffset  = 1 << 3    // Back-end Renderer supports ImDrawCmd::VtxOffset. This enables output of large meshes (64K+ vertices) while still using 16-bit indices.
+MAKE_ENUM(ImGuiBackendFlags_RendererHasVtxOffset,RendererHasVtxOffset)
 END_ENUM(BackendFlags)
 //enum ImGuiCol_
 
@@ -2218,7 +2282,7 @@ MAKE_ENUM(ImGuiCol_Button,Button)
 MAKE_ENUM(ImGuiCol_ButtonHovered,ButtonHovered)
 //    ImGuiCol_ButtonActive,
 MAKE_ENUM(ImGuiCol_ButtonActive,ButtonActive)
-//    ImGuiCol_Header,
+//    ImGuiCol_Header,                // Header* colors are used for CollapsingHeader, TreeNode, Selectable, MenuItem
 MAKE_ENUM(ImGuiCol_Header,Header)
 //    ImGuiCol_HeaderHovered,
 MAKE_ENUM(ImGuiCol_HeaderHovered,HeaderHovered)
@@ -2344,6 +2408,8 @@ MAKE_ENUM(ImGuiColorEditFlags_NoLabel,NoLabel)
 MAKE_ENUM(ImGuiColorEditFlags_NoSidePreview,NoSidePreview)
 //    ImGuiColorEditFlags_NoDragDrop      = 1 << 9,   //              // ColorEdit: disable drag and drop target. ColorButton: disable drag and drop source.
 MAKE_ENUM(ImGuiColorEditFlags_NoDragDrop,NoDragDrop)
+//    ImGuiColorEditFlags_NoBorder        = 1 << 10,  //              // ColorButton: disable border (which is enforced by default)
+MAKE_ENUM(ImGuiColorEditFlags_NoBorder,NoBorder)
 //    ImGuiColorEditFlags_AlphaBar        = 1 << 16,  //              // ColorEdit, ColorPicker: show vertical alpha bar/gradient in picker.
 MAKE_ENUM(ImGuiColorEditFlags_AlphaBar,AlphaBar)
 //    ImGuiColorEditFlags_AlphaPreview    = 1 << 17,  //              // ColorEdit, ColorPicker, ColorButton: display preview as a transparent color over a checkerboard, instead of opaque.
@@ -2371,6 +2437,18 @@ MAKE_ENUM(ImGuiColorEditFlags_InputRGB,InputRGB)
 //    ImGuiColorEditFlags_InputHSV        = 1 << 28,  // [Input]      // ColorEdit, ColorPicker: input and output data in HSV format.
 MAKE_ENUM(ImGuiColorEditFlags_InputHSV,InputHSV)
 END_ENUM(ColorEditFlags)
+//enum ImGuiMouseButton_
+
+START_ENUM(MouseButton)
+//    ImGuiMouseButton_Left = 0,
+MAKE_ENUM(ImGuiMouseButton_Left,Left)
+//    ImGuiMouseButton_Right = 1,
+MAKE_ENUM(ImGuiMouseButton_Right,Right)
+//    ImGuiMouseButton_Middle = 2,
+MAKE_ENUM(ImGuiMouseButton_Middle,Middle)
+//    ImGuiMouseButton_COUNT = 5
+MAKE_ENUM(ImGuiMouseButton_COUNT,COUNT)
+END_ENUM(MouseButton)
 //enum ImGuiMouseCursor_
 
 START_ENUM(MouseCursor)
@@ -2380,7 +2458,7 @@ MAKE_ENUM(ImGuiMouseCursor_None,None)
 MAKE_ENUM(ImGuiMouseCursor_Arrow,Arrow)
 //    ImGuiMouseCursor_TextInput,         // When hovering over InputText, etc.
 MAKE_ENUM(ImGuiMouseCursor_TextInput,TextInput)
-//    ImGuiMouseCursor_ResizeAll,         // (Unused by imgui functions)
+//    ImGuiMouseCursor_ResizeAll,         // (Unused by Dear ImGui functions)
 MAKE_ENUM(ImGuiMouseCursor_ResizeAll,ResizeAll)
 //    ImGuiMouseCursor_ResizeNS,          // When hovering over an horizontal border
 MAKE_ENUM(ImGuiMouseCursor_ResizeNS,ResizeNS)
@@ -2390,8 +2468,10 @@ MAKE_ENUM(ImGuiMouseCursor_ResizeEW,ResizeEW)
 MAKE_ENUM(ImGuiMouseCursor_ResizeNESW,ResizeNESW)
 //    ImGuiMouseCursor_ResizeNWSE,        // When hovering over the bottom-right corner of a window
 MAKE_ENUM(ImGuiMouseCursor_ResizeNWSE,ResizeNWSE)
-//    ImGuiMouseCursor_Hand,              // (Unused by imgui functions. Use for e.g. hyperlinks)
+//    ImGuiMouseCursor_Hand,              // (Unused by Dear ImGui functions. Use for e.g. hyperlinks)
 MAKE_ENUM(ImGuiMouseCursor_Hand,Hand)
+//    ImGuiMouseCursor_NotAllowed,        // When hovering something with disallowed interaction. Usually a crossed circle.
+MAKE_ENUM(ImGuiMouseCursor_NotAllowed,NotAllowed)
 //    ImGuiMouseCursor_COUNT
 MAKE_ENUM(ImGuiMouseCursor_COUNT,COUNT)
 END_ENUM(MouseCursor)
@@ -2439,6 +2519,8 @@ END_ENUM(Cond)
 
 //struct ImDrawChannel
 
+//struct ImDrawListSplitter
+
 //enum ImDrawCornerFlags_
 
 //enum ImDrawListFlags_
@@ -2473,95 +2555,97 @@ END_IMGUI_FUNC
 // Unsupported arg type ) const { const ImVec4& cr = _ClipRectStack.back(
 //    inline ImVec2   GetClipRectMax() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2 cr.z  cr.w; }
 // Unsupported arg type ) const { const ImVec4& cr = _ClipRectStack.back(
-//    IMGUI_API void  AddLine(const ImVec2& a, const ImVec2& b, ImU32 col, float thickness = 1.0f);
+//    IMGUI_API void  AddLine(const ImVec2& p1, const ImVec2& p2, ImU32 col, float thickness = 1.0f);
 IMGUI_FUNCTION_DRAW_LIST(AddLine)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
 UINT_ARG(col)
 OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddLine, a, b, col, thickness)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddLine, p1, p2, col, thickness)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddRect(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4-bits corresponding to which corner to round
-IMGUI_FUNCTION_DRAW_LIST(AddRect)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRect, a, b, col, rounding, rounding_corners_flags, thickness)
-END_IMGUI_FUNC
-//    IMGUI_API void  AddRectFilled(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
-IMGUI_FUNCTION_DRAW_LIST(AddRectFilled)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilled, a, b, col, rounding, rounding_corners_flags)
-END_IMGUI_FUNC
-//    IMGUI_API void  AddRectFilledMultiColor(const ImVec2& a, const ImVec2& b, ImU32 col_upr_left, ImU32 col_upr_right, ImU32 col_bot_right, ImU32 col_bot_left);
+//    IMGUI_API void  AddRect(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4 bits corresponding to which corner to round
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+//    IMGUI_API void  AddRectFilled(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+//    IMGUI_API void  AddRectFilledMultiColor(const ImVec2& p_min, const ImVec2& p_max, ImU32 col_upr_left, ImU32 col_upr_right, ImU32 col_bot_right, ImU32 col_bot_left);
 IMGUI_FUNCTION_DRAW_LIST(AddRectFilledMultiColor)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
 UINT_ARG(col_upr_left)
 UINT_ARG(col_upr_right)
 UINT_ARG(col_bot_right)
 UINT_ARG(col_bot_left)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilledMultiColor, a, b, col_upr_left, col_upr_right, col_bot_right, col_bot_left)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilledMultiColor, p_min, p_max, col_upr_left, col_upr_right, col_bot_right, col_bot_left)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddQuad(const ImVec2& a, const ImVec2& b, const ImVec2& c, const ImVec2& d, ImU32 col, float thickness = 1.0f);
+//    IMGUI_API void  AddQuad(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness = 1.0f);
 IMGUI_FUNCTION_DRAW_LIST(AddQuad)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-IM_VEC_2_ARG(c)
-IM_VEC_2_ARG(d)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
+IM_VEC_2_ARG(p3)
+IM_VEC_2_ARG(p4)
 UINT_ARG(col)
 OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddQuad, a, b, c, d, col, thickness)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddQuad, p1, p2, p3, p4, col, thickness)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddQuadFilled(const ImVec2& a, const ImVec2& b, const ImVec2& c, const ImVec2& d, ImU32 col);
+//    IMGUI_API void  AddQuadFilled(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col);
 IMGUI_FUNCTION_DRAW_LIST(AddQuadFilled)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-IM_VEC_2_ARG(c)
-IM_VEC_2_ARG(d)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
+IM_VEC_2_ARG(p3)
+IM_VEC_2_ARG(p4)
 UINT_ARG(col)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddQuadFilled, a, b, c, d, col)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddQuadFilled, p1, p2, p3, p4, col)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddTriangle(const ImVec2& a, const ImVec2& b, const ImVec2& c, ImU32 col, float thickness = 1.0f);
+//    IMGUI_API void  AddTriangle(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col, float thickness = 1.0f);
 IMGUI_FUNCTION_DRAW_LIST(AddTriangle)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-IM_VEC_2_ARG(c)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
+IM_VEC_2_ARG(p3)
 UINT_ARG(col)
 OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddTriangle, a, b, c, col, thickness)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddTriangle, p1, p2, p3, col, thickness)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddTriangleFilled(const ImVec2& a, const ImVec2& b, const ImVec2& c, ImU32 col);
+//    IMGUI_API void  AddTriangleFilled(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col);
 IMGUI_FUNCTION_DRAW_LIST(AddTriangleFilled)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-IM_VEC_2_ARG(c)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
+IM_VEC_2_ARG(p3)
 UINT_ARG(col)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddTriangleFilled, a, b, c, col)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddTriangleFilled, p1, p2, p3, col)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddCircle(const ImVec2& centre, float radius, ImU32 col, int num_segments = 12, float thickness = 1.0f);
+//    IMGUI_API void  AddCircle(const ImVec2& center, float radius, ImU32 col, int num_segments = 12, float thickness = 1.0f);
 IMGUI_FUNCTION_DRAW_LIST(AddCircle)
-IM_VEC_2_ARG(centre)
+IM_VEC_2_ARG(center)
 NUMBER_ARG(radius)
 UINT_ARG(col)
 OPTIONAL_INT_ARG(num_segments, 12)
 OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddCircle, centre, radius, col, num_segments, thickness)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddCircle, center, radius, col, num_segments, thickness)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddCircleFilled(const ImVec2& centre, float radius, ImU32 col, int num_segments = 12);
+//    IMGUI_API void  AddCircleFilled(const ImVec2& center, float radius, ImU32 col, int num_segments = 12);
 IMGUI_FUNCTION_DRAW_LIST(AddCircleFilled)
-IM_VEC_2_ARG(centre)
+IM_VEC_2_ARG(center)
 NUMBER_ARG(radius)
 UINT_ARG(col)
 OPTIONAL_INT_ARG(num_segments, 12)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddCircleFilled, centre, radius, col, num_segments)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddCircleFilled, center, radius, col, num_segments)
+END_IMGUI_FUNC
+//    IMGUI_API void  AddNgon(const ImVec2& center, float radius, ImU32 col, int num_segments, float thickness = 1.0f);
+IMGUI_FUNCTION_DRAW_LIST(AddNgon)
+IM_VEC_2_ARG(center)
+NUMBER_ARG(radius)
+UINT_ARG(col)
+INT_ARG(num_segments)
+OPTIONAL_NUMBER_ARG(thickness, 1.0f)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddNgon, center, radius, col, num_segments, thickness)
+END_IMGUI_FUNC
+//    IMGUI_API void  AddNgonFilled(const ImVec2& center, float radius, ImU32 col, int num_segments);
+IMGUI_FUNCTION_DRAW_LIST(AddNgonFilled)
+IM_VEC_2_ARG(center)
+NUMBER_ARG(radius)
+UINT_ARG(col)
+INT_ARG(num_segments)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddNgonFilled, center, radius, col, num_segments)
 END_IMGUI_FUNC
 //    IMGUI_API void  AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL);
 IMGUI_FUNCTION_DRAW_LIST(AddText)
@@ -2574,57 +2658,31 @@ END_IMGUI_FUNC
 //    IMGUI_API void  AddText(const ImFont* font, float font_size, const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL, float wrap_width = 0.0f, const ImVec4* cpu_fine_clip_rect = NULL);
 // Unsupported arg type const ImFont* font
 // Unsupported arg type  const ImVec4* cpu_fine_clip_rect = NULL
-//    IMGUI_API void  AddImage(ImTextureID user_texture_id, const ImVec2& a, const ImVec2& b, const ImVec2& uv_a = ImVec2 0 0, const ImVec2& uv_b = ImVec2 1 1, ImU32 col = IM_COL32_WHITE);
-IMGUI_FUNCTION_DRAW_LIST(AddImage)
-IM_TEXTURE_ID_ARG(user_texture_id)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-OPTIONAL_IM_VEC_2_ARG(uv_a, 0, 0)
-OPTIONAL_IM_VEC_2_ARG(uv_b, 1, 1)
-UINT_ARG(col)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddImage, user_texture_id, a, b, uv_a, uv_b, col)
-END_IMGUI_FUNC
-//    IMGUI_API void  AddImageQuad(ImTextureID user_texture_id, const ImVec2& a, const ImVec2& b, const ImVec2& c, const ImVec2& d, const ImVec2& uv_a = ImVec2 0 0, const ImVec2& uv_b = ImVec2 1 0, const ImVec2& uv_c = ImVec2 1 1, const ImVec2& uv_d = ImVec2 0 1, ImU32 col = IM_COL32_WHITE);
-IMGUI_FUNCTION_DRAW_LIST(AddImageQuad)
-IM_TEXTURE_ID_ARG(user_texture_id)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-IM_VEC_2_ARG(c)
-IM_VEC_2_ARG(d)
-OPTIONAL_IM_VEC_2_ARG(uv_a, 0, 0)
-OPTIONAL_IM_VEC_2_ARG(uv_b, 1, 0)
-OPTIONAL_IM_VEC_2_ARG(uv_c, 1, 1)
-OPTIONAL_IM_VEC_2_ARG(uv_d, 0, 1)
-UINT_ARG(col)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddImageQuad, user_texture_id, a, b, c, d, uv_a, uv_b, uv_c, uv_d, col)
-END_IMGUI_FUNC
-//    IMGUI_API void  AddImageRounded(ImTextureID user_texture_id, const ImVec2& a, const ImVec2& b, const ImVec2& uv_a, const ImVec2& uv_b, ImU32 col, float rounding, int rounding_corners = ImDrawCornerFlags_All);
-IMGUI_FUNCTION_DRAW_LIST(AddImageRounded)
-IM_TEXTURE_ID_ARG(user_texture_id)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-IM_VEC_2_ARG(uv_a)
-IM_VEC_2_ARG(uv_b)
-UINT_ARG(col)
-NUMBER_ARG(rounding)
-OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddImageRounded, user_texture_id, a, b, uv_a, uv_b, col, rounding, rounding_corners)
-END_IMGUI_FUNC
 //    IMGUI_API void  AddPolyline(const ImVec2* points, int num_points, ImU32 col, bool closed, float thickness);
 // Unsupported arg type const ImVec2* points
 //    IMGUI_API void  AddConvexPolyFilled(const ImVec2* points, int num_points, ImU32 col); // Note: Anti-aliased filling requires points to be in clockwise order.
 // Unsupported arg type const ImVec2* points
-//    IMGUI_API void  AddBezierCurve(const ImVec2& pos0, const ImVec2& cp0, const ImVec2& cp1, const ImVec2& pos1, ImU32 col, float thickness, int num_segments = 0);
+//    IMGUI_API void  AddBezierCurve(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness, int num_segments = 0);
 IMGUI_FUNCTION_DRAW_LIST(AddBezierCurve)
-IM_VEC_2_ARG(pos0)
-IM_VEC_2_ARG(cp0)
-IM_VEC_2_ARG(cp1)
-IM_VEC_2_ARG(pos1)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
+IM_VEC_2_ARG(p3)
+IM_VEC_2_ARG(p4)
 UINT_ARG(col)
 NUMBER_ARG(thickness)
 OPTIONAL_INT_ARG(num_segments, 0)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddBezierCurve, pos0, cp0, cp1, pos1, col, thickness, num_segments)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddBezierCurve, p1, p2, p3, p4, col, thickness, num_segments)
 END_IMGUI_FUNC
+//    IMGUI_API void  AddImage(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min = ImVec2 0  0, const ImVec2& uv_max = ImVec2 1  1, ImU32 col = IM_COL32_WHITE);
+// Unsupported arg type  const ImVec2& uv_min = ImVec2 0  0
+// Unsupported arg type  const ImVec2& uv_max = ImVec2 1  1
+//    IMGUI_API void  AddImageQuad(ImTextureID user_texture_id, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& uv1 = ImVec2 0  0, const ImVec2& uv2 = ImVec2 1  0, const ImVec2& uv3 = ImVec2 1  1, const ImVec2& uv4 = ImVec2 0  1, ImU32 col = IM_COL32_WHITE);
+// Unsupported arg type  const ImVec2& uv1 = ImVec2 0  0
+// Unsupported arg type  const ImVec2& uv2 = ImVec2 1  0
+// Unsupported arg type  const ImVec2& uv3 = ImVec2 1  1
+// Unsupported arg type  const ImVec2& uv4 = ImVec2 0  1
+//    IMGUI_API void  AddImageRounded(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min, const ImVec2& uv_max, ImU32 col, float rounding, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
 //    inline    void  PathLineTo(const ImVec2& pos)                               { _Path.push_back(pos); }
 // Unsupported arg type const ImVec2& pos)                               { _Path.push_back(pos
 //    inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || memcmp(&_Path.Data[_Path.Size-1], &pos, 8) != 0) _Path.push_back(pos); }
@@ -2641,53 +2699,33 @@ END_IMGUI_FUNC
 // Unsupported arg type  col
 // Unsupported arg type  closed
 // Unsupported arg type  thickness
-//    IMGUI_API void  PathArcTo(const ImVec2& centre, float radius, float a_min, float a_max, int num_segments = 10);
+//    IMGUI_API void  PathArcTo(const ImVec2& center, float radius, float a_min, float a_max, int num_segments = 10);
 IMGUI_FUNCTION_DRAW_LIST(PathArcTo)
-IM_VEC_2_ARG(centre)
+IM_VEC_2_ARG(center)
 NUMBER_ARG(radius)
 NUMBER_ARG(a_min)
 NUMBER_ARG(a_max)
 OPTIONAL_INT_ARG(num_segments, 10)
-DRAW_LIST_CALL_FUNCTION_NO_RET(PathArcTo, centre, radius, a_min, a_max, num_segments)
+DRAW_LIST_CALL_FUNCTION_NO_RET(PathArcTo, center, radius, a_min, a_max, num_segments)
 END_IMGUI_FUNC
-//    IMGUI_API void  PathArcToFast(const ImVec2& centre, float radius, int a_min_of_12, int a_max_of_12);                                            // Use precomputed angles for a 12 steps circle
+//    IMGUI_API void  PathArcToFast(const ImVec2& center, float radius, int a_min_of_12, int a_max_of_12);                                            // Use precomputed angles for a 12 steps circle
 IMGUI_FUNCTION_DRAW_LIST(PathArcToFast)
-IM_VEC_2_ARG(centre)
+IM_VEC_2_ARG(center)
 NUMBER_ARG(radius)
 INT_ARG(a_min_of_12)
 INT_ARG(a_max_of_12)
-DRAW_LIST_CALL_FUNCTION_NO_RET(PathArcToFast, centre, radius, a_min_of_12, a_max_of_12)
+DRAW_LIST_CALL_FUNCTION_NO_RET(PathArcToFast, center, radius, a_min_of_12, a_max_of_12)
 END_IMGUI_FUNC
-//    IMGUI_API void  PathBezierCurveTo(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, int num_segments = 0);
+//    IMGUI_API void  PathBezierCurveTo(const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, int num_segments = 0);
 IMGUI_FUNCTION_DRAW_LIST(PathBezierCurveTo)
-IM_VEC_2_ARG(p1)
 IM_VEC_2_ARG(p2)
 IM_VEC_2_ARG(p3)
+IM_VEC_2_ARG(p4)
 OPTIONAL_INT_ARG(num_segments, 0)
-DRAW_LIST_CALL_FUNCTION_NO_RET(PathBezierCurveTo, p1, p2, p3, num_segments)
+DRAW_LIST_CALL_FUNCTION_NO_RET(PathBezierCurveTo, p2, p3, p4, num_segments)
 END_IMGUI_FUNC
-//    IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All);
-IMGUI_FUNCTION_DRAW_LIST(PathRect)
-IM_VEC_2_ARG(rect_min)
-IM_VEC_2_ARG(rect_max)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(PathRect, rect_min, rect_max, rounding, rounding_corners_flags)
-END_IMGUI_FUNC
-//    IMGUI_API void  ChannelsSplit(int channels_count);
-IMGUI_FUNCTION_DRAW_LIST(ChannelsSplit)
-INT_ARG(channels_count)
-DRAW_LIST_CALL_FUNCTION_NO_RET(ChannelsSplit, channels_count)
-END_IMGUI_FUNC
-//    IMGUI_API void  ChannelsMerge();
-IMGUI_FUNCTION_DRAW_LIST(ChannelsMerge)
-DRAW_LIST_CALL_FUNCTION_NO_RET(ChannelsMerge)
-END_IMGUI_FUNC
-//    IMGUI_API void  ChannelsSetCurrent(int channel_index);
-IMGUI_FUNCTION_DRAW_LIST(ChannelsSetCurrent)
-INT_ARG(channel_index)
-DRAW_LIST_CALL_FUNCTION_NO_RET(ChannelsSetCurrent, channel_index)
-END_IMGUI_FUNC
+//    IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
 //    IMGUI_API void  AddCallback(ImDrawCallback callback, void* callback_data);  // Your rendering function must check for 'UserCallback' in ImDrawCmd and call the function instead of rendering triangles.
 // Unsupported arg type ImDrawCallback callback
 // Unsupported arg type  void* callback_data
@@ -2695,6 +2733,14 @@ END_IMGUI_FUNC
 IMGUI_FUNCTION_DRAW_LIST(AddDrawCmd)
 DRAW_LIST_CALL_FUNCTION_NO_RET(AddDrawCmd)
 END_IMGUI_FUNC
+//    inline void     ChannelsSplit(int count)    { _Splitter.Split(this, count); }
+// Unsupported arg type int count)    { _Splitter.Split(this
+// Unsupported arg type  count
+//    inline void     ChannelsMerge()             { _Splitter.Merge(this); }
+// Unsupported arg type )             { _Splitter.Merge(this
+//    inline void     ChannelsSetCurrent(int n)   { _Splitter.SetCurrentChannel(this, n); }
+// Unsupported arg type int n)   { _Splitter.SetCurrentChannel(this
+// Unsupported arg type  n
 //    IMGUI_API void  Clear();
 IMGUI_FUNCTION_DRAW_LIST(Clear)
 DRAW_LIST_CALL_FUNCTION_NO_RET(Clear)
@@ -2708,6 +2754,12 @@ IMGUI_FUNCTION_DRAW_LIST(PrimReserve)
 INT_ARG(idx_count)
 INT_ARG(vtx_count)
 DRAW_LIST_CALL_FUNCTION_NO_RET(PrimReserve, idx_count, vtx_count)
+END_IMGUI_FUNC
+//    IMGUI_API void  PrimUnreserve(int idx_count, int vtx_count);
+IMGUI_FUNCTION_DRAW_LIST(PrimUnreserve)
+INT_ARG(idx_count)
+INT_ARG(vtx_count)
+DRAW_LIST_CALL_FUNCTION_NO_RET(PrimUnreserve, idx_count, vtx_count)
 END_IMGUI_FUNC
 //    IMGUI_API void  PrimRect(const ImVec2& a, const ImVec2& b, ImU32 col);      // Axis aligned rectangle (composed of two triangles)
 IMGUI_FUNCTION_DRAW_LIST(PrimRect)
@@ -2756,6 +2808,8 @@ END_IMGUI_FUNC
 
 //struct ImFontGlyphRangesBuilder
 
+//struct ImFontAtlasCustomRect
+
 //enum ImFontAtlasFlags_
 
 //struct ImFontAtlas
@@ -2764,7 +2818,6 @@ END_IMGUI_FUNC
 
 // We are keeping all manual additions in one place to try and make it easier to track
 // Manual addition InputText Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API bool          InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 IMGUI_FUNCTION(InputText)
 LABEL_ARG(label)
 LABEL_POINTER_ARG(buf)
@@ -2776,7 +2829,6 @@ PUSH_BOOL(ret)
 END_LABEL_POINTER(buf)
 END_IMGUI_FUNC
 // Manual addition PlotLines Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void          PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
 IMGUI_FUNCTION(PlotLines)
 LABEL_ARG(label)
 FLOAT_ARRAY_ARG(values)
@@ -2790,7 +2842,6 @@ OPTIONAL_INT_ARG(stride, sizeof(float))
 CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
 END_IMGUI_FUNC
 // Manual addition PlotHistogram Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
 IMGUI_FUNCTION(PlotHistogram)
 LABEL_ARG(label)
 FLOAT_ARRAY_ARG(values)
