@@ -1,4 +1,24 @@
+I am trying to document what is needed to use a newer version of Imgui.
+
+The first Imgui version supported was 1.61 with FlyWithLua 2.7.0
+
+The second Imgui version supported was 1.70 with FlyWithLua 2.7.23
+
+This version supports Imgui 1.76 with FlyWithLua 2.7.25
+
+William R. Good 06-22-20 
+
+
+
+Use this perl command to generate the imgui_iterator.inl file from the imgui.h file
+
 perl generate_imgui_bindings.pl <imgui.h >imgui_iterator.inl
+
+Results are:
+
+Normal Imgui functions:   Supported: 235 Unsupported: 113
+Imgui DrawList functions: Supported: 30 Unsupported: 20
+
 
 Add the following to the bottom of the generated imgui_iterator.inl file
 

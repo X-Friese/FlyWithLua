@@ -2321,7 +2321,7 @@ Reading out a double DataRef. If the DataRef is not readable as a double, the si
 
 Reading out an integer DataRef array. If the DataRef is not readable as an integer array, or are you using index values outside the range of the DataRef, the simulator may blow up without a warning! The lua table will store the values with correct index seen from the world of X-Plane. The first value can be indexed 0 (zero), if you start from the first entry of an array DataRef. This is cool for C/C++ code, but uncool for Lua. So avoid ipairs() on tables made by \verb|XPLMGetDatavi()| commands.
 
-\subsubsection{\emph{table} = XPLMGetDatavf( \emph{DataRef} \emph{inIndex} \emph{inMax})}
+\subsubsection{\emph{table} = XPLMGetDatavf( \emph{DataRef}, \emph{inIndex}, \emph{inMax})}
 
 \begin{enumerate}
 	\item \emph{table} = The lua table, you want the value to be pushed in.
