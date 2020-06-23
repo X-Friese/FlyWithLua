@@ -199,6 +199,10 @@ sub generateImguiGeneric {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "float");
         push(@after, "PUSH_NUMBER(ret)");
+      } elsif ($retType =~ /^double$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "double");
+        push(@after, "PUSH_NUMBER(ret)")
       } elsif ($retType =~ /^ImVec2$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "ImVec2");
@@ -282,7 +286,7 @@ sub generateImguiGeneric {
           push(@funcArgs, $name);
           # one of the various enums
           # we are handling these as ints
-        } elsif ($args[$i] =~ m/^ *(ImGuiWindowFlags|ImGuiCol|ImGuiStyleVar|ImGuiKey|ImGuiAlign|ImGuiColorEditMode|ImGuiMouseCursor|ImGuiSetCond|ImGuiCond|ImGuiInputTextFlags|ImGuiSelectableFlags|ImGuiComboFlags) ([^ ]*)( = 0|) *$/) {
+        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiStyleVar|ImDrawCornerFlags|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiSelectableFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTreeNodeFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
          #These are ints
          my $name = $2;
           if ($3 =~ m/^ = 0$/) {
@@ -473,6 +477,7 @@ my $alreadyParsedMainImguiNamespace = 0;
 for (my $i=0; $i < scalar @blocks; $i++) {
   print "//" . $blocknames[$i] . "\n";
   if (($blocknames[$i] eq "namespace ImGui\n") and not $alreadyParsedMainImguiNamespace) {
+	print STDERR "Normal Imgui functions:   ";
 	$alreadyParsedMainImguiNamespace = 1;
     generateNamespaceImgui($blocks[$i]);
   }
@@ -480,6 +485,7 @@ for (my $i=0; $i < scalar @blocks; $i++) {
     generateEnums($1, $blocks[$i]);
   }
   if ($blocknames[$i] eq "struct ImDrawList\n") {
+	print STDERR "Imgui DrawList functions: ";
     generateDrawListFunctions($blocks[$i]);
   }
 }

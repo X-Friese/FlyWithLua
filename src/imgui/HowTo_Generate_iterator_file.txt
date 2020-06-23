@@ -1,14 +1,23 @@
 I am trying to document what is needed to use a newer version of Imgui.
 
-The version I am starting with is 1.70 and the first version used was 1.61
+The first Imgui version supported was 1.61 with FlyWithLua 2.7.0
 
-William R. Good 05-15-20 
+The second Imgui version supported was 1.70 with FlyWithLua 2.7.23
 
-Use the following command line to generate the imgui_iterator.inl file from the imgui.h file
+This version supports Imgui 1.76 with FlyWithLua 2.7.25
 
+William R. Good 06-22-20 
+
+
+
+Use this perl command to generate the imgui_iterator.inl file from the imgui.h file
 
 perl generate_imgui_bindings.pl <imgui.h >imgui_iterator.inl
 
+Results are:
+
+Normal Imgui functions:   Supported: 235 Unsupported: 113
+Imgui DrawList functions: Supported: 30 Unsupported: 20
 
 
 Add the following to the bottom of the generated imgui_iterator.inl file
@@ -16,7 +25,6 @@ Add the following to the bottom of the generated imgui_iterator.inl file
 
 // We are keeping all manual additions in one place to try and make it easier to track
 // Manual addition InputText Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API bool          InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 IMGUI_FUNCTION(InputText)
 LABEL_ARG(label)
 LABEL_POINTER_ARG(buf)
@@ -28,7 +36,6 @@ PUSH_BOOL(ret)
 END_LABEL_POINTER(buf)
 END_IMGUI_FUNC
 // Manual addition PlotLines Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void          PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
 IMGUI_FUNCTION(PlotLines)
 LABEL_ARG(label)
 FLOAT_ARRAY_ARG(values)
@@ -42,7 +49,6 @@ OPTIONAL_INT_ARG(stride, sizeof(float))
 CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
 END_IMGUI_FUNC
 // Manual addition PlotHistogram Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
 IMGUI_FUNCTION(PlotHistogram)
 LABEL_ARG(label)
 FLOAT_ARRAY_ARG(values)
