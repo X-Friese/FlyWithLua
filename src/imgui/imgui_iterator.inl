@@ -2816,9 +2816,116 @@ END_IMGUI_FUNC
 
 //struct ImFont
 
-// We are keeping all manual additions in one place to try and make it easier to track
+// Manual addition ImDrawCornerFlags_ enum because Perl script did not provide so shows how you could add this enum manualy
+// Have not tried this yet to see if it will work. We need to get the perl script to do much more of the work
 
+//enum ImDrawCornerFlags_
+START_ENUM(CornerFlags)
+//    ImDrawCornerFlags_None      = 0,
+MAKE_ENUM(ImDrawCornerFlags_None,None)
+//    ImDrawCornerFlags_TopLeft   = 1 << 0, // 0x1
+MAKE_ENUM(ImDrawCornerFlags_TopLeft,Left)
+//    ImDrawCornerFlags_TopRight  = 1 << 1, // 0x2
+MAKE_ENUM(ImDrawCornerFlags_TopRight,TopRight)
+//    ImDrawCornerFlags_BotLeft   = 1 << 2, // 0x4
+MAKE_ENUM(ImDrawCornerFlags_BotLeft,BotLeft)
+//    ImDrawCornerFlags_BotRight  = 1 << 3, // 0x8
+MAKE_ENUM(ImDrawCornerFlags_BotRight,BotRight)
+//    ImDrawCornerFlags_Top       = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_TopRight,   // 0x3
+MAKE_ENUM(ImDrawCornerFlags_Top,Top)
+//    ImDrawCornerFlags_Bot       = ImDrawCornerFlags_BotLeft | ImDrawCornerFlags_BotRight,   // 0xC
+MAKE_ENUM(ImDrawCornerFlags_Bot,Bot)
+//    ImDrawCornerFlags_Left      = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_BotLeft,    // 0x5
+MAKE_ENUM(ImDrawCornerFlags_Left,Left)
+//    ImDrawCornerFlags_Right     = ImDrawCornerFlags_TopRight | ImDrawCornerFlags_BotRight,  // 0xA
+MAKE_ENUM(ImDrawCornerFlags_Right,Right)
+//    ImDrawCornerFlags_All       = 0xF     // In your function calls you may use ~0 (= all bits sets) instead of ImDrawCornerFlags_All, as a convenience
+MAKE_ENUM(ImDrawCornerFlags_All,All)
+END_ENUM(CornerFlags)
+
+
+// Manual addition ImDrawListFlags_ enum because Perl script did not provide so shows how you could add this enum manualy
+// Have not tried this yet to see if it will work. We need to get the perl script to do much more of the work
+
+//enum ImDrawListFlags_
+START_ENUM(Flags)
+//    ImDrawListFlags_None             = 0,
+MAKE_ENUM(ImDrawListFlags_None,None)
+//    ImDrawListFlags_AntiAliasedLines = 1 << 0,  // Lines are anti-aliased (*2 the number of triangles for 1.0f wide line, otherwise *3 the number of triangles)
+MAKE_ENUM(ImDrawListFlags_AntiAliasedLines,AntiAliasedLines)
+//    ImDrawListFlags_AntiAliasedFill  = 1 << 1,  // Filled shapes have anti-aliased edges (*2 the number of vertices)
+MAKE_ENUM(ImDrawListFlags_AntiAliasedFill,AntiAliasedFill)
+//    ImDrawListFlags_AllowVtxOffset   = 1 << 2   // Can emit 'VtxOffset > 0' to allow large meshes. Set when 'ImGuiBackendFlags_RendererHasVtxOffset' is enabled.
+MAKE_ENUM(ImDrawListFlags_AllowVtxOffset,AllowVtxOffset)
+END_ENUM(Flags)
+
+
+//    IMGUI_API void  AddRect(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4 bits corresponding to which corner to round
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+// Manual addition AddRect Function because Perl script did not provide so shows how you could add a function manualy
+
+IMGUI_FUNCTION_DRAW_LIST(AddRect)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+UINT_ARG(col)
+OPTIONAL_NUMBER_ARG(rounding, 0.0f)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+OPTIONAL_NUMBER_ARG(thickness, 1.0f)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddRect, p_min, p_max, col, rounding, rounding_corners, thickness)
+END_IMGUI_FUNC
+
+
+//    IMGUI_API void  AddRectFilled(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All                     // a: upper-left, b: lower-right (== upper-left + size)
+// Manual addition AddRectFilled Function because Perl script did not provide so shows how you could add a function manualy
+
+IMGUI_FUNCTION_DRAW_LIST(AddRectFilled)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+UINT_ARG(col)
+OPTIONAL_NUMBER_ARG(rounding, 0.0f)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilled, p_min, p_max, col, rounding, rounding_corners)
+END_IMGUI_FUNC
+
+
+//    IMGUI_API void  AddImageRounded(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min, const ImVec2& uv_max, ImU32 col, float rounding, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+// Manual addition PathRect Function because Perl script did not provide so shows how you could add a function manualy
+
+IMGUI_FUNCTION_DRAW_LIST(AddImageRounded)
+IM_TEXTURE_ID_ARG(user_texture_id)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+IM_VEC_2_ARG(uv_min)
+IM_VEC_2_ARG(uv_max)
+UINT_ARG(col)
+NUMBER_ARG(rounding)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddImageRounded, user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners)
+END_IMGUI_FUNC
+
+
+//    IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
+// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+// Manual addition PathRect Function because Perl script did not provide so shows how you could add a function manualy
+
+IMGUI_FUNCTION_DRAW_LIST(PathRect)
+IM_VEC_2_ARG(rect_min)
+IM_VEC_2_ARG(rect_max)
+OPTIONAL_NUMBER_ARG(rounding, 0.0f)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+DRAW_LIST_CALL_FUNCTION_NO_RET(PathRect, rect_min, rect_max, rounding, rounding_corners)
+END_IMGUI_FUNC
+
+
+// IMGUI_API bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+// Unsupported arg type  char* buf
+// Unsupported arg type  size_t buf_size
+// Unsupported arg type  ImGuiInputTextCallback callback = NULL
+// Unsupported arg type  void* user_data = NULL
 // Manual addition InputText Function because Perl script did not provide so shows how you could add a function manualy
+
 IMGUI_FUNCTION(InputText)
 LABEL_ARG(label)
 LABEL_POINTER_ARG(buf)
@@ -2830,7 +2937,51 @@ PUSH_BOOL(ret)
 END_LABEL_POINTER(buf)
 END_IMGUI_FUNC
 
+
+// IMGUI_API bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2 0 0, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+// Unsupported arg type  char* buf
+// Unsupported arg type  size_t buf_size
+// Unsupported arg type  ImGuiInputTextCallback callback = NULL
+// Unsupported arg type  void* user_data = NULL
+// Manual addition InputTextMultiline Function because Perl script did not provide so shows how you could add a function manualy
+
+IMGUI_FUNCTION(InputTextMultiline)
+LABEL_ARG(label)
+LABEL_POINTER_ARG(buf)
+OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
+OPTIONAL_INT_ARG(flags, 0)
+DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
+DEFAULT_ARG(void*, user_data, NULL)
+CALL_FUNCTION(InputTextMultiline, bool, label, buf, buf_size, size, flags, callback, user_data)
+PUSH_BOOL(ret)
+END_LABEL_POINTER(buf)
+END_IMGUI_FUNC
+
+
+// IMGUI_API bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+// Unsupported arg type  char* buf
+// Unsupported arg type  size_t buf_size
+// Unsupported arg type  ImGuiInputTextCallback callback = NULL
+// Unsupported arg type  void* user_data = NULL
+// Manual addition InputTextWithHint Function because Perl script did not provide so shows how you could add a function manualy
+
+IMGUI_FUNCTION(InputTextWithHint)
+LABEL_ARG(label)
+LABEL_ARG(hint)
+LABEL_POINTER_ARG(buf)
+OPTIONAL_INT_ARG(flags, 0)
+DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
+DEFAULT_ARG(void*, user_data, NULL)
+CALL_FUNCTION(InputTextWithHint, bool, label, hint, buf, buf_size, flags, callback, user_data)
+PUSH_BOOL(ret)
+END_LABEL_POINTER(buf)
+END_IMGUI_FUNC
+
+
+// IMGUI_API void PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
+// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 // Manual addition PlotLines Function because Perl script did not provide so shows how you could add a function manualy
+
 IMGUI_FUNCTION(PlotLines)
 LABEL_ARG(label)
 FLOAT_ARRAY_ARG(values)
@@ -2844,7 +2995,11 @@ OPTIONAL_INT_ARG(stride, sizeof(float))
 CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
 END_IMGUI_FUNC
 
+
+// IMGUI_API void PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
+// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 // Manual addition PlotHistogram Function because Perl script did not provide so shows how you could add a function manualy
+
 IMGUI_FUNCTION(PlotHistogram)
 LABEL_ARG(label)
 FLOAT_ARRAY_ARG(values)
@@ -2856,27 +3011,4 @@ OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
 OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
 OPTIONAL_INT_ARG(stride, sizeof(float))
 CALL_FUNCTION_NO_RET(PlotHistogram, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
-END_IMGUI_FUNC
-
-// Manual addition AddRect Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void  AddRect(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4-bits corresponding to which corner to round
-IMGUI_FUNCTION_DRAW_LIST(AddRect)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRect, a, b, col, rounding, rounding_corners_flags, thickness)
-END_IMGUI_FUNC
-
-// Manual addition AddRectFilled Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void  AddRectFilled(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
-IMGUI_FUNCTION_DRAW_LIST(AddRectFilled)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilled, a, b, col, rounding, rounding_corners_flags)
 END_IMGUI_FUNC

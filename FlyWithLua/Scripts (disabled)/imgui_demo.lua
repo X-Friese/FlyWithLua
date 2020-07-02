@@ -1,6 +1,6 @@
 -- imgui demo script
 -- Folke Will 2018-07-15
--- Willian R. Good 2020-05-14 Updated to reflect now using Imgui 1.70
+-- Willian R. Good 2020-07-02 Updated to reflect now using Imgui 1.76
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -324,7 +324,21 @@ function build_demo(wnd, x, y)
     
     if imgui.TreeNode("Input") then
         -- Allow the user to input text
-        local changed, newText = imgui.InputText("Text", text, 255)
+        local changed, newText = imgui.InputText("One Line Text", text, 255)
+        -- Parameters: Label, current text, maximum number of allowed characters
+
+        if changed then
+            text = newText
+        end
+
+        local changed, newText = imgui.InputTextMultiline("Multiline Text", text, 255)
+        -- Parameters: Label, current text, maximum number of allowed characters
+
+        if changed then
+            text = newText
+        end
+
+        local changed, newText = imgui.InputTextWithHint("Text With a Hint", "hint", text, 255)
         -- Parameters: Label, current text, maximum number of allowed characters
 
         if changed then

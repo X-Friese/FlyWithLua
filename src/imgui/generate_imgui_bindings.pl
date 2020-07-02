@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use diagnostics;
-# This works for IMGUI 1.60 and does not get all functions
+# This works for IMGUI 1.76 and does not get all functions
 #
 # to use ./generate_imgui_bindings.pl <../imgui/imgui.h >imgui_iterator.inl
 # and define macros properly as in example imgui_lua_bindings.cpp
@@ -168,15 +168,19 @@ sub generateImguiGeneric {
       # real c++ function name
       my $funcName = $5;
 
-	  #say STDERR "Parsing function: " . $funcName;
+	  # ********* show the functions that the parser has found	
+	  # say STDERR "Parsing function: " . $funcName;
 	  if (grep(/^$funcName$/, @functionsAlreadyAdded)) {
-		  #say STDERR $funcName;
+		  # ******* Show functions that the parser has anready found	
+		  # say STDERR "Function Already Used: " . $funcName;
 	  }
 	  push @functionsAlreadyAdded, $funcName;
 	  
       if (defined($bannedNames{$funcName})) {
         print "//Not allowed to use this function\n";
         $shouldPrint = 0;
+		# ******* Show function names that have been banned
+		# say STDERR "Function Banned Names: " . $funcName;
       }
       # c++ type of return value
       my $retType = $2;
@@ -217,6 +221,8 @@ sub generateImguiGeneric {
         $shouldPrint = 0;
       }
       for (my $i = 0; $i < @args; $i++) {
+		# ****** show the function name and the $args[$i] to find which type it is
+		# say STDERR "Parsing function: " . $funcName . '   $args[$i]: ' . $args[$i];
         # bool * x = NULL or bool * x
         if ($args[$i] =~ m/^ *bool *\* *([^ =\[]*)( = NULL|) *$/) {
           my $name = $1;
@@ -268,6 +274,9 @@ sub generateImguiGeneric {
           push(@funcArgs, $name);
         # ImVec2 with default or not
         } elsif ($args[$i] =~ m/^ *ImVec2 ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
+		  # ******* Show if any function has a ImVec2 in the $args[$i]
+		  # For some reason ImVec2 is not being found in functions PlotLines and PlotHistogram functions.
+		  # say STDERR "******* ImVec2 found in function: " . $funcName; 
           my $name = $1;
           if ($2 =~ m/^= * ImVec2 ([^ ]*) ([^ ]*)$/) {
             push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
@@ -287,6 +296,9 @@ sub generateImguiGeneric {
           # one of the various enums
           # we are handling these as ints
         } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiStyleVar|ImDrawCornerFlags|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiSelectableFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTreeNodeFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
+		 # ***********  Show it any of the Enums/Flags declared as int have been found
+		 # For some reason ImDrawCornerFlags is not being found that is used in AddRect, AddRectFilled and AddImageRounded functions. 	
+		 # say STDERR "****** ints enums function: " . $funcName;
          #These are ints
          my $name = $2;
           if ($3 =~ m/^ = 0$/) {
@@ -297,6 +309,8 @@ sub generateImguiGeneric {
           push(@funcArgs, $name);
           #int with default value or not
         } elsif ($args[$i] =~ m/^ *int ([^ =\[]*)( = [^ ]*|) *$/) {
+		  # ******* Show if any function has a int in the $args[$i]
+		  # say STDERR "*******  " . $args[$i] . "  found in function: " . $funcName;
           my $name = $1;
           if ($2 =~ m/^ = ([^ ]*)$/) {
             push(@before, "OPTIONAL_INT_ARG($name, $1)");
