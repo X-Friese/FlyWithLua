@@ -216,6 +216,10 @@ sub generateImguiGeneric {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "unsigned int");
         push(@after, "PUSH_NUMBER(ret)");
+      } elsif ($retType =~ /^int$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "int");
+        push(@after, "PUSH_NUMBER(ret)");
       } else {
         print "// Unsupported return type $retType\n";
         $shouldPrint = 0;
@@ -272,11 +276,11 @@ sub generateImguiGeneric {
             push(@before, "IM_VEC_2_ARG($name)");
           }
           push(@funcArgs, $name);
-        # ImVec2 with default or not
+        # ImVec2 * with default or not
         } elsif ($args[$i] =~ m/^ *ImVec2 ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
 		  # ******* Show if any function has a ImVec2 in the $args[$i]
 		  # For some reason ImVec2 is not being found in functions PlotLines and PlotHistogram functions.
-		  # say STDERR "******* ImVec2 found in function: " . $funcName; 
+		  # say STDERR "******* * ImVec2 found in function: " . $funcName; 
           my $name = $1;
           if ($2 =~ m/^= * ImVec2 ([^ ]*) ([^ ]*)$/) {
             push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
@@ -295,10 +299,10 @@ sub generateImguiGeneric {
           push(@funcArgs, $name);
           # one of the various enums
           # we are handling these as ints
-        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiStyleVar|ImDrawCornerFlags|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiSelectableFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTreeNodeFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
+        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiStyleVar|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiSelectableFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTreeNodeFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
 		 # ***********  Show it any of the Enums/Flags declared as int have been found
 		 # For some reason ImDrawCornerFlags is not being found that is used in AddRect, AddRectFilled and AddImageRounded functions. 	
-		 # say STDERR "****** ints enums function: " . $funcName;
+		 # say STDERR "****** found ints enums: " . $args[$i] . " in function: " . $funcName;
          #These are ints
          my $name = $2;
           if ($3 =~ m/^ = 0$/) {
@@ -310,7 +314,18 @@ sub generateImguiGeneric {
           #int with default value or not
         } elsif ($args[$i] =~ m/^ *int ([^ =\[]*)( = [^ ]*|) *$/) {
 		  # ******* Show if any function has a int in the $args[$i]
-		  # say STDERR "*******  " . $args[$i] . "  found in function: " . $funcName;
+		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
+          my $name = $1;
+          if ($2 =~ m/^ = ([^ ]*)$/) {
+            push(@before, "OPTIONAL_INT_ARG($name, $1)");
+          } else {
+            push(@before, "INT_ARG($name)");
+          }
+          push(@funcArgs, $name);
+          #ImDrawCornerFlags with default value or not
+        } elsif ($args[$i] =~ m/^ *ImDrawCornerFlags ([^ =\[]*)( = [^ ]*|) *$/) {
+		  # ******* Show if any function has a ImDrawCornerFlags in the $args[$i]
+		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
           my $name = $1;
           if ($2 =~ m/^ = ([^ ]*)$/) {
             push(@before, "OPTIONAL_INT_ARG($name, $1)");

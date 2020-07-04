@@ -1120,18 +1120,38 @@ END_IMGUI_FUNC
 IMGUI_FUNCTION(ListBoxFooter)
 CALL_FUNCTION_NO_RET(ListBoxFooter)
 END_IMGUI_FUNC
-//    IMGUI_API void          PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
-//    IMGUI_API void          PlotLines(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0);
+//    IMGUI_API void          PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0, int stride = sizeof(float));
+IMGUI_FUNCTION(PlotLines)
+LABEL_ARG(label)
+FLOAT_ARRAY_ARG(values)
+INT_ARG(values_count)
+OPTIONAL_INT_ARG(values_offset, 0)
+OPTIONAL_LABEL_ARG(overlay_text)
+OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
+OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
+OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
+OPTIONAL_INT_ARG(stride, sizeof(float))
+CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
+END_IMGUI_FUNC
+//    IMGUI_API void          PlotLines(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0);
 // Unsupported arg type  float(*values_getter)(void* data
 // Unsupported arg type  void* data
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
-//    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
-//    IMGUI_API void          PlotHistogram(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0);
+//    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0, int stride = sizeof(float));
+IMGUI_FUNCTION(PlotHistogram)
+LABEL_ARG(label)
+FLOAT_ARRAY_ARG(values)
+INT_ARG(values_count)
+OPTIONAL_INT_ARG(values_offset, 0)
+OPTIONAL_LABEL_ARG(overlay_text)
+OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
+OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
+OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
+OPTIONAL_INT_ARG(stride, sizeof(float))
+CALL_FUNCTION_NO_RET(PlotHistogram, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
+END_IMGUI_FUNC
+//    IMGUI_API void          PlotHistogram(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0);
 // Unsupported arg type  float(*values_getter)(void* data
 // Unsupported arg type  void* data
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
 //    IMGUI_API void          Value(const char* prefix, bool b);
 IMGUI_FUNCTION(Value)
 LABEL_ARG(prefix)
@@ -1283,7 +1303,10 @@ IMGUI_FUNCTION(NextColumn)
 CALL_FUNCTION_NO_RET(NextColumn)
 END_IMGUI_FUNC
 //    IMGUI_API int           GetColumnIndex();                                                   // get current column index
-// Unsupported return type int
+IMGUI_FUNCTION(GetColumnIndex)
+CALL_FUNCTION(GetColumnIndex, int)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API float         GetColumnWidth(int column_index = -1);                              // get column width (in pixels). pass -1 to use current column
 IMGUI_FUNCTION(GetColumnWidth)
 OPTIONAL_INT_ARG(column_index, -1)
@@ -1309,7 +1332,10 @@ NUMBER_ARG(offset_x)
 CALL_FUNCTION_NO_RET(SetColumnOffset, column_index, offset_x)
 END_IMGUI_FUNC
 //    IMGUI_API int           GetColumnsCount();
-// Unsupported return type int
+IMGUI_FUNCTION(GetColumnsCount)
+CALL_FUNCTION(GetColumnsCount, int)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          BeginTabBar(const char* str_id, ImGuiTabBarFlags flags = 0);        // create and append into a TabBar
 IMGUI_FUNCTION(BeginTabBar)
 LABEL_ARG(str_id)
@@ -1527,7 +1553,10 @@ CALL_FUNCTION(GetTime, double)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
 //    IMGUI_API int           GetFrameCount();                                                    // get global imgui frame count. incremented by 1 every frame.
-// Unsupported return type int
+IMGUI_FUNCTION(GetFrameCount)
+CALL_FUNCTION(GetFrameCount, int)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImDrawList*   GetBackgroundDrawList();                                            // this draw list will be the first rendering one. Useful to quickly draw shapes/text behind dear imgui contents.
 // Unsupported return type ImDrawList*
 //    IMGUI_API ImDrawList*   GetForegroundDrawList();                                            // this draw list will be the last rendered one. Useful to quickly draw shapes/text over dear imgui contents.
@@ -1595,7 +1624,11 @@ END_IMGUI_FUNC
 // Unsupported arg type  float& out_g
 // Unsupported arg type  float& out_b
 //    IMGUI_API int           GetKeyIndex(ImGuiKey imgui_key);                                    // map ImGuiKey_* values into user's key index. == io.KeyMap[key]
-// Unsupported return type int
+IMGUI_FUNCTION(GetKeyIndex)
+INT_ARG(imgui_key)
+CALL_FUNCTION(GetKeyIndex, int, imgui_key)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          IsKeyDown(int user_key_index);                                      // is key being held. == io.KeysDown[user_key_index].
 IMGUI_FUNCTION(IsKeyDown)
 INT_ARG(user_key_index)
@@ -1616,7 +1649,13 @@ CALL_FUNCTION(IsKeyReleased, bool, user_key_index)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API int           GetKeyPressedAmount(int key_index, float repeat_delay, float rate); // uses provided repeat rate/delay. return a count, most often 0 or 1 but might be >1 if RepeatRate is small enough that DeltaTime > RepeatRate
-// Unsupported return type int
+IMGUI_FUNCTION(GetKeyPressedAmount)
+INT_ARG(key_index)
+NUMBER_ARG(repeat_delay)
+NUMBER_ARG(rate)
+CALL_FUNCTION(GetKeyPressedAmount, int, key_index, repeat_delay, rate)
+PUSH_NUMBER(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          CaptureKeyboardFromApp(bool want_capture_keyboard_value = true);    // attention: misleading name! manually override io.WantCaptureKeyboard flag next frame (said flag is entirely left for your application to handle). e.g. force capture keyboard when your widget is being hovered. This is equivalent to setting "io.WantCaptureKeyboard = want_capture_keyboard_value"; after the next NewFrame() call.
 IMGUI_FUNCTION(CaptureKeyboardFromApp)
 OPTIONAL_BOOL_ARG(want_capture_keyboard_value, true)
@@ -2564,9 +2603,24 @@ OPTIONAL_NUMBER_ARG(thickness, 1.0f)
 DRAW_LIST_CALL_FUNCTION_NO_RET(AddLine, p1, p2, col, thickness)
 END_IMGUI_FUNC
 //    IMGUI_API void  AddRect(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4 bits corresponding to which corner to round
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+IMGUI_FUNCTION_DRAW_LIST(AddRect)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+UINT_ARG(col)
+OPTIONAL_NUMBER_ARG(rounding, 0.0f)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+OPTIONAL_NUMBER_ARG(thickness, 1.0f)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddRect, p_min, p_max, col, rounding, rounding_corners, thickness)
+END_IMGUI_FUNC
 //    IMGUI_API void  AddRectFilled(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+IMGUI_FUNCTION_DRAW_LIST(AddRectFilled)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+UINT_ARG(col)
+OPTIONAL_NUMBER_ARG(rounding, 0.0f)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilled, p_min, p_max, col, rounding, rounding_corners)
+END_IMGUI_FUNC
 //    IMGUI_API void  AddRectFilledMultiColor(const ImVec2& p_min, const ImVec2& p_max, ImU32 col_upr_left, ImU32 col_upr_right, ImU32 col_bot_right, ImU32 col_bot_left);
 IMGUI_FUNCTION_DRAW_LIST(AddRectFilledMultiColor)
 IM_VEC_2_ARG(p_min)
@@ -2673,16 +2727,42 @@ NUMBER_ARG(thickness)
 OPTIONAL_INT_ARG(num_segments, 0)
 DRAW_LIST_CALL_FUNCTION_NO_RET(AddBezierCurve, p1, p2, p3, p4, col, thickness, num_segments)
 END_IMGUI_FUNC
-//    IMGUI_API void  AddImage(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min = ImVec2 0  0, const ImVec2& uv_max = ImVec2 1  1, ImU32 col = IM_COL32_WHITE);
-// Unsupported arg type  const ImVec2& uv_min = ImVec2 0  0
-// Unsupported arg type  const ImVec2& uv_max = ImVec2 1  1
-//    IMGUI_API void  AddImageQuad(ImTextureID user_texture_id, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& uv1 = ImVec2 0  0, const ImVec2& uv2 = ImVec2 1  0, const ImVec2& uv3 = ImVec2 1  1, const ImVec2& uv4 = ImVec2 0  1, ImU32 col = IM_COL32_WHITE);
-// Unsupported arg type  const ImVec2& uv1 = ImVec2 0  0
-// Unsupported arg type  const ImVec2& uv2 = ImVec2 1  0
-// Unsupported arg type  const ImVec2& uv3 = ImVec2 1  1
-// Unsupported arg type  const ImVec2& uv4 = ImVec2 0  1
+//    IMGUI_API void  AddImage(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min = ImVec2 0 0, const ImVec2& uv_max = ImVec2 1 1, ImU32 col = IM_COL32_WHITE);
+IMGUI_FUNCTION_DRAW_LIST(AddImage)
+IM_TEXTURE_ID_ARG(user_texture_id)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+OPTIONAL_IM_VEC_2_ARG(uv_min, 0, 0)
+OPTIONAL_IM_VEC_2_ARG(uv_max, 1, 1)
+UINT_ARG(col)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddImage, user_texture_id, p_min, p_max, uv_min, uv_max, col)
+END_IMGUI_FUNC
+//    IMGUI_API void  AddImageQuad(ImTextureID user_texture_id, const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, const ImVec2& uv1 = ImVec2 0 0, const ImVec2& uv2 = ImVec2 1 0, const ImVec2& uv3 = ImVec2 1 1, const ImVec2& uv4 = ImVec2 0 1, ImU32 col = IM_COL32_WHITE);
+IMGUI_FUNCTION_DRAW_LIST(AddImageQuad)
+IM_TEXTURE_ID_ARG(user_texture_id)
+IM_VEC_2_ARG(p1)
+IM_VEC_2_ARG(p2)
+IM_VEC_2_ARG(p3)
+IM_VEC_2_ARG(p4)
+OPTIONAL_IM_VEC_2_ARG(uv1, 0, 0)
+OPTIONAL_IM_VEC_2_ARG(uv2, 1, 0)
+OPTIONAL_IM_VEC_2_ARG(uv3, 1, 1)
+OPTIONAL_IM_VEC_2_ARG(uv4, 0, 1)
+UINT_ARG(col)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddImageQuad, user_texture_id, p1, p2, p3, p4, uv1, uv2, uv3, uv4, col)
+END_IMGUI_FUNC
 //    IMGUI_API void  AddImageRounded(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min, const ImVec2& uv_max, ImU32 col, float rounding, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+IMGUI_FUNCTION_DRAW_LIST(AddImageRounded)
+IM_TEXTURE_ID_ARG(user_texture_id)
+IM_VEC_2_ARG(p_min)
+IM_VEC_2_ARG(p_max)
+IM_VEC_2_ARG(uv_min)
+IM_VEC_2_ARG(uv_max)
+UINT_ARG(col)
+NUMBER_ARG(rounding)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+DRAW_LIST_CALL_FUNCTION_NO_RET(AddImageRounded, user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners)
+END_IMGUI_FUNC
 //    inline    void  PathLineTo(const ImVec2& pos)                               { _Path.push_back(pos); }
 // Unsupported arg type const ImVec2& pos)                               { _Path.push_back(pos
 //    inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || memcmp(&_Path.Data[_Path.Size-1], &pos, 8) != 0) _Path.push_back(pos); }
@@ -2725,7 +2805,13 @@ OPTIONAL_INT_ARG(num_segments, 0)
 DRAW_LIST_CALL_FUNCTION_NO_RET(PathBezierCurveTo, p2, p3, p4, num_segments)
 END_IMGUI_FUNC
 //    IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
+IMGUI_FUNCTION_DRAW_LIST(PathRect)
+IM_VEC_2_ARG(rect_min)
+IM_VEC_2_ARG(rect_max)
+OPTIONAL_NUMBER_ARG(rounding, 0.0f)
+OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
+DRAW_LIST_CALL_FUNCTION_NO_RET(PathRect, rect_min, rect_max, rounding, rounding_corners)
+END_IMGUI_FUNC
 //    IMGUI_API void  AddCallback(ImDrawCallback callback, void* callback_data);  // Your rendering function must check for 'UserCallback' in ImDrawCmd and call the function instead of rendering triangles.
 // Unsupported arg type ImDrawCallback callback
 // Unsupported arg type  void* callback_data
@@ -2816,6 +2902,8 @@ END_IMGUI_FUNC
 
 //struct ImFont
 
+// ***************************************ImDrawCornerFlags_ enum*******************************************************
+
 // Manual addition ImDrawCornerFlags_ enum because Perl script did not provide so shows how you could add this enum manualy
 // Have not tried this yet to see if it will work. We need to get the perl script to do much more of the work
 
@@ -2844,6 +2932,9 @@ MAKE_ENUM(ImDrawCornerFlags_All,All)
 END_ENUM(CornerFlags)
 
 
+// *********************************************** ImDrawListFlags_ enum ***************************************************************************
+
+
 // Manual addition ImDrawListFlags_ enum because Perl script did not provide so shows how you could add this enum manualy
 // Have not tried this yet to see if it will work. We need to get the perl script to do much more of the work
 
@@ -2860,63 +2951,7 @@ MAKE_ENUM(ImDrawListFlags_AllowVtxOffset,AllowVtxOffset)
 END_ENUM(Flags)
 
 
-//    IMGUI_API void  AddRect(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4 bits corresponding to which corner to round
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
-// Manual addition AddRect Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION_DRAW_LIST(AddRect)
-IM_VEC_2_ARG(p_min)
-IM_VEC_2_ARG(p_max)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
-OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRect, p_min, p_max, col, rounding, rounding_corners, thickness)
-END_IMGUI_FUNC
-
-
-//    IMGUI_API void  AddRectFilled(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All                     // a: upper-left, b: lower-right (== upper-left + size)
-// Manual addition AddRectFilled Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION_DRAW_LIST(AddRectFilled)
-IM_VEC_2_ARG(p_min)
-IM_VEC_2_ARG(p_max)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilled, p_min, p_max, col, rounding, rounding_corners)
-END_IMGUI_FUNC
-
-
-//    IMGUI_API void  AddImageRounded(ImTextureID user_texture_id, const ImVec2& p_min, const ImVec2& p_max, const ImVec2& uv_min, const ImVec2& uv_max, ImU32 col, float rounding, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
-// Manual addition PathRect Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION_DRAW_LIST(AddImageRounded)
-IM_TEXTURE_ID_ARG(user_texture_id)
-IM_VEC_2_ARG(p_min)
-IM_VEC_2_ARG(p_max)
-IM_VEC_2_ARG(uv_min)
-IM_VEC_2_ARG(uv_max)
-UINT_ARG(col)
-NUMBER_ARG(rounding)
-OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddImageRounded, user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners)
-END_IMGUI_FUNC
-
-
-//    IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All);
-// Unsupported arg type  ImDrawCornerFlags rounding_corners = ImDrawCornerFlags_All
-// Manual addition PathRect Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION_DRAW_LIST(PathRect)
-IM_VEC_2_ARG(rect_min)
-IM_VEC_2_ARG(rect_max)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(PathRect, rect_min, rect_max, rounding, rounding_corners)
-END_IMGUI_FUNC
+// ******************************************** InputText ****************************************************************************
 
 
 // IMGUI_API bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
@@ -2938,6 +2973,8 @@ END_LABEL_POINTER(buf)
 END_IMGUI_FUNC
 
 
+// ****************************************** InputTextMultiline ***********************************************************************
+
 // IMGUI_API bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2 0 0, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 // Unsupported arg type  char* buf
 // Unsupported arg type  size_t buf_size
@@ -2958,6 +2995,9 @@ END_LABEL_POINTER(buf)
 END_IMGUI_FUNC
 
 
+// ****************************************** InputTextWithHint ************************************************************************
+
+
 // IMGUI_API bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
 // Unsupported arg type  char* buf
 // Unsupported arg type  size_t buf_size
@@ -2975,40 +3015,4 @@ DEFAULT_ARG(void*, user_data, NULL)
 CALL_FUNCTION(InputTextWithHint, bool, label, hint, buf, buf_size, flags, callback, user_data)
 PUSH_BOOL(ret)
 END_LABEL_POINTER(buf)
-END_IMGUI_FUNC
-
-
-// IMGUI_API void PlotLines(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
-// Manual addition PlotLines Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION(PlotLines)
-LABEL_ARG(label)
-FLOAT_ARRAY_ARG(values)
-INT_ARG(values_count)
-OPTIONAL_INT_ARG(values_offset, 0)
-OPTIONAL_LABEL_ARG(overlay_text)
-OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
-OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
-OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
-OPTIONAL_INT_ARG(stride, sizeof(float))
-CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
-END_IMGUI_FUNC
-
-
-// IMGUI_API void PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0  0, int stride = sizeof(float));
-// Unsupported arg type  ImVec2 graph_size = ImVec2 0  0
-// Manual addition PlotHistogram Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION(PlotHistogram)
-LABEL_ARG(label)
-FLOAT_ARRAY_ARG(values)
-INT_ARG(values_count)
-OPTIONAL_INT_ARG(values_offset, 0)
-OPTIONAL_LABEL_ARG(overlay_text)
-OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
-OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
-OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
-OPTIONAL_INT_ARG(stride, sizeof(float))
-CALL_FUNCTION_NO_RET(PlotHistogram, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
 END_IMGUI_FUNC
