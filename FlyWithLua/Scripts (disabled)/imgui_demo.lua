@@ -1,6 +1,6 @@
 -- imgui demo script
 -- Folke Will 2018-07-15
--- Willian R. Good 2020-07-02 Updated to reflect now using Imgui 1.76
+-- Willian R. Good 2020-07-05 Updated to reflect now using Imgui 1.76
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -380,14 +380,14 @@ function build_demo(wnd, x, y)
         -- Prameters: x1, y1, x2, y2, color, roundness
         imgui.DrawList_AddRectFilled(cx + 20, cy, cx + 40, cy + 20, 0xFFFF0000, 0.5)
     
-        -- Parameters: x1, y1, x2, y2, x3, y3, color
-        imgui.DrawList_AddTriangle(cx, cy + 50, cx + 40, cy + 50, cx + 20, cy + 20, 0xFF00FF00)
+        -- Parameters: x1, y1, x2, y2, x3, y3, color, thickness 
+        imgui.DrawList_AddTriangle(cx, cy + 50, cx + 40, cy + 50, cx + 20, cy + 20, 0xFF00FF00, 2.0)
 
         -- Parameters: x1, y1, x2, y2, x3, y3, color
         imgui.DrawList_AddTriangleFilled(cx + 40, cy + 50, cx + 80, cy + 50, cx + 40, cy + 20, 0xFF00FF00)
 
-        -- Parameters: x1, y1, r, color
-        imgui.DrawList_AddCircle(cx + 80, cy + 20, 20, 0xFF00FF00)
+        -- Parameters: x1, y1, r, color, segments, thickness
+        imgui.DrawList_AddCircle(cx + 80, cy + 20, 20, 0xFF00FF00, 20, 2.0)
 
         -- Parameters: x1, y1, r, color
         imgui.DrawList_AddCircleFilled(cx + 80, cy + 20, 10, 0xFF00FF00)

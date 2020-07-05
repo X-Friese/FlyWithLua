@@ -175,7 +175,6 @@ CALL_FUNCTION_NO_RET(SetNextWindowSize, size, cond)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetNextWindowSizeConstraints(const ImVec2& size_min, const ImVec2& size_max, ImGuiSizeCallback custom_callback = NULL, void* custom_callback_data = NULL); // set next window size limits. use -1,-1 on either X/Y axis to preserve the current size. Sizes will be rounded down. Use callback to apply non-trivial programmatic constraints.
 // Unsupported arg type  ImGuiSizeCallback custom_callback = NULL
-// Unsupported arg type  void* custom_callback_data = NULL
 //    IMGUI_API void          SetNextWindowContentSize(const ImVec2& size);                               // set next window content size (~ scrollable client area, which enforce the range of scrollbars). Not including window decorations (title bar, menu bar, etc.) nor WindowPadding. set an axis to 0.0f to leave it automatic. call before Begin()
 IMGUI_FUNCTION(SetNextWindowContentSize)
 IM_VEC_2_ARG(size)
@@ -757,7 +756,6 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          Combo(const char* label, int* current_item, bool(*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int popup_max_height_in_items = -1);
 // Unsupported arg type  bool(*items_getter)(void* data
 // Unsupported arg type  const char** out_text)
-// Unsupported arg type  void* data
 //    IMGUI_API bool          DragFloat(const char* label, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", float power = 1.0f);     // If v_min >= v_max we have no bound
 IMGUI_FUNCTION(DragFloat)
 LABEL_ARG(label)
@@ -827,11 +825,9 @@ END_INT_POINTER(v_current_min)
 END_INT_POINTER(v_current_max)
 END_IMGUI_FUNC
 //    IMGUI_API bool          DragScalar(const char* label, ImGuiDataType data_type, void* p_data, float v_speed, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_min = NULL
 // Unsupported arg type  const void* p_max = NULL
 //    IMGUI_API bool          DragScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_min = NULL
 // Unsupported arg type  const void* p_max = NULL
 //    IMGUI_API bool          SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. Use power!=1.0 for power curve sliders
@@ -881,11 +877,9 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          SliderInt4(const char* label, int v[4], int v_min, int v_max, const char* format = "%d");
 // Unsupported arg type  int v[4]
 //    IMGUI_API bool          SliderScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_min
 // Unsupported arg type  const void* p_max
 //    IMGUI_API bool          SliderScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_min
 // Unsupported arg type  const void* p_max
 //    IMGUI_API bool          VSliderFloat(const char* label, const ImVec2& size, float* v, float v_min, float v_max, const char* format = "%.3f", float power = 1.0f);
@@ -914,24 +908,43 @@ PUSH_BOOL(ret)
 END_INT_POINTER(v)
 END_IMGUI_FUNC
 //    IMGUI_API bool          VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, float power = 1.0f);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_min
 // Unsupported arg type  const void* p_max
 //    IMGUI_API bool          InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
+IMGUI_FUNCTION(InputText)
+LABEL_ARG(label)
+LABEL_POINTER_ARG(buf)
+OPTIONAL_INT_ARG(flags, 0)
+DEFAULT_ARG(ImGuiInputTextCallback, callback, NULL)
+DEFAULT_ARG(void*, user_data, NULL)
+CALL_FUNCTION(InputText, bool, label, buf, buf_size, flags, callback, user_data)
+PUSH_BOOL(ret)
+END_LABEL_POINTER(buf)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2 0 0, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
+IMGUI_FUNCTION(InputTextMultiline)
+LABEL_ARG(label)
+LABEL_POINTER_ARG(buf)
+OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
+OPTIONAL_INT_ARG(flags, 0)
+DEFAULT_ARG(ImGuiInputTextCallback, callback, NULL)
+DEFAULT_ARG(void*, user_data, NULL)
+CALL_FUNCTION(InputTextMultiline, bool, label, buf, buf_size, size, flags, callback, user_data)
+PUSH_BOOL(ret)
+END_LABEL_POINTER(buf)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
+IMGUI_FUNCTION(InputTextWithHint)
+LABEL_ARG(label)
+LABEL_ARG(hint)
+LABEL_POINTER_ARG(buf)
+OPTIONAL_INT_ARG(flags, 0)
+DEFAULT_ARG(ImGuiInputTextCallback, callback, NULL)
+DEFAULT_ARG(void*, user_data, NULL)
+CALL_FUNCTION(InputTextWithHint, bool, label, hint, buf, buf_size, flags, callback, user_data)
+PUSH_BOOL(ret)
+END_LABEL_POINTER(buf)
+END_IMGUI_FUNC
 //    IMGUI_API bool          InputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 IMGUI_FUNCTION(InputFloat)
 LABEL_ARG(label)
@@ -972,11 +985,9 @@ END_IMGUI_FUNC
 // Unsupported arg type  double step = 0.0
 // Unsupported arg type  double step_fast = 0.0
 //    IMGUI_API bool          InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_step = NULL
 // Unsupported arg type  const void* p_step_fast = NULL
 //    IMGUI_API bool          InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
-// Unsupported arg type  void* p_data
 // Unsupported arg type  const void* p_step = NULL
 // Unsupported arg type  const void* p_step_fast = NULL
 //    IMGUI_API bool          ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
@@ -1100,7 +1111,6 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          ListBox(const char* label, int* current_item, bool (*items_getter)(void* data, int idx, const char** out_text), void* data, int items_count, int height_in_items = -1);
 // Unsupported arg type  bool (*items_getter)(void* data
 // Unsupported arg type  const char** out_text)
-// Unsupported arg type  void* data
 //    IMGUI_API bool          ListBoxHeader(const char* label, const ImVec2& size = ImVec2 0 0); // use if you want to reimplement ListBox() will custom data or interactions. if the function return true, you can output elements then call ListBoxFooter() afterwards.
 IMGUI_FUNCTION(ListBoxHeader)
 LABEL_ARG(label)
@@ -1135,7 +1145,6 @@ CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, over
 END_IMGUI_FUNC
 //    IMGUI_API void          PlotLines(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0);
 // Unsupported arg type  float(*values_getter)(void* data
-// Unsupported arg type  void* data
 //    IMGUI_API void          PlotHistogram(const char* label, const float* values, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0, int stride = sizeof(float));
 IMGUI_FUNCTION(PlotHistogram)
 LABEL_ARG(label)
@@ -1151,7 +1160,6 @@ CALL_FUNCTION_NO_RET(PlotHistogram, label, values, values_count, values_offset, 
 END_IMGUI_FUNC
 //    IMGUI_API void          PlotHistogram(const char* label, float(*values_getter)(void* data, int idx), void* data, int values_count, int values_offset = 0, const char* overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2 0 0);
 // Unsupported arg type  float(*values_getter)(void* data
-// Unsupported arg type  void* data
 //    IMGUI_API void          Value(const char* prefix, bool b);
 IMGUI_FUNCTION(Value)
 LABEL_ARG(prefix)
@@ -1778,10 +1786,7 @@ END_IMGUI_FUNC
 // Unsupported arg type  size_t sz_drawidx
 //    IMGUI_API void          SetAllocatorFunctions(void* (*alloc_func)(size_t sz, void* user_data), void (*free_func)(void* ptr, void* user_data), void* user_data = NULL);
 // Unsupported arg type void* (*alloc_func)(size_t sz
-// Unsupported arg type  void* user_data)
 // Unsupported arg type  void (*free_func)(void* ptr
-// Unsupported arg type  void* user_data)
-// Unsupported arg type  void* user_data = NULL
 //    IMGUI_API void*         MemAlloc(size_t size);
 // Unsupported return type void*
 // Unsupported arg type size_t size
@@ -2562,8 +2567,40 @@ END_ENUM(Cond)
 
 //enum ImDrawCornerFlags_
 
+START_ENUM(CornerFlags)
+//    ImDrawCornerFlags_None      = 0,
+MAKE_ENUM(ImDrawCornerFlags_None,None)
+//    ImDrawCornerFlags_TopLeft   = 1 << 0, // 0x1
+MAKE_ENUM(ImDrawCornerFlags_TopLeft,TopLeft)
+//    ImDrawCornerFlags_TopRight  = 1 << 1, // 0x2
+MAKE_ENUM(ImDrawCornerFlags_TopRight,TopRight)
+//    ImDrawCornerFlags_BotLeft   = 1 << 2, // 0x4
+MAKE_ENUM(ImDrawCornerFlags_BotLeft,BotLeft)
+//    ImDrawCornerFlags_BotRight  = 1 << 3, // 0x8
+MAKE_ENUM(ImDrawCornerFlags_BotRight,BotRight)
+//    ImDrawCornerFlags_Top       = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_TopRight,   // 0x3
+MAKE_ENUM(ImDrawCornerFlags_Top,Top)
+//    ImDrawCornerFlags_Bot       = ImDrawCornerFlags_BotLeft | ImDrawCornerFlags_BotRight,   // 0xC
+MAKE_ENUM(ImDrawCornerFlags_Bot,Bot)
+//    ImDrawCornerFlags_Left      = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_BotLeft,    // 0x5
+MAKE_ENUM(ImDrawCornerFlags_Left,Left)
+//    ImDrawCornerFlags_Right     = ImDrawCornerFlags_TopRight | ImDrawCornerFlags_BotRight,  // 0xA
+MAKE_ENUM(ImDrawCornerFlags_Right,Right)
+//    ImDrawCornerFlags_All       = 0xF     // In your function calls you may use ~0 (= all bits sets) instead of ImDrawCornerFlags_All, as a convenience
+MAKE_ENUM(ImDrawCornerFlags_All,All)
+END_ENUM(CornerFlags)
 //enum ImDrawListFlags_
 
+START_ENUM(ListFlags)
+//    ImDrawListFlags_None             = 0,
+MAKE_ENUM(ImDrawListFlags_None,None)
+//    ImDrawListFlags_AntiAliasedLines = 1 << 0,  // Lines are anti-aliased (*2 the number of triangles for 1.0f wide line, otherwise *3 the number of triangles)
+MAKE_ENUM(ImDrawListFlags_AntiAliasedLines,AntiAliasedLines)
+//    ImDrawListFlags_AntiAliasedFill  = 1 << 1,  // Filled shapes have anti-aliased edges (*2 the number of vertices)
+MAKE_ENUM(ImDrawListFlags_AntiAliasedFill,AntiAliasedFill)
+//    ImDrawListFlags_AllowVtxOffset   = 1 << 2   // Can emit 'VtxOffset > 0' to allow large meshes. Set when 'ImGuiBackendFlags_RendererHasVtxOffset' is enabled.
+MAKE_ENUM(ImDrawListFlags_AllowVtxOffset,AllowVtxOffset)
+END_ENUM(ListFlags)
 //struct ImDrawList
 
 //    IMGUI_API void  PushClipRect(ImVec2 clip_rect_min, ImVec2 clip_rect_max, bool intersect_with_current_clip_rect = false);  // Render-level scissoring. This is passed down to your render function but not used for CPU-side coarse clipping. Prefer using higher-level ImGui::PushClipRect() to affect logic (hit-testing and widget culling)
@@ -2814,7 +2851,6 @@ DRAW_LIST_CALL_FUNCTION_NO_RET(PathRect, rect_min, rect_max, rounding, rounding_
 END_IMGUI_FUNC
 //    IMGUI_API void  AddCallback(ImDrawCallback callback, void* callback_data);  // Your rendering function must check for 'UserCallback' in ImDrawCmd and call the function instead of rendering triangles.
 // Unsupported arg type ImDrawCallback callback
-// Unsupported arg type  void* callback_data
 //    IMGUI_API void  AddDrawCmd();                                               // This is useful if you need to forcefully create a new draw call (to allow for dependent rendering / blending). Otherwise primitives are merged into the same draw-call as much as possible
 IMGUI_FUNCTION_DRAW_LIST(AddDrawCmd)
 DRAW_LIST_CALL_FUNCTION_NO_RET(AddDrawCmd)
@@ -2898,121 +2934,15 @@ END_IMGUI_FUNC
 
 //enum ImFontAtlasFlags_
 
+START_ENUM(AtlasFlags)
+//    ImFontAtlasFlags_None               = 0,
+MAKE_ENUM(ImFontAtlasFlags_None,None)
+//    ImFontAtlasFlags_NoPowerOfTwoHeight = 1 << 0,   // Don't round the height to next power of two
+MAKE_ENUM(ImFontAtlasFlags_NoPowerOfTwoHeight,NoPowerOfTwoHeight)
+//    ImFontAtlasFlags_NoMouseCursors     = 1 << 1    // Don't build software mouse cursors into the atlas
+MAKE_ENUM(ImFontAtlasFlags_NoMouseCursors,NoMouseCursors)
+END_ENUM(AtlasFlags)
 //struct ImFontAtlas
 
 //struct ImFont
 
-// ***************************************ImDrawCornerFlags_ enum*******************************************************
-
-// Manual addition ImDrawCornerFlags_ enum because Perl script did not provide so shows how you could add this enum manualy
-// Have not tried this yet to see if it will work. We need to get the perl script to do much more of the work
-
-//enum ImDrawCornerFlags_
-START_ENUM(CornerFlags)
-//    ImDrawCornerFlags_None      = 0,
-MAKE_ENUM(ImDrawCornerFlags_None,None)
-//    ImDrawCornerFlags_TopLeft   = 1 << 0, // 0x1
-MAKE_ENUM(ImDrawCornerFlags_TopLeft,Left)
-//    ImDrawCornerFlags_TopRight  = 1 << 1, // 0x2
-MAKE_ENUM(ImDrawCornerFlags_TopRight,TopRight)
-//    ImDrawCornerFlags_BotLeft   = 1 << 2, // 0x4
-MAKE_ENUM(ImDrawCornerFlags_BotLeft,BotLeft)
-//    ImDrawCornerFlags_BotRight  = 1 << 3, // 0x8
-MAKE_ENUM(ImDrawCornerFlags_BotRight,BotRight)
-//    ImDrawCornerFlags_Top       = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_TopRight,   // 0x3
-MAKE_ENUM(ImDrawCornerFlags_Top,Top)
-//    ImDrawCornerFlags_Bot       = ImDrawCornerFlags_BotLeft | ImDrawCornerFlags_BotRight,   // 0xC
-MAKE_ENUM(ImDrawCornerFlags_Bot,Bot)
-//    ImDrawCornerFlags_Left      = ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_BotLeft,    // 0x5
-MAKE_ENUM(ImDrawCornerFlags_Left,Left)
-//    ImDrawCornerFlags_Right     = ImDrawCornerFlags_TopRight | ImDrawCornerFlags_BotRight,  // 0xA
-MAKE_ENUM(ImDrawCornerFlags_Right,Right)
-//    ImDrawCornerFlags_All       = 0xF     // In your function calls you may use ~0 (= all bits sets) instead of ImDrawCornerFlags_All, as a convenience
-MAKE_ENUM(ImDrawCornerFlags_All,All)
-END_ENUM(CornerFlags)
-
-
-// *********************************************** ImDrawListFlags_ enum ***************************************************************************
-
-
-// Manual addition ImDrawListFlags_ enum because Perl script did not provide so shows how you could add this enum manualy
-// Have not tried this yet to see if it will work. We need to get the perl script to do much more of the work
-
-//enum ImDrawListFlags_
-START_ENUM(Flags)
-//    ImDrawListFlags_None             = 0,
-MAKE_ENUM(ImDrawListFlags_None,None)
-//    ImDrawListFlags_AntiAliasedLines = 1 << 0,  // Lines are anti-aliased (*2 the number of triangles for 1.0f wide line, otherwise *3 the number of triangles)
-MAKE_ENUM(ImDrawListFlags_AntiAliasedLines,AntiAliasedLines)
-//    ImDrawListFlags_AntiAliasedFill  = 1 << 1,  // Filled shapes have anti-aliased edges (*2 the number of vertices)
-MAKE_ENUM(ImDrawListFlags_AntiAliasedFill,AntiAliasedFill)
-//    ImDrawListFlags_AllowVtxOffset   = 1 << 2   // Can emit 'VtxOffset > 0' to allow large meshes. Set when 'ImGuiBackendFlags_RendererHasVtxOffset' is enabled.
-MAKE_ENUM(ImDrawListFlags_AllowVtxOffset,AllowVtxOffset)
-END_ENUM(Flags)
-
-
-// ******************************************** InputText ****************************************************************************
-
-
-// IMGUI_API bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
-// Manual addition InputText Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION(InputText)
-LABEL_ARG(label)
-LABEL_POINTER_ARG(buf)
-OPTIONAL_INT_ARG(flags, 0)
-DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
-DEFAULT_ARG(void*, user_data, NULL)
-CALL_FUNCTION(InputText, bool, label, buf, buf_size, flags, callback, user_data)
-PUSH_BOOL(ret)
-END_LABEL_POINTER(buf)
-END_IMGUI_FUNC
-
-
-// ****************************************** InputTextMultiline ***********************************************************************
-
-// IMGUI_API bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2 0 0, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
-// Manual addition InputTextMultiline Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION(InputTextMultiline)
-LABEL_ARG(label)
-LABEL_POINTER_ARG(buf)
-OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
-OPTIONAL_INT_ARG(flags, 0)
-DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
-DEFAULT_ARG(void*, user_data, NULL)
-CALL_FUNCTION(InputTextMultiline, bool, label, buf, buf_size, size, flags, callback, user_data)
-PUSH_BOOL(ret)
-END_LABEL_POINTER(buf)
-END_IMGUI_FUNC
-
-
-// ****************************************** InputTextWithHint ************************************************************************
-
-
-// IMGUI_API bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-// Unsupported arg type  char* buf
-// Unsupported arg type  size_t buf_size
-// Unsupported arg type  ImGuiInputTextCallback callback = NULL
-// Unsupported arg type  void* user_data = NULL
-// Manual addition InputTextWithHint Function because Perl script did not provide so shows how you could add a function manualy
-
-IMGUI_FUNCTION(InputTextWithHint)
-LABEL_ARG(label)
-LABEL_ARG(hint)
-LABEL_POINTER_ARG(buf)
-OPTIONAL_INT_ARG(flags, 0)
-DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
-DEFAULT_ARG(void*, user_data, NULL)
-CALL_FUNCTION(InputTextWithHint, bool, label, hint, buf, buf_size, flags, callback, user_data)
-PUSH_BOOL(ret)
-END_LABEL_POINTER(buf)
-END_IMGUI_FUNC

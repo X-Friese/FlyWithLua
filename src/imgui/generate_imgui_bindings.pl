@@ -258,6 +258,12 @@ sub generateImguiGeneric {
             push(@before, "NUMBER_ARG($name)");
           }
           push(@funcArgs, $name);
+        # char * x
+        } elsif ($args[$i] =~ m/^ *char *\* *([^ =\[]*)$/) {
+          my $name = $1;
+          push(@before, "LABEL_POINTER_ARG($name)");
+          push(@funcArgs, $name);
+          push(@after, "END_LABEL_POINTER($name)");
           # const char* a or const char* a = NULL or "blah"
         } elsif ($args[$i] =~ m/^ *const char\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
           my $name = $1;
@@ -267,6 +273,26 @@ sub generateImguiGeneric {
             push(@before, "LABEL_ARG($name)");
           }
           push(@funcArgs, $name);
+        } elsif ($args[$i] =~ m/^ void*\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
+		  my $name = $1;
+		  if ($funcName =~ m/^ *(InputText|InputTextMultiline|InputTextWithHint)$/) {
+		    # say STDERR "******* name:  " . $name . "  From function: " . $funcName;
+		    push(@before, "DEFAULT_ARG(void*, $name, NULL)");
+			push(@funcArgs, $name);
+		 }
+         } elsif ($args[$i] =~ m/^ ImGuiInputTextCallback *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
+		  my $name = $1;
+		  if ($funcName =~ m/^ *(InputText|InputTextMultiline|InputTextWithHint)$/) {
+		    # say STDERR "******* name:  " . $name . "  From function: " . $funcName;
+		    push(@before, "DEFAULT_ARG(ImGuiInputTextCallback, $name, NULL)");
+			push(@funcArgs, $name);
+		  }
+        } elsif ($args[$i] =~ m/^ *(size_t buf_size)$/) {
+		  my $name = "buf_size";
+		  if ($funcName =~ m/^ *(InputText|InputTextMultiline|InputTextWithHint)$/) {
+		    # say STDERR "******* name:  " . $name . "  From function: " . $funcName;
+			push(@funcArgs, $name);
+		  }
         #const ImVec2& with default or not
         } elsif ($args[$i] =~ m/^ *const ImVec2& ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
           my $name = $1;
@@ -278,10 +304,9 @@ sub generateImguiGeneric {
           push(@funcArgs, $name);
         # ImVec2 * with default or not
         } elsif ($args[$i] =~ m/^ *ImVec2 ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
+		  my $name = $1;
 		  # ******* Show if any function has a ImVec2 in the $args[$i]
-		  # For some reason ImVec2 is not being found in functions PlotLines and PlotHistogram functions.
-		  # say STDERR "******* * ImVec2 found in function: " . $funcName; 
-          my $name = $1;
+		  # say STDERR "******* name: " . $name . "* ImVec2 found in function: " . $funcName; 
           if ($2 =~ m/^= * ImVec2 ([^ ]*) ([^ ]*)$/) {
             push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
           } else {
@@ -475,7 +500,7 @@ sub generateEnums {
   my $enumName = shift;
   my ($imguiCodeBlock) = @_;
 
-  my $lineCaptureRegex = qr"^ *(ImGui)([^, _]+)_([a-zA-Z0-9]+)\b";
+  my $lineCaptureRegex = qr"^ *(ImGui|ImDraw|ImFont)([^, _]+)_([a-zA-Z0-9]+)\b";
 
   print "START_ENUM($enumName)\n";
   my $line;
@@ -511,6 +536,12 @@ for (my $i=0; $i < scalar @blocks; $i++) {
     generateNamespaceImgui($blocks[$i]);
   }
   if ($blocknames[$i] =~ m/enum ImGui(.*)_\n/) {
+    generateEnums($1, $blocks[$i]);
+  }
+  if ($blocknames[$i] =~ m/enum ImDraw(.*)_\n/) {
+    generateEnums($1, $blocks[$i]);
+  }
+  if ($blocknames[$i] =~ m/enum ImFont(.*)_\n/) {
     generateEnums($1, $blocks[$i]);
   }
   if ($blocknames[$i] eq "struct ImDrawList\n") {
