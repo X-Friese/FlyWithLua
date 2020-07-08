@@ -127,7 +127,7 @@
  *  v2.7.24 [added]   support for XPLMPlaceUserAtLocation
  *  v2.7.25 [added]   support for Imgui 1.76
  *  v2.7.26 [added]   missing support for two Imgui functions
- *  v2.7.27 [added]
+ *  v2.7.27 [added]   support for Imgui 1.77 Increased number of supported functions.
  *
  *
  *  Markus (Teddii):

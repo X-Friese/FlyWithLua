@@ -201,7 +201,7 @@ IM_VEC_2_ARG(pos)
 OPTIONAL_INT_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetWindowPos, pos, cond)
 END_IMGUI_FUNC
-//    IMGUI_API void          SetWindowSize(const ImVec2& size, ImGuiCond cond = 0);                      // (not recommended) set current window size - call within Begin()/End(). set to ImVec2 0 0 to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects.
+//    IMGUI_API void          SetWindowSize(const ImVec2& size, ImGuiCond cond = 0);                      // (not recommended) set current window size - call within Begin()/End(). set to ImVec2 0  0 to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects.
 IMGUI_FUNCTION(SetWindowSize)
 IM_VEC_2_ARG(size)
 OPTIONAL_INT_ARG(cond, 0)
@@ -634,7 +634,7 @@ END_IMGUI_FUNC
 // Unsupported arg type  ...)                                IM_FMTARGS(1
 //    IMGUI_API void          BulletTextV(const char* fmt, va_list args)                      IM_FMTLIST(1);
 // Unsupported arg type  va_list args)                      IM_FMTLIST(1
-//    IMGUI_API bool          Button(const char* label, const ImVec2& size = ImVec2 0 0);    // button
+//    IMGUI_API bool          Button(const char* label, const ImVec2& size = ImVec2 0 0);   // button
 IMGUI_FUNCTION(Button)
 LABEL_ARG(label)
 OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
@@ -999,7 +999,7 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
 // Unsupported arg type  float col[4]
 // Unsupported arg type  const float* ref_col = NULL
-//    IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, ImVec2 size = ImVec2 0 0);  // display a colored square/button, hover for details, return true when pressed.
+//    IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, ImVec2 size = ImVec2 0 0); // display a colored square/button, hover for details, return true when pressed.
 IMGUI_FUNCTION(ColorButton)
 LABEL_ARG(desc_id)
 IM_VEC_4_ARG(col)
@@ -1087,7 +1087,7 @@ BOOL_ARG(is_open)
 OPTIONAL_INT_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetNextItemOpen, is_open, cond)
 END_IMGUI_FUNC
-//    IMGUI_API bool          Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2 0 0);  // "bool selected" carry the selection state (read-only). Selectable() is clicked is returns true so you can modify your selection state. size.x==0.0: use remaining width, size.x>0.0: specify width. size.y==0.0: use label height, size.y>0.0: specify height
+//    IMGUI_API bool          Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2 0 0); // "bool selected" carry the selection state (read-only). Selectable() is clicked is returns true so you can modify your selection state. size.x==0.0: use remaining width, size.x>0.0: specify width. size.y==0.0: use label height, size.y>0.0: specify height
 IMGUI_FUNCTION(Selectable)
 LABEL_ARG(label)
 OPTIONAL_BOOL_ARG(selected, false)
@@ -1096,7 +1096,7 @@ OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
 CALL_FUNCTION(Selectable, bool, label, selected, flags, size)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          Selectable(const char* label, bool* p_selected, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2 0 0);       // "bool* p_selected" point to the selection state (read-write), as a convenient helper.
+//    IMGUI_API bool          Selectable(const char* label, bool* p_selected, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2 0 0);      // "bool* p_selected" point to the selection state (read-write), as a convenient helper.
 IMGUI_FUNCTION(Selectable_4)
 LABEL_ARG(label)
 BOOL_POINTER_ARG(p_selected)
@@ -1253,12 +1253,7 @@ END_IMGUI_FUNC
 // Unsupported arg type  ...) IM_FMTARGS(1
 //    IMGUI_API void          SetTooltipV(const char* fmt, va_list args) IM_FMTLIST(1);
 // Unsupported arg type  va_list args) IM_FMTLIST(1
-//    IMGUI_API void          OpenPopup(const char* str_id);                                      // call to mark popup as open (don't call every frame!). popups are closed when user click outside, or if CloseCurrentPopup() is called within a BeginPopup()/EndPopup() block. By default, Selectable()/MenuItem() are calling CloseCurrentPopup(). Popup identifiers are relative to the current ID-stack (so OpenPopup and BeginPopup needs to be at the same level).
-IMGUI_FUNCTION(OpenPopup)
-LABEL_ARG(str_id)
-CALL_FUNCTION_NO_RET(OpenPopup, str_id)
-END_IMGUI_FUNC
-//    IMGUI_API bool          BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0);                                             // return true if the popup is open, and you can start outputting to it. only call EndPopup() if BeginPopup() returns true!
+//    IMGUI_API bool          BeginPopup(const char* str_id, ImGuiWindowFlags flags = 0);                         // return true if the popup is open, and you can start outputting to it.
 IMGUI_FUNCTION(BeginPopup)
 LABEL_ARG(str_id)
 OPTIONAL_INT_ARG(flags, 0)
@@ -1266,13 +1261,7 @@ CALL_FUNCTION(BeginPopup, bool, str_id, flags)
 IF_RET_ADD_END_STACK(11)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          BeginPopupContextItem(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1);                    // helper to open and begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp!
-// Unsupported arg type  ImGuiMouseButton mouse_button = 1
-//    IMGUI_API bool          BeginPopupContextWindow(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1, bool also_over_items = true);  // helper to open and begin popup when clicked on current window.
-// Unsupported arg type  ImGuiMouseButton mouse_button = 1
-//    IMGUI_API bool          BeginPopupContextVoid(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1);                    // helper to open and begin popup when clicked in void (where there are no imgui windows).
-// Unsupported arg type  ImGuiMouseButton mouse_button = 1
-//    IMGUI_API bool          BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0);                     // modal dialog (regular window with title bar, block interactions behind the modal window, can't close the modal window by clicking outside)
+//    IMGUI_API bool          BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags flags = 0); // return true if the modal is open, and you can start outputting to it.
 IMGUI_FUNCTION(BeginPopupModal)
 LABEL_ARG(name)
 OPTIONAL_BOOL_POINTER_ARG(p_open)
@@ -1282,22 +1271,58 @@ IF_RET_ADD_END_STACK(11)
 PUSH_BOOL(ret)
 END_BOOL_POINTER(p_open)
 END_IMGUI_FUNC
-//    IMGUI_API void          EndPopup();                                                                                             // only call EndPopup() if BeginPopupXXX() returns true!
+//    IMGUI_API void          EndPopup();                                                                         // only call EndPopup() if BeginPopupXXX() returns true!
 IMGUI_FUNCTION(EndPopup)
 CALL_FUNCTION_NO_RET(EndPopup)
 POP_END_STACK(11)
 END_IMGUI_FUNC
-//    IMGUI_API bool          OpenPopupOnItemClick(const char* str_id = NULL, ImGuiMouseButton mouse_button = 1);                     // helper to open popup when clicked on last item (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors). return true when just opened.
-// Unsupported arg type  ImGuiMouseButton mouse_button = 1
-//    IMGUI_API bool          IsPopupOpen(const char* str_id);                                    // return true if the popup is open at the current begin-ed level of the popup stack.
-IMGUI_FUNCTION(IsPopupOpen)
+//    IMGUI_API void          OpenPopup(const char* str_id, ImGuiPopupFlags popup_flags = 0);                     // call to mark popup as open (don't call every frame!).
+IMGUI_FUNCTION(OpenPopup)
 LABEL_ARG(str_id)
-CALL_FUNCTION(IsPopupOpen, bool, str_id)
+OPTIONAL_INT_ARG(popup_flags, 0)
+CALL_FUNCTION_NO_RET(OpenPopup, str_id, popup_flags)
+END_IMGUI_FUNC
+//    IMGUI_API bool          OpenPopupContextItem(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);   // helper to open popup when clicked on last item. return true when just opened. (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors)
+IMGUI_FUNCTION(OpenPopupContextItem)
+OPTIONAL_LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(OpenPopupContextItem, bool, str_id, popup_flags)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API void          CloseCurrentPopup();                                                // close the popup we have begin-ed into. clicking on a MenuItem or Selectable automatically close the current popup.
+//    IMGUI_API void          CloseCurrentPopup();                                                                // manually close the popup we have begin-ed into.
 IMGUI_FUNCTION(CloseCurrentPopup)
 CALL_FUNCTION_NO_RET(CloseCurrentPopup)
+END_IMGUI_FUNC
+//    IMGUI_API bool          BeginPopupContextItem(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);  // open+begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp!
+IMGUI_FUNCTION(BeginPopupContextItem)
+OPTIONAL_LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(BeginPopupContextItem, bool, str_id, popup_flags)
+IF_RET_ADD_END_STACK(11)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          BeginPopupContextWindow(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);// open+begin popup when clicked on current window.
+IMGUI_FUNCTION(BeginPopupContextWindow)
+OPTIONAL_LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(BeginPopupContextWindow, bool, str_id, popup_flags)
+IF_RET_ADD_END_STACK(11)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          BeginPopupContextVoid(const char* str_id = NULL, ImGuiPopupFlags popup_flags = 1);  // open+begin popup when clicked in void (where there are no windows).
+IMGUI_FUNCTION(BeginPopupContextVoid)
+OPTIONAL_LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(popup_flags, 1)
+CALL_FUNCTION(BeginPopupContextVoid, bool, str_id, popup_flags)
+IF_RET_ADD_END_STACK(11)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          IsPopupOpen(const char* str_id, ImGuiPopupFlags flags = 0);                         // return true if the popup is open.
+IMGUI_FUNCTION(IsPopupOpen)
+LABEL_ARG(str_id)
+OPTIONAL_INT_ARG(flags, 0)
+CALL_FUNCTION(IsPopupOpen, bool, str_id, flags)
+PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API void          Columns(int count = 1, const char* id = NULL, bool border = true);
 IMGUI_FUNCTION(Columns)
@@ -1959,6 +1984,28 @@ MAKE_ENUM(ImGuiTreeNodeFlags_NavLeftJumpsBackHere,NavLeftJumpsBackHere)
 //    ImGuiTreeNodeFlags_CollapsingHeader     = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog
 MAKE_ENUM(ImGuiTreeNodeFlags_CollapsingHeader,CollapsingHeader)
 END_ENUM(TreeNodeFlags)
+//enum ImGuiPopupFlags_
+
+START_ENUM(PopupFlags)
+//    ImGuiPopupFlags_None                    = 0,
+MAKE_ENUM(ImGuiPopupFlags_None,None)
+//    ImGuiPopupFlags_MouseButtonLeft         = 0,        // For BeginPopupContext*(): open on Left Mouse release. Guaranted to always be == 0 (same as ImGuiMouseButton_Left)
+MAKE_ENUM(ImGuiPopupFlags_MouseButtonLeft,MouseButtonLeft)
+//    ImGuiPopupFlags_MouseButtonRight        = 1,        // For BeginPopupContext*(): open on Right Mouse release. Guaranted to always be == 1 (same as ImGuiMouseButton_Right)
+MAKE_ENUM(ImGuiPopupFlags_MouseButtonRight,MouseButtonRight)
+//    ImGuiPopupFlags_MouseButtonMiddle       = 2,        // For BeginPopupContext*(): open on Middle Mouse release. Guaranted to always be == 2 (same as ImGuiMouseButton_Middle)
+MAKE_ENUM(ImGuiPopupFlags_MouseButtonMiddle,MouseButtonMiddle)
+//    ImGuiPopupFlags_NoOpenOverExistingPopup = 1 << 5,   // For OpenPopup*(), BeginPopupContext*(): don't open if there's already a popup at the same level of the popup stack
+MAKE_ENUM(ImGuiPopupFlags_NoOpenOverExistingPopup,NoOpenOverExistingPopup)
+//    ImGuiPopupFlags_NoOpenOverItems         = 1 << 6,   // For BeginPopupContextWindow(): don't return true when hovering items, only when hovering empty space
+MAKE_ENUM(ImGuiPopupFlags_NoOpenOverItems,NoOpenOverItems)
+//    ImGuiPopupFlags_AnyPopupId              = 1 << 7,   // For IsPopupOpen(): ignore the ImGuiID parameter and test for any popup.
+MAKE_ENUM(ImGuiPopupFlags_AnyPopupId,AnyPopupId)
+//    ImGuiPopupFlags_AnyPopupLevel           = 1 << 8,   // For IsPopupOpen(): search/test at any level of the popup stack (default test in the current level)
+MAKE_ENUM(ImGuiPopupFlags_AnyPopupLevel,AnyPopupLevel)
+//    ImGuiPopupFlags_AnyPopup                = ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel
+MAKE_ENUM(ImGuiPopupFlags_AnyPopup,AnyPopup)
+END_ENUM(PopupFlags)
 //enum ImGuiSelectableFlags_
 
 START_ENUM(SelectableFlags)
@@ -2028,8 +2075,10 @@ MAKE_ENUM(ImGuiTabItemFlags_UnsavedDocument,UnsavedDocument)
 MAKE_ENUM(ImGuiTabItemFlags_SetSelected,SetSelected)
 //    ImGuiTabItemFlags_NoCloseWithMiddleMouseButton  = 1 << 2,   // Disable behavior of closing tabs (that are submitted with p_open != NULL) with middle mouse button. You can still repro this behavior on user's side with if (IsItemHovered() && IsMouseClicked(2)) *p_open = false.
 MAKE_ENUM(ImGuiTabItemFlags_NoCloseWithMiddleMouseButton,NoCloseWithMiddleMouseButton)
-//    ImGuiTabItemFlags_NoPushId                      = 1 << 3    // Don't call PushID(tab->ID)/PopID() on BeginTabItem()/EndTabItem()
+//    ImGuiTabItemFlags_NoPushId                      = 1 << 3,   // Don't call PushID(tab->ID)/PopID() on BeginTabItem()/EndTabItem()
 MAKE_ENUM(ImGuiTabItemFlags_NoPushId,NoPushId)
+//    ImGuiTabItemFlags_NoTooltip                     = 1 << 4    // Disable tooltip for the given tab
+MAKE_ENUM(ImGuiTabItemFlags_NoTooltip,NoTooltip)
 END_ENUM(TabItemFlags)
 //enum ImGuiFocusedFlags_
 
@@ -2522,9 +2571,11 @@ END_ENUM(MouseCursor)
 //enum ImGuiCond_
 
 START_ENUM(Cond)
-//    ImGuiCond_Always        = 1 << 0,   // Set the variable
+//    ImGuiCond_None          = 0,        // No condition (always set the variable), same as _Always
+MAKE_ENUM(ImGuiCond_None,None)
+//    ImGuiCond_Always        = 1 << 0,   // No condition (always set the variable)
 MAKE_ENUM(ImGuiCond_Always,Always)
-//    ImGuiCond_Once          = 1 << 1,   // Set the variable once per runtime session (only the first call with succeed)
+//    ImGuiCond_Once          = 1 << 1,   // Set the variable once per runtime session (only the first call will succeed)
 MAKE_ENUM(ImGuiCond_Once,Once)
 //    ImGuiCond_FirstUseEver  = 1 << 2,   // Set the variable if the object/window has no persistently saved data (no entry in .ini file)
 MAKE_ENUM(ImGuiCond_FirstUseEver,FirstUseEver)
@@ -2863,14 +2914,6 @@ END_IMGUI_FUNC
 //    inline void     ChannelsSetCurrent(int n)   { _Splitter.SetCurrentChannel(this, n); }
 // Unsupported arg type int n)   { _Splitter.SetCurrentChannel(this
 // Unsupported arg type  n
-//    IMGUI_API void  Clear();
-IMGUI_FUNCTION_DRAW_LIST(Clear)
-DRAW_LIST_CALL_FUNCTION_NO_RET(Clear)
-END_IMGUI_FUNC
-//    IMGUI_API void  ClearFreeMemory();
-IMGUI_FUNCTION_DRAW_LIST(ClearFreeMemory)
-DRAW_LIST_CALL_FUNCTION_NO_RET(ClearFreeMemory)
-END_IMGUI_FUNC
 //    IMGUI_API void  PrimReserve(int idx_count, int vtx_count);
 IMGUI_FUNCTION_DRAW_LIST(PrimReserve)
 INT_ARG(idx_count)
@@ -2912,15 +2955,31 @@ IM_VEC_2_ARG(uv_d)
 UINT_ARG(col)
 DRAW_LIST_CALL_FUNCTION_NO_RET(PrimQuadUV, a, b, c, d, uv_a, uv_b, uv_c, uv_d, col)
 END_IMGUI_FUNC
-//    inline    void  PrimVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col)     { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx); PrimWriteVtx(pos, uv, col); }
-// Unsupported arg type  ImU32 col)     { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx
-//    IMGUI_API void  UpdateClipRect();
-IMGUI_FUNCTION_DRAW_LIST(UpdateClipRect)
-DRAW_LIST_CALL_FUNCTION_NO_RET(UpdateClipRect)
+//    inline    void  PrimVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col)         { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx); PrimWriteVtx(pos, uv, col); } // Write vertex with unique index
+// Unsupported arg type  ImU32 col)         { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx
+//    IMGUI_API void  _ResetForNewFrame();
+IMGUI_FUNCTION_DRAW_LIST(_ResetForNewFrame)
+DRAW_LIST_CALL_FUNCTION_NO_RET(_ResetForNewFrame)
 END_IMGUI_FUNC
-//    IMGUI_API void  UpdateTextureID();
-IMGUI_FUNCTION_DRAW_LIST(UpdateTextureID)
-DRAW_LIST_CALL_FUNCTION_NO_RET(UpdateTextureID)
+//    IMGUI_API void  _ClearFreeMemory();
+IMGUI_FUNCTION_DRAW_LIST(_ClearFreeMemory)
+DRAW_LIST_CALL_FUNCTION_NO_RET(_ClearFreeMemory)
+END_IMGUI_FUNC
+//    IMGUI_API void  _PopUnusedDrawCmd();
+IMGUI_FUNCTION_DRAW_LIST(_PopUnusedDrawCmd)
+DRAW_LIST_CALL_FUNCTION_NO_RET(_PopUnusedDrawCmd)
+END_IMGUI_FUNC
+//    IMGUI_API void  _OnChangedClipRect();
+IMGUI_FUNCTION_DRAW_LIST(_OnChangedClipRect)
+DRAW_LIST_CALL_FUNCTION_NO_RET(_OnChangedClipRect)
+END_IMGUI_FUNC
+//    IMGUI_API void  _OnChangedTextureID();
+IMGUI_FUNCTION_DRAW_LIST(_OnChangedTextureID)
+DRAW_LIST_CALL_FUNCTION_NO_RET(_OnChangedTextureID)
+END_IMGUI_FUNC
+//    IMGUI_API void  _OnChangedVtxOffset();
+IMGUI_FUNCTION_DRAW_LIST(_OnChangedVtxOffset)
+DRAW_LIST_CALL_FUNCTION_NO_RET(_OnChangedVtxOffset)
 END_IMGUI_FUNC
 //struct ImDrawData
 
