@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.26 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.27 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -126,6 +126,8 @@
  *  v2.7.23 [added]   support for Imgui 1.70
  *  v2.7.24 [added]   support for XPLMPlaceUserAtLocation
  *  v2.7.25 [added]   support for Imgui 1.76
+ *  v2.7.26 [added]   missing support for two Imgui functions
+ *  v2.7.27 [added]   support for Imgui 1.77 Increased number of supported functions.
  *
  *
  *  Markus (Teddii):

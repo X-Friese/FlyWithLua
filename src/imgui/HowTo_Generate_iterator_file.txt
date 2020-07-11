@@ -4,9 +4,9 @@ The first Imgui version supported was 1.61 with FlyWithLua 2.7.0
 
 The second Imgui version supported was 1.70 with FlyWithLua 2.7.23
 
-This version supports Imgui 1.76 with FlyWithLua 2.7.25
+This version supports Imgui 1.77 with FlyWithLua 2.7.27
 
-William R. Good 06-22-20 
+William R. Good 07-07-20 
 
 
 
@@ -16,73 +16,7 @@ perl generate_imgui_bindings.pl <imgui.h >imgui_iterator.inl
 
 Results are:
 
-Normal Imgui functions:   Supported: 235 Unsupported: 113
-Imgui DrawList functions: Supported: 30 Unsupported: 20
+Normal Imgui functions:   Supported: 249 Unsupported: 99
+Imgui DrawList functions: Supported: 38 Unsupported: 14
 
-
-Add the following to the bottom of the generated imgui_iterator.inl file
-
-
-// We are keeping all manual additions in one place to try and make it easier to track
-// Manual addition InputText Function because Perl script did not provide so shows how you could add a function manualy
-IMGUI_FUNCTION(InputText)
-LABEL_ARG(label)
-LABEL_POINTER_ARG(buf)
-OPTIONAL_INT_ARG(flags, 0)
-DEFAULT_ARG(ImGuiTextEditCallback, callback, NULL)
-DEFAULT_ARG(void*, user_data, NULL)
-CALL_FUNCTION(InputText, bool, label, buf, buf_size, flags, callback, user_data)
-PUSH_BOOL(ret)
-END_LABEL_POINTER(buf)
-END_IMGUI_FUNC
-
-// Manual addition PlotLines Function because Perl script did not provide so shows how you could add a function manualy
-IMGUI_FUNCTION(PlotLines)
-LABEL_ARG(label)
-FLOAT_ARRAY_ARG(values)
-INT_ARG(values_count)
-OPTIONAL_INT_ARG(values_offset, 0)
-OPTIONAL_LABEL_ARG(overlay_text)
-OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
-OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
-OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
-OPTIONAL_INT_ARG(stride, sizeof(float))
-CALL_FUNCTION_NO_RET(PlotLines, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
-END_IMGUI_FUNC
-
-// Manual addition PlotHistogram Function because Perl script did not provide so shows how you could add a function manualy
-IMGUI_FUNCTION(PlotHistogram)
-LABEL_ARG(label)
-FLOAT_ARRAY_ARG(values)
-INT_ARG(values_count)
-OPTIONAL_INT_ARG(values_offset, 0)
-OPTIONAL_LABEL_ARG(overlay_text)
-OPTIONAL_NUMBER_ARG(scale_min, FLT_MAX)
-OPTIONAL_NUMBER_ARG(scale_max, FLT_MAX)
-OPTIONAL_IM_VEC_2_ARG(graph_size, 0, 0)
-OPTIONAL_INT_ARG(stride, sizeof(float))
-CALL_FUNCTION_NO_RET(PlotHistogram, label, values, values_count, values_offset, overlay_text, scale_min, scale_max, graph_size, stride)
-END_IMGUI_FUNC
-
-// Manual addition AddRect Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void  AddRect(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All, float thickness = 1.0f);   // a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4-bits corresponding to which corner to round
-IMGUI_FUNCTION_DRAW_LIST(AddRect)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-OPTIONAL_NUMBER_ARG(thickness, 1.0f)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRect, a, b, col, rounding, rounding_corners_flags, thickness)
-END_IMGUI_FUNC
-
-// Manual addition AddRectFilled Function because Perl script did not provide so shows how you could add a function manualy
-//    IMGUI_API void  AddRectFilled(const ImVec2& a, const ImVec2& b, ImU32 col, float rounding = 0.0f, int rounding_corners_flags = ImDrawCornerFlags_All);                     // a: upper-left, b: lower-right (== upper-left + size)
-IMGUI_FUNCTION_DRAW_LIST(AddRectFilled)
-IM_VEC_2_ARG(a)
-IM_VEC_2_ARG(b)
-UINT_ARG(col)
-OPTIONAL_NUMBER_ARG(rounding, 0.0f)
-OPTIONAL_INT_ARG(rounding_corners_flags, ImDrawCornerFlags_All)
-DRAW_LIST_CALL_FUNCTION_NO_RET(AddRectFilled, a, b, col, rounding, rounding_corners_flags)
-END_IMGUI_FUNC
+Using the current perl script there is no need for any manual additions to the generated imgui_iterator.inl file.

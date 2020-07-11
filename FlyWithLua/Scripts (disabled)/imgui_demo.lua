@@ -1,6 +1,6 @@
 -- imgui demo script
 -- Folke Will 2018-07-15
--- Willian R. Good 2020-05-14 Updated to reflect now using Imgui 1.70
+-- Willian R. Good 2020-07-08 Updated to reflect now supporting Imgui 1.77
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -64,6 +64,8 @@ sliderVal = 0
 choice = 1
 angle = 0
 text = ""
+text2 = "/*\n The Pentium F00F bug, shorthand for F0 0F C7 C8,\nthe hexadecimal encoding of one offending instruction,\n more formally, the invalid operand with locked CMPXCHG8B\n instruction bug, is a design flaw in the majority of\n Intel Pentium, Pentium MMX, and Pentium OverDrive\n processors (all in the P5 microarchitecture).\n */\n"
+text3 = ""
 
 function build_demo(wnd, x, y)
     -- This function is called for every frame. Use this function to create your GUI.
@@ -324,11 +326,25 @@ function build_demo(wnd, x, y)
     
     if imgui.TreeNode("Input") then
         -- Allow the user to input text
-        local changed, newText = imgui.InputText("Text", text, 255)
+        local changed, newText = imgui.InputText("One Line Text", text, 255)
         -- Parameters: Label, current text, maximum number of allowed characters
 
         if changed then
             text = newText
+        end
+
+        local changed, newText2 = imgui.InputTextMultiline("Multiline Text", text2, 500)
+        -- Parameters: Label, current text, maximum number of allowed characters
+
+        if changed then
+            text2 = newText2
+        end
+
+        local changed, newText3 = imgui.InputTextWithHint("Text With a Hint", "hint", text3, 255)
+        -- Parameters: Label, current text, maximum number of allowed characters
+
+        if changed then
+            text3 = newText3
         end
         
         -- Allow the user to input an integer, either using the keyboard or by clicking + / -
@@ -366,14 +382,14 @@ function build_demo(wnd, x, y)
         -- Prameters: x1, y1, x2, y2, color, roundness
         imgui.DrawList_AddRectFilled(cx + 20, cy, cx + 40, cy + 20, 0xFFFF0000, 0.5)
     
-        -- Parameters: x1, y1, x2, y2, x3, y3, color
-        imgui.DrawList_AddTriangle(cx, cy + 50, cx + 40, cy + 50, cx + 20, cy + 20, 0xFF00FF00)
+        -- Parameters: x1, y1, x2, y2, x3, y3, color, thickness 
+        imgui.DrawList_AddTriangle(cx, cy + 50, cx + 40, cy + 50, cx + 20, cy + 20, 0xFF00FF00, 2.0)
 
         -- Parameters: x1, y1, x2, y2, x3, y3, color
         imgui.DrawList_AddTriangleFilled(cx + 40, cy + 50, cx + 80, cy + 50, cx + 40, cy + 20, 0xFF00FF00)
 
-        -- Parameters: x1, y1, r, color
-        imgui.DrawList_AddCircle(cx + 80, cy + 20, 20, 0xFF00FF00)
+        -- Parameters: x1, y1, r, color, segments, thickness
+        imgui.DrawList_AddCircle(cx + 80, cy + 20, 20, 0xFF00FF00, 20, 1.0)
 
         -- Parameters: x1, y1, r, color
         imgui.DrawList_AddCircleFilled(cx + 80, cy + 20, 10, 0xFF00FF00)
