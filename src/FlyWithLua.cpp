@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.27 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.28 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -128,6 +128,7 @@
  *  v2.7.25 [added]   support for Imgui 1.76
  *  v2.7.26 [added]   missing support for two Imgui functions
  *  v2.7.27 [added]   support for Imgui 1.77 Increased number of supported functions.
+ *  v2.7.28 [fixed]   missing configurations imconfig.h for #define IM_ASSERT.
  *
  *
  *  Markus (Teddii):
