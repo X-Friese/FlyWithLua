@@ -13,7 +13,12 @@
 
 #pragma once
 
+#include <stdexcept>
+#include <string>
+
 //---- Define assertion handler. Defaults to calling assert().
+#define IM_ASSERT(_EXPR) do { if (!(_EXPR)) { throw std::runtime_error("ImGUI assertion failed: " # _EXPR); } } while (0)
+
 // If your macro uses multiple statements, make sure is enclosed in a 'do { .. } while (0)' block so it can be used as a single statement.
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
 //#define IM_ASSERT(_EXPR)  ((void)(_EXPR))     // Disable asserts
