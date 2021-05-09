@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.28 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.29 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -1037,7 +1037,7 @@ XPLMWindowID FWLMouseEventWindowID;
 std::string  LuaMouseClickCommand;
 std::string  LuaMouseWheelCommand;
 
-int LAST_SCREEN_WIDTH, LAST_SCREEN_HIGHT;
+int LAST_SCREEN_WIDTH, LAST_SCREEN_HIGHT, LAST_SCREEN_HEIGHT;
 
 void FWLMouseEventWindowDraw(XPLMWindowID /*inWindowID*/, void* /*inRefcon*/)
 {
@@ -1273,6 +1273,9 @@ int FWLDrawWindowCallback(XPLMDrawingPhase /*inPhase*/,
     lua_setglobal(FWLLua, "SCREEN_WIDTH");
     lua_pushnumber(FWLLua, LAST_SCREEN_HIGHT);
     lua_setglobal(FWLLua, "SCREEN_HIGHT");
+    LAST_SCREEN_HEIGHT = LAST_SCREEN_HIGHT;
+    lua_pushnumber(FWLLua, LAST_SCREEN_HEIGHT);
+    lua_setglobal(FWLLua, "SCREEN_HEIGHT");
 
     // restore the window size of the mouse event window and bring it to the front
     XPLMSetWindowGeometry(FWLMouseEventWindowID, 0, LAST_SCREEN_HIGHT, LAST_SCREEN_WIDTH, 0);
@@ -6468,6 +6471,9 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "SCREEN_WIDTH");
     lua_pushnumber(FWLLua, LAST_SCREEN_HIGHT);
     lua_setglobal(FWLLua, "SCREEN_HIGHT");
+    LAST_SCREEN_HEIGHT = LAST_SCREEN_HIGHT;
+    lua_pushnumber(FWLLua, LAST_SCREEN_HEIGHT);
+    lua_setglobal(FWLLua, "SCREEN_HEIGHT");
 
     // inform the script what system we are using
 #if IBM
