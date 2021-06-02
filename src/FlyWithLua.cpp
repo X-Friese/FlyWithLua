@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.29 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.30 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -968,6 +968,8 @@ XPLMDataRef gJoystickAxisReverse;
 XPLMDataRef gJoystickAxisValues;
 XPLMDataRef gPlaneICAO;
 XPLMDataRef gPlaneTailNumber;
+XPLMDataRef gPlaneDescrip;
+XPLMDataRef gPlaneAuthor;
 
 
 // We interact with XSquawkBox
@@ -6631,6 +6633,8 @@ bool ReadAllScriptFiles()
     char FileToLoad[SHORTSRTING]      = "";
     char PlaneICAO[SHORTSRTING]       = "";
     char PlaneTailNumber[SHORTSRTING] = "";
+    char PlaneDescrip[SHORTSRTING]    = "";
+    char PlaneAuthor[SHORTSRTING]     = "";
     int  k;
     char FilesInFolder[5000];
     int NumberOfFiles; // modified by saar
@@ -6669,6 +6673,12 @@ bool ReadAllScriptFiles()
     XPLMGetDatab(gPlaneTailNumber, PlaneTailNumber, 0, SHORTSRTING);
     lua_pushstring(FWLLua, PlaneTailNumber);
     lua_setglobal(FWLLua, "PLANE_TAILNUMBER");
+    XPLMGetDatab(gPlaneDescrip, PlaneDescrip, 0, SHORTSRTING);
+    lua_pushstring(FWLLua, PlaneDescrip);
+    lua_setglobal(FWLLua, "PLANE_DESCRIP");
+    XPLMGetDatab(gPlaneAuthor, PlaneAuthor, 0, SHORTSRTING);
+    lua_pushstring(FWLLua, PlaneAuthor);
+    lua_setglobal(FWLLua, "PLANE_AUTHOR");
 
     // if we are still in boot phase of X-Plane, we do not want to load files
     if (XPLMInitialized() == 0)
@@ -7062,6 +7072,8 @@ PLUGIN_API int XPluginStart(
     gJoystickButtonValues      = XPLMFindDataRef("sim/joystick/joystick_button_values");
     gPlaneICAO                 = XPLMFindDataRef("sim/aircraft/view/acf_ICAO");
     gPlaneTailNumber           = XPLMFindDataRef("sim/aircraft/view/acf_tailnum");
+    gPlaneDescrip              = XPLMFindDataRef("sim/aircraft/view/acf_descrip");
+    gPlaneAuthor               = XPLMFindDataRef("sim/aircraft/view/acf_author");
 
     // Lua run numbering starts at zero (no runs) when X-Plane starts
     LuaResetCount = 0;
@@ -7298,7 +7310,7 @@ PLUGIN_API int XPluginEnable(void)
     luaL_openlibs(FWLLua);
 
     // reload all script files, if the plugin is re-enabled via X-Plane's plugin manager menu
-    if (LuaResetCount > 0)
+    if (LuaResetCount > 0 || XPLMGetCycleNumber() > 0)
     {
         ReadAllScriptFiles();
     }
