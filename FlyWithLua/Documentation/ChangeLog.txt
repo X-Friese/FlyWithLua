@@ -1,0 +1,61 @@
+v2.7.0 added support for floating windows and VR and new name NG (Next Generation)
+
+v2.7.1 fixed issue with not being able to write to xlua datarefs.
+
+v2.7.2 fixed issue with not being able to write to xlua array datarefs. added checking for nil in SaveInitialAssignments.ini before writing to initial_assignments.txt
+
+v2.7.3 added being able to set initial window position of non VR floating windows.
+
+v2.7.4 fixed issue when loading situation files in Scripts folder might cause CTD.
+
+v2.7.5 added better error reporting.
+
+v2.7.6 fixed package.path and package.cpath in FlyWithLua.ini. Replaced strcpy() with strncpy() in most places to avoid buffer overflows. Changed statically link LuaXML_lib into FlyWithLua plugin binary. Added the ability to get the xplm handle from floating window to be used with ffi thanks to IanQ. Changed statically link LuaSocket_lib into FlyWithLua plugin binary.
+
+v2.7.7 Added new floating window methods by IanQ.
+
+v2.7.8  Thanks to Jetbrains used CLion to help refactor FlyWithLua.cpp. Now using sol2 library for high-level C++ to Lua bindings. Thanks nevkontakte.
+
+v2.7.9 Restore Lua 5.1 behavior for lua_tointeger() to mitigate issue #22.
+
+v2.7.10 Added a "Scripts (Quarantine)" folder to put bad scripts found on initial reading. When a bad script is found and moved it will speak this and put a information line at the top or the monitor. Added the version to the logging in the Log.txt file. Now supporting 400 sound files.
+
+v2.7.11 Added menu item to move scripts from "Scripts (Quarantine)" folder to  "Scripts" folder after you have fixed issues. After 20 seconds if there are scripts in the "Scripts (Quarantine)" folder it will say and display "Please check your quarantined scripts folder".
+
+v2.7.12 Improved error reporting in Log.txt file for items I can't yet put into quarantine.
+
+v2.7.13 Only speak once no mater how many bad scripts found. Removed unneeded window ID logging info. Throw execption after moving bad function script. Even if no bad scripts are found on startup look in the "Scripts (Quarantine)" folder and speak if some are found. Changed most of the logToAll to logToDevCon to prevent flooding of XSquawkBox window.
+
+v2.7.14 Changed from logToAll to logToDevCon for XPLMSpeakString. Changed if Devmode enabled do not speak or display messages about quarantine folder.
+
+v2.7.15 Changed from building on LuaJit 2.0.1 to building on LuaJit 2.0.5.
+
+v2.7.16 Now using iniReader for a preference file
+
+v2.7.17 Fixed issue when Devmode is enabled still speaking some messages. Ffixed issue when Devmode is enabled still moving some scripts to quarantine folder.
+
+v2.7.18 Changed the size of Luadirectory_to_table to 1500 files or folders and 45000 characters.
+
+v2.7.19 Fixed issue with Arcaze not being found.
+
+v2.7.20 Removed the limit on the number of sounds. Thanks Lee Baker.
+
+v2.7.21 Added support for XPLMFindCommand. Removed support for building core and complete versions as we only build the NG version.
+
+v2.7.22 Added verbose logging mode to keep the Log.txt cleaner unless needed for troubleshooting. Added   #define MAXSWITCHES 400. Changed #define MAXDATAREFS from 400 to 600.
+
+v2.7.23 Added support for Imgui 1.70
+
+v2.7.24 Added support for XPLMPlaceUserAtLocation
+
+v2.7.25 Added support for Imgui 1.76
+
+v2.7.26 Added missing support for two Imgui functions
+
+v2.7.27 Added support for Imgui 1.77 Increased number of supported functions.
+
+v2.7.28 Added missing configurations imconfig.h for #define IM_ASSERT.
+
+v2.7.29 Added global varable SCREEN_HEIGHT that has the same value as SCREEN_HIGHT.
+
+v2.7.30 Thanks to Steven L. Goldberg added global varables PLANE_AUTHOR and PLANE_DESCRIP. Also fixed bug if you used the reload pluggins function.

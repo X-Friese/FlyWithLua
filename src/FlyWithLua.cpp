@@ -129,6 +129,9 @@
  *  v2.7.26 [added]   missing support for two Imgui functions
  *  v2.7.27 [added]   support for Imgui 1.77 Increased number of supported functions.
  *  v2.7.28 [fixed]   missing configurations imconfig.h for #define IM_ASSERT.
+ *  v2.7.29 [added]   global varable SCREEN_HEIGHT that has the same value as SCREEN_HIGHT.
+ *  v2.7.30 [added]   global varables PLANE_AUTHOR and PLANE_DESCRIP Thanks to Steven L. Goldberg.
+ *          [fixed]   bug if you used the reload pluggins function Thanks to Steven L. Goldberg.
  *
  *
  *  Markus (Teddii):
