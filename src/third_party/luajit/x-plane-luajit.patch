@@ -82,3 +82,8 @@ diff -Naur a/src/Makefile b/src/Makefile
  #
  ##############################################################################
  
+@@ -211,3 +211,3 @@
+ TARGET_LD= $(CROSS)$(CC)
+-TARGET_AR= $(CROSS)ar rcus 2>/dev/null
++TARGET_AR= $(CROSS)ar rcus
+ TARGET_STRIP= $(CROSS)strip
