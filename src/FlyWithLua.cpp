@@ -1828,7 +1828,7 @@ static int Luahid_send_feature_report(lua_State* L)
     }
     // check max number of arguments
     int noa = lua_gettop(L);  // number of arguments
-    if (noa > USB_STR_MAXLEN)
+    if (noa - 1 > USB_STR_MAXLEN)
     {
         logMsg(logToDevCon, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
         LuaIsRunning = false;
@@ -1868,14 +1868,18 @@ static int Luahid_send_filled_feature_report(lua_State* L)
     }
     // check max number of arguments
     int noa = lua_gettop(L);  // number of arguments
-    if ((noa - 1 > USB_STR_MAXLEN) || (luaL_checknumber(L, 3) > USB_STR_MAXLEN))
+    if ((noa - 2 > USB_STR_MAXLEN) || (luaL_checknumber(L, 3) > USB_STR_MAXLEN))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Too many arguments to function hid_send_feature_report().");
         LuaIsRunning = false;
         return 0;
     }
+
+    // write report ID outside of the loop, as we need to skip nobts
+    BlockToWrite[0] = static_cast<unsigned char>(luaL_checknumber(L, 2));
+
     // collect values to write
-    for (auto i = 3; i <= noa; i++)
+    for (auto i = 4; i <= noa; i++)
     {
         BlockToWrite[i - 3] = static_cast<unsigned char>(luaL_checknumber(L, i));
     }
