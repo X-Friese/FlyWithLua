@@ -59,3 +59,5 @@ v2.7.28 Added missing configurations imconfig.h for #define IM_ASSERT.
 v2.7.29 Added global varable SCREEN_HEIGHT that has the same value as SCREEN_HIGHT.
 
 v2.7.30 Thanks to Steven L. Goldberg added global varables PLANE_AUTHOR and PLANE_DESCRIP. Also fixed bug if you used the reload pluggins function.
+
+v2.7.31 Thanks to Daniel Peukert Fixed hid_send_filled_feature_report, adjusted length check
