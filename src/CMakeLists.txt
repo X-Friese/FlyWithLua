@@ -25,12 +25,12 @@ include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/Wrappers")
 include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/XPLM")
 include_directories("${CMAKE_SOURCE_DIR}/include64")
 include_directories("${CMAKE_SOURCE_DIR}/hidapi")
-include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
 include_directories("${CMAKE_SOURCE_DIR}/.")
 include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
 include_directories("${CMAKE_SOURCE_DIR}/imgui")
 
 if (WIN32)
+    include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
     include_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
 endif (WIN32)
 
@@ -42,9 +42,7 @@ if (WIN32)
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Win")
 elseif (APPLE)
     list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Mac")
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/mac_libs")
 elseif (UNIX)
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/OpenAL")
 endif ()
 
 
