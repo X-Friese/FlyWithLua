@@ -34,7 +34,7 @@ ExternalProject_Add(project_luajit
   BUILD_BYPRODUCTS ${luajit_prefix}/lib/libluajit-5.1.a
 )
 
-ExternalProject_Get_Property(project_luajit install_dir)
+ExternalProject_Get_Property(project_luajit install_dir source_dir)
 
 add_custom_command(
   TARGET project_luajit POST_BUILD
@@ -46,3 +46,5 @@ add_library(LuaJIT STATIC IMPORTED GLOBAL)
 add_library(luajit::LuaJIT ALIAS LuaJIT)
 add_dependencies(LuaJIT project_luajit)
 set_property(TARGET LuaJIT PROPERTY IMPORTED_LOCATION "${install_dir}/lib/libluajit-5.1.a")
+target_include_directories(LuaJIT INTERFACE "${source_dir}/src")
+file(MAKE_DIRECTORY "${source_dir}/src")  # CMake doesn't like if include dir doesn't exist at configure time.

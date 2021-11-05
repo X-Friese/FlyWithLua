@@ -7,8 +7,7 @@ set(LUASOCKET_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/upstream/src)
 add_library(LuaSocket_Mime STATIC
   ${LUASOCKET_SRC_DIR}/mime.c
   ${LUASOCKET_SRC_DIR}/compat.c)
-
-target_include_directories(LuaSocket_Mime PRIVATE ${CMAKE_SOURCE_DIR}/include64)
+target_link_libraries(LuaSocket_Mime luajit::LuaJIT)
 
 # "socket/core" module.
 add_library(LuaSocket_Socket STATIC
@@ -24,6 +23,7 @@ add_library(LuaSocket_Socket STATIC
   ${LUASOCKET_SRC_DIR}/select.c
   ${LUASOCKET_SRC_DIR}/tcp.c
   ${LUASOCKET_SRC_DIR}/udp.c)
+target_link_libraries(LuaSocket_Socket luajit::LuaJIT)
 
 if(WIN32)
   target_sources(LuaSocket_Socket PRIVATE ${LUASOCKET_SRC_DIR}/wsocket.c)
@@ -31,8 +31,6 @@ if(WIN32)
 else()
   target_sources(LuaSocket_Socket PRIVATE ${LUASOCKET_SRC_DIR}/usocket.c)
 endif()
-
-target_include_directories(LuaSocket_Socket PRIVATE ${CMAKE_SOURCE_DIR}/include64)
 
 # "socket/unix" module.
 if(UNIX)
@@ -48,7 +46,7 @@ if(UNIX)
     ${LUASOCKET_SRC_DIR}/compat.c
     ${LUASOCKET_SRC_DIR}/unix.c)
 
-  target_include_directories(LuaSocket_Unix PRIVATE ${CMAKE_SOURCE_DIR}/include64)
+  target_link_libraries(LuaSocket_Unix luajit::LuaJIT)
 else()
   # Add a stub, since it's not supported on non-UNIX platforms.
   add_library(LuaSocket_Unix INTERFACE)
@@ -64,7 +62,7 @@ if(UNIX)
     ${LUASOCKET_SRC_DIR}/usocket.c
     ${LUASOCKET_SRC_DIR}/serial.c)
 
-  target_include_directories(LuaSocket_Serial PRIVATE ${CMAKE_SOURCE_DIR}/include64)
+  target_link_libraries(LuaSocket_Serial luajit::LuaJIT)
   target_compile_definitions(LuaSocket_Serial PRIVATE LUASOCKET_API=extern)
 else()
   # Add a stub, since it's not supported on non-UNIX platforms.
