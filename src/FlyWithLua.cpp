@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.31 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.32 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -133,6 +133,8 @@
  *  v2.7.30 [added]   global varables PLANE_AUTHOR and PLANE_DESCRIP Thanks to Steven L. Goldberg.
  *          [fixed]   bug if you used the reload pluggins function Thanks to Steven L. Goldberg.
  *  v2.7.31 [fixed]   Fix hid_send_filled_feature_report, adjust length check Thanks to Daniel Peukert.
+ *  v2.7.32 [fixed]   Fix bug so we can now use SDK 303.
+ *
  *
  *
  *  Markus (Teddii):
