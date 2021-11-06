@@ -6688,14 +6688,6 @@ bool ReadAllScriptFiles()
     lua_pushstring(FWLLua, PlaneAuthor);
     lua_setglobal(FWLLua, "PLANE_AUTHOR");
 
-    // if we are still in boot phase of X-Plane, we do not want to load files
-    if (XPLMInitialized() == 0)
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: X-Plane is still booting, we do not want to read files during startup.");
-        CrashReportDisplayed = false;
-        return true;
-    }
-
     // run through the init script
     std::ostringstream oss_IntPathAndName;
     oss_IntPathAndName << internalsDir << "FlyWithLua.ini";
@@ -6914,14 +6906,6 @@ bool ReadAllQuarantinedScriptFiles()
     int TotalNumberOfQtFiles; // modified by saar
     char* QtFileIndex[250];
     int Qt_result;
-
-    // if we are still in boot phase of X-Plane, we do not want to load files
-    if (XPLMInitialized() == 0)
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: X-Plane is still booting, we do not want to read files during startup.");
-        CrashReportDisplayed = false;
-        return true;
-    }
 
     if (XPLMGetDirectoryContents(quarantineDir.c_str(), 0, QtFilesInFolder, sizeof(QtFilesInFolder), QtFileIndex, 250,
                                  reinterpret_cast<int *>(&TotalNumberOfQtFiles), reinterpret_cast<int *>(&NumberOfQtFiles)))
