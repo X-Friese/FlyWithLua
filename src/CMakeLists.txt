@@ -8,6 +8,10 @@
 cmake_minimum_required(VERSION 3.9)
 project(FlyWithLua VERSION 2.7.5 DESCRIPTION "FlyWithLua X-Plane plugin")
 
+# X-Plane supports OS X 10.10+, so this should ensure FlyWithLua can run on
+# all supported versions.
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
+
 # By default, use optimized release configuration.
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
@@ -21,12 +25,12 @@ include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/Wrappers")
 include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/XPLM")
 include_directories("${CMAKE_SOURCE_DIR}/include64")
 include_directories("${CMAKE_SOURCE_DIR}/hidapi")
-include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
 include_directories("${CMAKE_SOURCE_DIR}/.")
 include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
 include_directories("${CMAKE_SOURCE_DIR}/imgui")
 
 if (WIN32)
+    include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
     include_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
 endif (WIN32)
 
@@ -34,13 +38,11 @@ endif (WIN32)
 # Specify library search locations.
 if (WIN32)
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/include64")
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/GLUT_for_Windows/GL")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Win")
 elseif (APPLE)
     list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Mac")
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/mac_libs")
 elseif (UNIX)
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/linux_libs/OpenAL")
 endif ()
 
 
@@ -91,17 +93,10 @@ add_library(FlyWithLua SHARED ${FLYWITHLUA_SRCS})
 
 target_compile_features(FlyWithLua PUBLIC cxx_std_11)
 
-if (APPLE)
-    # X-Plane supports OS X 10.10+, so this should ensure FlyWithLua can run on
-    # all supported versions.
-    target_compile_options(FlyWithLua PUBLIC -mmacosx-version-min=10.10)
-    target_link_libraries(FlyWithLua -mmacosx-version-min=10.10)
-endif ()
-
 # Link OpenGL and OpenAL related libraries.
 find_package(OpenGL REQUIRED)  # apt install freeglut3-dev
 find_library(OPENAL_LIBRARY NAMES openal OpenAL OpenAL32)  # apt install libopenal-dev
-find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
+find_library(GLUT_LIBRARY NAMES glut64 glut)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.
@@ -123,7 +118,10 @@ endif ()
 
 # Link OS-specific libraries HidApi depends on. Only supported for Windows and Linux.
 if ((WIN32 OR UNIX) AND NOT APPLE)
-    find_library(HIDAPIDEPS_LIBRARY NAMES setupapi udev)
+    # HINTS is required to force CMake to search among the toolchain-provided libraries.
+    # This is important to make sure that the correct library is picked up on a system with
+    # several toolchains installed.
+    find_library(HIDAPIDEPS_LIBRARY NAMES setupapi udev HINTS ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES})
     target_link_libraries(FlyWithLua ${HIDAPIDEPS_LIBRARY})
 endif ()
 
@@ -155,7 +153,7 @@ elseif (UNIX)
     # Specify additional runtime search laths for dynamically-linked libraries.
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/64)
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/Modules)
-    # Restrict set of symbols exported from the plugin. This reduces changes of
+    # Restrict set of symbols exported from the plugin. This reduces chances of
     # conflict with other plugins, in particular ones with Lua interpreter
     # embedded.
     target_link_libraries(FlyWithLua -Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/flywithlua.sym)
