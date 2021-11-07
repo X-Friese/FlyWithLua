@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.31 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.32 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -133,6 +133,8 @@
  *  v2.7.30 [added]   global varables PLANE_AUTHOR and PLANE_DESCRIP Thanks to Steven L. Goldberg.
  *          [fixed]   bug if you used the reload pluggins function Thanks to Steven L. Goldberg.
  *  v2.7.31 [fixed]   Fix hid_send_filled_feature_report, adjust length check Thanks to Daniel Peukert.
+ *  v2.7.32 [fixed]   Fix bug so we can now use SDK 303.
+ *
  *
  *
  *  Markus (Teddii):
@@ -6688,14 +6690,6 @@ bool ReadAllScriptFiles()
     lua_pushstring(FWLLua, PlaneAuthor);
     lua_setglobal(FWLLua, "PLANE_AUTHOR");
 
-    // if we are still in boot phase of X-Plane, we do not want to load files
-    if (XPLMInitialized() == 0)
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: X-Plane is still booting, we do not want to read files during startup.");
-        CrashReportDisplayed = false;
-        return true;
-    }
-
     // run through the init script
     std::ostringstream oss_IntPathAndName;
     oss_IntPathAndName << internalsDir << "FlyWithLua.ini";
@@ -6914,14 +6908,6 @@ bool ReadAllQuarantinedScriptFiles()
     int TotalNumberOfQtFiles; // modified by saar
     char* QtFileIndex[250];
     int Qt_result;
-
-    // if we are still in boot phase of X-Plane, we do not want to load files
-    if (XPLMInitialized() == 0)
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: X-Plane is still booting, we do not want to read files during startup.");
-        CrashReportDisplayed = false;
-        return true;
-    }
 
     if (XPLMGetDirectoryContents(quarantineDir.c_str(), 0, QtFilesInFolder, sizeof(QtFilesInFolder), QtFileIndex, 250,
                                  reinterpret_cast<int *>(&TotalNumberOfQtFiles), reinterpret_cast<int *>(&NumberOfQtFiles)))

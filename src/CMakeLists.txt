@@ -20,9 +20,9 @@ endif ()
 set(CMAKE_CXX_STANDARD 14)
 
 # Set include directories used by our code and dependencies.
-include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/Widgets")
-include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/Wrappers")
-include_directories("${CMAKE_SOURCE_DIR}/XPSDK301/CHeaders/XPLM")
+include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/Widgets")
+include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/Wrappers")
+include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/XPLM")
 include_directories("${CMAKE_SOURCE_DIR}/include64")
 include_directories("${CMAKE_SOURCE_DIR}/hidapi")
 include_directories("${CMAKE_SOURCE_DIR}/.")
@@ -39,15 +39,15 @@ endif (WIN32)
 if (WIN32)
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/include64")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/GLUT_for_Windows/GL")
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Win")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Win")
 elseif (APPLE)
-    list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/XPSDK301/Libraries/Mac")
+    list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Mac")
 elseif (UNIX)
 endif ()
 
 
 # Enable all X-Plane SDK APIs up to the newest version.
-add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1)
+add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM303=1)
 # Define platform macros.
 add_definitions(-DAPL=$<BOOL:${APPLE}> -DIBM=$<BOOL:${WIN32}> -DLIN=$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>)
 
