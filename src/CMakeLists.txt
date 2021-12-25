@@ -10,7 +10,9 @@ project(FlyWithLua VERSION 2.7.5 DESCRIPTION "FlyWithLua X-Plane plugin")
 
 # X-Plane supports OS X 10.10+, so this should ensure FlyWithLua can run on
 # all supported versions.
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum macOS version" FORCE)
+# set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for mac OS X" FORCE)
+set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for mac OS X" FORCE)
 
 # By default, use optimized release configuration.
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
