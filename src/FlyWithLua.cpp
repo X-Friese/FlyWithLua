@@ -4241,6 +4241,13 @@ static int LuaCreateNegativeEdgeDecrement(lua_State* L)
     return 0;
 }
 
+// millis
+static int LuaSleep(lua_State *L)
+{
+    int m = static_cast<int> (luaL_checknumber(L,1));
+    usleep(m*1000);
+    return 0;
+}
 
 static int LuaSetPilotsHead(lua_State* L)
 {
@@ -5920,6 +5927,7 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "directory_to_table", Luadirectory_to_table);
     lua_register(L, "peek", Luapeek);
     lua_register(L, "poke", Luapoke);
+    lua_register(L, "sleep", LuaSleep);
     lua_register(L, "set_pilots_head", LuaSetPilotsHead);
     lua_register(L, "get_pilots_head", LuaGetPilotsHead);
     lua_register(L, "place_aircraft_at", LuaPlaceUserAtAirport);
