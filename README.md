@@ -79,7 +79,8 @@ If you want to grab a most nightly binary, just download `FlyWithLua_plugin.zip`
 
    ```
    cmake --build ./build
-   cp ./build/lin.xpl ./FlyWithLua/64
+   mkdir ./FlyWithLua/64
+   cp ./build/lin.xpl ./FlyWithLua/64/
    ```
 
 ### On OS X:
@@ -98,7 +99,8 @@ If you want to grab a most nightly binary, just download `FlyWithLua_plugin.zip`
 
    ```
    cmake --build ./build
-   cp ./build/mac.xpl ./FlyWithLua/64
+   mkdir ./FlyWithLua/64
+   cp ./build/mac.xpl ./FlyWithLua/64/
    ```
 
 ### Additional tips

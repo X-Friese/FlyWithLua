@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.32 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.33 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -134,6 +134,8 @@
  *          [fixed]   bug if you used the reload pluggins function Thanks to Steven L. Goldberg.
  *  v2.7.31 [fixed]   Fix hid_send_filled_feature_report, adjust length check Thanks to Daniel Peukert.
  *  v2.7.32 [fixed]   Fix bug so we can now use SDK 303.
+ *  v2.7.33 [fixed]   Fix some typos in CMakeLists.txt. Now building with set(CMAKE_CXX_STANDARD 17)
+ *
  *
  *
  *

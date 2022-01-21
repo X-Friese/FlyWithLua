@@ -7,17 +7,20 @@
 
 cmake_minimum_required(VERSION 3.9)
 project(FlyWithLua VERSION 2.7.5 DESCRIPTION "FlyWithLua X-Plane plugin")
-
+# We will enable this when we have a SDK supporting arm
 # X-Plane supports OS X 10.10+, so this should ensure FlyWithLua can run on
 # all supported versions.
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum macOS version" FORCE)
+# We will enable this when we have a SDK supporting arm
+# set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for mac OS X" FORCE)
+set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for mac OS X" FORCE)
 
 # By default, use optimized release configuration.
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
 endif ()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Set include directories used by our code and dependencies.
 include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/Widgets")
@@ -47,7 +50,7 @@ endif ()
 
 
 # Enable all X-Plane SDK APIs up to the newest version.
-add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM303=1)
+add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM302=1 -DXPLM303=1)
 # Define platform macros.
 add_definitions(-DAPL=$<BOOL:${APPLE}> -DIBM=$<BOOL:${WIN32}> -DLIN=$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>)
 
@@ -148,7 +151,7 @@ elseif (APPLE)
     # Restrict set of symbols exported from the plugin. This reduces changes of
     # conflict with other plugins, in particular ones with Lua interpreter
     # embedded.
-    target_link_libraries(FlyWithLua "-exported_symbols_list ${CMAKE_SOURCE_DIR}/flywithlua.sym_mac")
+    target_link_libraries(FlyWithLua "-exported_symbols_list ${CMAKE_SOURCE_DIR}/exports.sym_mac")
 elseif (UNIX)
     # Specify additional runtime search laths for dynamically-linked libraries.
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/64)
@@ -156,7 +159,7 @@ elseif (UNIX)
     # Restrict set of symbols exported from the plugin. This reduces chances of
     # conflict with other plugins, in particular ones with Lua interpreter
     # embedded.
-    target_link_libraries(FlyWithLua -Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/flywithlua.sym)
+    target_link_libraries(FlyWithLua -Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/exports.txt)
 endif ()
 
 
