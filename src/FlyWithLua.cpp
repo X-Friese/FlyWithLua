@@ -6213,26 +6213,19 @@ void DebugLua()
     DebugFile << "\n\n*** OpenAL sound files are stored in a table ***\n";
     if (!OpenALSounds.empty())
     {
-        std::ostringstream oss_WhatToSay;
-        std::string WhatToSay;
         for (const OpenALSoundsStructure & sound : OpenALSounds)
         {
             DebugFile << "<<< Sound table element >>>\n";
             DebugFile << "filename --> \"" << sound.filename << "\"\n";
             if (sound.loop)
             {
-                oss_WhatToSay << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
+                DebugFile << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
                                  "\nloop     --> true\nsource   --> " << sound.source << "\n\n";
-
-                WhatToSay = oss_WhatToSay.str();
             } else
             {
-                oss_WhatToSay << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
+                DebugFile << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
                                  "\nloop     --> false\nsource   --> " << sound.source << "\n\n";
-
-                WhatToSay = oss_WhatToSay.str();
             }
-            DebugFile << WhatToSay.c_str();
         }
     } else
     {
@@ -7507,7 +7500,7 @@ float MyFastLoopCallback(
         UserWantsToMoveAircraft    = false;
         LuaIsRunning               = false;
         XPLMPlaceUserAtLocation(
-            UserWantedPosHdgSpd[0], 
+            UserWantedPosHdgSpd[0],
             UserWantedPosHdgSpd[1],
             UserWantedPosHdgSpd[2],
             UserWantedPosHdgSpd[3],
