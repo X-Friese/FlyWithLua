@@ -26,23 +26,22 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/Widgets")
 include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/Wrappers")
 include_directories("${CMAKE_SOURCE_DIR}/SDK/CHeaders/XPLM")
-include_directories("${CMAKE_SOURCE_DIR}/include64")
 include_directories("${CMAKE_SOURCE_DIR}/hidapi")
 include_directories("${CMAKE_SOURCE_DIR}/.")
 include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
 include_directories("${CMAKE_SOURCE_DIR}/imgui")
+include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
 
 if (WIN32)
-    include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
     include_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
 endif (WIN32)
 
 
 # Specify library search locations.
 if (WIN32)
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/include64")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/GLUT_for_Windows/GL")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Win")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/OpenAL")    
 elseif (APPLE)
     list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Mac")
 elseif (UNIX)
@@ -99,7 +98,7 @@ target_compile_features(FlyWithLua PUBLIC cxx_std_11)
 # Link OpenGL and OpenAL related libraries.
 find_package(OpenGL REQUIRED)  # apt install freeglut3-dev
 find_library(OPENAL_LIBRARY NAMES openal OpenAL OpenAL32)  # apt install libopenal-dev
-find_library(GLUT_LIBRARY NAMES glut64 glut)  # apt install freeglut3-dev
+find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.
