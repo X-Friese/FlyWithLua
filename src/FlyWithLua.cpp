@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.33 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.32 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -133,9 +133,11 @@
  *  v2.7.30 [added]   global varables PLANE_AUTHOR and PLANE_DESCRIP Thanks to Steven L. Goldberg.
  *          [fixed]   bug if you used the reload pluggins function Thanks to Steven L. Goldberg.
  *  v2.7.31 [fixed]   Fix hid_send_filled_feature_report, adjust length check Thanks to Daniel Peukert.
+ *  v2.7.32 [fixed]   Fixed Debug output for sound elements so it is written directly to the debug file by Patrick Lang.
  *  v2.7.32 [fixed]   Fix bug so we can now use SDK 303.
- *  v2.7.33 [fixed]   Fix some typos in CMakeLists.txt. Now building with set(CMAKE_CXX_STANDARD 17)
- *
+ *  v2.7.32 [fixed]   Fix some typos in CMakeLists.txt.
+ *  v2.7.32 [added]   Now building with set(CMAKE_CXX_STANDARD 17)
+ *  v2.7.32 [added]   Better error detection of the Lua allocator.
  *
  *
  *
@@ -670,7 +672,7 @@ ALuint load_wave(const char* file_name)
     FILE* fi = fopen(file_name, "rb");
     if (fi == nullptr)
     {
-        XPLMDebugString("WAVE file load failed - could not open.\n");
+        XPLMDebugString("FlyWithLua Error: WAVE file load failed - could not open.\n");
         return 0;
     }
     fseek(fi, 0, SEEK_END);
@@ -679,13 +681,13 @@ ALuint load_wave(const char* file_name)
     auto * mem = (char*) malloc(static_cast<size_t>(file_size));
     if (mem == nullptr)
     {
-        XPLMDebugString("WAVE file load failed - could not allocate memory.\n");
+        XPLMDebugString("FlyWithLua Error: WAVE file load failed - could not allocate memory.\n");
         fclose(fi);
         return 0;
     }
     if (fread(mem, 1, static_cast<size_t>(file_size), fi) != file_size)
     {
-        XPLMDebugString("WAVE file load failed - could not read file.\n");
+        XPLMDebugString("FlyWithLua Error: WAVE file load failed - could not read file.\n");
         free(mem);
         fclose(fi);
         return 0;
@@ -704,7 +706,7 @@ ALuint load_wave(const char* file_name)
         riff        = find_chunk(mem, mem_end, RIFF_ID, 1);
         if (riff)
             swapped = 1;
-        else FAIL("Could not find RIFF chunk in wave file.\n")
+        else FAIL("FlyWithLua Error: Could not find RIFF chunk in wave file.\n")
     }
 
     // The wave chunk isn't really a chunk at all. :-(  It's just a "WAVE" tag
@@ -714,10 +716,10 @@ ALuint load_wave(const char* file_name)
     if (riff[0] != 'W' ||
         riff[1] != 'A' ||
         riff[2] != 'V' ||
-        riff[3] != 'E') FAIL("Could not find WAVE signature in wave file.\n")
+        riff[3] != 'E') FAIL("FlyWithLua Error: Could not find WAVE signature in wave file.\n")
 
     char* format = find_chunk(riff + 4, chunk_end(riff, swapped), FMT_ID, swapped);
-    if (format == nullptr) FAIL("Could not find FMT  chunk in wave file.\n")
+    if (format == nullptr) FAIL("FlyWithLua Error: Could not find FMT  chunk in wave file.\n")
 
     // Find the format chunk, and swap the values if needed.  This gives us our real format.
 
@@ -734,11 +736,11 @@ ALuint load_wave(const char* file_name)
 
     // Reject things we don't understand...expand this code to support weirder audio formats.
 
-    if (fmt->format != 1) FAIL("Wave file is not PCM format data.\n")
-    if (fmt->num_channels != 1 && fmt->num_channels != 2) FAIL("Must have mono or stereo sound.\n")
-    if (fmt->bits_per_sample != 8 && fmt->bits_per_sample != 16) FAIL("Must have 8 or 16 bit sounds.\n")
+    if (fmt->format != 1) FAIL("FlyWithLua Error: Wave file is not PCM format data.\n")
+    if (fmt->num_channels != 1 && fmt->num_channels != 2) FAIL("FlyWithLua Error: Must have mono or stereo sound.\n")
+    if (fmt->bits_per_sample != 8 && fmt->bits_per_sample != 16) FAIL("FlyWithLua Error: Must have 8 or 16 bit sounds.\n")
     char* data = find_chunk(riff + 4, chunk_end(riff, swapped), DATA_ID, swapped);
-    if (data == nullptr) FAIL("I could not find the DATA chunk.\n")
+    if (data == nullptr) FAIL("FlyWithLua Error: I could not find the DATA chunk.\n")
 
     int sample_size  = fmt->num_channels * fmt->bits_per_sample / 8;
     auto data_bytes   = static_cast<int>(chunk_end(data, swapped) - data);
@@ -764,7 +766,7 @@ ALuint load_wave(const char* file_name)
     // We expect that the OpenALSounds array has already been expanded to accomodate the new sound.
 
     alGenBuffers(1, &OpenALSounds.back().buffer);
-    if (OpenALSounds.back().buffer == 0) FAIL("Could not generate buffer id.\n");
+    if (OpenALSounds.back().buffer == 0) FAIL("FlyWithLua Error: Could not generate buffer id.\n");
 
     alBufferData(OpenALSounds.back().buffer, fmt->bits_per_sample == 16 ?
                                                         (fmt->num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16)
@@ -843,7 +845,7 @@ static float init_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*counter*
         my_dev = alcOpenDevice(nullptr);
         if (my_dev == nullptr)
         {
-            XPLMDebugString("Could not open the default OpenAL device.\n");
+            XPLMDebugString("FlyWithLua Error: Could not open the default OpenAL device.\n");
             return 0;
         }
         my_ctx = alcCreateContext(my_dev, nullptr);
@@ -853,7 +855,7 @@ static float init_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*counter*
                 alcMakeContextCurrent(old_ctx);
             alcCloseDevice(my_dev);
             my_dev = nullptr;
-            XPLMDebugString("Could not create a context.\n");
+            XPLMDebugString("FlyWithLua Error: Could not create a context.\n");
             return 0;
         }
 
@@ -6384,10 +6386,18 @@ void ResetLuaEngine()
     }
     OpenALSounds.clear();
 
-    lua_close(FWLLua);
-    lj_alloc_destroy(ud);
-
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
+    if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
+    {
+        lua_close(FWLLua);
+        lj_alloc_destroy(ud);
+    }
+    else
+    {
+        lua_close(FWLLua);
+    }
+
+    lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
     if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
     {
         /* X-Plane has an allocator for us - we _must_ use it. */
@@ -7113,8 +7123,17 @@ PLUGIN_API void XPluginDisable(void)
 
     // close Lua
     LuaIsRunning = false;
-    lua_close(FWLLua);
-    lj_alloc_destroy(ud);
+    XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
+    if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
+    {
+        lua_close(FWLLua);
+        lj_alloc_destroy(ud);
+    }
+    else
+    {
+        lua_close(FWLLua);
+    }
+
 
     // killing all commands
     if (CommandTableLastElement > -1)
@@ -7287,6 +7306,9 @@ PLUGIN_API int XPluginEnable(void)
         if (ud == nullptr)
         {
             logMsg(logToDevCon, "FlyWithLua Error: LuaJIT Panic! No space to create the Lua instance!");
+            logMsg(logToDevCon, "FlyWithLua Info: Since we can't create the Lua instance");
+            logMsg(logToDevCon, "FlyWithLua Info: do not enable plugin by using return 0");
+            return 0;
         }
         FWLLua = lua_newstate(lj_alloc_f, ud);
     } else
