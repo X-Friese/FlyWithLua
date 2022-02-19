@@ -6222,11 +6222,11 @@ void DebugLua()
             if (sound.loop)
             {
                 DebugFile << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
-                                 "\nloop     --> true\nsource   --> " << sound.source << "\n\n";
+                                 "\nloop     --> true\nsource   --> " << sound.source << "\nbuffer   --> " << sound.buffer << "\n\n";
             } else
             {
                 DebugFile << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
-                                 "\nloop     --> false\nsource   --> " << sound.source << "\n\n";
+                                 "\nloop     --> false\nsource   --> " << sound.source << "\nbuffer   --> " << sound.buffer << "\n\n";
             }
         }
     } else
