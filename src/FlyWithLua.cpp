@@ -5715,14 +5715,14 @@ static int LuaReplaceWAVFile(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToDevCon, "FlyWithLua Error: Missing UnLoadAll Sounds source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing ReplaceWAVFile Sounds source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
-        logMsg(logToDevCon, "FlyWithLua Error: UnLoadAll Sounds source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: ReplaceWAVFile Sounds source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
