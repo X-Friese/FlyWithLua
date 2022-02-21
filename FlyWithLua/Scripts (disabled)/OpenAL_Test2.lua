@@ -1,30 +1,30 @@
---- OpenAL Test
+--- OpenAL Test2
 --- by William Good (SparkerInVR)
 --- Ver 0.1 
---- 02-08-2022
+--- 02-14-2022
 if not SUPPORTS_FLOATING_WINDOWS then
 	logMsg("Upgrade your FlyWithLua! to NG, need Floating Windows")
 	return
 end
 
-local Ten = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/10ft.wav")
-local Twenty = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/20ft.wav")
-local Thirty = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/30ft.wav")
-local AutoPilotFail = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/autopilot_fail.wav")
-local SinkRate = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/sink.wav")
-local SeatBelt = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/seatbelt.wav")
-local PullUp = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/pull.wav")
-local AutopilotDisco = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/autopilot_disco.wav")
+local Forty = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/40ft.wav")
+local Fifty = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/50ft.wav")
+local OneHundred = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/100ft.wav")
+local GlideSlope = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/glideslope.wav")
+local LandingGear = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/gear_warn_1.wav")
+local Minumans = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/mini.wav")
+local Stall = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/stall.wav")
+local WindShear = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/wshr.wav")
 
 
-oalt_wnd = float_wnd_create(640, 480, 1, true)
-float_wnd_set_position(oalt_wnd, 100, 150)
-float_wnd_set_title(oalt_wnd, "Imgui OpenAL Demo")
-float_wnd_set_imgui_builder(oalt_wnd, "oalt_on_build")
-float_wnd_set_onclose(oalt_wnd, "closed_openal_demo")
+oalt2_wnd = float_wnd_create(640, 480, 1, true)
+float_wnd_set_position(oalt2_wnd, 400, 150)
+float_wnd_set_title(oalt2_wnd, "Imgui OpenAL Demo2")
+float_wnd_set_imgui_builder(oalt2_wnd, "oalt2_on_build")
+float_wnd_set_onclose(oalt2_wnd, "closed_openal_demo")
 
 
-function oalt_on_build(ihd_wnd, x, y)
+function oalt2_on_build(ihd_wnd, x, y)
     imgui.TextUnformatted(string.format("OpenAL Demo:\n  wnd=%s\n  x=%d\n  y=%d", ihd_wnd, x, y))
 end
 
@@ -36,57 +36,57 @@ function closed_openal_demo(wnd)
 end
 
 
-function oalt_on_build(oalt_wnd, x, y)
+function oalt2_on_build(oalt2_wnd, x, y)
 --	imgui.PushItemWidth(50)
 	if imgui.Button("Button One", 100, 50) then
-		play_sound(Ten)
+		play_sound(Forty)
 	end
 	imgui.SameLine()
 	imgui.SetCursorPosX(150)
 
 	if imgui.Button("Button Two", 100, 50) then
-		play_sound(Twenty)
+		play_sound(Fifty)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 2)
 
 	if imgui.Button("Button Three", 100, 50) then
-		play_sound(Thirty)
+		play_sound(OneHundred)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 3)
 
 	if imgui.Button("Button Four", 100, 50) then
-		play_sound(AutoPilotFail)
+		play_sound(GlideSlope)
 	end
 
 	imgui.SetCursorPosY(100)
 
 
 	if imgui.Button("Button Five", 100, 50) then
-		play_sound(SinkRate)
+		play_sound(LandingGear)
 	end
 	imgui.SameLine()
 	imgui.SetCursorPosX(150)
 
 	if imgui.Button("Button Six", 100, 50) then
-		play_sound(SeatBelt)
+		play_sound(Minumans)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 2)
 
 	if imgui.Button("Button Seven", 100, 50) then
-		play_sound(PullUp)
+		play_sound(Stall)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 3)
 	
 	if imgui.Button("Button Eight", 100, 50) then
-		play_sound(AutopilotDisco)
+		play_sound(WindShear)
 	end
 
 end

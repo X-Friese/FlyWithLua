@@ -537,6 +537,9 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
   lua_rawset(lState, -3);
 };
 
+// Not sure why this is not working
+// #if defined LUAJIT_VERSION_NUM ==  20005
+
 #if !defined LUA_VERSION_NUM || LUA_VERSION_NUM==501
 /*
 ** Adapted from Lua 5.2.0
