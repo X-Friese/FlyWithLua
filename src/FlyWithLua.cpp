@@ -659,13 +659,13 @@ static char* chunk_end(char* chunk_start, int swapped)
     return chunk_start + (swapped ? SWAP_32(h->size) : h->size);
 }
 
-#define FAIL(X) { XPLMDebugString(X); free(mem); return 0; }
+#define FAIL(X) { XPLMDebugString(X); free(mem); return; }
 
 #define RIFF_ID 0x46464952            // 'RIFF'
 #define FMT_ID  0x20746D66            // 'FMT '
 #define DATA_ID 0x61746164            // 'DATA'
 
-ALuint load_wave(const char* file_name)
+void load_wave(const char* file_name, OpenALSoundsStructure* sound)
 {
     // First: we open the file and copy it into a single large memory buffer for processing.
 
@@ -673,7 +673,7 @@ ALuint load_wave(const char* file_name)
     if (fi == nullptr)
     {
         XPLMDebugString("FlyWithLua Error: WAVE file load failed - could not open.\n");
-        return 0;
+        return;
     }
     fseek(fi, 0, SEEK_END);
     auto file_size = static_cast<int>(ftell(fi));
@@ -683,14 +683,14 @@ ALuint load_wave(const char* file_name)
     {
         XPLMDebugString("FlyWithLua Error: WAVE file load failed - could not allocate memory.\n");
         fclose(fi);
-        return 0;
+        return;
     }
     if (fread(mem, 1, static_cast<size_t>(file_size), fi) != file_size)
     {
         XPLMDebugString("FlyWithLua Error: WAVE file load failed - could not read file.\n");
         free(mem);
         fclose(fi);
-        return 0;
+        return;
     }
     fclose(fi);
     char* mem_end = mem + file_size;
@@ -765,16 +765,15 @@ ALuint load_wave(const char* file_name)
 
     // We expect that the OpenALSounds array has already been expanded to accomodate the new sound.
 
-    alGenBuffers(1, &OpenALSounds.back().buffer);
-    if (OpenALSounds.back().buffer == 0) FAIL("FlyWithLua Error: Could not generate buffer id.\n");
+    alGenBuffers(1, &(sound->buffer));
+    if (sound->buffer == 0) FAIL("FlyWithLua Error: Could not generate buffer id.\n");
 
-    alBufferData(OpenALSounds.back().buffer, fmt->bits_per_sample == 16 ?
+    alBufferData(sound->buffer, fmt->bits_per_sample == 16 ?
                                                         (fmt->num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16)
                                                                                    :
                                                         (fmt->num_channels == 2 ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8),
                  data, data_bytes, fmt->sample_rate);
     free(mem);
-    return OpenALSounds.back().buffer;
 }
 
 
@@ -5468,19 +5467,20 @@ static int LuaLoadWAVFile(lua_State* L)
 
 
     OpenALSounds.emplace_back(); // Make space to store information about the sound.
+    OpenALSoundsStructure* sound = &OpenALSounds.back();
 
     // fill the debug table with information
-    OpenALSounds.back().filename = FileNameToLoad;
-    OpenALSounds.back().pitch    = 1.0f;
-    OpenALSounds.back().gain     = 1.0f;
-    OpenALSounds.back().loop     = false;
+    sound->filename = FileNameToLoad;
+    sound->pitch    = 1.0f;
+    sound->gain     = 1.0f;
+    sound->loop     = false;
 
     // the following code comes from the SDK example
     ALfloat zero[3] = {0};
 
     // Generate source and load a buffer of audio.
-    alGenSources(1, &OpenALSounds.back().source);
-    load_wave(FileNameToLoad);
+    alGenSources(1, &(sound->source));
+    load_wave(FileNameToLoad, sound);
     if (verbose_logging_mode == 1)
     {
         logMsg(logToDevCon, std::string("FlyWithLua: Loaded sound file \"").append(FileNameToLoad).append("\"."));
@@ -5489,12 +5489,12 @@ static int LuaLoadWAVFile(lua_State* L)
 
     // Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
     // sound parameters. This doesn't play the sound - it's just one-time initialization.
-    alSourcei(OpenALSounds.back().source, AL_BUFFER, OpenALSounds.back().buffer);
-    alSourcef(OpenALSounds.back().source, AL_PITCH, 1.0f);
-    alSourcef(OpenALSounds.back().source, AL_GAIN, 1.0f);
-    alSourcei(OpenALSounds.back().source, AL_LOOPING, 0);
-    alSourcefv(OpenALSounds.back().source, AL_POSITION, zero);
-    alSourcefv(OpenALSounds.back().source, AL_VELOCITY, zero);
+    alSourcei(sound->source, AL_BUFFER, sound->buffer);
+    alSourcef(sound->source, AL_PITCH, 1.0f);
+    alSourcef(sound->source, AL_GAIN, 1.0f);
+    alSourcei(sound->source, AL_LOOPING, 0);
+    alSourcefv(sound->source, AL_POSITION, zero);
+    alSourcefv(sound->source, AL_VELOCITY, zero);
     CHECK_ERR();
 
     // give back to source number
@@ -5715,14 +5715,14 @@ static int LuaReplaceWAVFile(lua_State* L)
 
     if (!lua_isnumber(L, 1))
     {
-        logMsg(logToDevCon, "FlyWithLua Error: Missing UnLoadAll Sounds source number. You will have to give an integer.");
+        logMsg(logToDevCon, "FlyWithLua Error: Missing ReplaceWAVFile Sounds source number. You will have to give an integer.");
         LuaIsRunning = false;
         return 0;
     }
     SourceNo = static_cast<int>(lua_tointeger(L, 1));
     if ((SourceNo < 0) || (SourceNo >= int(OpenALSounds.size())))
     {
-        logMsg(logToDevCon, "FlyWithLua Error: UnLoadAll Sounds source number out of range.");
+        logMsg(logToDevCon, "FlyWithLua Error: ReplaceWAVFile Sounds source number out of range.");
         LuaIsRunning = false;
         return 0;
     }
@@ -5735,30 +5735,32 @@ static int LuaReplaceWAVFile(lua_State* L)
     char FileNameToLoad[NORMALSTRING];
     strncpy(FileNameToLoad, lua_tostring(L, 2), sizeof(FileNameToLoad));
 
+    OpenALSoundsStructure* sound = &OpenALSounds[SourceNo];
+
     // free memory
-    alDeleteSources(1, &OpenALSounds[SourceNo].source);
-    alDeleteBuffers(1, &OpenALSounds[SourceNo].buffer);
+    alDeleteSources(1, &(sound->source));
+    alDeleteBuffers(1, &(sound->buffer));
 
     // fill the debug table with information
-    OpenALSounds[SourceNo].filename = FileNameToLoad;
+    sound->filename = FileNameToLoad;
 
     // the following code comes from the SDK example
     ALfloat zero[3] = {0};
 
     // Generate source and load a buffer of audio.
-    alGenSources(1, &OpenALSounds[SourceNo].source);
-    OpenALSounds[SourceNo].buffer = load_wave(FileNameToLoad);
+    alGenSources(1, &(sound->source));
+    load_wave(FileNameToLoad, sound);
     logMsg(logToDevCon, std::string("FlyWithLua: Replaced sound by new file \"").append(FileNameToLoad).append("\"."));
     CHECK_ERR();
 
     // Basic initialization code to play a sound: specify the buffer the source is playing, as well as some
     // sound parameters. This doesn't play the sound - it's just one-time initialization.
-    alSourcei(OpenALSounds[SourceNo].source, AL_BUFFER, OpenALSounds[SourceNo].buffer);
-    alSourcef(OpenALSounds[SourceNo].source, AL_PITCH, OpenALSounds[SourceNo].pitch);
-    alSourcef(OpenALSounds[SourceNo].source, AL_GAIN, OpenALSounds[SourceNo].gain);
-    alSourcei(OpenALSounds[SourceNo].source, AL_LOOPING, OpenALSounds[SourceNo].loop);
-    alSourcefv(OpenALSounds[SourceNo].source, AL_POSITION, zero);
-    alSourcefv(OpenALSounds[SourceNo].source, AL_VELOCITY, zero);
+    alSourcei(sound->source, AL_BUFFER, sound->buffer);
+    alSourcef(sound->source, AL_PITCH, sound->pitch);
+    alSourcef(sound->source, AL_GAIN, sound->gain);
+    alSourcei(sound->source, AL_LOOPING, sound->loop);
+    alSourcefv(sound->source, AL_POSITION, zero);
+    alSourcefv(sound->source, AL_VELOCITY, zero);
     CHECK_ERR();
 
     return 0;
@@ -6222,11 +6224,11 @@ void DebugLua()
             if (sound.loop)
             {
                 DebugFile << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
-                                 "\nloop     --> true\nsource   --> " << sound.source << "\n\n";
+                                 "\nloop     --> true\nsource   --> " << sound.source << "\nbuffer   --> " << sound.buffer << "\n\n";
             } else
             {
                 DebugFile << "pitch    --> " << sound.pitch << "\ngain     --> " << sound.gain <<
-                                 "\nloop     --> false\nsource   --> " << sound.source << "\n\n";
+                                 "\nloop     --> false\nsource   --> " << sound.source << "\nbuffer   --> " << sound.buffer << "\n\n";
             }
         }
     } else
