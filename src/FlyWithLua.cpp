@@ -134,10 +134,12 @@
  *          [fixed]   bug if you used the reload pluggins function Thanks to Steven L. Goldberg.
  *  v2.7.31 [fixed]   Fix hid_send_filled_feature_report, adjust length check Thanks to Daniel Peukert.
  *  v2.7.32 [fixed]   Fixed Debug output for sound elements so it is written directly to the debug file by Patrick Lang.
- *  v2.7.32 [fixed]   Fix bug so we can now use SDK 303.
- *  v2.7.32 [fixed]   Fix some typos in CMakeLists.txt.
- *  v2.7.32 [added]   Now building with set(CMAKE_CXX_STANDARD 17)
- *  v2.7.32 [added]   Better error detection of the Lua allocator.
+ *          [fixed]   Fix bug so we can now use SDK 303.
+ *          [fixed]   Fix some typos in CMakeLists.txt.
+ *          [added]   Now building with set(CMAKE_CXX_STANDARD 17)
+ *          [added]   Better error detection of the Lua allocator.
+ *          [added]   sound buffer to the debug output and load_wave function receives a sound pointer by Patrick Lang.
+ *          [added]   OpenAL_Test.lua and OpenAL_Test2.lua to the  Scripts (disabled) folder.
  *
  *
  *
