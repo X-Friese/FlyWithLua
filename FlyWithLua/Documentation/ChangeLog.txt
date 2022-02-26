@@ -61,3 +61,5 @@ v2.7.29 Added global varable SCREEN_HEIGHT that has the same value as SCREEN_HIG
 v2.7.30 Thanks to Steven L. Goldberg added global varables PLANE_AUTHOR and PLANE_DESCRIP. Also fixed bug if you used the reload pluggins function.
 
 v2.7.31 Thanks to Daniel Peukert Fixed hid_send_filled_feature_report, adjusted length check
+
+v2.7.32 Thanks to Patrick Lang Fixed Debug output for sound elements so it is written directly to the debug file and added sound buffer to the debug output and load_wave function now receives a sound pointer. Added OpenAL_Test.lua and OpenAL_Test2.lua to the  Scripts (disabled) folder.
