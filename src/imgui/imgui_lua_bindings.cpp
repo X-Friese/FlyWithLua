@@ -539,8 +539,13 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 
 // Not sure why this is not working
 // #if defined LUAJIT_VERSION_NUM ==  20005
+// This is the original for LuaJIT 2.0.5
+// #if !defined LUA_VERSION_NUM || LUA_VERSION_NUM==501
 
-#if !defined LUA_VERSION_NUM || LUA_VERSION_NUM==501
+// This is not working but failing will give us the corect result.
+// We just do not want this code to be used if we are useing LuaJIT 2.1.0
+
+#if defined LUAJIT_VERSION_NUM == 20005
 /*
 ** Adapted from Lua 5.2.0
 */

@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.32 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.33 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -140,6 +140,9 @@
  *          [added]   Better error detection of the Lua allocator.
  *          [added]   sound buffer to the debug output and load_wave function receives a sound pointer by Patrick Lang.
  *          [added]   OpenAL_Test.lua and OpenAL_Test2.lua to the  Scripts (disabled) folder.
+ *  v2.7.33 [added]   Updated sol2 to version 3.2.1
+ *          [added]   Better error checking for OpenAL source and buffer id issues on start.
+ *          {added]   Support for LuaJIT 2.1.0 beta3
  *
  *
  *
@@ -667,6 +670,9 @@ static char* chunk_end(char* chunk_start, int swapped)
 #define FMT_ID  0x20746D66            // 'FMT '
 #define DATA_ID 0x61746164            // 'DATA'
 
+int openal_source_id_not_found = 0;
+int openal_buffer_id_not_found = 0;
+
 void load_wave(const char* file_name, OpenALSoundsStructure* sound)
 {
     // First: we open the file and copy it into a single large memory buffer for processing.
@@ -768,6 +774,16 @@ void load_wave(const char* file_name, OpenALSoundsStructure* sound)
     // We expect that the OpenALSounds array has already been expanded to accomodate the new sound.
 
     alGenBuffers(1, &(sound->buffer));
+
+    if (sound->buffer == 0)
+    {
+        // Set this flag to true so we know to reload the scripts
+        // Since we did not find the buffer id.
+        openal_buffer_id_not_found = 1;
+        free(mem);
+        return;
+    }
+
     if (sound->buffer == 0) FAIL("FlyWithLua Error: Could not generate buffer id.\n");
 
     alBufferData(sound->buffer, fmt->bits_per_sample == 16 ?
@@ -5482,6 +5498,17 @@ static int LuaLoadWAVFile(lua_State* L)
 
     // Generate source and load a buffer of audio.
     alGenSources(1, &(sound->source));
+    if (sound->source == 0)
+    {
+        // Set this flag to true so we know to reload the scripts
+        // Since we did not find the source id.
+        openal_source_id_not_found = 1;
+        // Not sure if this is needed but it does not like it here.
+        // I have it where the if (sound->buffer == 0) check is.
+        // free(mem);
+        // return;
+    }
+
     load_wave(FileNameToLoad, sound);
     if (verbose_logging_mode == 1)
     {
@@ -6869,7 +6896,14 @@ bool ReadAllScriptFiles()
         lua_setglobal(FWLLua, "SCRIPTS_LOADING_TIME_SEC");
         lua_pushnumber(FWLLua, CLOCKS_PER_SEC);
         lua_setglobal(FWLLua, "CLOCKS_PER_SEC");
-        logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
+        if (openal_source_id_not_found == 1 || openal_buffer_id_not_found == 1)
+        {
+           logMsg(logToDevCon, "FlyWithLua Error: Had some issues loading the scripts will be reloading them.");
+        }
+        else
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: All script files loaded successfully.");
+        }
     }
 
     if (bad_script_count > 0)
@@ -7581,6 +7615,25 @@ float MyFastLoopCallback(
     {
         lua_pushnumber(FWLLua, (double) (time_end - time_start) / CLOCKS_PER_SEC);
         lua_setglobal(FWLLua, "DO_OFTEN_TIME_SEC");
+    }
+
+    // reload all script files, if Could not find OpenAL source or buffer id
+    if (openal_source_id_not_found == 1 || openal_buffer_id_not_found == 1)
+    {
+        if (openal_source_id_not_found == 1)
+        {
+            XPLMDebugString("FlyWithLua Error: OpenAL source ID not found reloading scripts\n");
+            openal_source_id_not_found = 0;
+        }
+
+        if (openal_buffer_id_not_found == 1)
+        {
+            XPLMDebugString("FlyWithLua Error: OpenAL buffer ID not found reloading scripts\n");
+            openal_buffer_id_not_found = 0;
+        }
+
+        ReadAllScriptFiles();
+        return TimeBetweenCallbacks;
     }
 
     flwnd::onFlightLoop();

@@ -7,9 +7,8 @@ Directory `./upstream/` contains single-file version of Sol2 available from
 
 ## Upgrading to a new version of Sol2
 
- 1. Download sol.hpp from [the master
-    branch](https://github.com/ThePhD/sol2/blob/develop/single/sol/sol.hpp) on
-    GitHub (or from Releases section) and place it under `./upstream`.
+ 1. Download sol.hpp from GitHub [the Releases section](https://github.com/ThePhD/sol2/releases/download/v3.2.1/sol.hpp) and
+    place it under `./upstream`.
  2. Apply a patch for [issue
     22](https://github.com/X-Friese/FlyWithLua/issues/22) if it hasn't been
     resolved.

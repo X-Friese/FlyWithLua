@@ -31,6 +31,7 @@ include_directories("${CMAKE_SOURCE_DIR}/.")
 include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
 include_directories("${CMAKE_SOURCE_DIR}/imgui")
 include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
+include_directories("${CMAKE_SOURCE_DIR}/third_party/luajit")
 
 if (WIN32)
     include_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
@@ -41,10 +42,14 @@ endif (WIN32)
 if (WIN32)
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/GLUT_for_Windows/GL")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Win")
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/OpenAL")    
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/OpenAL")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")    
 elseif (APPLE)
     list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Mac")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")
 elseif (UNIX)
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/OpenAL")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")
 endif ()
 
 
@@ -102,10 +107,30 @@ find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.
-add_subdirectory(third_party/luajit)
+#  ******* This is how we built LuaJit from source for 2.0.5 but not working for 2.1.0 beta3
+# add_subdirectory(third_party/luajit)
+# add_subdirectory(third_party/luaxml)
+# add_subdirectory(third_party/luasocket)
+# target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial luajit::LuaJIT)
+
+
+# Link Lua related libraries.
+# ****** Using libs so I can get 2.1.0 beta3 to build
+if (WIN32)
+   find_library(LUAJIT_LIBRARY NAMES win/libluajit.a)
+elseif (APPLE)
+   find_library(LUAJIT_LIBRARY NAMES mac/libluajit.a)
+elseif (UNIX)
+   find_library(LUAJIT_LIBRARY NAMES libluajit.a)
+endif ()
+target_link_libraries(FlyWithLua ${LUAJIT_LIBRARY})
+
+
 add_subdirectory(third_party/luaxml)
 add_subdirectory(third_party/luasocket)
-target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial luajit::LuaJIT)
+# target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial luajit::LuaJIT)
+target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket LuaSocket::Unix LuaSocket::Serial)
+
 
 # Add Sol2 library for C++ <-> Lua bindings
 add_subdirectory(third_party/sol2)
