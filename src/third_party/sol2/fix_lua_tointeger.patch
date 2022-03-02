@@ -8,8 +8,8 @@ FlyWithLua users.
 See: https://github.com/X-Friese/FlyWithLua/issues/22
 --- ./upstream/sol.hpp
 +++ ./upstream/sol.hpp
-@@ -22066,6 +22066,9 @@ namespace sol {
- #endif 
+@@ -25832,6 +25832,9 @@ namespace sol {
+ #pragma pop_macro("check") 
  #endif // Unreal Engine 4 Bullshit
  
 +#undef lua_tointeger
