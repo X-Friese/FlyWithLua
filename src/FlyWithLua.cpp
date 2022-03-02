@@ -142,7 +142,8 @@
  *          [added]   OpenAL_Test.lua and OpenAL_Test2.lua to the  Scripts (disabled) folder.
  *  v2.7.33 [added]   Updated sol2 to version 3.2.1
  *          [added]   Better error checking for OpenAL source and buffer id issues on start.
- *          {added]   Support for LuaJIT 2.1.0 beta3
+ *          [added]   Support for LuaJIT 2.1.0 beta3
+ *          [added]   Updated support for OpenAL v1.21.1
  *
  *
  *
