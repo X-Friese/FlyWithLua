@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.33 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.34 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -144,7 +144,7 @@
  *          [added]   Better error checking for OpenAL source and buffer id issues on start.
  *          [added]   Support for LuaJIT 2.1.0 beta3
  *          [added]   Updated support for OpenAL v1.21.1
- *
+ *  v2.7.33 [added]   Support for Imgui 1.85
  *
  *
  *  Markus (Teddii):
