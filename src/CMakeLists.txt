@@ -103,7 +103,7 @@ target_compile_features(FlyWithLua PUBLIC cxx_std_11)
 # Link OpenGL and OpenAL related libraries.
 find_package(OpenGL REQUIRED)  # apt install freeglut3-dev
 find_library(OPENAL_LIBRARY NAMES openal OpenAL OpenAL32)  # apt install libopenal-dev
-find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
+find_library(GLUT_LIBRARY NAMES glut GLUT glut64.lib)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.
