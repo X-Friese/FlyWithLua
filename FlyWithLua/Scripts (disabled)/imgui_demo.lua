@@ -430,20 +430,20 @@ function build_demo(wnd, x, y)
         -- They are very simple variations of a same thing!
         -- [Method 1] Using TableNextRow() to create a new row, and TableSetColumnIndex() to select the column.
         -- In many situations, this is the most flexible and easy to use pattern.
-        imgui.TextUnformatted("Table 1")
-        imgui.BeginTable("table1", 3)
-        for row = 0, 4, 1
-        do
-             imgui.TableNextRow()
-             for column = 0, 3, 1
-             do
-                 imgui.TableSetColumnIndex(column)
-                 imgui.TextUnformatted("Row " .. row .. " Column " .. column)
-             end 
-        end
-        imgui.EndTable()
+        -- imgui.TextUnformatted("Table 1")
+        -- imgui.BeginTable("table1", 3)
+        -- for row = 0, 4, 1
+        -- do
+        --      imgui.TableNextRow()
+        --      for column = 0, 3, 1
+        --      do
+        --          imgui.TableSetColumnIndex(column)
+        --          imgui.TextUnformatted("Row " .. row .. " Column " .. column)
+        --      end 
+        -- end
+        -- imgui.EndTable()
         
-        imgui.TextUnformatted("")
+        -- imgui.TextUnformatted("")
         
         -- [Method 2] Using TableNextColumn() called multiple times, instead of using a for loop + TableSetColumnIndex().
         -- This is generally more convenient when you have code manually submitting the contents of each columns.
@@ -461,19 +461,19 @@ function build_demo(wnd, x, y)
         end
         imgui.EndTable()
         
-        imgui.TextUnformatted("")
+        -- imgui.TextUnformatted("")
         
         -- [Method 3] We call TableNextColumn() _before_ each cell. We never call TableNextRow(),
         -- as TableNextColumn() will automatically wrap around and create new roes as needed.
         -- This is generally more convenient when your cells all contains the same type of data.
-        imgui.TextUnformatted("Table 3")
-        imgui.BeginTable("table2", 3)
-        for item = 0, 14, 1
-        do
-            imgui.TableNextColumn()
-            imgui.TextUnformatted("Item " .. item)
-        end
-        imgui.EndTable()
+        -- imgui.TextUnformatted("Table 3")
+        -- imgui.BeginTable("table2", 3)
+        -- for item = 0, 14, 1
+        -- do
+        --     imgui.TableNextColumn()
+        --     imgui.TextUnformatted("Item " .. item)
+        -- end
+        -- imgui.EndTable()
       
         imgui.TreePop()
     end
