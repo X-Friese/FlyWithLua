@@ -32,7 +32,7 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     style.WindowRounding = 0;
 
     auto &io = ImGui::GetIO();
-    io.RenderDrawListsFn = nullptr;
+    // io.RenderDrawListsFn = nullptr;
     io.IniFilename = nullptr;
     // io.OptMacOSXBehaviors = false;
     // disable OSX-like keyboard behaviours always - we don't have the keymapping for it.

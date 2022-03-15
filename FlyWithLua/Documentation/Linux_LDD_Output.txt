@@ -1,4 +1,4 @@
-This is the ourput of ldd lin.xpl on my Ubuntu 20.04 LTX builder
+This is the ourput of ldd lin.xpl on my Ubuntu 20.04 LTS builder
 
 ldd lin.xpl
 

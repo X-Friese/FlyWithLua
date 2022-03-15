@@ -2,12 +2,16 @@
 use strict;
 use warnings;
 use diagnostics;
-# This works for IMGUI 1.76 and does not get all functions
+# This works for IMGUI 1.85 and does not get all functions
 #
 # to use ./generate_imgui_bindings.pl <../imgui/imgui.h >imgui_iterator.inl
 # and define macros properly as in example imgui_lua_bindings.cpp
 #
 # check imgui_iterator for explanations of why some functions are not supported yet
+# 
+# This is a modified version found at https://github.com/patrickriordan/imgui_lua_bindings
+# Thanks to Patrick and Folko for starting me on this journey.
+# William R. Good (SparkerInVR) 03-11-2022
 
 require "./parse_blocks.pl";
 
@@ -149,7 +153,8 @@ sub generateImguiGeneric {
   my @functionsAlreadyAdded;
   foreach $line (split /\n/, $imguiCodeBlock) {
     #replace ImVec2(x, y) with ImVec2 x, y so it's easier for regex (and ImVec4)
-    $line =~ s/ImVec2\(([^,]*),([^\)]*)\)/ImVec2 $1 $2/g;
+    # $line =~ s/ImVec2\(([^,]*),([^\)]*)\)/ImVec2 $1 $2/g;    
+    $line =~ s/ImVec2\(([^,]*), *([^\)]*)\)/ImVec2 $1 $2/g;
     $line =~ s/ImVec4\(([^,]*),([^\)]*),([^\)]*),([^\)]*)\)/ImVec4 $1 $2 $3 $4/g;
 
     #delete this so it's eaiser for regexes
@@ -324,19 +329,19 @@ sub generateImguiGeneric {
           push(@funcArgs, $name);
           # one of the various enums
           # we are handling these as ints
-        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseCursor|ImGuiStyleVar|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiSelectableFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTreeNodeFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
+        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiSortDirection|ImGuiStyleVar|ImGuiTableBgTarget|ImDrawFlags|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiButtonFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiPopupFlags|ImGuiSelectableFlags|ImGuiSliderFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTableFlags|ImGuiTableColumnFlags|ImGuiTableRowFlags|ImGuiTreeNodeFlags|ImGuiViewportFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
 		 # ***********  Show it any of the Enums/Flags declared as int have been found
 		 # For some reason ImDrawCornerFlags is not being found that is used in AddRect, AddRectFilled and AddImageRounded functions. 	
 		 # say STDERR "****** found ints enums: " . $args[$i] . " in function: " . $funcName;
-         #These are ints
-         my $name = $2;
+        #These are ints
+          my $name = $2;
           if ($3 =~ m/^ = 0$/) {
-            push(@before, "OPTIONAL_INT_ARG($name, 0)");
+              push(@before, "OPTIONAL_INT_ARG($name, 0)");
           } else {
             push(@before, "INT_ARG($name)");
           }
           push(@funcArgs, $name);
-          #int with default value or not
+        #int with default value or not
         } elsif ($args[$i] =~ m/^ *int ([^ =\[]*)( = [^ ]*|) *$/) {
 		  # ******* Show if any function has a int in the $args[$i]
 		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
@@ -347,7 +352,7 @@ sub generateImguiGeneric {
             push(@before, "INT_ARG($name)");
           }
           push(@funcArgs, $name);
-          #ImDrawCornerFlags with default value or not
+        #ImDrawCornerFlags with default value or not
         } elsif ($args[$i] =~ m/^ *ImDrawCornerFlags ([^ =\[]*)( = [^ ]*|) *$/) {
 		  # ******* Show if any function has a ImDrawCornerFlags in the $args[$i]
 		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
@@ -358,7 +363,7 @@ sub generateImguiGeneric {
             push(@before, "INT_ARG($name)");
           }
           push(@funcArgs, $name);
-          #ImGuiMouseButton with default value or not
+        #ImGuiMouseButton with default value or not
         } elsif ($args[$i] =~ m/^ *ImGuiMouseButton ([^ =\[]*)( = [^ ]*|) *$/) {
 		  # ******* Show if any function has a ImGuiMouseButton in the $args[$i]
 		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;

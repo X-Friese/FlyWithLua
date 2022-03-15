@@ -87,7 +87,7 @@ add_compile_options(-O3 -fPIC)
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/ImGUIIntegration.cpp FloatingWindows/FloatingWindow.cpp)
-list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
+list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
 if (WIN32)
     list(APPEND FLYWITHLUA_SRCS hidapi/windows/hid.c)
 elseif (APPLE)
@@ -103,7 +103,7 @@ target_compile_features(FlyWithLua PUBLIC cxx_std_11)
 # Link OpenGL and OpenAL related libraries.
 find_package(OpenGL REQUIRED)  # apt install freeglut3-dev
 find_library(OPENAL_LIBRARY NAMES openal OpenAL OpenAL32)  # apt install libopenal-dev
-find_library(GLUT_LIBRARY NAMES glut GLUT glut64)  # apt install freeglut3-dev
+find_library(GLUT_LIBRARY NAMES glut GLUT glut64.lib)  # apt install freeglut3-dev
 target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
 
 # Link Lua related libraries.

@@ -1,6 +1,7 @@
 -- imgui demo script
 -- Folke Will 2018-07-15
 -- Willian R. Good 2020-07-08 Updated to reflect now supporting Imgui 1.77
+-- Willian R. Good 2022-03-12 Updated to reflect now supporting Imgui 1.85
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -85,7 +86,7 @@ function build_demo(wnd, x, y)
     -- The easiest thing we can do in imgui is drawing text. The function is called TextUnformatted because
     -- it doesn't support C-style format strings. imgui has a function called Text() that does support these
     -- format strings, but it is not supported in lua.
-    imgui.TextUnformatted("Hello, World!")
+    imgui.TextUnformatted("Hello, World! Imgui 1.85 demo for FlyWithLua")
 
     -- Since TextUnformatted does not support format strings, you can use lua to create a string on the fly:
     imgui.TextUnformatted("Window size: " .. win_width .. ", " .. win_height)
@@ -158,6 +159,25 @@ function build_demo(wnd, x, y)
         imgui.Button("Click and hold")
         if imgui.IsItemActive() then
             makeRed = not makeRed
+        end
+        
+        -- Control the size of a button 
+        if imgui.Button("Button 1", 65, 25) then
+        
+        end
+        -- Keep the next button on the same line.
+        imgui.SameLine()
+        -- Control position of next button
+        imgui.SetCursorPosX(150)
+        
+        if imgui.Button("Button 2", 65, 25) then
+        
+        end
+        imgui.SameLine()
+        imgui.SetCursorPosX(150 * 2)
+        
+        if imgui.Button("Button 3", 65, 25) then
+        
         end
         
         -- Radio buttons: Specify whether the choice is currently active as parameter.
@@ -402,6 +422,103 @@ function build_demo(wnd, x, y)
         imgui.Image(image_id, win_width, 450 / 800 * win_width)
         -- Prameters: image id returned by float_wnd_load_image, diplay width, display height
         
+        imgui.TreePop()
+    end
+
+    if imgui.TreeNode("Tables") then
+        -- Here we will showcase three different ways to output a table.
+        -- They are very simple variations of a same thing!
+        -- [Method 1] Using TableNextRow() to create a new row, and TableSetColumnIndex() to select the column.
+        -- In many situations, this is the most flexible and easy to use pattern.
+        -- imgui.TextUnformatted("Table 1")
+        -- imgui.BeginTable("table1", 3)
+        -- for row = 0, 4, 1
+        -- do
+        --      imgui.TableNextRow()
+        --      for column = 0, 3, 1
+        --      do
+        --          imgui.TableSetColumnIndex(column)
+        --          imgui.TextUnformatted("Row " .. row .. " Column " .. column)
+        --      end 
+        -- end
+        -- imgui.EndTable()
+        
+        -- imgui.TextUnformatted("")
+        
+        -- [Method 2] Using TableNextColumn() called multiple times, instead of using a for loop + TableSetColumnIndex().
+        -- This is generally more convenient when you have code manually submitting the contents of each columns.
+        imgui.TextUnformatted("Table 2")
+        imgui.BeginTable("table2", 3)
+        for row = 0, 4, 1
+        do
+          imgui.TableNextRow()
+          imgui.TableNextColumn()
+          imgui.TextUnformatted("Row " .. row)
+          imgui.TableNextColumn()
+          imgui.TextUnformatted("Some contents")
+          imgui.TableNextColumn()
+          imgui.TextUnformatted("123.456");  
+        end
+        imgui.EndTable()
+        
+        -- imgui.TextUnformatted("")
+        
+        -- [Method 3] We call TableNextColumn() _before_ each cell. We never call TableNextRow(),
+        -- as TableNextColumn() will automatically wrap around and create new roes as needed.
+        -- This is generally more convenient when your cells all contains the same type of data.
+        -- imgui.TextUnformatted("Table 3")
+        -- imgui.BeginTable("table2", 3)
+        -- for item = 0, 14, 1
+        -- do
+        --     imgui.TableNextColumn()
+        --     imgui.TextUnformatted("Item " .. item)
+        -- end
+        -- imgui.EndTable()
+      
+        imgui.TreePop()
+    end
+    
+    if imgui.TreeNode("Child Window") then
+--	imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFF000000) -- Black Background
+--	imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFFFFFFFF) -- White Background
+--	imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFF0000FF) -- Red Background
+--	imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFF00FF00) -- Green Background
+--	imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFFFF0000) -- Blue Background
+	imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFFA89300) -- Strong Artic Blue Background
+--      imgui.PushStyleColor(imgui.constant.Col.ChildBg, 0xFFA8A800) -- Strong Cyan Background
+        imgui.BeginChild("test", 640, 480)
+        imgui.PopStyleColor()
+        if imgui.Button("Button One") then  -- Standard size button
+        
+        end
+        imgui.SameLine()
+        imgui.SetCursorPosX(150)  -- Control where next button will be placed
+        
+        if imgui.Button("Button Two", 100, 50) then  -- Bigger than normal sized button
+        
+        end
+        
+        imgui.SameLine()
+        imgui.SetCursorPosX(150 * 2)
+        
+        if imgui.Button("Button Three", 100, 50) then
+        
+        end
+        
+        imgui.EndChild()
+    
+        imgui.TreePop()
+    end
+    
+    if imgui.TreeNode("Fonts") then
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFFA89300) -- Strong Artic Blue Text
+        imgui.TextUnformatted("We cannot curently change the font we can change the color")
+        imgui.SetWindowFontScale(1.5)
+        imgui.TextUnformatted("We can also change the scale")
+        imgui.SetWindowFontScale(1.0)
+        imgui.TextUnformatted("Because this is the font scale for the window we need to make sure")
+        imgui.TextUnformatted("we have changed it back to the default of 1.0.")
+        imgui.PopStyleColor()
         imgui.TreePop()
     end
     
