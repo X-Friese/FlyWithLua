@@ -8,13 +8,25 @@ FlyWithLua users.
 See: https://github.com/X-Friese/FlyWithLua/issues/22
 --- ./upstream/sol.hpp
 +++ ./upstream/sol.hpp
-@@ -25832,6 +25832,9 @@ namespace sol {
- #pragma pop_macro("check") 
+@@ -34,9 +34,10 @@
+ 
+ // beginning of sol/version.hpp
+ 
+-#include <sol/config.hpp>
++#include "config.hpp"
+ 
+ #include <cstdint>
++#include <limits>
+ 
+ #define SOL_VERSION_MAJOR 3
+ #define SOL_VERSION_MINOR 5
+@@ -26668,6 +26669,9 @@
+ #pragma pop_macro("check")
  #endif // Unreal Engine 4 Bullshit
  
 +#undef lua_tointeger
 +#undef lua_tointegerx
 +
  #endif // SOL_HPP
- // end of sol.hpp
+ // end of sol/sol.hpp
  
