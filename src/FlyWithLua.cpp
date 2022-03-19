@@ -144,7 +144,8 @@
  *          [added]   Better error checking for OpenAL source and buffer id issues on start.
  *          [added]   Support for LuaJIT 2.1.0 beta3
  *          [added]   Updated support for OpenAL v1.21.1
- *  v2.7.33 [added]   Support for Imgui 1.85
+ *  v2.7.34 [added]   Support for Imgui 1.85
+ *          [added]   Updated sol2 to version 3.2.2
  *
  *
  *  Markus (Teddii):
