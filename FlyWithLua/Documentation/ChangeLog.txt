@@ -66,4 +66,4 @@ v2.7.32 Thanks to Patrick Lang Fixed Debug output for sound elements so it is wr
 
 v2.7.33 Added support for LuaJIT 2.1.0 beta3. Updated to sol v3.2.1. Updated OpenAL to v1.21.1.
 
-v2.7.34 Added support for Imgui 1.85.
+v2.7.34 Added support for Imgui 1.85. Updated sol2 to version 3.2.2.

@@ -1,7 +1,7 @@
 -- imgui demo script
 -- Folke Will 2018-07-15
 -- Willian R. Good 2020-07-08 Updated to reflect now supporting Imgui 1.77
--- Willian R. Good 2022-03-12 Updated to reflect now supporting Imgui 1.85
+-- Willian R. Good 2022-04-03 Updated to reflect now supporting Imgui 1.85
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -424,7 +424,51 @@ function build_demo(wnd, x, y)
         
         imgui.TreePop()
     end
-
+    
+    if imgui.TreeNode("ListBox") then
+        local choices = {"Choice 1", "Choice 2", "Choice 3"}
+        
+        -- BeginListBox starts a list box. The first parameter is the label, the
+        -- second parameter the text of the currently selected choice.
+        if imgui.BeginListBox("List Box", choices[choice]) then
+            -- Loop over all choices
+            for i = 1, #choices do
+                -- The Selectable function adds a choice to a listbox.
+                -- The first parameter is the label, the second one
+                -- should be true if this choice is currently selected.
+                if imgui.Selectable(choices[i], choice == i) then
+                    -- Selectable returns true when a new choice was selected,
+                    -- we should then copy the choice into our choice variable
+                    choice = i
+                end
+            end
+            -- _Must_ be called if and only if BeginListBox returns true, i.e.
+            -- when the listbox is currently open
+            imgui.EndListBox()
+        end
+    
+        imgui.TreePop()
+    end
+    
+    if imgui.TreeNode("Columns") then
+        imgui.Columns(3)
+        imgui.TextUnformatted("first column")
+        imgui.NextColumn()
+        imgui.TextUnformatted("second column")
+        imgui.NextColumn()
+        imgui.TextUnformatted("third column")
+        imgui.NextColumn()
+        imgui.TextUnformatted("first column second line")
+        imgui.NextColumn()
+        imgui.TextUnformatted("second column second line")
+        imgui.NextColumn()
+        imgui.TextUnformatted("third column second line")
+        imgui.NextColumn()
+        imgui.TextUnformatted("first column third line")
+        imgui.Columns()
+        imgui.TreePop()
+    end
+    
     if imgui.TreeNode("Tables") then
         -- Here we will showcase three different ways to output a table.
         -- They are very simple variations of a same thing!
