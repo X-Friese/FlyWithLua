@@ -3,7 +3,6 @@
 // ----------------------------------
 
 #define PLUGIN_VERSION "2.7.34-m build " __DATE__ " " __TIME__
-
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
 
