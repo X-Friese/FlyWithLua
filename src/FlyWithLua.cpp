@@ -1,8 +1,8 @@
-// ----------------------------------
+
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.34 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.34-m build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
@@ -2020,9 +2020,14 @@ void PushDataRefToLuaVariable(char* VariableWantedCString,
 
     if (DataRefTypeIdWanted == xplmType_Data)
     {
+        // %%%
+        int DatabLen;
         char ValueOfDataRef[LONGSTRING];
-        XPLMGetDatab(DataRefIdWanted, &ValueOfDataRef, IndexWanted, LONGSTRING);
-        lua_pushstring(FWLLua, ValueOfDataRef);
+        DatabLen = XPLMGetDatab(DataRefIdWanted, &ValueOfDataRef, IndexWanted, LONGSTRING);
+        if ( DatabLen > 0 ) {
+           DatabLen = strnlen(ValueOfDataRef,DatabLen);
+        }
+        lua_pushlstring(FWLLua, ValueOfDataRef, DatabLen);
         lua_setglobal(FWLLua, VariableWantedCString);
         return;
     }
@@ -3133,6 +3138,7 @@ static int LuaGet(lua_State* L)
 {
     char DataRefWanted[NORMALSTRING];
     int  IndexWanted = 0;
+    char buf[2048];
 
     if (!lua_isstring(L, 1))
     {
@@ -3194,9 +3200,19 @@ static int LuaGet(lua_State* L)
     }
     if (DataRefTypeIdWanted == xplmType_Data)
     {
+        // %%%
+        int DatabLen; 
         char ValueToWrite[LONGSTRING];
-        XPLMGetDatab(DataRefIdWanted, ValueToWrite, 0, LONGSTRING);
-        lua_pushstring(L, ValueToWrite);
+        DatabLen = XPLMGetDatab(DataRefIdWanted, ValueToWrite, 0, LONGSTRING);
+
+        sprintf(buf,"%%%%%% len = %d , strlen = %d",DatabLen,strlen(ValueToWrite));
+        logMsg(logToDevCon, buf);
+        
+        if ( DatabLen > 0 ) {
+           DatabLen = strnlen(ValueToWrite,DatabLen);
+        }
+
+        lua_pushlstring(L, ValueToWrite,DatabLen);
         return 1;
     }
     return 1;
@@ -5299,9 +5315,14 @@ static int Luapeek(lua_State* L)
 
         if (DataRefTypeIdWanted == xplmType_Data)
         {
+            // %%%
+            int DatabLen;
             char ValueOfDataRef[LONGSTRING];
-            XPLMGetDatab(DataRefIdWanted, &ValueOfDataRef, IndexWanted, LONGSTRING);
-            lua_pushstring(FWLLua, ValueOfDataRef);
+            DatabLen = XPLMGetDatab(DataRefIdWanted, &ValueOfDataRef, IndexWanted, LONGSTRING);
+            if ( DatabLen > 0 ) {
+               DatabLen = strnlen(ValueOfDataRef,DatabLen);
+            }
+            lua_pushlstring(FWLLua, ValueOfDataRef, DatabLen);
             return 1;
         }
     } else
@@ -5361,6 +5382,7 @@ static int Luapoke(lua_State* L)
         }
         if ((DataRefTypeId == xplmType_Data) && lua_isstring(L, 4))
         {
+            // %%%
             char DataRefValue[LONGSTRING];
             strncpy(DataRefValue, lua_tostring(FWLLua, 4), sizeof(DataRefValue));
             XPLMSetDatab(DataRefId, DataRefValue, Index, sizeof(DataRefValue));
@@ -6330,6 +6352,7 @@ void CopyDataRefsToXPlane()
                 }
                 if (DataRefTable[i].DataRefTypeId == xplmType_Data)
                 {
+                    // %%%
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
                     char DataRefValue[LONGSTRING];
                     strncpy(DataRefValue, lua_tostring(FWLLua, -1), sizeof(DataRefValue));
