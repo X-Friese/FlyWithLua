@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.34-m build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.34-m3 build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
 
@@ -501,18 +501,23 @@ XPLMDataTypeID reduceTypes(XPLMDataTypeID types)
     if (types & xplmType_Double)
     {
         return xplmType_Double;
+
     } else if (types & xplmType_Float)
     {
         return xplmType_Float;
+
     } else if (types & xplmType_Int)
     {
         return xplmType_Int;
+
     } else if (types & xplmType_FloatArray)
     {
         return xplmType_FloatArray;
+
     } else if (types & xplmType_IntArray)
     {
         return xplmType_IntArray;
+
     } else
     {
         return types;
@@ -2530,29 +2535,29 @@ static int LuaMeasureString(lua_State* L)
             {
                 result += glutBitmapWidth(GLUT_BITMAP_HELVETICA_10, string_to_measure[i]);
             }
-        }
-        if (strcmp(font_to_measure, "Helvetica_12") == 0)
+
+        } else if (strcmp(font_to_measure, "Helvetica_12") == 0)
         {
             for (auto i = 0; string_to_measure[i] != '\0'; i++)
             {
                 result += glutBitmapWidth(GLUT_BITMAP_HELVETICA_12, string_to_measure[i]);
             }
-        }
-        if (strcmp(font_to_measure, "Helvetica_18") == 0)
+
+        } else if (strcmp(font_to_measure, "Helvetica_18") == 0)
         {
             for (auto i = 0; string_to_measure[i] != '\0'; i++)
             {
                 result += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, string_to_measure[i]);
             }
-        }
-        if (strcmp(font_to_measure, "Times_Roman_10") == 0)
+
+        } else if (strcmp(font_to_measure, "Times_Roman_10") == 0)
         {
             for (auto i = 0; string_to_measure[i] != '\0'; i++)
             {
                 result += glutBitmapWidth(GLUT_BITMAP_TIMES_ROMAN_10, string_to_measure[i]);
             }
-        }
-        if (strcmp(font_to_measure, "Times_Roman_24") == 0)
+
+        } else if (strcmp(font_to_measure, "Times_Roman_24") == 0)
         {
             for (auto i = 0; string_to_measure[i] != '\0'; i++)
             {
@@ -2979,120 +2984,120 @@ static int LuaSetAxisAssignment(lua_State* L)
     std::string CommandWanted = lua_tostring(L, 2);
     if (CommandWanted == "none")
         CommandRefIdWanted = 0;
-    if (CommandWanted == "pitch")
+    else if (CommandWanted == "pitch")
         CommandRefIdWanted = 1;
-    if (CommandWanted == "roll")
+    else if (CommandWanted == "roll")
         CommandRefIdWanted = 2;
-    if (CommandWanted == "yaw")
+    else if (CommandWanted == "yaw")
         CommandRefIdWanted = 3;
-    if (CommandWanted == "throttle")
+    else if (CommandWanted == "throttle")
         CommandRefIdWanted = 4;
-    if (CommandWanted == "collective")
+    else if (CommandWanted == "collective")
         CommandRefIdWanted = 5;
-    if (CommandWanted == "left toe brake")
+    else if (CommandWanted == "left toe brake")
         CommandRefIdWanted = 6;
-    if (CommandWanted == "right toe brake")
+    else if (CommandWanted == "right toe brake")
         CommandRefIdWanted = 7;
-    if (CommandWanted == "prop")
+    else if (CommandWanted == "prop")
         CommandRefIdWanted = 8;
-    if (CommandWanted == "mixture")
+    else if (CommandWanted == "mixture")
         CommandRefIdWanted = 9;
-    if (CommandWanted == "carb heat")
+    else if (CommandWanted == "carb heat")
         CommandRefIdWanted = 10;
-    if (CommandWanted == "flaps")
+    else if (CommandWanted == "flaps")
         CommandRefIdWanted = 11;
-    if (CommandWanted == "thrust vector")
+    else if (CommandWanted == "thrust vector")
         CommandRefIdWanted = 12;
-    if (CommandWanted == "wing sweep")
+    else if (CommandWanted == "wing sweep")
         CommandRefIdWanted = 13;
-    if (CommandWanted == "speedbrakes")
+    else if (CommandWanted == "speedbrakes")
         CommandRefIdWanted = 14;
-    if (CommandWanted == "displacement")
+    else if (CommandWanted == "displacement")
         CommandRefIdWanted = 15;
-    if (CommandWanted == "reverse")
+    else if (CommandWanted == "reverse")
         CommandRefIdWanted = 16;
-    if (CommandWanted == "elev trim")
+    else if (CommandWanted == "elev trim")
         CommandRefIdWanted = 17;
-    if (CommandWanted == "ailn trim")
+    else if (CommandWanted == "ailn trim")
         CommandRefIdWanted = 18;
-    if (CommandWanted == "rudd trim")
+    else if (CommandWanted == "rudd trim")
         CommandRefIdWanted = 19;
-    if (CommandWanted == "throttle 1")
+    else if (CommandWanted == "throttle 1")
         CommandRefIdWanted = 20;
-    if (CommandWanted == "throttle 2")
+    else if (CommandWanted == "throttle 2")
         CommandRefIdWanted = 21;
-    if (CommandWanted == "throttle 3")
+    else if (CommandWanted == "throttle 3")
         CommandRefIdWanted = 22;
-    if (CommandWanted == "throttle 4")
+    else if (CommandWanted == "throttle 4")
         CommandRefIdWanted = 23;
-    if (CommandWanted == "prop 1")
+    else if (CommandWanted == "prop 1")
         CommandRefIdWanted = 24;
-    if (CommandWanted == "prop 2")
+    else if (CommandWanted == "prop 2")
         CommandRefIdWanted = 25;
-    if (CommandWanted == "prop 3")
+    else if (CommandWanted == "prop 3")
         CommandRefIdWanted = 26;
-    if (CommandWanted == "prop 4")
+    else if (CommandWanted == "prop 4")
         CommandRefIdWanted = 27;
-    if (CommandWanted == "mixture 1")
+    else if (CommandWanted == "mixture 1")
         CommandRefIdWanted = 28;
-    if (CommandWanted == "mixture 2")
+    else if (CommandWanted == "mixture 2")
         CommandRefIdWanted = 29;
-    if (CommandWanted == "mixture 3")
+    else if (CommandWanted == "mixture 3")
         CommandRefIdWanted = 30;
-    if (CommandWanted == "mixture 4")
+    else if (CommandWanted == "mixture 4")
         CommandRefIdWanted = 31;
-    if (CommandWanted == "reverse 1")
+    else if (CommandWanted == "reverse 1")
         CommandRefIdWanted = 32;
-    if (CommandWanted == "reverse 2")
+    else if (CommandWanted == "reverse 2")
         CommandRefIdWanted = 33;
-    if (CommandWanted == "reverse 3")
+    else if (CommandWanted == "reverse 3")
         CommandRefIdWanted = 34;
-    if (CommandWanted == "reverse 4")
+    else if (CommandWanted == "reverse 4")
         CommandRefIdWanted = 35;
-    if (CommandWanted == "landing gear")
+    else if (CommandWanted == "landing gear")
         CommandRefIdWanted = 36;
-    if (CommandWanted == "nosewheel tiller")
+    else if (CommandWanted == "nosewheel tiller")
         CommandRefIdWanted = 37;
-    if (CommandWanted == "backup throttle")
+    else if (CommandWanted == "backup throttle")
         CommandRefIdWanted = 38;
 
     // the next two axis functions changed in X-Plane 11.02b1
     // if the scripts wants the no longer active functions, we set it to "none"
-    if (CommandWanted == "auto roll")
+    else if (CommandWanted == "auto roll")
         CommandRefIdWanted = 0;
-    if (CommandWanted == "auto pitch")
+    else if (CommandWanted == "auto pitch")
         CommandRefIdWanted = 0;
 
     // instead we have a new function
-    if (CommandWanted == "cowl flaps")
+    else if (CommandWanted == "cowl flaps")
         CommandRefIdWanted = 39;
 
     // and nothing for the index value 40
 
-    if (CommandWanted == "view left/right")
+    else if (CommandWanted == "view left/right")
         CommandRefIdWanted = 41;
-    if (CommandWanted == "view up/down")
+    else if (CommandWanted == "view up/down")
         CommandRefIdWanted = 42;
-    if (CommandWanted == "view zoom")
+    else if (CommandWanted == "view zoom")
         CommandRefIdWanted = 43;
-    if (CommandWanted == "camera left/right")
+    else if (CommandWanted == "camera left/right")
         CommandRefIdWanted = 44;
-    if (CommandWanted == "camera up/down")
+    else if (CommandWanted == "camera up/down")
         CommandRefIdWanted = 45;
-    if (CommandWanted == "camera zoom")
+    else if (CommandWanted == "camera zoom")
         CommandRefIdWanted = 46;
-    if (CommandWanted == "gun/bomb left/right")
+    else if (CommandWanted == "gun/bomb left/right")
         CommandRefIdWanted = 47;
-    if (CommandWanted == "gun/bomb up/down")
+    else if (CommandWanted == "gun/bomb up/down")
         CommandRefIdWanted = 48;
 
     // added to support for X-Plane VR (version 11.20+)
 
-    if (CommandWanted == "VR Touchpad X")
+    else if (CommandWanted == "VR Touchpad X")
         CommandRefIdWanted = 49;
-    if (CommandWanted == "VR Touchpad Y")
+    else if (CommandWanted == "VR Touchpad Y")
         CommandRefIdWanted = 50;
-    if (CommandWanted == "VR Trigger")
+    else if (CommandWanted == "VR Trigger")
         CommandRefIdWanted = 51;
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
@@ -3170,33 +3175,33 @@ static int LuaGet(lua_State* L)
         auto ValueToWrite = XPLMGetDatai(DataRefIdWanted);
         lua_pushnumber(L, ValueToWrite);
         return 1;
-    }
+    } 
     if (DataRefTypeIdWanted == xplmType_Double)
     {
         auto ValueToWrite = XPLMGetDatad(DataRefIdWanted);
         lua_pushnumber(L, ValueToWrite);
         return 1;
-    }
+    } 
     if (DataRefTypeIdWanted == xplmType_Float)
     {
         auto ValueToWrite = XPLMGetDataf(DataRefIdWanted);
         lua_pushnumber(L, ValueToWrite);
         return 1;
-    }
+    } 
     if (DataRefTypeIdWanted == xplmType_IntArray)
     {
         auto ValueToWrite = 0;
         XPLMGetDatavi(DataRefIdWanted, &ValueToWrite, IndexWanted, 1);
         lua_pushnumber(L, ValueToWrite);
         return 1;
-    }
+    } 
     if (DataRefTypeIdWanted == xplmType_FloatArray)
     {
         float ValueToWrite = 0;
         XPLMGetDatavf(DataRefIdWanted, &ValueToWrite, IndexWanted, 1);
         lua_pushnumber(L, ValueToWrite);
         return 1;
-    }
+    } 
     if (DataRefTypeIdWanted == xplmType_Data)
     {
         // %%%
@@ -3204,8 +3209,9 @@ static int LuaGet(lua_State* L)
         char ValueToWrite[LONGSTRING];
         DatabLen = XPLMGetDatab(DataRefIdWanted, ValueToWrite, 0, LONGSTRING);
 
-        sprintf(buf,"%%%%%% len = %d , strlen = %d",DatabLen,strlen(ValueToWrite));
-        logMsg(logToDevCon, buf);
+        // for debug only
+        //sprintf(buf,"%%%%%% len = %d , strlen = %d",DatabLen,strlen(ValueToWrite));
+        //logMsg(logToDevCon, buf);
         
         if ( DatabLen > 0 ) {
            DatabLen = strnlen(ValueToWrite,DatabLen);
@@ -3221,7 +3227,7 @@ static int LuaSet(lua_State* L)
 {
     char DataRefWanted[NORMALSTRING];
 
-    if (!(lua_isstring(L, 1) && lua_isnumber(L, 2)))
+    if (!(lua_isstring(L, 1) && (lua_isnumber(L, 2) || lua_isstring(L, 2)) ))
     {
         logMsg(logToDevCon, "FlyWithLua Error: wrong arguments to function set().");
         LuaIsRunning = false;
@@ -3244,19 +3250,29 @@ static int LuaSet(lua_State* L)
         auto ValueToWrite = (int) lua_tonumber(L, 2);
         XPLMSetDatai(DataRefIdWanted, ValueToWrite);
         update_Lua_dataref_variables(DataRefIdWanted, 0, (float) ValueToWrite);
-    }
-    if (DataRefTypeIdWanted == xplmType_Double)
+
+    } else if (DataRefTypeIdWanted == xplmType_Double)
     {
         auto ValueToWrite = (double) lua_tonumber(L, 2);
         XPLMSetDatad(DataRefIdWanted, ValueToWrite);
         update_Lua_dataref_variables(DataRefIdWanted, 0, (float) ValueToWrite);
-    }
-    if (DataRefTypeIdWanted == xplmType_Float)
+
+    } else if (DataRefTypeIdWanted == xplmType_Float)
     {
         auto ValueToWrite = (float) lua_tonumber(L, 2);
         XPLMSetDataf(DataRefIdWanted, ValueToWrite);
         update_Lua_dataref_variables(DataRefIdWanted, 0, ValueToWrite);
+
+    } else if (DataRefTypeIdWanted == xplmType_Data)
+    {
+        // %%%
+        char DataRefValue[LONGSTRING];
+
+        strncpy(DataRefValue, lua_tostring(L, 2), sizeof(DataRefValue));
+        XPLMSetDatab(DataRefIdWanted, DataRefValue, 0, sizeof(DataRefValue));
+        update_Lua_dataref_strings(DataRefIdWanted, 0, DataRefValue);
     }
+
 
     return 0;
 }
@@ -3356,22 +3372,28 @@ static int LuaDefineSharedDataRef(lua_State* L)
     if (strcmp(DataRefTypeWanted, "Int") == 0)
     {
         XPLMDataRefTypeWanted = xplmType_Int;
-    } else if (strcmp(DataRefTypeWanted, "IntArray") == 0)
+    } 
+    else if (strcmp(DataRefTypeWanted, "IntArray") == 0)
     {
         XPLMDataRefTypeWanted = xplmType_IntArray;
-    } else if (strcmp(DataRefTypeWanted, "Float") == 0)
+    } 
+    else if (strcmp(DataRefTypeWanted, "Float") == 0)
     {
         XPLMDataRefTypeWanted = xplmType_Float;
-    } else if (strcmp(DataRefTypeWanted, "FloatArray") == 0)
+    } 
+    else if (strcmp(DataRefTypeWanted, "FloatArray") == 0)
     {
         XPLMDataRefTypeWanted = xplmType_FloatArray;
-    } else if (strcmp(DataRefTypeWanted, "Double") == 0)
+    } 
+    else if (strcmp(DataRefTypeWanted, "Double") == 0)
     {
         XPLMDataRefTypeWanted = xplmType_Double;
-    } else if (strcmp(DataRefTypeWanted, "Data") == 0)
+    } 
+    else if (strcmp(DataRefTypeWanted, "Data") == 0)
     {
         XPLMDataRefTypeWanted = xplmType_Data;
-    } else
+    } 
+    else
     {
         logMsg(logToDevCon,
                std::string("FlyWithLua Error: Unknown type for the shared DataRef \"").append(DataRefNameWanted).append(
@@ -3501,7 +3523,8 @@ static int LuaDataRef(lua_State* L)
         return 0;
     }
     XPLMDataTypeID DataRefTypeIdWanted = GetDataRefTypeCompat(DataRefIdWanted);
-    if (DataRefTypeIdWanted >= xplmType_FloatArray)
+    //if (DataRefTypeIdWanted >= xplmType_FloatArray)
+    if (DataRefTypeIdWanted & (xplmType_FloatArray+xplmType_IntArray))    // allow xplmType_Data to have no index
     {
         if (!lua_isnumber(L, 4))
         {
@@ -5354,32 +5377,32 @@ static int Luapoke(lua_State* L)
             auto DataRefValue = (int) lua_tonumber(FWLLua, 4);
             XPLMSetDatai(DataRefId, DataRefValue);
             update_Lua_dataref_variables(DataRefId, Index, (float) DataRefValue);
-        }
-        if ((DataRefTypeId == xplmType_Float) && lua_isnumber(L, 4))
+
+        } else if ((DataRefTypeId == xplmType_Float) && lua_isnumber(L, 4))
         {
             auto DataRefValue = (float) lua_tonumber(FWLLua, 4);
             XPLMSetDataf(DataRefId, DataRefValue);
             update_Lua_dataref_variables(DataRefId, Index, DataRefValue);
-        }
-        if ((DataRefTypeId == xplmType_Double) && lua_isnumber(L, 4))
+
+        } else if ((DataRefTypeId == xplmType_Double) && lua_isnumber(L, 4))
         {
             auto DataRefValue = (double) lua_tonumber(FWLLua, 4);
             XPLMSetDatad(DataRefId, DataRefValue);
             update_Lua_dataref_variables(DataRefId, Index, (float) DataRefValue);
-        }
-        if ((DataRefTypeId == xplmType_IntArray) && lua_isnumber(L, 4))
+
+        } else if ((DataRefTypeId == xplmType_IntArray) && lua_isnumber(L, 4))
         {
             auto DataRefValue = static_cast<int>(lua_tointeger(FWLLua, -1));
             XPLMSetDatavi(DataRefId, &DataRefValue, Index, 1);
             update_Lua_dataref_variables(DataRefId, Index, (float) DataRefValue);
-        }
-        if ((DataRefTypeId == xplmType_FloatArray) && lua_isnumber(L, 4))
+
+        } else if ((DataRefTypeId == xplmType_FloatArray) && lua_isnumber(L, 4))
         {
             auto DataRefValue = static_cast<float>(lua_tonumber(FWLLua, 4));
             XPLMSetDatavf(DataRefId, &DataRefValue, Index, 1);
             update_Lua_dataref_variables(DataRefId, Index, DataRefValue);
-        }
-        if ((DataRefTypeId == xplmType_Data) && lua_isstring(L, 4))
+
+        } else if ((DataRefTypeId == xplmType_Data) && lua_isstring(L, 4))
         {
             // %%%
             char DataRefValue[LONGSTRING];
@@ -6178,61 +6201,53 @@ void DebugLua()
                         SwitchTable[i].index << "] to " << SwitchTable[i].off_float << " (if off) or to " <<
                         SwitchTable[i].on_float << " (if on).\n";
                 WhatToSay = oss_WhatToSay.str();
-            }
-            if (SwitchTable[i].SwitchType == PositiveFlip)
+            } else if (SwitchTable[i].SwitchType == PositiveFlip)
             {
                 oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " flips " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] between " << SwitchTable[i].off_float << " and " <<
                         SwitchTable[i].on_float << ".\n";
                 WhatToSay = oss_WhatToSay.str();
-            }
-            if (SwitchTable[i].SwitchType == NegativeFlip)
+            } else if (SwitchTable[i].SwitchType == NegativeFlip)
             {
                 oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " flips " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] between " << SwitchTable[i].off_float << " and " <<
                         SwitchTable[i].on_float << ".\n";
                 WhatToSay = oss_WhatToSay.str();
 
-            }
-            if (SwitchTable[i].SwitchType == PositiveEdge)
+            } else if (SwitchTable[i].SwitchType == PositiveEdge)
             {
                 oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " sets " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] to " << SwitchTable[i].on_float << ".\n";
                 WhatToSay = oss_WhatToSay.str();
 
-            }
-            if (SwitchTable[i].SwitchType == NegativeEdge)
+            } else if (SwitchTable[i].SwitchType == NegativeEdge)
             {
                 oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " sets " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] to " << SwitchTable[i].on_float << ".\n";
                 WhatToSay = oss_WhatToSay.str();
 
-            }
-            if (SwitchTable[i].SwitchType == PositiveIncrement)
+            } else if (SwitchTable[i].SwitchType == PositiveIncrement)
             {
                 oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " increments " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
                         SwitchTable[i].upper_limit_float << ", round to " << SwitchTable[i].round << ").\n";
                 WhatToSay = oss_WhatToSay.str();
 
-            }
-            if (SwitchTable[i].SwitchType == NegativeIncrement)
+            } else if (SwitchTable[i].SwitchType == NegativeIncrement)
             {
                 oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " increments " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
                         SwitchTable[i].upper_limit_float << ", round to " << SwitchTable[i].round << ").\n";
                 WhatToSay = oss_WhatToSay.str();
 
-            }
-            if (SwitchTable[i].SwitchType == PositiveDecrement)
+            } else if (SwitchTable[i].SwitchType == PositiveDecrement)
             {
                 oss_WhatToSay << "The positive edge of button " << SwitchTable[i].button << " decrements " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
                         SwitchTable[i].lower_limit_float << ", round to " << SwitchTable[i].round << ").\n";
                 WhatToSay = oss_WhatToSay.str();
 
-            }
-            if (SwitchTable[i].SwitchType == NegativeDecrement)
+            } else if (SwitchTable[i].SwitchType == NegativeDecrement)
             {
                 oss_WhatToSay << "The negative edge of button " << SwitchTable[i].button << " decrements " <<  SwitchTable[i].DataRefName.c_str() <<
                         "[" <<  SwitchTable[i].index << "] by " << SwitchTable[i].stepping_float << " (limit = " <<
@@ -6320,36 +6335,31 @@ void CopyDataRefsToXPlane()
                     auto DataRefValue = (int) lua_tonumber(FWLLua, -1);
                     lua_pop(FWLLua, 1);
                     XPLMSetDatai(DataRefTable[i].DataRefId, DataRefValue);
-                }
-                if (DataRefTable[i].DataRefTypeId == xplmType_Float)
+                } else if (DataRefTable[i].DataRefTypeId == xplmType_Float)
                 {
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
                     auto DataRefValue = (float) lua_tonumber(FWLLua, -1);
                     lua_pop(FWLLua, 1);
                     XPLMSetDataf(DataRefTable[i].DataRefId, DataRefValue);
-                }
-                if (DataRefTable[i].DataRefTypeId == xplmType_Double)
+                } else if (DataRefTable[i].DataRefTypeId == xplmType_Double)
                 {
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
                     auto DataRefValue = (double) lua_tonumber(FWLLua, -1);
                     lua_pop(FWLLua, 1);
                     XPLMSetDatad(DataRefTable[i].DataRefId, DataRefValue);
-                }
-                if (DataRefTable[i].DataRefTypeId == xplmType_IntArray)
+                } else if (DataRefTable[i].DataRefTypeId == xplmType_IntArray)
                 {
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
                     auto DataRefValue = static_cast<int>(lua_tointeger(FWLLua, -1));
                     lua_pop(FWLLua, 1);
                     XPLMSetDatavi(DataRefTable[i].DataRefId, &DataRefValue, DataRefTable[i].Index, 1);
-                }
-                if (DataRefTable[i].DataRefTypeId == xplmType_FloatArray)
+                } else if (DataRefTable[i].DataRefTypeId == xplmType_FloatArray)
                 {
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
                     auto DataRefValue = static_cast<float>(lua_tonumber(FWLLua, -1));
                     lua_pop(FWLLua, 1);
                     XPLMSetDatavf(DataRefTable[i].DataRefId, &DataRefValue, DataRefTable[i].Index, 1);
-                }
-                if (DataRefTable[i].DataRefTypeId == xplmType_Data)
+                } else if (DataRefTable[i].DataRefTypeId == xplmType_Data)
                 {
                     // %%%
                     lua_getglobal(FWLLua, DataRefTable[i].LuaVariable);
@@ -7691,29 +7701,29 @@ void ExecuteSwitches()
             {
                 if (SwitchTable[i].DataRefType == xplmType_Int)
                     XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].off_int);
-                if (SwitchTable[i].DataRefType == xplmType_Float)
+                else if (SwitchTable[i].DataRefType == xplmType_Float)
                     XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].off_float);
-                if (SwitchTable[i].DataRefType == xplmType_Double)
+                else if (SwitchTable[i].DataRefType == xplmType_Double)
                     XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].off_double);
-                if (SwitchTable[i].DataRefType == xplmType_IntArray)
+                else if (SwitchTable[i].DataRefType == xplmType_IntArray)
                     XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].off_int, SwitchTable[i].index, 1);
-                if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+                else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
                     XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].off_float, SwitchTable[i].index, 1);
             } else
             {
                 if (SwitchTable[i].DataRefType == xplmType_Int)
                     XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].on_int);
-                if (SwitchTable[i].DataRefType == xplmType_Float)
+                else if (SwitchTable[i].DataRefType == xplmType_Float)
                     XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].on_float);
-                if (SwitchTable[i].DataRefType == xplmType_Double)
+                else if (SwitchTable[i].DataRefType == xplmType_Double)
                     XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].on_double);
-                if (SwitchTable[i].DataRefType == xplmType_IntArray)
+                else if (SwitchTable[i].DataRefType == xplmType_IntArray)
                     XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].on_int, SwitchTable[i].index, 1);
-                if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+                else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
                     XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
             }
         }
-        if (SwitchTable[i].SwitchType == AxisMedian)
+        else if (SwitchTable[i].SwitchType == AxisMedian)
         {
             // catch a new axis value and shift all old values
             SwitchTable[i].on_float          = SwitchTable[i].off_float;
@@ -7728,35 +7738,35 @@ void ExecuteSwitches()
             lua_pushnumber(FWLLua, median);
             lua_setglobal(FWLLua, SwitchTable[i].DataRefName.c_str());
         }
-        if ((SwitchTable[i].SwitchType == PositiveEdge) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
+        else if ((SwitchTable[i].SwitchType == PositiveEdge) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
             (JoystickButtonLastValues[SwitchTable[i].button] == 0))
         {
             if (SwitchTable[i].DataRefType == xplmType_Int)
                 XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].on_int);
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
                 XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].on_float);
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
                 XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].on_double);
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
                 XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].on_int, SwitchTable[i].index, 1);
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
                 XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
         }
-        if ((SwitchTable[i].SwitchType == NegativeEdge) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
+        else if ((SwitchTable[i].SwitchType == NegativeEdge) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
             (JoystickButtonLastValues[SwitchTable[i].button] == 1))
         {
             if (SwitchTable[i].DataRefType == xplmType_Int)
                 XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].on_int);
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
                 XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].on_float);
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
                 XPLMSetDatai(SwitchTable[i].DataRefID, static_cast<int>(SwitchTable[i].on_double));
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
                 XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].on_int, SwitchTable[i].index, 1);
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
                 XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
         }
-        if (((SwitchTable[i].SwitchType == PositiveFlip) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
+        else if (((SwitchTable[i].SwitchType == PositiveFlip) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
              (JoystickButtonLastValues[SwitchTable[i].button] == 0))
             || ((SwitchTable[i].SwitchType == NegativeFlip) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
                 (JoystickButtonLastValues[SwitchTable[i].button] == 1)))
@@ -7767,19 +7777,19 @@ void ExecuteSwitches()
                     XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].on_int);
                 else XPLMSetDatai(SwitchTable[i].DataRefID, SwitchTable[i].off_int);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
             {
                 if (XPLMGetDataf(SwitchTable[i].DataRefID) == SwitchTable[i].off_float)
                     XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].on_float);
                 else XPLMSetDataf(SwitchTable[i].DataRefID, SwitchTable[i].off_float);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
             {
                 if (XPLMGetDatad(SwitchTable[i].DataRefID) == SwitchTable[i].off_double)
                     XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].on_double);
                 else XPLMSetDatad(SwitchTable[i].DataRefID, SwitchTable[i].off_double);
             }
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
             {
                 int check_value_int;
                 XPLMGetDatavi(SwitchTable[i].DataRefID, &check_value_int, SwitchTable[i].index, 1);
@@ -7787,7 +7797,7 @@ void ExecuteSwitches()
                     XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].on_int, SwitchTable[i].index, 1);
                 else XPLMSetDatavi(SwitchTable[i].DataRefID, &SwitchTable[i].off_int, SwitchTable[i].index, 1);
             }
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
                 XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].on_float, SwitchTable[i].index, 1);
             {
                 float check_value_float;
@@ -7797,7 +7807,7 @@ void ExecuteSwitches()
                 else XPLMSetDatavf(SwitchTable[i].DataRefID, &SwitchTable[i].off_float, SwitchTable[i].index, 1);
             }
         }
-        if ((SwitchTable[i].SwitchType == PositiveIncrement) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
+        else if ((SwitchTable[i].SwitchType == PositiveIncrement) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
             (JoystickButtonLastValues[SwitchTable[i].button] == 0))
         {
             if (SwitchTable[i].DataRefType == xplmType_Int)
@@ -7806,7 +7816,7 @@ void ExecuteSwitches()
                 if (IntToSet > SwitchTable[i].upper_limit_int) IntToSet = SwitchTable[i].upper_limit_int;
                 XPLMSetDatai(SwitchTable[i].DataRefID, IntToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
             {
                 FloatToSet     = XPLMGetDataf(SwitchTable[i].DataRefID) + SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7814,7 +7824,7 @@ void ExecuteSwitches()
                 if (FloatToSet > SwitchTable[i].upper_limit_float) FloatToSet = SwitchTable[i].upper_limit_float;
                 XPLMSetDataf(SwitchTable[i].DataRefID, FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
             {
                 FloatToSet     = (float) XPLMGetDatad(SwitchTable[i].DataRefID) + SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7822,14 +7832,14 @@ void ExecuteSwitches()
                 if (FloatToSet > SwitchTable[i].upper_limit_float) FloatToSet = SwitchTable[i].upper_limit_float;
                 XPLMSetDatad(SwitchTable[i].DataRefID, (double) FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
             {
                 XPLMGetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
                 IntToSet += SwitchTable[i].stepping_int;
                 if (IntToSet > SwitchTable[i].upper_limit_int) IntToSet = SwitchTable[i].upper_limit_int;
                 XPLMSetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
             }
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
             {
                 XPLMGetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
                 FloatToSet += SwitchTable[i].stepping_float;
@@ -7839,7 +7849,7 @@ void ExecuteSwitches()
                 XPLMSetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
             }
         }
-        if ((SwitchTable[i].SwitchType == NegativeIncrement) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
+        else if ((SwitchTable[i].SwitchType == NegativeIncrement) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
             (JoystickButtonLastValues[SwitchTable[i].button] == 1))
         {
             if (SwitchTable[i].DataRefType == xplmType_Int)
@@ -7848,7 +7858,7 @@ void ExecuteSwitches()
                 if (IntToSet > SwitchTable[i].upper_limit_int) IntToSet = SwitchTable[i].upper_limit_int;
                 XPLMSetDatai(SwitchTable[i].DataRefID, IntToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
             {
                 FloatToSet     = XPLMGetDataf(SwitchTable[i].DataRefID) + SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7856,7 +7866,7 @@ void ExecuteSwitches()
                 if (FloatToSet > SwitchTable[i].upper_limit_float) FloatToSet = SwitchTable[i].upper_limit_float;
                 XPLMSetDataf(SwitchTable[i].DataRefID, FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
             {
                 FloatToSet     = (float) XPLMGetDatad(SwitchTable[i].DataRefID) + SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7864,14 +7874,14 @@ void ExecuteSwitches()
                 if (FloatToSet > SwitchTable[i].upper_limit_float) FloatToSet = SwitchTable[i].upper_limit_float;
                 XPLMSetDatad(SwitchTable[i].DataRefID, (double) FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
             {
                 XPLMGetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
                 IntToSet += SwitchTable[i].stepping_int;
                 if (IntToSet > SwitchTable[i].upper_limit_int) IntToSet = SwitchTable[i].upper_limit_int;
                 XPLMSetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
             }
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
             {
                 XPLMGetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
                 FloatToSet += SwitchTable[i].stepping_float;
@@ -7881,7 +7891,7 @@ void ExecuteSwitches()
                 XPLMSetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
             }
         }
-        if ((SwitchTable[i].SwitchType == PositiveDecrement) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
+        else if ((SwitchTable[i].SwitchType == PositiveDecrement) && (JoystickButtonValues[SwitchTable[i].button] == 1) &&
             (JoystickButtonLastValues[SwitchTable[i].button] == 0))
         {
             if (SwitchTable[i].DataRefType == xplmType_Int)
@@ -7890,7 +7900,7 @@ void ExecuteSwitches()
                 if (IntToSet < SwitchTable[i].lower_limit_int) IntToSet = SwitchTable[i].lower_limit_int;
                 XPLMSetDatai(SwitchTable[i].DataRefID, IntToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
             {
                 FloatToSet     = XPLMGetDataf(SwitchTable[i].DataRefID) - SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7898,7 +7908,7 @@ void ExecuteSwitches()
                 if (FloatToSet < SwitchTable[i].lower_limit_float) FloatToSet = SwitchTable[i].lower_limit_float;
                 XPLMSetDataf(SwitchTable[i].DataRefID, FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
             {
                 FloatToSet     = (float) XPLMGetDatad(SwitchTable[i].DataRefID) - SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7906,14 +7916,14 @@ void ExecuteSwitches()
                 if (FloatToSet < SwitchTable[i].lower_limit_float) FloatToSet = SwitchTable[i].lower_limit_float;
                 XPLMSetDatad(SwitchTable[i].DataRefID, (double) FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
             {
                 XPLMGetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
                 IntToSet -= SwitchTable[i].stepping_int;
                 if (IntToSet < SwitchTable[i].lower_limit_int) IntToSet = SwitchTable[i].lower_limit_int;
                 XPLMSetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
             }
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
             {
                 XPLMGetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
                 FloatToSet -= SwitchTable[i].stepping_float;
@@ -7923,7 +7933,7 @@ void ExecuteSwitches()
                 XPLMSetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
             }
         }
-        if ((SwitchTable[i].SwitchType == NegativeDecrement) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
+        else if ((SwitchTable[i].SwitchType == NegativeDecrement) && (JoystickButtonValues[SwitchTable[i].button] == 0) &&
             (JoystickButtonLastValues[SwitchTable[i].button] == 1))
         {
             if (SwitchTable[i].DataRefType == xplmType_Int)
@@ -7932,7 +7942,7 @@ void ExecuteSwitches()
                 if (IntToSet < SwitchTable[i].lower_limit_int) IntToSet = SwitchTable[i].lower_limit_int;
                 XPLMSetDatai(SwitchTable[i].DataRefID, IntToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Float)
+            else if (SwitchTable[i].DataRefType == xplmType_Float)
             {
                 FloatToSet     = XPLMGetDataf(SwitchTable[i].DataRefID) - SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7940,7 +7950,7 @@ void ExecuteSwitches()
                 if (FloatToSet < SwitchTable[i].lower_limit_float) FloatToSet = SwitchTable[i].lower_limit_float;
                 XPLMSetDataf(SwitchTable[i].DataRefID, FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_Double)
+            else if (SwitchTable[i].DataRefType == xplmType_Double)
             {
                 FloatToSet     = (float) XPLMGetDatad(SwitchTable[i].DataRefID) - SwitchTable[i].stepping_float;
                 if (SwitchTable[i].round > 0)
@@ -7948,14 +7958,14 @@ void ExecuteSwitches()
                 if (FloatToSet < SwitchTable[i].lower_limit_float) FloatToSet = SwitchTable[i].lower_limit_float;
                 XPLMSetDatad(SwitchTable[i].DataRefID, (double) FloatToSet);
             }
-            if (SwitchTable[i].DataRefType == xplmType_IntArray)
+            else if (SwitchTable[i].DataRefType == xplmType_IntArray)
             {
                 XPLMGetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
                 IntToSet -= SwitchTable[i].stepping_int;
                 if (IntToSet < SwitchTable[i].lower_limit_int) IntToSet = SwitchTable[i].lower_limit_int;
                 XPLMSetDatavi(SwitchTable[i].DataRefID, &IntToSet, SwitchTable[i].index, 1);
             }
-            if (SwitchTable[i].DataRefType == xplmType_FloatArray)
+            else if (SwitchTable[i].DataRefType == xplmType_FloatArray)
             {
                 XPLMGetDatavf(SwitchTable[i].DataRefID, &FloatToSet, SwitchTable[i].index, 1);
                 FloatToSet -= SwitchTable[i].stepping_float;
