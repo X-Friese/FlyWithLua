@@ -147,6 +147,8 @@
  *          [added]   Updated sol2 to version 3.2.2
  *  v2.7.35 [added]   fix for Datab datarefs thanks melbo
  *          [added]   set(xplmType_data) , perf enhancements ( else if )
+ *          [changed] Improved string dataref support.
+ *          [updated] SaveInitialAssignments to match XP 11.55r2
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
