@@ -1,8 +1,8 @@
-
+// ----------------------------------
 //  FlyWithLua Plugin for X-Plane 11
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.34-m3 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.7.35 build " __DATE__ " " __TIME__
 #define PLUGIN_NAME "FlyWithLua NG"
 #define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
 
@@ -145,7 +145,8 @@
  *          [added]   Updated support for OpenAL v1.21.1
  *  v2.7.34 [added]   Support for Imgui 1.85
  *          [added]   Updated sol2 to version 3.2.2
- *
+ *  v2.7.35 [added]   fix for Datab datarefs thanks melbo
+ *          [added]   set(xplmType_data) , perf enhancements ( else if )
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -2984,111 +2985,111 @@ static int LuaSetAxisAssignment(lua_State* L)
     std::string CommandWanted = lua_tostring(L, 2);
     if (CommandWanted == "none")
         CommandRefIdWanted = 0;
-    else if (CommandWanted == "pitch")
+    else if (CommandWanted == "Pitch")
         CommandRefIdWanted = 1;
-    else if (CommandWanted == "roll")
+    else if (CommandWanted == "Roll")
         CommandRefIdWanted = 2;
-    else if (CommandWanted == "yaw")
+    else if (CommandWanted == "Yaw")
         CommandRefIdWanted = 3;
-    else if (CommandWanted == "throttle")
+    else if (CommandWanted == "Throttle")
         CommandRefIdWanted = 4;
-    else if (CommandWanted == "collective")
+    else if (CommandWanted == "Collective")
         CommandRefIdWanted = 5;
-    else if (CommandWanted == "left toe brake")
+    else if (CommandWanted == "Left toe brake")
         CommandRefIdWanted = 6;
-    else if (CommandWanted == "right toe brake")
+    else if (CommandWanted == "Right toe brake")
         CommandRefIdWanted = 7;
-    else if (CommandWanted == "prop")
+    else if (CommandWanted == "Prop")
         CommandRefIdWanted = 8;
-    else if (CommandWanted == "mixture")
+    else if (CommandWanted == "Mixture")
         CommandRefIdWanted = 9;
-    else if (CommandWanted == "carb heat")
+    else if (CommandWanted == "Carb heat")
         CommandRefIdWanted = 10;
-    else if (CommandWanted == "flaps")
+    else if (CommandWanted == "Flaps")
         CommandRefIdWanted = 11;
-    else if (CommandWanted == "thrust vector")
+    else if (CommandWanted == "Thrust vector")
         CommandRefIdWanted = 12;
-    else if (CommandWanted == "wing sweep")
+    else if (CommandWanted == "Wing sweep")
         CommandRefIdWanted = 13;
-    else if (CommandWanted == "speedbrakes")
+    else if (CommandWanted == "Speedbrakes")
         CommandRefIdWanted = 14;
-    else if (CommandWanted == "displacement")
+    else if (CommandWanted == "Displacement")
         CommandRefIdWanted = 15;
-    else if (CommandWanted == "reverse")
+    else if (CommandWanted == "Reverse")
         CommandRefIdWanted = 16;
-    else if (CommandWanted == "elev trim")
+    else if (CommandWanted == "Elevator trim")
         CommandRefIdWanted = 17;
-    else if (CommandWanted == "ailn trim")
+    else if (CommandWanted == "Aileron trim")
         CommandRefIdWanted = 18;
-    else if (CommandWanted == "rudd trim")
+    else if (CommandWanted == "Rudder trim")
         CommandRefIdWanted = 19;
-    else if (CommandWanted == "throttle 1")
+    else if (CommandWanted == "Throttle 1")
         CommandRefIdWanted = 20;
-    else if (CommandWanted == "throttle 2")
+    else if (CommandWanted == "Throttle 2")
         CommandRefIdWanted = 21;
     else if (CommandWanted == "throttle 3")
         CommandRefIdWanted = 22;
-    else if (CommandWanted == "throttle 4")
+    else if (CommandWanted == "Throttle 4")
         CommandRefIdWanted = 23;
-    else if (CommandWanted == "prop 1")
+    else if (CommandWanted == "Prop 1")
         CommandRefIdWanted = 24;
-    else if (CommandWanted == "prop 2")
+    else if (CommandWanted == "Prop 2")
         CommandRefIdWanted = 25;
-    else if (CommandWanted == "prop 3")
+    else if (CommandWanted == "Prop 3")
         CommandRefIdWanted = 26;
-    else if (CommandWanted == "prop 4")
+    else if (CommandWanted == "Prop 4")
         CommandRefIdWanted = 27;
-    else if (CommandWanted == "mixture 1")
+    else if (CommandWanted == "Mixture 1")
         CommandRefIdWanted = 28;
-    else if (CommandWanted == "mixture 2")
+    else if (CommandWanted == "Mixture 2")
         CommandRefIdWanted = 29;
-    else if (CommandWanted == "mixture 3")
+    else if (CommandWanted == "Mixture 3")
         CommandRefIdWanted = 30;
-    else if (CommandWanted == "mixture 4")
+    else if (CommandWanted == "Mixture 4")
         CommandRefIdWanted = 31;
-    else if (CommandWanted == "reverse 1")
+    else if (CommandWanted == "Reverse 1")
         CommandRefIdWanted = 32;
-    else if (CommandWanted == "reverse 2")
+    else if (CommandWanted == "Reverse 2")
         CommandRefIdWanted = 33;
-    else if (CommandWanted == "reverse 3")
+    else if (CommandWanted == "Reverse 3")
         CommandRefIdWanted = 34;
-    else if (CommandWanted == "reverse 4")
+    else if (CommandWanted == "Reverse 4")
         CommandRefIdWanted = 35;
-    else if (CommandWanted == "landing gear")
+    else if (CommandWanted == "Landing gear")
         CommandRefIdWanted = 36;
-    else if (CommandWanted == "nosewheel tiller")
+    else if (CommandWanted == "Nosewheel tiller")
         CommandRefIdWanted = 37;
-    else if (CommandWanted == "backup throttle")
+    else if (CommandWanted == "Backup throttle")
         CommandRefIdWanted = 38;
 
     // the next two axis functions changed in X-Plane 11.02b1
     // if the scripts wants the no longer active functions, we set it to "none"
-    else if (CommandWanted == "auto roll")
+    else if (CommandWanted == "Auto roll")
         CommandRefIdWanted = 0;
-    else if (CommandWanted == "auto pitch")
+    else if (CommandWanted == "Auto pitch")
         CommandRefIdWanted = 0;
 
     // instead we have a new function
-    else if (CommandWanted == "cowl flaps")
+    else if (CommandWanted == "Cowl flaps")
         CommandRefIdWanted = 39;
 
     // and nothing for the index value 40
 
-    else if (CommandWanted == "view left/right")
+    else if (CommandWanted == "View left/right")
         CommandRefIdWanted = 41;
-    else if (CommandWanted == "view up/down")
+    else if (CommandWanted == "View up/down")
         CommandRefIdWanted = 42;
-    else if (CommandWanted == "view zoom")
+    else if (CommandWanted == "View zoom")
         CommandRefIdWanted = 43;
-    else if (CommandWanted == "camera left/right")
+    else if (CommandWanted == "Camera left/right")
         CommandRefIdWanted = 44;
-    else if (CommandWanted == "camera up/down")
+    else if (CommandWanted == "Camera up/down")
         CommandRefIdWanted = 45;
-    else if (CommandWanted == "camera zoom")
+    else if (CommandWanted == "Camera zoom")
         CommandRefIdWanted = 46;
-    else if (CommandWanted == "gun/bomb left/right")
+    else if (CommandWanted == "Gun/bomb left/right")
         CommandRefIdWanted = 47;
-    else if (CommandWanted == "gun/bomb up/down")
+    else if (CommandWanted == "Gun/bomb up/down")
         CommandRefIdWanted = 48;
 
     // added to support for X-Plane VR (version 11.20+)
@@ -3099,6 +3100,39 @@ static int LuaSetAxisAssignment(lua_State* L)
         CommandRefIdWanted = 50;
     else if (CommandWanted == "VR Trigger")
         CommandRefIdWanted = 51;
+
+    // Missing axis up to 11.55r2
+
+    else if (CommandWanted == "Custom command(s)")
+        CommandRefIdWanted = 52;
+    else if (CommandWanted == "Throttle 5")
+        CommandRefIdWanted = 53;
+    else if (CommandWanted == "Throttle 6")
+        CommandRefIdWanted = 54;
+    else if (CommandWanted == "Throttle 7")
+        CommandRefIdWanted = 55;
+    else if (CommandWanted == "Throttle 8")
+        CommandRefIdWanted = 56;
+    else if (CommandWanted == "Cowl flaps 1")
+        CommandRefIdWanted = 57;
+    else if (CommandWanted == "Cowl flaps 2")
+        CommandRefIdWanted = 58;
+    else if (CommandWanted == "Cowl flaps 3")
+        CommandRefIdWanted = 59;
+    else if (CommandWanted == "Cowl flaps 4")
+        CommandRefIdWanted = 60;
+    else if (CommandWanted == "Cowl flaps 5")
+        CommandRefIdWanted = 61;
+    else if (CommandWanted == "Cowl flaps 6")
+        CommandRefIdWanted = 62;
+    else if (CommandWanted == "Cowl flaps 7")
+        CommandRefIdWanted = 63;
+    else if (CommandWanted == "Cowl flaps 8")
+        CommandRefIdWanted = 64;
+    else if (CommandWanted == "Throttle Vertical")
+        CommandRefIdWanted = 65;
+    else if (CommandWanted == "Throttle Horizontal")
+        CommandRefIdWanted = 66;
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 
