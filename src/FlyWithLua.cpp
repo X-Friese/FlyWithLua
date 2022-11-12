@@ -1,10 +1,11 @@
 // ----------------------------------
-//  FlyWithLua Plugin for X-Plane 11
+//  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.7.35 build " __DATE__ " " __TIME__
-#define PLUGIN_NAME "FlyWithLua NG"
-#define PLUGIN_DESCRIPTION "Next Generation Version " PLUGIN_VERSION
+#define PLUGIN_VERSION "2.8.1 build " __DATE__ " " __TIME__
+
+#define PLUGIN_NAME "FlyWithLua NG+"
+#define PLUGIN_DESCRIPTION "Next Generation Plus Version " PLUGIN_VERSION
 
 // Copyright (c) 2012 Carsten Lynker
 //
@@ -145,10 +146,14 @@
  *          [added]   Updated support for OpenAL v1.21.1
  *  v2.7.34 [added]   Support for Imgui 1.85
  *          [added]   Updated sol2 to version 3.2.2
- *  v2.7.35 [added]   fix for Datab datarefs thanks melbo
+ *  v2.7.35 [changed] lua_pushstring to lua_pushlstring to improve string dataref handling thanks melbo.
+ *          [added]   fix for Datab datarefs
  *          [added]   set(xplmType_data) , perf enhancements ( else if )
- *          [changed] Improved string dataref support.
- *          [updated] SaveInitialAssignments to match XP 11.55r2
+ *  v2.8.0  [added]   Support for X-Plane 12
+ *          [added]   Support for x86_64 and arm64 for Mac
+ *          [added]   Inital support for Fmod
+ *  v2.8.1  [added]
+ *
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
@@ -3135,6 +3140,16 @@ static int LuaSetAxisAssignment(lua_State* L)
         CommandRefIdWanted = 65;
     else if (CommandWanted == "Throttle Horizontal")
         CommandRefIdWanted = 66;
+    else if (CommandWanted == "Copilot Pitch")
+        CommandRefIdWanted = 67;
+    else if (CommandWanted == "Copilot Roll")
+        CommandRefIdWanted = 68;
+    else if (CommandWanted == "Copilot Yaw")
+        CommandRefIdWanted = 69;
+    else if (CommandWanted == "Copilot Left toe brake")
+        CommandRefIdWanted = 70;
+    else if (CommandWanted == "Copilot Right toe brake")
+        CommandRefIdWanted = 71;
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 
@@ -6487,6 +6502,9 @@ void ResetLuaEngine()
     }
     OpenALSounds.clear();
 
+    // release memory for Fmod buffers
+    fmodint::deinitFmodSupport();
+
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
     if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
     {
@@ -6570,6 +6588,10 @@ void ResetLuaEngine()
     RegisterEmbeddedModules(FWLLua);
 
     RegisterCoreCFunctionsToLua(FWLLua);
+
+
+    // functions for fmod
+    fmodint::RegisterFmodFunctionsToLua(FWLLua);
 
     // functions to operate on floating windows
     flwnd::initFloatingWindowSupport();
@@ -7153,11 +7175,13 @@ PLUGIN_API int XPluginStart(
 
     // Plugin Info
     strcpy(outName, PLUGIN_NAME " " PLUGIN_VERSION);
-    strcpy(outSig, "CarstenLynker.FlyWithLua.NG");
+    strcpy(outSig, "CarstenLynker.FlyWithLua.NG+");
     strcpy(outDesc, PLUGIN_DESCRIPTION);
 
     // use posix path on Mac OSX
     XPLMEnableFeature("XPLM_USE_NATIVE_PATHS", 1);
+
+    fmodint::RegisterAccessor();
 
     initPluginDirectory(); // snagar
 
@@ -7706,7 +7730,9 @@ float MyFastLoopCallback(
         return TimeBetweenCallbacks;
     }
 
+    fmodint::fmod_data_update();
     flwnd::onFlightLoop();
+    fmodint::fmod_initialization();
 
     return TimeBetweenCallbacks;
 }

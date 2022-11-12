@@ -56,6 +56,15 @@
  * of you.  Window drawing also allows you to sign up for key presses and
  * receive mouse clicks.
  * 
+ * Drawing into the screen of an avionics device, like a GPS or a Primary
+ * Flight Display, is a way  to extend or replace X-Plane's avionics. Most
+ * screens can be displayed both in a 3d cockpit or 
+ * 2d panel, and also in separate popup windows. By installing drawing
+ *  callbacks for a certain avionics  device, you can change or extend the
+ *  appearance of that device regardless whether it's installed  in a 3d
+ *  cockpit or used in a separate display for home cockpits because you leave
+ *  the window managing to X-Plane.
+ * 
  * There are three ways to get keystrokes:
  * 
  * 1. If you create a window, the window can take keyboard focus.  It will
@@ -270,6 +279,170 @@ XPLM_API int        XPLMUnregisterDrawCallback(
                          int                  inWantsBefore,    
                          void *               inRefcon);    
 
+#if defined(XPLM400)
+/***************************************************************************
+ * AVIONICS API
+ ***************************************************************************/
+/*
+ * Drawing callbacks for before and after X-Plane draws the instrument screen
+ * can be registered for every  cockpit device. If the user plane does not
+ * have the device installed, your callback will not be called!  Use the
+ * return value to enable or disable X-Plane's drawing. By drawing into the
+ * framebuffer of the avionics device, your modifications will be visible
+ * regardless whether the device's screen is in a 3d cockpit or a popup
+ * window.                                                                    
+ *
+ */
+
+
+/*
+ * XPLMDeviceID
+ * 
+ * This constant indicates the device we want to override or enhance. We can
+ * get a callback before or after each item.                                  
+ *
+ */
+enum {
+     /* GNS430, pilot side.                                                        */
+    xplm_device_GNS430_1                     = 0,
+
+     /* GNS430, copilot side.                                                      */
+    xplm_device_GNS430_2                     = 1,
+
+     /* GNS530, pilot side.                                                        */
+    xplm_device_GNS530_1                     = 2,
+
+     /* GNS530, copilot side.                                                      */
+    xplm_device_GNS530_2                     = 3,
+
+     /* generic airliner CDU, pilot side.                                          */
+    xplm_device_CDU739_1                     = 4,
+
+     /* generic airliner CDU, copilot side.                                        */
+    xplm_device_CDU739_2                     = 5,
+
+     /* G1000 Primary Flight Display, pilot side.                                  */
+    xplm_device_G1000_PFD_1                  = 6,
+
+     /* G1000 Multifunction Display.                                               */
+    xplm_device_G1000_MFD                    = 7,
+
+     /* G1000 Primary Flight Display, copilot side.                                */
+    xplm_device_G1000_PFD_2                  = 8,
+
+     /* Primus CDU, pilot side.                                                    */
+    xplm_device_CDU815_1                     = 9,
+
+     /* Primus CDU, copilot side.                                                  */
+    xplm_device_CDU815_2                     = 10,
+
+     /* Primus Primary Flight Display, pilot side.                                 */
+    xplm_device_Primus_PFD_1                 = 11,
+
+     /* Primus Primary Flight Display, copilot side.                               */
+    xplm_device_Primus_PFD_2                 = 12,
+
+     /* Primus Multifunction Display, pilot side.                                  */
+    xplm_device_Primus_MFD_1                 = 13,
+
+     /* Primus Multifunction Display, copilot side.                                */
+    xplm_device_Primus_MFD_2                 = 14,
+
+     /* Primus Multifunction Display, central.                                     */
+    xplm_device_Primus_MFD_3                 = 15,
+
+     /* Primus Radio Management Unit, pilot side.                                  */
+    xplm_device_Primus_RMU_1                 = 16,
+
+     /* Primus Radio Management Unit, copilot side.                                */
+    xplm_device_Primus_RMU_2                 = 17,
+
+
+};
+typedef int XPLMDeviceID;
+
+/*
+ * XPLMAvionicsCallback_f
+ * 
+ * This is the prototype for your drawing callback.  You are passed in the
+ * device you are enhancing/replacing,  and whether it is before or after
+ * X-Plane drawing. If you are before X-Plane, return 1 to let X-Plane draw or
+ * 0 to suppress X-Plane drawing.  If you are after the phase the return value
+ * is ignored.
+ * 
+ * Refcon is a unique value that you specify when registering the callback,
+ * allowing you to slip a pointer to your own data to the callback.
+ * 
+ * Upon entry the OpenGL context will be correctly set up for you and OpenGL
+ * will be in panel coordinates for 2d drawing.  The OpenGL state (texturing,
+ * etc.) will be unknown.                                                     
+ *
+ */
+typedef int (* XPLMAvionicsCallback_f)(
+                         XPLMDeviceID         inDeviceID,    
+                         int                  inIsBefore,    
+                         void *               inRefcon);    
+
+/*
+ * XPLMAvionicsID
+ * 
+ * This is an opaque identifier for an avionics display that you enhance or
+ * replace.  When you register your callbacks (via
+ * XPLMRegisterAvionicsCallbacksEx()), you will specify callbacks to handle
+ * drawing, and get back such a handle.                                       
+ *
+ */
+typedef void * XPLMAvionicsID;
+
+/*
+ * XPLMCustomizeAvionics_t
+ * 
+ * The XPLMCustomizeAvionics_t structure defines all of the parameters used to
+ * replace or  enhance avionics for using XPLMRegisterAvionicsCallbacksEx(). 
+ * The structure will be expanded in future SDK APIs to include more features.
+ * Always set the structSize member to the size of  your struct in bytes!     
+ *
+ */
+typedef struct {
+     /* Used to inform XPLMRegisterAvionicsCallbacksEx() of the SDK version you    *
+      * compiled against; should always be set to sizeof(XPLMCustomizeAvionics_t)  */
+     int                       structSize;
+     /* Which avionics device you want your drawing applied to.                    */
+     XPLMDeviceID              deviceId;
+     /* The draw callback to be called before X-Plane draws.                       */
+     XPLMAvionicsCallback_f    drawCallbackBefore;
+     /* The draw callback to be called after X-Plane has drawn.                    */
+     XPLMAvionicsCallback_f    drawCallbackAfter;
+     /* A reference which will be passed into each of your draw callbacks. Use this*
+      * to pass information to yourself as needed.                                 */
+     void *                    refcon;
+} XPLMCustomizeAvionics_t;
+
+/*
+ * XPLMRegisterAvionicsCallbacksEx
+ * 
+ * This routine registers your callbacks for a device. This returns a handle. 
+ * If the returned handle is NULL, there was a problem interpreting your
+ * input,  most likely the struct size was wrong for your SDK version.  If the
+ * returned handle is not NULL, your callbacks will be called according to
+ * schedule  as long as your plugin is not deactivated, or unloaded, or your
+ * call XPLMUnregisterAvionicsCallbacks().                                    
+ *
+ */
+XPLM_API XPLMAvionicsID XPLMRegisterAvionicsCallbacksEx(
+                         XPLMCustomizeAvionics_t * inParams);    
+
+/*
+ * XPLMUnregisterAvionicsCallbacks
+ * 
+ * This routine unregisters your callbacks for a device. They will no longer
+ * be called.                                                                 
+ *
+ */
+XPLM_API void       XPLMUnregisterAvionicsCallbacks(
+                         XPLMAvionicsID       inAvionicsId);    
+
+#endif /* XPLM400 */
 /***************************************************************************
  * WINDOW API
  ***************************************************************************/
@@ -344,8 +517,16 @@ typedef void (* XPLMDrawWindow_f)(
  * 
  * This function is called when a key is pressed or keyboard focus is taken
  * away from your window.  If losingFocus is 1, you are losing the keyboard
- * focus, otherwise a key was pressed and inKey contains its character.  You
- * are also passed your window and a refcon.
+ * focus, otherwise a key was pressed and inKey contains its character.
+ * 
+ * The window ID passed in will be your window for key presses, or the other
+ * window taking focus  when losing focus. Note that in the modern plugin
+ * system, often focus is taken by the window manager itself; for this resaon,
+ * the window ID may be zero when losing focus, and you should not write code
+ * that depends onit.
+ * 
+ * The refcon passed in will be the one from registration, for both key
+ * presses and losing focus.  
  * 
  * Warning: this API declares virtual keys as a signed character; however the
  * VKEY #define macros in XPLMDefs.h define the vkeys using unsigned values

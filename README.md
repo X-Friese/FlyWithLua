@@ -32,6 +32,8 @@ If you want to grab a most nightly binary, just download `FlyWithLua_plugin.zip`
 
 ## Building FlyWithLua from source
 
+### Fmod is a prerequisite now so make sure you have read the Fmod_Build_Info.txt before trying to build
+
 ### On windows
 
 1.  Install required software using [Chocolatey](https://chocolatey.org/) using admin command prompt:

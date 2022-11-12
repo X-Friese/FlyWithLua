@@ -4,6 +4,15 @@
 #include <string>
 #include <lua.hpp>
 
+// Fmod insperation from Camille Bachmann
+// https://bitbucket.org/Squirrel_FS/fmodplugin/src/master/
+
+// include Fmod
+#include "fmod.h"
+#include "fmod_studio.h"
+#include "fmod_errors.h"
+#include "FmodIntegration.h"
+
 //Teddii: Enum fuer "logMsg"
 enum ELogType
 {
