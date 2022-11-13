@@ -14,7 +14,7 @@ You will find a binary version ready to use in X-Plane 11 only and the binary is
 
 The new versions are X-Plane 12 only and the binary is also in the [download area of x-plane.org](https://forums.x-plane.org/index.php?/files/file/82888-flywithlua-ng-next-generation-plus-edition-for-x-plane-12-win-lin-mac/).
 
-Because Fmod is now a prerequisite and not public GitHub Actions are currently not working. I am trying to find a way around this but so far it is a no go. If anyone has a way around this please reach out to me here.
+If you want to grab a most current binary, just download `FlyWithLua_plugin.zip` from the most recent [GitHub Actions build](https://github.com/X-Friese/FlyWithLua/actions/workflows/cmake.yml?query=branch%3Amaster) and unpack it into your X-Plane's plugin folder.
 
 > Copyright (c) 2012 Carsten Lynker
 >
