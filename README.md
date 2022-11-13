@@ -34,7 +34,10 @@ Because Fmod is now a prerequisite and not public GitHub Actions are currently n
 
 ## Building FlyWithLua from source
 
-### Fmod is a prerequisite now so make sure you have read the Fmod_Build_Info.txt before trying to build
+### If you use the Fmod Library understand that it is NOT a free library.
+
+### Remember to follow the rules of [FMOD's license](https://www.fmod.com/licensing) when using this library
+
 
 ### On windows
 

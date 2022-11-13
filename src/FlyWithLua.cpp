@@ -149,10 +149,12 @@
  *  v2.7.35 [changed] lua_pushstring to lua_pushlstring to improve string dataref handling thanks melbo.
  *          [added]   fix for Datab datarefs
  *          [added]   set(xplmType_data) , perf enhancements ( else if )
+ *          [added]   Updated SaveInitialAssignments to match XP 11.55r2
  *  v2.8.0  [added]   Support for X-Plane 12
  *          [added]   Support for x86_64 and arm64 for Mac
- *          [added]   Inital support for Fmod
- *  v2.8.1  [added]
+ *          [added]   Inital support for Fmod with the Radios and Interior bus
+ *  v2.8.1  [added]   Updated SaveInitialAssignments to match XP 12.00
+ *          [added]   Fmod support for Master bus
  *
  *
  *  Markus (Teddii):
@@ -3034,7 +3036,7 @@ static int LuaSetAxisAssignment(lua_State* L)
         CommandRefIdWanted = 20;
     else if (CommandWanted == "Throttle 2")
         CommandRefIdWanted = 21;
-    else if (CommandWanted == "throttle 3")
+    else if (CommandWanted == "Throttle 3")
         CommandRefIdWanted = 22;
     else if (CommandWanted == "Throttle 4")
         CommandRefIdWanted = 23;
