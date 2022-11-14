@@ -13,64 +13,84 @@ env:
   BUILD_TYPE: RelWithDebInfo
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
 
-    runs-on: ${{matrix.os}}
-
+  build-mac:
+    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
-
-    - name: "Windows: Configure environment"
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        # Select MinGW toolchain instead of the default MSVC.
-        echo "CMAKE_GENERATOR=MinGW Makefiles" >> $GITHUB_ENV
-
-    - name: "Linux: Install dependency libraries"
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends freeglut3-dev libudev-dev libopenal-dev
-
-    - name: Configure CMake
+      - uses: actions/checkout@v3
+    
+    - name: Configure Cmake
+    working-directory: ${{github.workspace}}/src
+    run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    
+    -name: Build
+    working-directory: ${{github.workspace}}/src
+    run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    
+    -uses: actions/upload-artifact@v3
+    with:
+      name: binaries
+      path: ${{github.workspace}}/build/*.xpl
+      if-no-files-found: error
+      
+  build-win:
+    runs-on: windows-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Configure Cmake
       working-directory: ${{github.workspace}}/src
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
-    - name: Build
-      working-directory: ${{github.workspace}}/src
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
       
-    - uses: actions/upload-artifact@v2
+      - name: Build
+      run: cmake --build .
+      
+      - uses: actions/upload-artifact@v3
       with:
         name: binaries
         path: ${{github.workspace}}/build/*.xpl
         if-no-files-found: error
+        
+  build-lin:
+    runs-on: ubuntu-latest
+     
+    steps:
+    - uses: actions/checkout@v3
+     
+    - name: Install other dependancies
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y --no-install-recommends freeglut3-dev libudev-dev libopenal-dev
+       
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}/src
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+       
+    - name: Build
+      working-directory: ${{github.workspace}}/src
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
+     
+    - uses: actions/upload-artifact@v3
+      with:
+        name: binaries
+        path: ${{github.workspace}}/build/*.xpl
+        if-no-files-found: error
+
 
   package:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: binaries
           path: FlyWithLua/64
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: FlyWithLua_plugin
           path: |
@@ -83,7 +103,7 @@ jobs:
 
       - name: Upload binaries to release
         if: github.event_name == 'release'
-        uses: svenstaro/upload-release-action@v2
+        uses: svenstaro/upload-release-action@v3
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: FlyWithLua_NG_Lin_Mac_Win.zip
