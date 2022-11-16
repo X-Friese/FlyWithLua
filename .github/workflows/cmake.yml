@@ -1,86 +1,125 @@
 name: CMake
 
-on:
-  push:
-    branches: [ "*" ]
-  pull_request:
-    branches: [ "*" ]
-  release:
-    type: [created, edited]
+on: [push]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
-
-    runs-on: ${{matrix.os}}
-
+  build-lin:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - name: Install other dependancies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends freeglut3-dev libudev-dev libopenal-dev
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}/src
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Build
+        working-directory: ${{github.workspace}}/src
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
+      - uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ${{github.workspace}}/build/*.xpl
+          if-no-files-found: error
+          
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Windows: Configure environment"
+        shell: bash
+        run: |
+          # Select MinGW toolchain instead of the default MSVC.
+          echo "CMAKE_GENERATOR=MinGW Makefiles" >> $GITHUB_ENV
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}/src
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Build
+        working-directory: ${{github.workspace}}/src
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
+      - uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ${{github.workspace}}/build/*.xpl
+          if-no-files-found: error
 
-    - name: "Windows: Configure environment"
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        # Select MinGW toolchain instead of the default MSVC.
-        echo "CMAKE_GENERATOR=MinGW Makefiles" >> $GITHUB_ENV
-
-    - name: "Linux: Install dependency libraries"
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends freeglut3-dev libudev-dev libopenal-dev
-
-    - name: Configure CMake
-      working-directory: ${{github.workspace}}/src
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
-    - name: Build
-      working-directory: ${{github.workspace}}/src
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
-      
-    - uses: actions/upload-artifact@v2
-      with:
-        name: binaries
-        path: ${{github.workspace}}/build/*.xpl
-        if-no-files-found: error
+  build-x64-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}/src
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Build
+        working-directory: ${{github.workspace}}/src
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} 
+      - name: List folder
+        run: ls -R -l
+      - name: Rename mac.xpl to mac_x64.xpl
+        run: mv build/mac.xpl build/mac_x64.xpl                          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ${{github.workspace}}/build/*.xpl
+          if-no-files-found: error
+      - name: List folder
+        run: ls -R -l          
+          
+  build-arm-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}/src
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_ARM=ON
+      - name: Build
+        working-directory: ${{github.workspace}}/src
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: List folder
+        run: ls -R -l
+      - name: Rename mac.xpl to mac_x64.xpl
+        run: mv build/mac.xpl build/mac_arm.xpl                   
+      - uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ${{github.workspace}}/build/*.xpl
+          if-no-files-found: error
+      - name: List folder
+        run: ls -R -l          
 
   package:
-    needs: build
-    runs-on: ubuntu-latest
-
+    needs: [build-lin, build-win, build-x64-mac, build-arm-mac]
+    runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
         with:
           name: binaries
           path: FlyWithLua/64
-
-      - uses: actions/upload-artifact@v2
+      - name: Test artifact download     
+        run: ls -R -l
+      - name: Create Fat Mac
+        run: lipo -create FlyWithLua/64/mac_x64.xpl FlyWithLua/64/mac_arm.xpl -o FlyWithLua/64/mac.xpl
+      - name: Test if lipo -create mac_x64.xpl mac_arm.xpl -o mac.xpl worked    
+        run: ls -R -l
+      - name: Remove mac_x64.xpl & mac_arm.xpl    
+        run: rm FlyWithLua/64/mac_x64.xpl FlyWithLua/64/mac_arm.xpl
+      - name: Did we remove mac_x64.xpl & mac_arm.xpl    
+        run: ls -R -l        
+      - uses: actions/upload-artifact@v3
         with:
           name: FlyWithLua_plugin
           path: |
             ${{github.workspace}}/FlyWithLua*
           if-no-files-found: error
-
       - name: Create plugin archive
         if: github.event_name == 'release'
         run: zip -r FlyWithLua_NG_Lin_Mac_Win.zip FlyWithLua/
-
       - name: Upload binaries to release
         if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
@@ -88,4 +127,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: FlyWithLua_NG_Lin_Mac_Win.zip
           tag: ${{ github.ref }}
-          overwrite: true
+          overwrite: true                      
