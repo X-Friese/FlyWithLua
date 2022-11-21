@@ -5,6 +5,7 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
+  FWL_VERSION: 2.8.1
 
 jobs:
   build-lin:
@@ -113,18 +114,18 @@ jobs:
         run: ls -R -l        
       - uses: actions/upload-artifact@v3
         with:
-          name: FlyWithLua_plugin
+          name: FlyWithLua_NG+_v${{ env.PC_VERSION }}
           path: |
             ${{github.workspace}}/FlyWithLua*
           if-no-files-found: error
       - name: Create plugin archive
         if: github.event_name == 'release'
-        run: zip -r FlyWithLua_NG_Lin_Mac_Win.zip FlyWithLua/
+        run: zip -r FlyWithLua_NG+_v${{ env.PC_VERSION }}.zip FlyWithLua/
       - name: Upload binaries to release
         if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: FlyWithLua_NG_Lin_Mac_Win.zip
+          file: FlyWithLua_NG+_v${{ env.PC_VERSION }}.zip
           tag: ${{ github.ref }}
           overwrite: true                      
