@@ -243,6 +243,7 @@
 #include "XPLMNavigation.h"
 #include "XPLMPlanes.h"
 #include <iostream>
+#include <cctype>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -2992,90 +2993,91 @@ static int LuaSetAxisAssignment(lua_State* L)
         return 0;
     }
     std::string CommandWanted = lua_tostring(L, 2);
+    std::transform(CommandWanted.begin(), CommandWanted.end(), CommandWanted.begin(), [](unsigned char c){ return std::tolower(c); });
     if (CommandWanted == "none")
         CommandRefIdWanted = 0;
-    else if (CommandWanted == "Pitch")
+    else if (CommandWanted == "pitch")
         CommandRefIdWanted = 1;
-    else if (CommandWanted == "Roll")
+    else if (CommandWanted == "roll")
         CommandRefIdWanted = 2;
-    else if (CommandWanted == "Yaw")
+    else if (CommandWanted == "yaw")
         CommandRefIdWanted = 3;
-    else if (CommandWanted == "Throttle")
+    else if (CommandWanted == "throttle")
         CommandRefIdWanted = 4;
-    else if (CommandWanted == "Collective")
+    else if (CommandWanted == "collective")
         CommandRefIdWanted = 5;
-    else if (CommandWanted == "Left toe brake")
+    else if (CommandWanted == "left toe brake")
         CommandRefIdWanted = 6;
-    else if (CommandWanted == "Right toe brake")
+    else if (CommandWanted == "right toe brake")
         CommandRefIdWanted = 7;
-    else if (CommandWanted == "Prop")
+    else if (CommandWanted == "prop")
         CommandRefIdWanted = 8;
-    else if (CommandWanted == "Mixture")
+    else if (CommandWanted == "mixture")
         CommandRefIdWanted = 9;
-    else if (CommandWanted == "Carb heat")
+    else if (CommandWanted == "carb heat")
         CommandRefIdWanted = 10;
-    else if (CommandWanted == "Flaps")
+    else if (CommandWanted == "flaps")
         CommandRefIdWanted = 11;
-    else if (CommandWanted == "Thrust vector")
+    else if (CommandWanted == "thrust vector")
         CommandRefIdWanted = 12;
-    else if (CommandWanted == "Wing sweep")
+    else if (CommandWanted == "wing sweep")
         CommandRefIdWanted = 13;
-    else if (CommandWanted == "Speedbrakes")
+    else if (CommandWanted == "speedbrakes")
         CommandRefIdWanted = 14;
-    else if (CommandWanted == "Displacement")
+    else if (CommandWanted == "displacement")
         CommandRefIdWanted = 15;
-    else if (CommandWanted == "Reverse")
+    else if (CommandWanted == "reverse")
         CommandRefIdWanted = 16;
-    else if (CommandWanted == "Elevator trim")
+    else if (CommandWanted == "elevator trim")
         CommandRefIdWanted = 17;
-    else if (CommandWanted == "Aileron trim")
+    else if (CommandWanted == "aileron trim")
         CommandRefIdWanted = 18;
-    else if (CommandWanted == "Rudder trim")
+    else if (CommandWanted == "rudder trim")
         CommandRefIdWanted = 19;
-    else if (CommandWanted == "Throttle 1")
+    else if (CommandWanted == "throttle 1")
         CommandRefIdWanted = 20;
-    else if (CommandWanted == "Throttle 2")
+    else if (CommandWanted == "throttle 2")
         CommandRefIdWanted = 21;
-    else if (CommandWanted == "Throttle 3")
+    else if (CommandWanted == "throttle 3")
         CommandRefIdWanted = 22;
-    else if (CommandWanted == "Throttle 4")
+    else if (CommandWanted == "throttle 4")
         CommandRefIdWanted = 23;
-    else if (CommandWanted == "Prop 1")
+    else if (CommandWanted == "prop 1")
         CommandRefIdWanted = 24;
-    else if (CommandWanted == "Prop 2")
+    else if (CommandWanted == "prop 2")
         CommandRefIdWanted = 25;
-    else if (CommandWanted == "Prop 3")
+    else if (CommandWanted == "prop 3")
         CommandRefIdWanted = 26;
-    else if (CommandWanted == "Prop 4")
+    else if (CommandWanted == "prop 4")
         CommandRefIdWanted = 27;
-    else if (CommandWanted == "Mixture 1")
+    else if (CommandWanted == "mixture 1")
         CommandRefIdWanted = 28;
-    else if (CommandWanted == "Mixture 2")
+    else if (CommandWanted == "mixture 2")
         CommandRefIdWanted = 29;
-    else if (CommandWanted == "Mixture 3")
+    else if (CommandWanted == "mixture 3")
         CommandRefIdWanted = 30;
-    else if (CommandWanted == "Mixture 4")
+    else if (CommandWanted == "mixture 4")
         CommandRefIdWanted = 31;
-    else if (CommandWanted == "Reverse 1")
+    else if (CommandWanted == "reverse 1")
         CommandRefIdWanted = 32;
-    else if (CommandWanted == "Reverse 2")
+    else if (CommandWanted == "reverse 2")
         CommandRefIdWanted = 33;
-    else if (CommandWanted == "Reverse 3")
+    else if (CommandWanted == "reverse 3")
         CommandRefIdWanted = 34;
-    else if (CommandWanted == "Reverse 4")
+    else if (CommandWanted == "reverse 4")
         CommandRefIdWanted = 35;
-    else if (CommandWanted == "Landing gear")
+    else if (CommandWanted == "landing gear")
         CommandRefIdWanted = 36;
-    else if (CommandWanted == "Nosewheel tiller")
+    else if (CommandWanted == "nosewheel tiller")
         CommandRefIdWanted = 37;
-    else if (CommandWanted == "Backup throttle")
+    else if (CommandWanted == "backup throttle")
         CommandRefIdWanted = 38;
 
     // the next two axis functions changed in X-Plane 11.02b1
     // if the scripts wants the no longer active functions, we set it to "none"
-    else if (CommandWanted == "Auto roll")
+    else if (CommandWanted == "auto roll")
         CommandRefIdWanted = 0;
-    else if (CommandWanted == "Auto pitch")
+    else if (CommandWanted == "auto pitch")
         CommandRefIdWanted = 0;
 
     // instead we have a new function
@@ -3084,78 +3086,79 @@ static int LuaSetAxisAssignment(lua_State* L)
 
     // and nothing for the index value 40
 
-    else if (CommandWanted == "View left/right")
+    else if (CommandWanted == "view left/right")
         CommandRefIdWanted = 41;
-    else if (CommandWanted == "View up/down")
+    else if (CommandWanted == "view up/down")
         CommandRefIdWanted = 42;
-    else if (CommandWanted == "View zoom")
+    else if (CommandWanted == "view zoom")
         CommandRefIdWanted = 43;
-    else if (CommandWanted == "Camera left/right")
+    else if (CommandWanted == "camera left/right")
         CommandRefIdWanted = 44;
-    else if (CommandWanted == "Camera up/down")
+    else if (CommandWanted == "camera up/down")
         CommandRefIdWanted = 45;
-    else if (CommandWanted == "Camera zoom")
+    else if (CommandWanted == "camera zoom")
         CommandRefIdWanted = 46;
-    else if (CommandWanted == "Gun/bomb left/right")
+    else if (CommandWanted == "gun/bomb left/right")
         CommandRefIdWanted = 47;
-    else if (CommandWanted == "Gun/bomb up/down")
+    else if (CommandWanted == "gun/bomb up/down")
         CommandRefIdWanted = 48;
 
     // added to support for X-Plane VR (version 11.20+)
 
-    else if (CommandWanted == "VR Touchpad X")
+    else if (CommandWanted == "vr touchpad x")
         CommandRefIdWanted = 49;
-    else if (CommandWanted == "VR Touchpad Y")
+    else if (CommandWanted == "vr touchpad y")
         CommandRefIdWanted = 50;
-    else if (CommandWanted == "VR Trigger")
+    else if (CommandWanted == "vr trigger")
         CommandRefIdWanted = 51;
 
     // Missing axis up to 11.55r2
 
-    else if (CommandWanted == "Custom command(s)")
+    else if (CommandWanted == "custom command(s)")
         CommandRefIdWanted = 52;
-    else if (CommandWanted == "Throttle 5")
+    else if (CommandWanted == "throttle 5")
         CommandRefIdWanted = 53;
-    else if (CommandWanted == "Throttle 6")
+    else if (CommandWanted == "throttle 6")
         CommandRefIdWanted = 54;
-    else if (CommandWanted == "Throttle 7")
+    else if (CommandWanted == "throttle 7")
         CommandRefIdWanted = 55;
-    else if (CommandWanted == "Throttle 8")
+    else if (CommandWanted == "throttle 8")
         CommandRefIdWanted = 56;
-    else if (CommandWanted == "Cowl flaps 1")
+    else if (CommandWanted == "cowl flaps 1")
         CommandRefIdWanted = 57;
-    else if (CommandWanted == "Cowl flaps 2")
+    else if (CommandWanted == "cowl flaps 2")
         CommandRefIdWanted = 58;
-    else if (CommandWanted == "Cowl flaps 3")
+    else if (CommandWanted == "cowl flaps 3")
         CommandRefIdWanted = 59;
-    else if (CommandWanted == "Cowl flaps 4")
+    else if (CommandWanted == "cowl flaps 4")
         CommandRefIdWanted = 60;
-    else if (CommandWanted == "Cowl flaps 5")
+    else if (CommandWanted == "cowl flaps 5")
         CommandRefIdWanted = 61;
-    else if (CommandWanted == "Cowl flaps 6")
+    else if (CommandWanted == "cowl flaps 6")
         CommandRefIdWanted = 62;
-    else if (CommandWanted == "Cowl flaps 7")
+    else if (CommandWanted == "cowl flaps 7")
         CommandRefIdWanted = 63;
-    else if (CommandWanted == "Cowl flaps 8")
+    else if (CommandWanted == "cowl flaps 8")
         CommandRefIdWanted = 64;
-    else if (CommandWanted == "Throttle Vertical")
+    else if (CommandWanted == "throttle vertical")
         CommandRefIdWanted = 65;
-    else if (CommandWanted == "Throttle Horizontal")
+    else if (CommandWanted == "throttle horizontal")
         CommandRefIdWanted = 66;
-    else if (CommandWanted == "Copilot Pitch")
+    else if (CommandWanted == "copilot pitch")
         CommandRefIdWanted = 67;
-    else if (CommandWanted == "Copilot Roll")
+    else if (CommandWanted == "copilot roll")
         CommandRefIdWanted = 68;
-    else if (CommandWanted == "Copilot Yaw")
+    else if (CommandWanted == "copilot yaw")
         CommandRefIdWanted = 69;
-    else if (CommandWanted == "Copilot Left toe brake")
+    else if (CommandWanted == "copilot left toe brake")
         CommandRefIdWanted = 70;
-    else if (CommandWanted == "Copilot Right toe brake")
+    else if (CommandWanted == "copilot right toe brake")
         CommandRefIdWanted = 71;
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 
     std::string ReverseOrNot = lua_tostring(L, 3);
+    std::transform(ReverseOrNot.begin(), ReverseOrNot.end(), ReverseOrNot.begin(), [](unsigned char c){ return std::tolower(c); });
     if (ReverseOrNot == "reverse")
     {
         XPLMSetDatavi(gJoystickAxisReverse, &reverse_yes, AxisNumber, 1);
