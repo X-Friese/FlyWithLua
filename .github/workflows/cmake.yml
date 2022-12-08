@@ -114,7 +114,7 @@ jobs:
         run: ls -R -l        
       - uses: actions/upload-artifact@v3
         with:
-          name: FlyWithLua_NG+v${{env.FWL_VERSION}}
+          name: FlyWithLua_NG+_v${{env.FWL_VERSION}}
           path: |
             ${{github.workspace}}/FlyWithLua*
           if-no-files-found: error                     

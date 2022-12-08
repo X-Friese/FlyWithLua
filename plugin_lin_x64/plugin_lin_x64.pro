@@ -18,7 +18,8 @@ INCLUDEPATH += ../src/imgui
 INCLUDEPATH += ../src/third_party/sol2/upstream
 INCLUDEPATH += ../src/third_party/luajit
 INCLUDEPATH += ../src/Fmod
-INCLUDEPATH += ../src/Fmod_api/inc
+INCLUDEPATH += ../src/Fmod_api/core/inc
+INCLUDEPATH += ../src/Fmod_api/studio/inc
 
 
 INCLUDEPATH += ..
@@ -75,7 +76,16 @@ HEADERS +=  ../src/FlyWithLua.h \
             ../src/Fmod/fmod4xpchannelgroup.h \
             ../src/Fmod/fmod4xpsystem.h \
             ../src/Fmod/fmod4xpdefaultbus.h \
-            ../src/Fmod/FmodIntegration.h
+            ../src/Fmod/FmodIntegration.h \
+            ../src/Fmod_api/core/inc/fmod.h \
+            ../src/Fmod_api/core/inc/fmod_codec.h \
+            ../src/Fmod_api/core/inc/fmod_common.h \
+            ../src/Fmod_api/core/inc/fmod_dsp.h \
+            ../src/Fmod_api/core/inc/fmod_dsp_effects.h \
+            ../src/Fmod_api/core/inc/fmod_errors.h \
+            ../src/Fmod_api/core/inc/fmod_output.h \
+            ../src/Fmod_api/studio/inc/fmod_studio.h \
+            ../src/Fmod_api/studio/inc/fmod_studio_common.h
 
 
 SOURCES +=  ../src/FlyWithLua.cpp \

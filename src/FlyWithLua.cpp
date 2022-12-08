@@ -155,6 +155,7 @@
  *          [added]   Inital support for Fmod with the Radios and Interior bus
  *  v2.8.1  [added]   Updated SaveInitialAssignments to match XP 12.00
  *          [added]   Fmod support for Master bus
+ *  v2.8.2  [added]   Fix set_axis_assignment to allow mixed case. Thanks Cedrik Lussier
  *
  *
  *  Markus (Teddii):
