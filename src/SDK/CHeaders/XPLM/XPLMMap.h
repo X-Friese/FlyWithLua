@@ -604,14 +604,11 @@ XPLM_API float      XPLMMapScaleMeter(
 /*
  * XPLMMapGetNorthHeading
  * 
- * Returns the heading (in degrees clockwise from "up") that corresponds to
- * north at a given point on the map. In other words, if your runway has a
- * true heading of 360, you would use "north" as the Cartesian angle at which
- * to draw the runway on the map. (You would add the result of
- * XPLMMapGetNorthHeading() to your true heading to get the map angle.)
- * 
- * This is necessary becuase X-Plane's map can be rotated to match your
- * aircraft's orientation; north is not always "up."
+ * Returns the heading (in degrees clockwise) from the positive Y axis in the
+ * cartesian mapping coordinate system to true north at the point passed in. 
+ * You can use it as a clockwise rotational offset to align icons and other
+ * 2-d drawing with true north on the map, compensating for rotations in the
+ * map due to projection.
  * 
  * Only valid from within a map layer callback (one of
  * XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,

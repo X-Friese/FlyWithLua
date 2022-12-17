@@ -1,20 +1,21 @@
 --- OpenAL Test
 --- by William Good (SparkerInVR)
---- Ver 0.1 
---- 02-08-2022
+--- Ver 0.2 
+--- 09-11-2022
+
 if not SUPPORTS_FLOATING_WINDOWS then
 	logMsg("Upgrade your FlyWithLua! to NG, need Floating Windows")
 	return
 end
 
 local Ten = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/10ft.wav")
-local Twenty = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/20ft.wav")
-local Thirty = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/30ft.wav")
-local AutoPilotFail = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/autopilot_fail.wav")
-local SinkRate = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/sink.wav")
+local Fire_Bell = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/fire_bell.wav")
 local SeatBelt = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/seatbelt.wav")
-local PullUp = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/pull.wav")
-local AutopilotDisco = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/autopilot_disco.wav")
+local Transonic = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/alert/transonic.wav")
+local Boom1 = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/contact/boom1.wav")
+local Boom2 = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/contact/boom2.wav")
+local Boom3 = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/contact/boom3.wav")
+local Boom4 = load_WAV_file(SYSTEM_DIRECTORY .. "Resources/sounds/contact/boom4.wav")
 
 
 oalt_wnd = float_wnd_create(640, 480, 1, true)
@@ -45,48 +46,48 @@ function oalt_on_build(oalt_wnd, x, y)
 	imgui.SetCursorPosX(150)
 
 	if imgui.Button("Button Two", 100, 50) then
-		play_sound(Twenty)
+		play_sound(Fire_Bell)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 2)
 
 	if imgui.Button("Button Three", 100, 50) then
-		play_sound(Thirty)
+		play_sound(SeatBelt)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 3)
 
 	if imgui.Button("Button Four", 100, 50) then
-		play_sound(AutoPilotFail)
+		play_sound(Transonic)
 	end
 
 	imgui.SetCursorPosY(100)
 
 
 	if imgui.Button("Button Five", 100, 50) then
-		play_sound(SinkRate)
+		play_sound(Boom1)
 	end
 	imgui.SameLine()
 	imgui.SetCursorPosX(150)
 
 	if imgui.Button("Button Six", 100, 50) then
-		play_sound(SeatBelt)
+		play_sound(Boom2)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 2)
 
 	if imgui.Button("Button Seven", 100, 50) then
-		play_sound(PullUp)
+		play_sound(Boom3)
 	end
 
 	imgui.SameLine()
 	imgui.SetCursorPosX(150 * 3)
 	
 	if imgui.Button("Button Eight", 100, 50) then
-		play_sound(AutopilotDisco)
+		play_sound(Boom4)
 	end
 
 end

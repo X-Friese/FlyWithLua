@@ -19,8 +19,7 @@
 \usepackage{helvet}
 \usepackage{listings}
 \lstset{numbers=left, numberstyle=\tiny, numbersep=4pt, breaklines=true, frame=single, showstringspaces=false, basicstyle=\scriptsize}
-\include{lua.def}
-\lstset{language=lua}
+
 \usepackage[pdftitle={FlyWithLua Quick Reference Manual},pdfstartview={FitH},colorlinks=true]{hyperref}
 \pdfcompresslevel=9
 \pdfimageresolution=72
@@ -54,8 +53,11 @@
 \setlength{\headheight}{2cm}
 \chead{\includegraphics[width=2.0cm]{FlyWithLua_logo.jpg}\\[2ex]}
 \cfoot{\footnotesize Page \thepage\ of \pageref{LastPage}}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0.4pt}
+% \renewcommand{\headrulewidth}{0.9pt}
+% \renewcommand{\footrulewidth}{0.9pt}
+ 
+\renewcommand{\headrulewidth}{0.0pt}
+\renewcommand{\footrulewidth}{0.9pt}
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 %% Ende des Vorspanns %%
@@ -64,9 +66,12 @@
 \hyphenation{values- HIDAPI-}
 
 \begin{document}
+\include{lua.def}
+\lstset{language=lua}
 
-\title{FlyWithLua V2.7.XX NG Reference Manual}
-\author{Carsten Lynker}
+
+\title{FlyWithLua V2.8.XX NG Reference Manual}
+\author{Carsten Lynker -  William R. Good}
 \date{\today}
 
 \maketitle
@@ -382,10 +387,10 @@ Since FlyWithLua version 2.0 all menu entries are no longer forced to English. T
 dataref("COM1", "sim/cockpit/radios/com1_freq_hz", "writable")
 
 if XPLANE_LANGUAGE == "German" then
-   add_macro("Stelle das Funkgerät auf UNICOM", "COM1 = 12280")
+    add_macro("Stelle das Funkgert auf UNICOM", "COM1 = 12280")
 
 elseif XPLANE_LANGUAGE == "French" then
-   add_macro("Fréquence radio point sur l'UNICOM", "COM1 = 12280")
+   add_macro("Frquence radio point sur l'UNICOM", "COM1 = 12280")
 
 elseif XPLANE_LANGUAGE == "Spanish" then
    add_macro("Punto de frecuencia de radio en la UNICOM", "COM1 = 12280")
@@ -396,6 +401,7 @@ elseif XPLANE_LANGUAGE == "Italian" then
 else
    add_macro("Set radio to UNICOM", "COM1 = 12280")
 end
+
 \end{lstlisting}
 
 \subsubsection{DIRECTORY\_SEPARATOR}
@@ -1402,8 +1408,6 @@ end
 \end{lstlisting}
 
 
-
-
 \newpage
 \subsection{Using the sounds from the sound table}
 
@@ -1440,6 +1444,139 @@ This functions pause the sound at the given index. This is especially useful, if
 \end{enumerate}
 
 This functions rewinds the sound at the given index. In other words, the sound will continue at the beginning position, if you restart playing.
+
+
+
+
+\newpage
+\includegraphics[width=2.0cm]{FMOD Logo Black - White Background.png}\\[2ex]
+\section{Fmod sound}
+Starting with version 2.8.0 FlyWithLua will be adding Fmod support to reflect that change with X-Plane 12. Besides the info provided here there will a Fmod\_Demo.lua script showing how to start using Fmod. One of the bigest changes for that Fmod will provide is to increase the number of types of sound files you can now load with FlyWithLua. Currently that number is 20 including wav, mp3, oog. For a complete list please check here https://www.fmod.com/docs/2.02/api/core-api-sound.html\#fmod\_sound\_type.
+
+
+
+\subsection{Loading sounds}
+
+To use the sound system, you first have to load a sound file into memory. I have tested wav, mp2 and ogg but others should work as well.
+
+You fill the sound system table by loading a sound file and remembering the position inside the table. The first sound you load gets number 0 (zero), as this is typical for C++ plugins (FlyWithLua is written in C/C++).
+
+\subsubsection{\emph{table position} = load\_fmod\_sound( \emph{filename} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your file is stored into the sound system table. Index values starts from 0 (Zero).
+	\item \emph{filename} = The name of the sound file to load.
+\end{enumerate}
+
+This function loads a sound file into the sound system table and gives back the index value. This is an example:
+
+
+\begin{lstlisting}
+tenft_wav = load_fmod_sound(SYSTEM_DIRECTORY .. "Resources/sounds/alert/10ft.wav")
+\end{lstlisting}
+
+
+\newpage
+\subsection{Using the sounds from the sound table}
+
+After you filled the sound system table with sound files you can use the sounds by using these functions:
+
+
+\subsubsection{ play\_sound\_on\_master\_bus(\emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This function plays a sound file on master bus at the given index. This is an example:
+
+
+\begin{lstlisting}
+play_sound_on_master_bus(tenft_wav)
+\end{lstlisting}
+
+\subsection{Stoping sounds}
+\subsubsection{ stop\_fmod\_sound\_on\_master\_bus()}
+This function stops the playing of FlyWithLua Fmod sound on master bus.
+
+\subsection{Fmod Master Bus Volume Dataref}
+This the dataref that FlyWithLua creates to adjust the FlyWithLua master channel group volume. It is a float and can be negitive to make the sound lower.
+
+\subsubsection{"FlyWithLua\_MasterChannelGroup/Volume"}
+
+\subsection{Fmod Master Bus Mute Dataref}
+This the dataref that FlyWithLua creates to mute the FlyWithLua Master channel group sound. It is a bool with true being muted and false for the sound to be heard.
+
+\subsubsection{"FlyWithLua\_MasterChannelGroup/Mute"}
+
+
+\newpage
+\subsection{Using the sounds from the sound table}
+
+After you filled the sound system table with sound files you can use the sounds by using these functions:
+
+
+\subsubsection{ play\_sound\_on\_radios\_bus(\emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This function plays a sound file on radios bus at the given index. This is an example:
+
+
+\begin{lstlisting}
+play_sound_on_radios_bus(tenft_wav)
+\end{lstlisting}
+
+\subsection{Stoping sounds}
+\subsubsection{ stop\_fmod\_sound\_on\_radios\_bus()}
+This function stops the playing of FlyWithLua Fmod sound on radios bus.
+
+\subsection{Fmod Radios Bus Volume Dataref}
+This the dataref that FlyWithLua creates to adjust the FlyWithLua radios channel group volume. It is a float and can be negitive to make the sound lower.
+
+\subsubsection{"FlyWithLua\_RadiosChannelGroup/Volume"}
+
+\subsection{Fmod Radios Bus Mute Dataref}
+This the dataref that FlyWithLua creates to mute the FlyWithLua Radios channel group sound. It is a bool with true being muted and false for the sound to be heard.
+
+\subsubsection{"FlyWithLua\_RadiosChannelGroup/Mute"}
+
+\newpage
+\subsection{Using the sounds from the sound table}
+The interior bus currently has a bug where if your first plane loaded does not have Fmod Studio then we can't find the interior bus so no sound will be played. Bug report has been filed as XPD-13315.
+
+After you filled the sound system table with sound files you can use the sounds by using these functions:
+
+\subsubsection{ play\_sound\_on\_interior\_bus(\emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This function plays a sound file on interior bus at the given index. This is an example:
+
+
+\begin{lstlisting}
+play_sound_on_interior_bus(tenft_wav)
+\end{lstlisting}
+
+
+\subsection{Stoping sounds}
+\subsubsection{ stop\_fmod\_sound\_on\_interior\_bus()}
+This function stops the playing of FlyWithLua Fmod sound on interior bus.
+
+
+\subsection{Fmod Interior Bus Volume Dataref}
+This the dataref that FlyWithLua creates to adjust the FlyWithLua interior channel group volume. It is a float and can be negitive to make the sound lower.
+
+\subsubsection{"FlyWithLua\_InteriorChannelGroup/Volume"}
+
+\subsection{Fmod Interior Bus Mute Dataref}
+This the dataref that FlyWithLua creates to mute the FlyWithLua channel group sound. It is a bool with true being muted and false for the sound to be heard.
+
+\subsubsection{"FlyWithLua\_InteriorChannelGroup/Mute"}
 
 
 \newpage

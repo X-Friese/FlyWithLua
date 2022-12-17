@@ -1,4 +1,4 @@
-# FlyWithLua for X-Plane 11
+# FlyWithLua for X-Plane 12
 
 [![CMake](https://github.com/X-Friese/FlyWithLua/actions/workflows/cmake.yml/badge.svg)](https://github.com/X-Friese/FlyWithLua/actions/workflows/cmake.yml)
 
@@ -10,9 +10,11 @@ Discussions to general topics should be opened on the [official forum at x-plane
 
 You will find a binary version ready to use in X-Plane 9 or 10 in the [download area of x-plane.org](http://forums.x-plane.org/index.php?app=downloads&showfile=17468).
 
-The new versions are X-Plane 11 only and the binary is also in the [download area of x-plane.org](https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/).
+You will find a binary version ready to use in X-Plane 11 only and the binary is also in the [download area of x-plane.org](https://forums.x-plane.org/index.php?/files/file/38445-flywithlua-ng-next-generation-edition-for-x-plane-11-win-lin-mac/).
 
-If you want to grab a most nightly binary, just download `FlyWithLua_plugin.zip` from the most recent [GitHub Actions build](https://github.com/X-Friese/FlyWithLua/actions/workflows/cmake.yml?query=branch%3Amaster) and unpack it into your X-Plane's plugin folder.
+The new versions are X-Plane 12 only and the binary is also in the [download area of x-plane.org](https://forums.x-plane.org/index.php?/files/file/82888-flywithlua-ng-next-generation-plus-edition-for-x-plane-12-win-lin-mac/).
+
+If you want to grab a most current binary, just download `FlyWithLua_plugin.zip` from the most recent [GitHub Actions build](https://github.com/X-Friese/FlyWithLua/actions/workflows/cmake.yml?query=branch%3Amaster) and unpack it into your X-Plane's plugin folder.
 
 > Copyright (c) 2012 Carsten Lynker
 >
@@ -31,6 +33,11 @@ If you want to grab a most nightly binary, just download `FlyWithLua_plugin.zip`
 > DEALINGS IN THE SOFTWARE.
 
 ## Building FlyWithLua from source
+
+### If you use the Fmod Library understand that it is NOT a free library.
+
+### Remember to follow the rules of [FMOD's license](https://www.fmod.com/licensing) when using this library
+
 
 ### On windows
 

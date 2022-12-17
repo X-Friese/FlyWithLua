@@ -4,12 +4,17 @@
 
 function get_axis_assignments()
 	-- X-Plane only stores an integer to represent the function, we use a table to give it a name
-	local axis_functions = { "pitch", "roll", "yaw", "throttle", "collective", "left toe brake", "right toe brake", "prop",
-	"mixture", "carb heat", "flaps", "thrust vector", "wing sweep", "speedbrakes", "displacement",
-	"reverse", "elev trim", "ailn trim", "rudd trim", "throttle 1", "throttle 2", "throttle 3",
-	"throttle 4", "prop 1", "prop 2", "prop 3", "prop 4", "mixture 1", "mixture 2",
-	"mixture 3", "mixture 4", "reverse 1", "reverse 2", "reverse 3", "reverse 4", "landing gear",
-	"nosewheel tiller", "backup throttle", "auto roll", "auto pitch", "view left/right", "view up/down", "view zoom" }
+	local axis_functions = { "Pitch", "Roll", "Yaw", "Throttle", "Collective", "Left toe brake", "Right toe brake", "Prop",
+	"Mixture", "Carb heat", "Flaps", "Thrust vector", "Wing sweep", "Speedbrakes", "Displacement",
+	"Reverse", "Elevator trim", "Aileron trim", "Rudder trim", "Throttle 1", "Throttle 2", "Throttle 3",
+	"Throttle 4", "Prop 1", "Prop 2", "Prop 3", "Prop 4", "Mixture 1", "Mixture 2",
+	"Mixture 3", "Mixture 4", "Reverse 1", "Reverse 2", "Reverse 3", "Reverse 4", "Landing gear",
+	"Nosewheel tiller", "Backup throttle", "Cowl flaps", "none", "View left/right", "View up/down", "View zoom",
+	"Camera left/right", "Camera up/down", "Camera zoom", "Gun/bomb left/right", "Gun/bomb up/down",
+	"VR Touchpad X", "VR Touchpad Y", "VR Trigger", "Custom command(s)", "Throttle 5", "Throttle 6", "Throttle 7",
+	"Throttle 8", "Cowl flaps 1", "Cowl flaps 2", "Cowl flaps 3", "Cowl flaps 4", "Cowl flaps 5", "Cowl flaps 6",
+	"Cowl flaps 7", "Cowl flaps 8", "Throttle Vertical", "Throttle Horizontal", "Copilot Pitch", "Copilot Roll",
+	"Copilot Yaw", "Copilot Left toe brake", "Copilot Right toe brake" }
 
 	-- now we can write the axis config to the Log.txt file
 	logMsg("FlyWithLua debug: the following code sets your axis to there actual setup")

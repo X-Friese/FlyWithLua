@@ -9,16 +9,18 @@ use diagnostics;
 #
 # check imgui_iterator for explanations of why some functions are not supported yet
 # 
-# This is a modified version found at https://github.com/patrickriordan/imgui_lua_bindings
-# Thanks to Patrick and Folko for starting me on this journey.
-# William R. Good (SparkerInVR) 03-11-2022
+# I originaly used this modified version found at https://github.com/patrickriordan/imgui_lua_bindings
+# I am now using this modified version found at https://github.com/megumumpkin/imgui_lua_bindings
+
+# Thanks to Patrick, Folko and megumumpkin for alowing me to go on this journey bringing Imgui to FlyWithLua.
+# William R. Good (SparkerInVR) 12-16-2022
 
 require "./parse_blocks.pl";
 
 sub generateNamespaceImgui {
   my ($imguiCodeBlock) = @_;
 
-  my $lineCaptureRegex = qr" *(IMGUI_API) *((const char\*)|([^ ]+)) *([^\(]+)\(([^\;]*)\);";
+  my $lineCaptureRegex = qr" *(IMGUI_API)\s*((const char\*)|([^\s]+))\s*([^\(]+)\(([^\;]*)\);";
   my $doEndStackOptions = 1;
   my $terminator = "} \/\/ namespace ImGui";
   my $callPrefix = "";
@@ -73,7 +75,7 @@ sub generateNamespaceImgui {
 sub generateDrawListFunctions {
   my ($imguiCodeBlock) = @_;
 
-  my $lineCaptureRegex = qr" *(IMGUI_API|inline) *((const char\*)|([^ ]+)) *([^\(]+)\(([^\;]*)\);";
+  my $lineCaptureRegex = qr" *(IMGUI_API|inline)\s*((const char\*)|([^\s]+))\s*([^\(]+)\(([^\;]*)\);";
   my $doEndStackOptions = 0;
   my $terminator = 0;
   my $callPrefix = "DRAW_LIST_";
@@ -248,13 +250,12 @@ sub generateImguiGeneric {
           push(@before, "FLOAT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_FLOAT_POINTER($name)");
-          #float a or float a = number
         # const float * x
         } elsif ($args[$i] =~ m/^ *const float *\* *([^ =\[]*)$/) {
           my $name = $1;
-          push(@before, "FLOAT_ARRAY_ARG($name)");
+          push(@before, "CONST_FLOAT_ARG($name)");
           push(@funcArgs, $name);
-          #float a or float a = number
+        #float a or float a = number
         } elsif ($args[$i] =~ m/^ *float *([^ =\[]*)( *= *[^ ]*|)$/) {
           my $name = $1;
           if ($2 =~ m/^ *= *([^ ]*)$/) {
@@ -263,6 +264,19 @@ sub generateImguiGeneric {
             push(@before, "NUMBER_ARG($name)");
           }
           push(@funcArgs, $name);
+        #float a[n]
+        } elsif ($args[$i] =~ m/^ *float *([^ =\[]*) *\[([0-9]*)\]$/) {
+          my $name = $1;
+          my $count = $2;
+
+          push(@before, "FLOAT_ARRAY_DEF($name,$count)");
+
+          my @it = (0..($count-1));
+          for(@it){
+            push(@before, "FLOAT_ARRAY_ARG($name,$_)");
+            push(@after, "PUSH_NUMBER($name [ $_ ])");
+          }
+          push(@funcArgs, $name);  
         # char * x
         } elsif ($args[$i] =~ m/^ *char *\* *([^ =\[]*)$/) {
           my $name = $1;
@@ -352,6 +366,19 @@ sub generateImguiGeneric {
             push(@before, "INT_ARG($name)");
           }
           push(@funcArgs, $name);
+        #int a[n]
+        } elsif ($args[$i] =~ m/^ *int ([^ =\[]*) *\[([0-9]*)\]$/) {
+          my $name = $1;
+          my $count = $2;
+
+          push(@before, "INT_ARRAY_DEF($name,$count)");
+
+          my @it = (0..($count-1));
+          for(@it){
+            push(@before, "INT_ARRAY_ARG($name,$_)");
+            push(@after, "PUSH_NUMBER($name [ $_ ])");
+          }
+          push(@funcArgs, $name);  
         #ImDrawCornerFlags with default value or not
         } elsif ($args[$i] =~ m/^ *ImDrawCornerFlags ([^ =\[]*)( = [^ ]*|) *$/) {
 		  # ******* Show if any function has a ImDrawCornerFlags in the $args[$i]
@@ -422,7 +449,16 @@ sub generateImguiGeneric {
           push(@before, "UINT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_UINT_POINTER($name)");
-          # we don't support variadic functions yet but we let you use it without extra variables
+        # const void* or void * a types and can have default value or not
+        } elsif ($args[$i] =~ m/^ *(const|) *void *\* *([^ =\[]*)( *= *[^ ]*|)$/) {
+          my $name = $2;
+          if ($3 =~ m/^ *= *([^ ]*)$/) {
+            push(@before, "OPTIONAL_VOID_ARG($name, $1)");
+          } else {
+            push(@before, "VOID_ARG($name)");
+          }
+          push(@funcArgs, $name);  
+        # we don't support variadic functions yet but we let you use it without extra variables
         } elsif ($args[$i] =~ m/^ *\.\.\. *$/) {
           print "// Variadic functions aren't suppported but here it is anyway\n";
         } else {
@@ -557,7 +593,7 @@ my $alreadyParsedMainImguiNamespace = 0;
 
 for (my $i=0; $i < scalar @blocks; $i++) {
   print "//" . $blocknames[$i] . "\n";
-  if (($blocknames[$i] eq "namespace ImGui\n") and not $alreadyParsedMainImguiNamespace) {
+  if (($blocknames[$i] =~ /^namespace ImGui\s*$/) and not $alreadyParsedMainImguiNamespace) {
 	print STDERR "Normal Imgui functions:   ";
 	$alreadyParsedMainImguiNamespace = 1;
     generateNamespaceImgui($blocks[$i]);

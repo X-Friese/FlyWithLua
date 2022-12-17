@@ -6,14 +6,17 @@
 #   * -DCREATECOMPLETEEDITION=XXX, where XXX is true or false. Default is true.
 
 cmake_minimum_required(VERSION 3.9)
-project(FlyWithLua VERSION 2.7.5 DESCRIPTION "FlyWithLua X-Plane plugin")
-# We will enable this when we have a SDK supporting arm
-# X-Plane supports OS X 10.10+, so this should ensure FlyWithLua can run on
+project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
+# We now have SDK support for arm so building for both architectures for the Mac.
+# X-Plane supports OS X 11.0+, so this should ensure FlyWithLua can run on
 # all supported versions.
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.10" CACHE STRING "Minimum macOS version" FORCE)
-# We will enable this when we have a SDK supporting arm
-# set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for mac OS X" FORCE)
-set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for mac OS X" FORCE)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+# We have to do seperate builds for the Mac
+if (BUILD_ARM)
+	set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for mac OS X" FORCE)
+else ()
+	set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for mac OS X" FORCE)
+endif ()
 
 # By default, use optimized release configuration.
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
@@ -32,6 +35,10 @@ include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
 include_directories("${CMAKE_SOURCE_DIR}/imgui")
 include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/luajit")
+include_directories("${CMAKE_SOURCE_DIR}/Fmod")
+include_directories("${CMAKE_SOURCE_DIR}/Fmod_api/core/inc")
+include_directories("${CMAKE_SOURCE_DIR}/Fmod_api/studio/inc")
+
 
 if (WIN32)
     include_directories("${CMAKE_SOURCE_DIR}/GLUT_for_Windows")
@@ -43,13 +50,22 @@ if (WIN32)
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/GLUT_for_Windows/GL")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Win")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/OpenAL")
-    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")    
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/Fmod_api/core/lib")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/Fmod_api/studio/lib")
+        
 elseif (APPLE)
     list(APPEND CMAKE_FRAMEWORK_PATH "${CMAKE_SOURCE_DIR}/SDK/Libraries/Mac")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/Fmod_api/core/lib")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/Fmod_api/studio/lib")
+        
 elseif (UNIX)
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/OpenAL")
     list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/third_party/luajit")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/Fmod_api/core/lib")
+    list(APPEND CMAKE_LIBRARY_PATH "${CMAKE_SOURCE_DIR}/Fmod_api/studio/lib")
+        
 endif ()
 
 
@@ -88,6 +104,7 @@ add_compile_options(-O3 -fPIC)
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/ImGUIIntegration.cpp FloatingWindows/FloatingWindow.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
+list(APPEND FLYWITHLUA_SRCS Fmod/FmodIntegration.cpp)
 if (WIN32)
     list(APPEND FLYWITHLUA_SRCS hidapi/windows/hid.c)
 elseif (APPLE)
@@ -136,6 +153,25 @@ target_link_libraries(FlyWithLua LuaXML_lib LuaSocket::Mime LuaSocket::Socket Lu
 add_subdirectory(third_party/sol2)
 target_link_libraries(FlyWithLua sol2::sol2)
 
+
+# Link Fmod related libraries.
+# Windows will not find the dll so we have to do this dance
+if (APPLE OR UNIX)
+    if (APPLE)
+       find_library(FMOD_LIBRARY NAMES libfmod.dylib)
+       find_library(FMOD_STUDIO_LIBRARY NAMES libfmodstudio.dylib)
+    elseif (UNIX)
+       find_library(FMOD_LIBRARY NAMES libfmod.so.13.10)
+       find_library(FMOD_STUDIO_LIBRARY NAMES libfmodstudio.so.13.10)
+    endif ()
+    target_link_libraries(FlyWithLua ${FMOD_LIBRARY} ${FMOD_STUDIO_LIBRARY})
+elseif (WIN32)
+    target_link_libraries(FlyWithLua "${CMAKE_SOURCE_DIR}/Fmod_api/core/lib/fmod.dll")
+    target_link_libraries(FlyWithLua "${CMAKE_SOURCE_DIR}/Fmod_api/studio/lib/fmodstudio.dll")    
+    
+endif ()    
+    
+
 # Link X-Plane plugin system libraries. They are only provided for OS X and Windows.
 if (WIN32 OR APPLE)
     find_library(XPLM_LIBRARY NAMES XPLM XPLM_64.lib)
@@ -180,6 +216,7 @@ elseif (UNIX)
     # Specify additional runtime search laths for dynamically-linked libraries.
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/64)
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/Modules)
+    target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/dlls/64)
     # Restrict set of symbols exported from the plugin. This reduces chances of
     # conflict with other plugins, in particular ones with Lua interpreter
     # embedded.
