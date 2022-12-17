@@ -8,16 +8,30 @@ The third version supported Imgui 1.77 with FlyWithLua 2.7.27
 
 This version supports Imgui 1.85 with FlyWithLua 2.7.34
 
-William R. Good 03-11-22 
+Updated support for Imgui 1.85 with FlyWithLua 2.8.3
+
+For some reason the current generate_imgui_bindings.pl file is missing a parameter for the scalars.
+
+Because of that the imgui_iterator.inl needs to be hand edited to get it to build correctly.
+
+William R. Good 12-12-22 
 
 
-Currently you have to make sure that flags are in this format flags = x
+Currently you have to make sure that flags are in this format flags = x in the imgui.h
 I want to modify the pearl script so this is not needed but I lack the knowledge on Perl to make that kind of change.
  
 
 Use this perl command to generate the imgui_iterator.inl file from the imgui.h file
 
 perl generate_imgui_bindings.pl <imgui.h >imgui_iterator.inl
+
+
+To make Perl verbose
+
+First do sudo perl -MCPAN -e 'install Devel::Trace'
+
+perl -d:Trace generate_imgui_bindings.pl <imgui.h >imgui_iterator.inl
+
 
 Results for Imgui 1.77 are:
 
@@ -31,4 +45,7 @@ Normal Imgui functions:   Supported: 268 Unsupported: 104
 Imgui DrawList functions: Supported: 43 Unsupported: 16
 
 
-Using the current perl script there is no need for any manual additions to the generated imgui_iterator.inl file.
+Updated results for Imgui 1.85 are:
+
+Normal Imgui functions:   Supported: 300 Unsupported: 72
+Imgui DrawList functions: Supported: 43 Unsupported: 16

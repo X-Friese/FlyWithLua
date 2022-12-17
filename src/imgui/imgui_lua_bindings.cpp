@@ -164,6 +164,12 @@ static int impl_##name(lua_State *L) { \
 
 #define NUMBER_ARG(name)\
   lua_Number name = luaL_checknumber(L, arg++);
+  
+#define FLOAT_ARRAY_DEF(name, size)\
+    float name[size];
+
+#define FLOAT_ARRAY_ARG(name, it)\
+    name[it] = (float)luaL_checknumber(L, arg++);  
 
 #define OPTIONAL_NUMBER_ARG(name, otherwise)\
   lua_Number name = otherwise; \
@@ -171,7 +177,7 @@ static int impl_##name(lua_State *L) { \
     name = lua_tonumber(L, arg++); \
   }
 
-#define FLOAT_ARRAY_ARG(name) \
+#define CONST_FLOAT_ARG(name) \
   luaL_checktype(L, arg, LUA_TTABLE); \
   int len = lua_objlen(L, arg++); \
   std::vector<float> list; \
@@ -201,6 +207,12 @@ static int impl_##name(lua_State *L) { \
 
 #define INT_ARG(name) \
   const int name = (int)luaL_checknumber(L, arg++);
+  
+#define INT_ARRAY_DEF(name,size) \
+    int name[size];
+
+#define INT_ARRAY_ARG(name,it) \
+    name[it] = (int)luaL_checknumber(L, arg++);  
 
 #define OPTIONAL_UINT_ARG(name, otherwise)\
   unsigned int name = otherwise; \
@@ -282,6 +294,66 @@ static int impl_##name(lua_State *L) { \
     stackval++; \
   }
 
+#define VOID_ARG(name) \
+    void* name = NULL; \
+    size_t arg_##name = arg++; \
+    lua_Number o_##name##_int; \
+    bool o_##name##_bool; \
+    char* o_##name##_str; \
+    int type_##name = lua_type(L, arg_##name); \
+    switch (type_##name) { \
+        case LUA_TNUMBER: \
+        { \
+            o_##name##_int = luaL_checknumber(L, arg_##name); \
+            name = (void*)&o_##name##_int; \
+            break; \
+        } \
+        case LUA_TBOOLEAN: \
+        { \
+            o_##name##_bool = lua_toboolean(L, arg_##name); \
+            name = (void*)&o_##name##_bool; \
+            break; \
+        } \
+        case LUA_TSTRING: \
+        { \
+            size_t i_##name##_size; \
+            o_##name##_str = const_cast<char*>(luaL_checklstring(L, arg_##name, &(i_##name##_size))); \
+            name = (void*)&o_##name##_str; \
+            break; \
+        } \
+    }
+
+#define OPTIONAL_VOID_ARG(name, otherwise) \
+    void* name = NULL; \
+    size_t arg_##name = arg++; \
+    if (arg_##name <= max_args) { \
+        lua_Number o_##name##_int; \
+        bool o_##name##_bool; \
+        char* o_##name##_str; \
+        int type_##name = lua_type(L, arg_##name); \
+        switch (type_##name) { \
+            case LUA_TNUMBER: \
+            { \
+                o_##name##_int = luaL_checknumber(L, arg_##name); \
+                name = (void*)&o_##name##_int; \
+                break; \
+            } \
+            case LUA_TBOOLEAN: \
+            { \
+                o_##name##_bool = lua_toboolean(L, arg_##name); \
+                name = (void*)&o_##name##_bool; \
+                break; \
+            } \
+            case LUA_TSTRING: \
+            { \
+                size_t i_##name##_size; \
+                o_##name##_str = const_cast<char*>(luaL_checklstring(L, arg_##name, &(i_##name##_size))); \
+                name = (void*)&o_##name##_str; \
+                break; \
+            } \
+        } \
+    }
+
 #define END_IMGUI_FUNC \
   return stackval; \
 }
@@ -336,14 +408,14 @@ static const struct luaL_Reg imguilib [] = {
 #define IM_TEXTURE_ID_ARG(name)
 #undef DEFAULT_ARG
 #define DEFAULT_ARG(name, x, y)
-#undef FLOAT_ARRAY_ARG
-#define FLOAT_ARRAY_ARG(name)
+#undef CONST_FLOAT_ARG
+#define CONST_FLOAT_ARG(name)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
 #undef LABEL_ARG
 #define LABEL_ARG(name)
-#undef FLOAT_ARRAY_ARG
-#define FLOAT_ARRAY_ARG(name)
+#undef CONST_FLOAT_ARG
+#define CONST_FLOAT_ARG(name)
 #undef IM_VEC_2_ARG
 #define IM_VEC_2_ARG(name)
 #undef OPTIONAL_IM_VEC_2_ARG
@@ -354,6 +426,10 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
+#undef FLOAT_ARRAY_DEF
+#define FLOAT_ARRAY_DEF(name, size)
+#undef FLOAT_ARRAY_ARG
+#define FLOAT_ARRAY_ARG(name, it)
 #undef OPTIONAL_NUMBER_ARG
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
 #undef FLOAT_POINTER_ARG
@@ -368,6 +444,10 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_INT_ARG(name, otherwise)
 #undef INT_ARG
 #define INT_ARG(name)
+#undef INT_ARRAY_DEF
+#define INT_ARRAY_DEF(name,size)
+#undef INT_ARRAY_ARG
+#define INT_ARRAY_ARG(name,it)
 #undef OPTIONAL_UINT_ARG
 #define OPTIONAL_UINT_ARG(name, otherwise)
 #undef UINT_ARG
@@ -388,6 +468,10 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_BOOL_ARG(name, otherwise)
 #undef BOOL_ARG
 #define BOOL_ARG(name)
+#undef VOID_ARG
+#define VOID_ARG(name)
+#undef OPTIONAL_VOID_ARG
+#define OPTIONAL_VOID_ARG(name, otherwise)
 #undef CALL_FUNCTION
 #define CALL_FUNCTION(name, retType, ...)
 #undef DRAW_LIST_CALL_FUNCTION
@@ -426,7 +510,8 @@ static const struct luaL_Reg imguilib [] = {
 #define END_ENUM(name)
 
 #include "imgui_iterator.inl"
-  {"Button", impl_Button},
+  // impl_Button is undeclared 
+  // {"Button", impl_Button},
   {NULL, NULL}
 };
 
@@ -471,6 +556,10 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
+#undef FLOAT_ARRAY_DEF
+#define FLOAT_ARRAY_DEF(name, size)
+#undef FLOAT_ARRAY_ARG
+#define FLOAT_ARRAY_ARG(name, it)
 #undef OPTIONAL_NUMBER_ARG
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
 #undef FLOAT_POINTER_ARG
@@ -481,6 +570,10 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define OPTIONAL_INT_ARG(name, otherwise)
 #undef INT_ARG
 #define INT_ARG(name)
+#undef INT_ARRAY_DEF
+#define INT_ARRAY_DEF(name,size)
+#undef INT_ARRAY_ARG
+#define INT_ARRAY_ARG(name,it)
 #undef OPTIONAL_UINT_ARG
 #define OPTIONAL_UINT_ARG(name, otherwise)
 #undef UINT_ARG
@@ -501,6 +594,10 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define OPTIONAL_BOOL_ARG(name, otherwise)
 #undef BOOL_ARG
 #define BOOL_ARG(name)
+#undef VOID_ARG
+#define VOID_ARG(name)
+#undef OPTIONAL_VOID_ARG
+#define OPTIONAL_VOID_ARG(name, otherwise)
 #undef CALL_FUNCTION
 #define CALL_FUNCTION(name, retType, ...)
 #undef DRAW_LIST_CALL_FUNCTION

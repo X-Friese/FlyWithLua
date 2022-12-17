@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.8.1 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.8.3 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG+"
 #define PLUGIN_DESCRIPTION "Next Generation Plus Version " PLUGIN_VERSION

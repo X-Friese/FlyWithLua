@@ -56,7 +56,10 @@ HEADERS +=  ../src/FlyWithLua.h \
             ../src/imgui/imconfig.h \
             ../src/imgui/imgui.h \
             ../src/imgui/imgui_internal.h \
-            ../src/third_party/iniReader/inireader.h \
+            ../src/imgui/imstb_rectpack.h \
+            ../src/imgui/imstb_textedit.h \
+            ../src/imgui/imstb_truetype.h \
+            ../src/imgui/imgui_iterator.inl \
             ../src/third_party/iniReader/inireader.h \
             ../src/third_party/luajit/lauxlib.h \
             ../src/third_party/luajitr/lua.h \
@@ -96,8 +99,9 @@ SOURCES +=  ../src/FlyWithLua.cpp \
             ../src/imgui/imgui.cpp \
             ../src/imgui/imgui_demo.cpp \
             ../src/imgui/imgui_draw.cpp \
-            ../src/imgui/imgui_widgets.cpp \
             ../src/imgui/imgui_lua_bindings.cpp \
+            ../src/imgui/imgui_widgets.cpp \
+            ../src/imgui/parse_blocks.pl \
             ../src/third_party/iniReader/inireader.cpp \
             ../src/third_party/iniReader/readinifile.cpp \
             ../src/third_party/luajit/lua.hpp \

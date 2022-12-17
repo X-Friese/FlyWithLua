@@ -75,3 +75,5 @@ v2.8.0 Added support for X-Plane 12, support for x86_64 and arm64 for Mac, inita
 v2.8.1 Updated SaveInitialAssignments to match XP 12.00. Added Fmod support for Master bus.
 
 v2.8.2 Fix set_axis_assignment to allow mixed case. Thanks Cedrik Lussier
+
+v2.8.3 Increased number of Normal Imgui functions supported for Imgui 1.85.
