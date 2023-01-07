@@ -5661,7 +5661,9 @@ static int LuaPlaySound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourcePlay(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5682,7 +5684,9 @@ static int LuaStopSound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourceStop(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5703,7 +5707,9 @@ static int LuaRewindSound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourceRewind(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5724,7 +5730,9 @@ static int LuaPauseSound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourcePause(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5751,6 +5759,7 @@ static int LuaLetSoundLoop(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     bool LoopOrNot;
     LoopOrNot = static_cast<bool>(lua_toboolean(L, 2));
     if (LoopOrNot)
@@ -5762,6 +5771,7 @@ static int LuaLetSoundLoop(lua_State* L)
         alSourcei(OpenALSounds[SourceNo].source, AL_LOOPING, 0);
         OpenALSounds[SourceNo].loop = false;
     }
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5792,8 +5802,10 @@ static int LuaSetSoundPitch(lua_State* L)
     PitchToSet = static_cast<float>(lua_tonumber(L, 2));
     if (PitchToSet > 0)
     {
+        ALCcontext* old_context = alcGetCurrentContext();
         alSourcef(OpenALSounds[SourceNo].source, AL_PITCH, PitchToSet);
         OpenALSounds[SourceNo].pitch = PitchToSet;
+        if(old_context) { alcMakeContextCurrent(old_context); }
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound pitch must be greater than zero.");
@@ -5829,8 +5841,10 @@ static int LuaSetSoundGain(lua_State* L)
     GainToSet = static_cast<float>(lua_tonumber(L, 2));
     if (GainToSet > 0)
     {
+        ALCcontext* old_context = alcGetCurrentContext();
         alSourcef(OpenALSounds[SourceNo].source, AL_GAIN, GainToSet);
         OpenALSounds[SourceNo].gain = GainToSet;
+        if(old_context) { alcMakeContextCurrent(old_context); }
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound gain must be greater than zero.");
@@ -5842,12 +5856,14 @@ static int LuaSetSoundGain(lua_State* L)
 static int LuaUnloadAllSounds(lua_State* L)
 {
     // release memory for OpenAL buffers
+    ALCcontext* old_context = alcGetCurrentContext();
     for (const OpenALSoundsStructure & sound: OpenALSounds)
     {
         alDeleteSources(1, &sound.source);
         alDeleteBuffers(1, &sound.buffer);
     }
     OpenALSounds.clear();
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5877,6 +5893,7 @@ static int LuaReplaceWAVFile(lua_State* L)
     char FileNameToLoad[NORMALSTRING];
     strncpy(FileNameToLoad, lua_tostring(L, 2), sizeof(FileNameToLoad));
 
+    ALCcontext* old_context = alcGetCurrentContext();
     OpenALSoundsStructure* sound = &OpenALSounds[SourceNo];
 
     // free memory
@@ -5904,6 +5921,7 @@ static int LuaReplaceWAVFile(lua_State* L)
     alSourcefv(sound->source, AL_POSITION, zero);
     alSourcefv(sound->source, AL_VELOCITY, zero);
     CHECK_ERR();
+    if(old_context) { alcMakeContextCurrent(old_context); }
 
     return 0;
 }
@@ -7249,7 +7267,6 @@ PLUGIN_API void XPluginStop(void)
     if (my_context)
     {
         printf("0x%08x: deleting my context %p\n", XPLMGetMyID(), my_context);
-        alcMakeContextCurrent(nullptr);
         alcDestroyContext(my_context);
     }
     if (my_device) alcCloseDevice(my_device);
