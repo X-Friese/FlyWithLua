@@ -157,7 +157,7 @@
  *          [added]   Fmod support for Master bus
  *  v2.8.2  [added]   Fix set_axis_assignment to allow mixed case. Thanks Cedrik Lussier
  *  v2.8.3  [added]   Increased the number of Normal Imgui finctions supported for Imgui 1.85
- *  v2.8.4  [changed] Improved OpenAL initalazation.
+ *  v2.8.4  [changed] Fixed all issues with OpenAL thanks to Camille Bachmann's help.
  *
  *
  *  Markus (Teddii):
@@ -865,12 +865,10 @@ static int ConvertPath(const char * inPath, char * outPath, int outPathMaxLen) {
 // Trying to improve how this is done
 // William Good 01-07-2023
 
-static float init_openal_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*counter*/, void* /*ref*/)
+void init_openal_sound()
 {
 
     CHECK_ERR();
-
-    char buf[2048];
 
     // We have to save the old context and restore it later, so that we don't interfere with X-Plane
     // and other plugins.
@@ -880,7 +878,8 @@ static float init_openal_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*c
     if (nullptr == my_device)
     {
         XPLMDebugString("FlyWithLua Error: Could not open the default OpenAL device.\n");
-        return 0;
+        // return 0;
+        return;
     }
     my_context = alcCreateContext(my_device, nullptr);
     if(nullptr == my_context)
@@ -892,7 +891,8 @@ static float init_openal_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*c
         alcCloseDevice(my_device);
         my_device = nullptr;
         XPLMDebugString("FlyWithLua Error: Could not create a context");
-        return 0;
+        // return 0;
+        return;
     }
 
     alcMakeContextCurrent(my_context);
@@ -927,7 +927,8 @@ static float init_openal_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*c
     // Load a sound file to initalize
     // ALuint loadedBuffer = loadWave("./Resources/sounds/alert/10ft.wav", 1);
 
-    return 0.0f;
+    // return 0.0f;
+    return;
 }
 // ----------------- End of code from example --------------->8------------------
 
@@ -5596,7 +5597,7 @@ static int LuaLoadWAVFile(lua_State* L)
     char FileNameToLoad[NORMALSTRING];
     strncpy(FileNameToLoad, lua_tostring(L, 1), sizeof(FileNameToLoad));
 
-
+    ALCcontext* old_context = alcGetCurrentContext();
     OpenALSounds.emplace_back(); // Make space to store information about the sound.
     OpenALSoundsStructure* sound = &OpenALSounds.back();
 
@@ -5641,6 +5642,7 @@ static int LuaLoadWAVFile(lua_State* L)
 
     // give back to source number
     lua_pushnumber(FWLLua, OpenALSounds.size() - 1);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 1;
 }
 
@@ -7459,8 +7461,9 @@ PLUGIN_API int XPluginEnable(void)
         WeHaveXSB = false;
     }
 
-    // register OpenAL sound initializer
-    XPLMRegisterFlightLoopCallback(init_openal_sound, -1.0f, nullptr);
+    // Initialize OpenAL sound
+    init_openal_sound();
+
 
     // Starting the Lua engine
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
