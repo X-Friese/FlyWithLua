@@ -878,7 +878,6 @@ void init_openal_sound()
     if (nullptr == my_device)
     {
         XPLMDebugString("FlyWithLua Error: Could not open the default OpenAL device.\n");
-        // return 0;
         return;
     }
     my_context = alcCreateContext(my_device, nullptr);
@@ -927,7 +926,6 @@ void init_openal_sound()
     // Load a sound file to initalize
     // ALuint loadedBuffer = loadWave("./Resources/sounds/alert/10ft.wav", 1);
 
-    // return 0.0f;
     return;
 }
 // ----------------- End of code from example --------------->8------------------
