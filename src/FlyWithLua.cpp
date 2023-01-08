@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.8.3 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.8.4 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG+"
 #define PLUGIN_DESCRIPTION "Next Generation Plus Version " PLUGIN_VERSION
@@ -156,6 +156,8 @@
  *  v2.8.1  [added]   Updated SaveInitialAssignments to match XP 12.00
  *          [added]   Fmod support for Master bus
  *  v2.8.2  [added]   Fix set_axis_assignment to allow mixed case. Thanks Cedrik Lussier
+ *  v2.8.3  [added]   Increased the number of Normal Imgui finctions supported for Imgui 1.85
+ *  v2.8.4  [changed] Fixed all issues with OpenAL thanks to Camille Bachmann's help.
  *
  *
  *  Markus (Teddii):
@@ -805,9 +807,8 @@ void load_wave(const char* file_name, OpenALSoundsStructure* sound)
     if (sound->buffer == 0) FAIL("FlyWithLua Error: Could not generate buffer id.\n");
 
     alBufferData(sound->buffer, fmt->bits_per_sample == 16 ?
-                                                        (fmt->num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16)
-                                                                                   :
-                                                        (fmt->num_channels == 2 ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8),
+                     (fmt->num_channels == 2 ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16):
+                     (fmt->num_channels == 2 ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8),
                  data, data_bytes, fmt->sample_rate);
     free(mem);
 }
@@ -824,8 +825,8 @@ void load_wave(const char* file_name, OpenALSoundsStructure* sound)
 // static ALuint			snd_buffer	=0;
 // static float			pitch		= 1.0f;			// Start with 1.0 pitch - no pitch shift.
 
-static ALCdevice * my_dev = nullptr;            // We make our own device and context to play sound through.
-static ALCcontext* my_ctx = nullptr;
+static ALCdevice * my_device = nullptr;            // We make our own device and context to play sound through.
+static ALCcontext* my_context = nullptr;
 
 
 // This is a stupid logging error function...useful for debugging, but not good error checking.
@@ -861,63 +862,71 @@ static int ConvertPath(const char * inPath, char * outPath, int outPathMaxLen) {
 #endif
 
 // Initialization code.
+// Trying to improve how this is done
+// William Good 01-07-2023
 
-static float init_sound(float /*elapsed*/, float /*elapsed_sim*/, int /*counter*/, void* /*ref*/)
+void init_openal_sound()
 {
 
     CHECK_ERR();
 
-    char buf[2048];
-
     // We have to save the old context and restore it later, so that we don't interfere with X-Plane
     // and other plugins.
 
-    ALCcontext* old_ctx = alcGetCurrentContext();
-
-    if (old_ctx == nullptr)
+    ALCcontext* old_context = alcGetCurrentContext();
+    my_device = alcOpenDevice(nullptr);
+    if (nullptr == my_device)
     {
-        printf("0x%08x: I found no OpenAL, I will be the first to init.\n", XPLMGetMyID());
-        my_dev = alcOpenDevice(nullptr);
-        if (my_dev == nullptr)
-        {
-            XPLMDebugString("FlyWithLua Error: Could not open the default OpenAL device.\n");
-            return 0;
-        }
-        my_ctx = alcCreateContext(my_dev, nullptr);
-        if (my_ctx == nullptr)
-        {
-            if (old_ctx)
-                alcMakeContextCurrent(old_ctx);
-            alcCloseDevice(my_dev);
-            my_dev = nullptr;
-            XPLMDebugString("FlyWithLua Error: Could not create a context.\n");
-            return 0;
-        }
-
-        // Make our context current, so that OpenAL commands affect our, um, stuff.
-
-        alcMakeContextCurrent(my_ctx);
-        printf("0x%08x: I created the context %p.\n", XPLMGetMyID(), my_ctx);
-
-        ALCint major_version, minor_version;
-        const char* al_hw = alcGetString(my_dev, ALC_DEVICE_SPECIFIER);
-        const char* al_ex = alcGetString(my_dev, ALC_EXTENSIONS);
-        alcGetIntegerv(nullptr, ALC_MAJOR_VERSION, sizeof(major_version), &major_version);
-        alcGetIntegerv(nullptr, ALC_MINOR_VERSION, sizeof(minor_version), &minor_version);
-
-        printf("OpenAL version   : %d.%d\n", major_version, minor_version);
-        printf("OpenAL hardware  : %s\n", (al_hw ? al_hw : "(none)"));
-        printf("OpenAL extensions: %s\n", (al_ex ? al_ex : "(none)"));
-        CHECK_ERR();
-
-    } else
+        XPLMDebugString("FlyWithLua Error: Could not open the default OpenAL device.\n");
+        return;
+    }
+    my_context = alcCreateContext(my_device, nullptr);
+    if(nullptr == my_context)
     {
-        printf("0x%08x: I found someone else's context %p.\n", XPLMGetMyID(), old_ctx);
+        if(old_context)
+        {
+            alcMakeContextCurrent(old_context);
+        }
+        alcCloseDevice(my_device);
+        my_device = nullptr;
+        XPLMDebugString("FlyWithLua Error: Could not create a context");
+        // return 0;
+        return;
     }
 
-    // skipping some code, as we don't want to load the example sound file
+    alcMakeContextCurrent(my_context);
 
-    return 0.0f;
+    ALfloat	zero[3] = { 0 } ;
+
+    OpenALSounds.emplace_back(); // Make space to store information about the sound.
+    OpenALSoundsStructure* sound = &OpenALSounds.back();
+
+    // Generate 1 source and load a buffer of audio.
+    alGenSources(1, &(sound->source));
+
+    // Create and load buffers
+    // We expect that the OpenALSounds array has already been expanded to accomodate the new sound.
+    alGenBuffers(1, &(sound->buffer));
+
+    // Basic initializtion code to play a sound: specify the buffer the source is playing, as well as some
+    // sound parameters. This doesn't play the sound - it's just one-time initialization.
+    alSourcei(sound->source, AL_BUFFER, sound->buffer);
+    alSourcef(sound->source, AL_PITCH, 1.0f);
+    alSourcef(sound->source, AL_GAIN, 1.0f);
+    alSourcei(sound->source, AL_LOOPING, 0);
+    alSourcefv(sound->source, AL_POSITION, zero);
+    alSourcefv(sound->source, AL_VELOCITY, zero);
+    CHECK_ERR();
+
+    if(old_context)
+    {
+        alcMakeContextCurrent(old_context);
+    }
+
+    // Load a sound file to initalize
+    // ALuint loadedBuffer = loadWave("./Resources/sounds/alert/10ft.wav", 1);
+
+    return;
 }
 // ----------------- End of code from example --------------->8------------------
 
@@ -5586,7 +5595,7 @@ static int LuaLoadWAVFile(lua_State* L)
     char FileNameToLoad[NORMALSTRING];
     strncpy(FileNameToLoad, lua_tostring(L, 1), sizeof(FileNameToLoad));
 
-
+    ALCcontext* old_context = alcGetCurrentContext();
     OpenALSounds.emplace_back(); // Make space to store information about the sound.
     OpenALSoundsStructure* sound = &OpenALSounds.back();
 
@@ -5631,6 +5640,7 @@ static int LuaLoadWAVFile(lua_State* L)
 
     // give back to source number
     lua_pushnumber(FWLLua, OpenALSounds.size() - 1);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 1;
 }
 
@@ -5651,7 +5661,9 @@ static int LuaPlaySound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourcePlay(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5672,7 +5684,9 @@ static int LuaStopSound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourceStop(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5693,7 +5707,9 @@ static int LuaRewindSound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourceRewind(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5714,7 +5730,9 @@ static int LuaPauseSound(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     alSourcePause(OpenALSounds[SourceNo].source);
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5741,6 +5759,7 @@ static int LuaLetSoundLoop(lua_State* L)
         LuaIsRunning = false;
         return 0;
     }
+    ALCcontext* old_context = alcGetCurrentContext();
     bool LoopOrNot;
     LoopOrNot = static_cast<bool>(lua_toboolean(L, 2));
     if (LoopOrNot)
@@ -5752,6 +5771,7 @@ static int LuaLetSoundLoop(lua_State* L)
         alSourcei(OpenALSounds[SourceNo].source, AL_LOOPING, 0);
         OpenALSounds[SourceNo].loop = false;
     }
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5782,8 +5802,10 @@ static int LuaSetSoundPitch(lua_State* L)
     PitchToSet = static_cast<float>(lua_tonumber(L, 2));
     if (PitchToSet > 0)
     {
+        ALCcontext* old_context = alcGetCurrentContext();
         alSourcef(OpenALSounds[SourceNo].source, AL_PITCH, PitchToSet);
         OpenALSounds[SourceNo].pitch = PitchToSet;
+        if(old_context) { alcMakeContextCurrent(old_context); }
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound pitch must be greater than zero.");
@@ -5819,8 +5841,10 @@ static int LuaSetSoundGain(lua_State* L)
     GainToSet = static_cast<float>(lua_tonumber(L, 2));
     if (GainToSet > 0)
     {
+        ALCcontext* old_context = alcGetCurrentContext();
         alSourcef(OpenALSounds[SourceNo].source, AL_GAIN, GainToSet);
         OpenALSounds[SourceNo].gain = GainToSet;
+        if(old_context) { alcMakeContextCurrent(old_context); }
     } else
     {
         logMsg(logToDevCon, "FlyWithLua Error: Float value to set the sound gain must be greater than zero.");
@@ -5832,12 +5856,14 @@ static int LuaSetSoundGain(lua_State* L)
 static int LuaUnloadAllSounds(lua_State* L)
 {
     // release memory for OpenAL buffers
+    ALCcontext* old_context = alcGetCurrentContext();
     for (const OpenALSoundsStructure & sound: OpenALSounds)
     {
         alDeleteSources(1, &sound.source);
         alDeleteBuffers(1, &sound.buffer);
     }
     OpenALSounds.clear();
+    if(old_context) { alcMakeContextCurrent(old_context); }
     return 0;
 }
 
@@ -5867,6 +5893,7 @@ static int LuaReplaceWAVFile(lua_State* L)
     char FileNameToLoad[NORMALSTRING];
     strncpy(FileNameToLoad, lua_tostring(L, 2), sizeof(FileNameToLoad));
 
+    ALCcontext* old_context = alcGetCurrentContext();
     OpenALSoundsStructure* sound = &OpenALSounds[SourceNo];
 
     // free memory
@@ -5894,6 +5921,7 @@ static int LuaReplaceWAVFile(lua_State* L)
     alSourcefv(sound->source, AL_POSITION, zero);
     alSourcefv(sound->source, AL_VELOCITY, zero);
     CHECK_ERR();
+    if(old_context) { alcMakeContextCurrent(old_context); }
 
     return 0;
 }
@@ -7236,13 +7264,12 @@ PLUGIN_API void XPluginStop(void)
     hid_exit();
 
     // cleanup sound system
-    if (my_ctx)
+    if (my_context)
     {
-        printf("0x%08x: deleting my context %p\n", XPLMGetMyID(), my_ctx);
-        alcMakeContextCurrent(nullptr);
-        alcDestroyContext(my_ctx);
+        printf("0x%08x: deleting my context %p\n", XPLMGetMyID(), my_context);
+        alcDestroyContext(my_context);
     }
-    if (my_dev) alcCloseDevice(my_dev);
+    if (my_device) alcCloseDevice(my_device);
 }
 
 
@@ -7432,8 +7459,9 @@ PLUGIN_API int XPluginEnable(void)
         WeHaveXSB = false;
     }
 
-    // register sound initializer
-    XPLMRegisterFlightLoopCallback(init_sound, -1.0f, nullptr);
+    // Initialize OpenAL sound
+    init_openal_sound();
+
 
     // Starting the Lua engine
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
