@@ -79,3 +79,5 @@ v2.8.2 Fix set_axis_assignment to allow mixed case. Thanks Cedrik Lussier
 v2.8.3 Increased number of Normal Imgui functions supported for Imgui 1.85.
 
 v2.8.4 Fixed all issues with OpenAL thanks to Camille Bachmann's help.
+
+v2.8.5 Made sure Fmod's memory foot print is removed when we reload scripts, disable or stop FlyWithLua.

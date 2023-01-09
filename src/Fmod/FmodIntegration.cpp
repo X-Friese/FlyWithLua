@@ -1135,8 +1135,19 @@ int fmod_data_update()
 
 
 void deinitFmodSupport() {
+    char buf3[200];
+    sprintf(buf3, "FlyWithLua Info:  FmodSounds.size =  %d\n", int(FmodSounds.size()));
+    XPLMDebugString(buf3);
+    if (int(FmodSounds.size()) > 0) {
+        FMOD_RESULT result;
+        for (int i = 1; i <= int(FmodSounds.size()); ++i) {
+            result = FMOD_Sound_Release(fmod_sound_pointer[i]);
+        }
+    }
     FmodSounds.clear();
     fmod_sound_index = 0;
+    sprintf(buf3, "FlyWithLua Info: Should be 0 now FmodSounds.size =  %d\n", int(FmodSounds.size()));
+    XPLMDebugString(buf3);
 }
 
 } // end namespace fmodint
