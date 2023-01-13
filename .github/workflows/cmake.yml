@@ -112,8 +112,6 @@ jobs:
         run: lipo -create FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl -o FlyWithLua/mac_x64/FlyWithLua.xpl
       - name: Remove mac_x64.xpl & mac_arm.xpl    
         run: rm FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl
-      - name: Remove win.xpl
-        run: rm FlyWithLua/lin_x64/win.xpl  
       - name: Did we remove mac_x64.xpl & mac_arm.xpl & win.xpl    
         run: ls -R -l
       - uses: actions/upload-artifact@v3
