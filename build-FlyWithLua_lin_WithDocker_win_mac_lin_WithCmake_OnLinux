@@ -4,7 +4,10 @@
 # cd $FlyWithLua_REPO
 # ./build-FlyWithLua_lin_WithDocker_win_mac_lin_WithCmake_OnLinux
 
-rm -r FlyWithLua/64/*.xpl
+rm -r FlyWithLua/win_x64/*.xpl
+rm -r FlyWithLua/lin_x64/*.xpl
+rm -r FlyWithLua/mac_x64/*.xpl
+
 rm -r src/build-lin/*
 
 # Windows build
@@ -12,21 +15,21 @@ rm -r src/build-lin/*
  rm -r build/*
  cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=../src/Toolchain-mingw-w64-x86-64.cmake
  cmake --build ./build -v
- cp ./build/win.xpl ./FlyWithLua/64/
+ cp ./build/win.xpl ./FlyWithLua/win_x64/FlyWithLua.xpl
 
 
 # Linux build
 
-# building a version for Ubuntu 18.04
+# building a version for Ubuntu 20.04
 # It does not have the debugging info the other build has
 
 (cd docker; make)
-cp src/build-lin/lin.xpl FlyWithLua/64/older_distro_lin.xpl
+cp src/build-lin/lin.xpl FlyWithLua/lin_x64/FlyWithLua.xpl
 
-rm -r build/*
-cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo
-cmake --build ./build -v
-cp ./build/lin.xpl ./FlyWithLua/64/
+# rm -r build/*
+# cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+# cmake --build ./build -v
+# cp ./build/lin.xpl ./FlyWithLua/64/
 
 
 # Mac build
@@ -41,7 +44,7 @@ cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FI
 cmake --build ./build -v
 cp ./build/mac.xpl ./mac_arm64.xpl
 
-lipo -create ./mac_x86_64.xpl ./mac_arm64.xpl -o ./FlyWithLua/64/mac.xpl
+lipo -create ./mac_x86_64.xpl ./mac_arm64.xpl -o ./FlyWithLua/mac_x64/FlyWithLua.xpl
 rm mac_x86_64.xpl
 rm mac_arm64.xpl
 
