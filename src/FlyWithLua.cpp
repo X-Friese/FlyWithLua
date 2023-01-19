@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.8.4 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION "2.8.5 build " __DATE__ " " __TIME__
 
 #define PLUGIN_NAME "FlyWithLua NG+"
 #define PLUGIN_DESCRIPTION "Next Generation Plus Version " PLUGIN_VERSION
@@ -158,6 +158,7 @@
  *  v2.8.2  [added]   Fix set_axis_assignment to allow mixed case. Thanks Cedrik Lussier
  *  v2.8.3  [added]   Increased the number of Normal Imgui finctions supported for Imgui 1.85
  *  v2.8.4  [changed] Fixed all issues with OpenAL thanks to Camille Bachmann's help.
+ *  v2.8.5  [changed] Made sure Fmod's memory foot print is removed when we reload scripts, disable or stop FlyWithLua.
  *
  *
  *  Markus (Teddii):
@@ -7263,6 +7264,9 @@ PLUGIN_API void XPluginStop(void)
     // clean HID device connections and free memory
     hid_exit();
 
+    // release memory for Fmod buffers
+    fmodint::deinitFmodSupport();
+
     // cleanup sound system
     if (my_context)
     {
@@ -7330,6 +7334,9 @@ PLUGIN_API void XPluginDisable(void)
     // clean up HID connections
     CloseAllOpenHIDDevices();
     hid_exit();
+
+    // release memory for Fmod buffers
+    fmodint::deinitFmodSupport();
 
     // unsubscribe messages from/to XSquawkBox
     XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_UNSUBSCRIBE, (void*) XSB_TEXT);

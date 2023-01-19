@@ -5,11 +5,11 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  FWL_VERSION: 2.8.4
+  FWL_VERSION: 2.8.5
 
 jobs:
   build-lin:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - name: Install other dependancies
@@ -101,17 +101,19 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: binaries
-          path: FlyWithLua/64
+          path: FlyWithLua/lin_x64
       - name: Test artifact download     
         run: ls -R -l
+      - name: Rename lin.xpl to FlyWithLua.xpl
+        run: mv FlyWithLua/lin_x64/lin.xpl FlyWithLua/lin_x64/FlyWithLua.xpl
+      - name: Rename win.xpl to FlyWithLua/win_x64/FlyWithLua.xpl
+        run: mv FlyWithLua/lin_x64/win.xpl FlyWithLua/win_x64/FlyWithLua.xpl  
       - name: Create Fat Mac
-        run: lipo -create FlyWithLua/64/mac_x64.xpl FlyWithLua/64/mac_arm.xpl -o FlyWithLua/64/mac.xpl
-      - name: Test if lipo -create mac_x64.xpl mac_arm.xpl -o mac.xpl worked    
-        run: ls -R -l
+        run: lipo -create FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl -o FlyWithLua/mac_x64/FlyWithLua.xpl
       - name: Remove mac_x64.xpl & mac_arm.xpl    
-        run: rm FlyWithLua/64/mac_x64.xpl FlyWithLua/64/mac_arm.xpl
-      - name: Did we remove mac_x64.xpl & mac_arm.xpl    
-        run: ls -R -l        
+        run: rm FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl
+      - name: Did we remove mac_x64.xpl & mac_arm.xpl & win.xpl    
+        run: ls -R -l
       - uses: actions/upload-artifact@v3
         with:
           name: FlyWithLua_NG+_v${{env.FWL_VERSION}}

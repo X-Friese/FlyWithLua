@@ -214,7 +214,7 @@ elseif (APPLE)
     target_link_libraries(FlyWithLua "-exported_symbols_list ${CMAKE_SOURCE_DIR}/exports.sym_mac")
 elseif (UNIX)
     # Specify additional runtime search laths for dynamically-linked libraries.
-    target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/64)
+    target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/lin_x64)
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/Modules)
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/dlls/64)
     # Restrict set of symbols exported from the plugin. This reduces chances of
