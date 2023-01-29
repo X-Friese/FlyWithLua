@@ -226,7 +226,7 @@ endif ()
 
 set_target_properties(FlyWithLua PROPERTIES PREFIX "")
 if (WIN32)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "win")
+    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "FlyWithLua")
 elseif (APPLE)
     set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "mac")
 elseif (UNIX)

@@ -62,7 +62,7 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 
     ```
     cmake --build .\build
-    cp .\build\win.xpl .\FlyWithLua\64\
+    cp .\build\FlyWithLua.xpl .\FlyWithLua\win_x64\
     ```
 
 ### On Ubuntu:
