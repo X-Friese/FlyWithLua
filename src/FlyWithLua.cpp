@@ -2,7 +2,9 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION "2.8.5 build " __DATE__ " " __TIME__
+#define PLUGIN_VERSION_NO "2.8.5"
+#define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
+#define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
 #define PLUGIN_NAME "FlyWithLua NG+"
 #define PLUGIN_DESCRIPTION "Next Generation Plus Version " PLUGIN_VERSION
@@ -6710,6 +6712,12 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "SDK_VERSION");
     lua_pushnumber(FWLLua, HostID);
     lua_setglobal(FWLLua, "XPLANE_HOSTID");
+	lua_pushstring(FWLLua, PLUGIN_VERSION);
+	lua_setglobal(FWLLua, "PLUGIN_VERSION");
+	lua_pushstring(FWLLua, PLUGIN_VERSION_NO);
+	lua_setglobal(FWLLua, "PLUGIN_VERSION_NO");
+	lua_pushstring(FWLLua, PLUGIN_VERSION_BUILD);
+	lua_setglobal(FWLLua, "PLUGIN_VERSION_BUILD");
     char dirSep[2];
     strcpy(dirSep, XPLMGetDirectorySeparator()); // correct for each OS
     lua_pushstring(FWLLua, dirSep);
