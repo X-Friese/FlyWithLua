@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.5"
+#define PLUGIN_VERSION_NO "2.8.6"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -161,6 +161,9 @@
  *  v2.8.3  [added]   Increased the number of Normal Imgui finctions supported for Imgui 1.85
  *  v2.8.4  [changed] Fixed all issues with OpenAL thanks to Camille Bachmann's help.
  *  v2.8.5  [changed] Made sure Fmod's memory foot print is removed when we reload scripts, disable or stop FlyWithLua.
+ *  v2.8.6  [added]   Add Global PLUGIN_VERSION predefined variables PLUGIN_VERSION, PLUGIN_VERSION_NO, PLUGIN_VERSION_BUILD
+ *                    Thanks osprey-12
+
  *
  *
  *  Markus (Teddii):
