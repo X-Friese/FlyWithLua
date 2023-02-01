@@ -62,7 +62,8 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 
     ```
     cmake --build .\build
-    cp .\build\win.xpl .\FlyWithLua\64\
+    mkdir .\FlyWithLua\win_x64
+    copy .\build\win.xpl .\FlyWithLua\win_x64\FlyWithLua.xpl
     ```
 
 ### On Ubuntu:
@@ -86,8 +87,8 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 
    ```
    cmake --build ./build
-   mkdir ./FlyWithLua/64
-   cp ./build/lin.xpl ./FlyWithLua/64/
+   mkdir ./FlyWithLua/lin_x64
+   cp ./build/lin.xpl ./FlyWithLua/lin_x64/FlyWithLua.xpl
    ```
 
 ### On OS X:
@@ -106,8 +107,8 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 
    ```
    cmake --build ./build
-   mkdir ./FlyWithLua/64
-   cp ./build/mac.xpl ./FlyWithLua/64/
+   mkdir ./FlyWithLua/mac_x64
+   cp ./build/mac.xpl ./FlyWithLua/mac_x64/FlyWithLua.xpl
    ```
 
 ### Additional tips
