@@ -121,7 +121,9 @@ void FloatingWindow::setPosition(int posx, int posy) {
         int winLeft, winTop, winRight, winBot;
         XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
-        XPLMSetWindowGeometry(window, winLeft + posx, winTop - posy, winLeft + posx + width, winTop - posy - height);
+        // XPLMSetWindowGeometry(window, winLeft + posx, winTop - posy, winLeft + posx + width, winTop - posy - height);
+        // This is not working corectly and think I should be using bottom
+        XPLMSetWindowGeometry(window, winLeft + posx, winBot + posy + height, winLeft + posx + width, winBot + posy);
     }
 }
 
