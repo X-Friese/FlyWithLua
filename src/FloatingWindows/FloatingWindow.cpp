@@ -121,8 +121,6 @@ void FloatingWindow::setPosition(int posx, int posy) {
         int winLeft, winTop, winRight, winBot;
         XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
-        // XPLMSetWindowGeometry(window, winLeft + posx, winTop - posy, winLeft + posx + width, winTop - posy - height);
-        // This is not working corectly and think I should be using bottom
         XPLMSetWindowGeometry(window, winLeft + posx, winBot + posy + height, winLeft + posx + width, winBot + posy);
     }
 }
@@ -220,7 +218,7 @@ void FloatingWindow::moveFromOrToVR() {
         int winLeft, winTop, winRight, winBot;
         XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
-        XPLMSetWindowGeometry(window, winLeft + 100, winTop - 100, winLeft + 100 + width, winTop - 100 - height);
+        XPLMSetWindowGeometry(window, winLeft + 100, winBot + 100 + height, winLeft + 100 + width, winBot + 100);
     }
 }
 
