@@ -164,6 +164,7 @@
  *  v2.8.6  [added]   Add Global PLUGIN_VERSION predefined variables PLUGIN_VERSION, PLUGIN_VERSION_NO, PLUGIN_VERSION_BUILD
  *                    Thanks osprey-12
  *  v2.8.7  [changed] Fixed issue with float_wnd_set_position not puting window in correct position.
+ *                    Fixed issue to make sure float_wnd window is in correct position after leaving VR going into 2d.
  *
  *
  *
