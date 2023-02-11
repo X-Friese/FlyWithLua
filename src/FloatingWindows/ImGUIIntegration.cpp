@@ -134,7 +134,17 @@ void ImGUIWindow::buildGUI() {
     ImGui::SetNextWindowSize(ImVec2(win_width, win_height), ImGuiCond_Always);
 
     // and construct the window
-    ImGui::Begin("FlyWithLua", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    // This is the original Begin that does not have horizontal scrollbars.
+    // I am keeping it here to make sure adding them does not cause and issuew
+    // ImGui::Begin("FlyWithLua", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+    // and construct the window with horizontal scrollbar
+    // Still not sure if this will cause any issues with tables or collums.
+    ImGuiWindowFlags fwl_imgui_wnd_flags = ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_HorizontalScrollbar;
+    ImGui::Begin("FlyWithLua", nullptr, fwl_imgui_wnd_flags);
     if (doBuild) {
         doBuild(*this);
     }

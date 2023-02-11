@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.7"
+#define PLUGIN_VERSION_NO "2.8.8"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -165,6 +165,7 @@
  *                    Thanks osprey-12
  *  v2.8.7  [changed] Fixed issue with float_wnd_set_position not puting window in correct position.
  *                    Fixed issue to make sure float_wnd window is in correct position after leaving VR going into 2d.
+ *  v2.8.8  [added]   Added support for the horizontal scrollbar in Imgui windows.
  *
  *
  *
