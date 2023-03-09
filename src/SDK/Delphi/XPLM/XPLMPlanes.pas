@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMPlanes;
@@ -11,7 +11,7 @@ INTERFACE
    
    *Note*: unlike almost all other APIs in the SDK, aircraft paths are _full_
     file system paths for historical reasons. You'll need to prefix all
-    relative paths with the X-Plane path as accessed via XPLMGetSystemPath.   
+    relative paths with the X-Plane path as accessed via XPLMGetSystemPath.
 }
 
 USES
@@ -26,19 +26,19 @@ USES
     
     This routine changes the user's aircraft.  Note that this will reinitialize
     the user to be on the nearest airport's first runway.  Pass in a full path
-    (hard drive and everything including the .acf extension) to the .acf file. 
+    (hard drive and everything including the .acf extension) to the .acf file.
    }
    PROCEDURE XPLMSetUsersAircraft(
-                                        inAircraftPath      : XPLMString);    
+                                        inAircraftPath      : XPLMString);
     cdecl; external XPLM_DLL;
    {
     XPLMPlaceUserAtAirport
     
     This routine places the user at a given airport.  Specify the airport by
-    its X-Plane airport ID (e.g. 'KBOS').                                      
+    its X-Plane airport ID (e.g. 'KBOS').
    }
    PROCEDURE XPLMPlaceUserAtAirport(
-                                        inAirportCode       : XPLMString);    
+                                        inAirportCode       : XPLMString);
     cdecl; external XPLM_DLL;
 {$IFDEF XPLM300}
    {
@@ -50,14 +50,14 @@ USES
     As with in-air starts initiated from the X-Plane user interface, the
     aircraft will always start with its engines running, regardless of the
     user's preferences (i.e., regardless of what the dataref
-    `sim/operation/prefs/startup_running` says).                               
+    `sim/operation/prefs/startup_running` says).
    }
    PROCEDURE XPLMPlaceUserAtLocation(
-                                        latitudeDegrees     : Real;    
-                                        longitudeDegrees    : Real;    
-                                        elevationMetersMSL  : Single;    
-                                        headingDegreesTrue  : Single;    
-                                        speedMetersPerSecond: Single);    
+                                        latitudeDegrees     : Real;
+                                        longitudeDegrees    : Real;
+                                        elevationMetersMSL  : Single;
+                                        headingDegreesTrue  : Single;
+                                        speedMetersPerSecond: Single);
     cdecl; external XPLM_DLL;
 {$ENDIF XPLM300}
 {___________________________________________________________________________
@@ -81,8 +81,8 @@ CONST
     calculates what the actual controls look like based on the .acf file for
     that airplane.  Note for the yoke inputs, this is what the pilot of the
     plane has commanded (post artificial stability system if there were one)
-    and affects aelerons, rudder, etc.  It is not necessarily related to the
-    actual position of the plane!                                              
+    and affects ailerons, rudder, etc.  It is not necessarily related to the
+    actual position of the plane's surfaces!
    }
 TYPE
    XPLMPlaneDrawState_t = RECORD
@@ -118,12 +118,12 @@ TYPE
     as well as the number of aircraft that are currently active.  These numbers
     count the user's aircraft.  It can also return the plugin that is currently
     controlling aircraft.  In X-Plane 7, this routine reflects the number of
-    aircraft the user has enabled in the rendering options window.             
+    aircraft the user has enabled in the rendering options window.
    }
    PROCEDURE XPLMCountAircraft(
-                                        outTotalAircraft    : PInteger;    
-                                        outActiveAircraft   : PInteger;    
-                                        outController       : PXPLMPluginID);    
+                                        outTotalAircraft    : PInteger;
+                                        outActiveAircraft   : PInteger;
+                                        outController       : PXPLMPluginID);
     cdecl; external XPLM_DLL;
    {
     XPLMGetNthAircraftModel
@@ -131,19 +131,19 @@ TYPE
     This function returns the aircraft model for the Nth aircraft.  Indices are
     zero based, with zero being the user's aircraft.  The file name should be
     at least 256 chars in length; the path should be at least 512 chars in
-    length.                                                                    
+    length.
    }
    PROCEDURE XPLMGetNthAircraftModel(
-                                        inIndex             : Integer;    
-                                        outFileName         : XPLMString;    
-                                        outPath             : XPLMString);    
+                                        inIndex             : Integer;
+                                        outFileName         : XPLMString;
+                                        outPath             : XPLMString);
     cdecl; external XPLM_DLL;
 {___________________________________________________________________________
  * EXCLUSIVE AIRCRAFT ACCESS
  ___________________________________________________________________________}
 {
    The following routines require exclusive access to the airplane APIs. Only
-   one plugin may have this access at a time.                                 
+   one plugin may have this access at a time.
 }
 
 
@@ -152,11 +152,11 @@ TYPE
     
     Your airplanes available callback is called when another plugin gives up
     access to the multiplayer planes.  Use this to wait for access to
-    multiplayer.                                                               
+    multiplayer.
    }
 TYPE
      XPLMPlanesAvailable_f = PROCEDURE(
-                                    inRefcon            : pointer); cdecl;   
+                                    inRefcon            : pointer); cdecl;
 
    {
     XPLMAcquirePlanes
@@ -172,19 +172,19 @@ TYPE
     
     If you pass in a callback and do not receive access to the planes your
     callback will be called when the airplanes are available. If you do receive
-    airplane access, your callback will not be called.                         
+    airplane access, your callback will not be called.
    }
    FUNCTION XPLMAcquirePlanes(
                                         inAircraft          : PXPLMString;    { Can be nil }
-                                        inCallback          : XPLMPlanesAvailable_f;    
-                                        inRefcon            : pointer) : Integer;    
+                                        inCallback          : XPLMPlanesAvailable_f;
+                                        inRefcon            : pointer) : Integer;
     cdecl; external XPLM_DLL;
 
    {
     XPLMReleasePlanes
     
     Call this function to release access to the planes.  Note that if you are
-    disabled, access to planes is released for you and you must reacquire it.  
+    disabled, access to planes is released for you and you must reacquire it.
    }
    PROCEDURE XPLMReleasePlanes;
     cdecl; external XPLM_DLL;
@@ -194,10 +194,10 @@ TYPE
     
     This routine sets the number of active planes.  If you pass in a number
     higher than the total number of planes availables, only the total number of
-    planes available is actually used.                                         
+    planes available is actually used.
    }
    PROCEDURE XPLMSetActiveAircraftCount(
-                                        inCount             : Integer);    
+                                        inCount             : Integer);
     cdecl; external XPLM_DLL;
 
    {
@@ -206,28 +206,28 @@ TYPE
     This routine loads an aircraft model.  It may only be called if you have
     exclusive access to the airplane APIs.  Pass in the path of the model with
     the .acf extension.  The index is zero based, but you may not pass in 0
-    (use XPLMSetUsersAircraft to load the user's aircracft).                   
+    (use XPLMSetUsersAircraft to load the user's aircracft).
    }
    PROCEDURE XPLMSetAircraftModel(
-                                        inIndex             : Integer;    
-                                        inAircraftPath      : XPLMString);    
+                                        inIndex             : Integer;
+                                        inAircraftPath      : XPLMString);
     cdecl; external XPLM_DLL;
 
    {
     XPLMDisableAIForPlane
     
     This routine turns off X-Plane's AI for a given plane.  The plane will
-    continue to draw and be a real plane in X-Plane, but will not move itself. 
+    continue to draw and be a real plane in X-Plane, but will not move itself.
    }
    PROCEDURE XPLMDisableAIForPlane(
-                                        inPlaneIndex        : Integer);    
+                                        inPlaneIndex        : Integer);
     cdecl; external XPLM_DLL;
 
 {$IFDEF XPLM_DEPRECATED}
    {
     XPLMDrawAircraft
     
-    WARNING: Aircraft drawing via this API is deprecated and will not work in
+    WARNING: Aircraft drawing via this API is deprecated and WILL NOT WORK in
     future versions of X-Plane.  Use XPLMInstance for 3-d drawing of custom
     aircraft models.
     
@@ -235,18 +235,18 @@ TYPE
     callback.  Pass in the position of the plane in OpenGL local coordinates
     and the orientation of the plane.  A 1 for full drawing indicates that the
     whole plane must be drawn; a 0 indicates you only need the nav lights
-    drawn. (This saves rendering time when planes are far away.)               
+    drawn. (This saves rendering time when planes are far away.)
    }
    PROCEDURE XPLMDrawAircraft(
-                                        inPlaneIndex        : Integer;    
-                                        inX                 : Single;    
-                                        inY                 : Single;    
-                                        inZ                 : Single;    
-                                        inPitch             : Single;    
-                                        inRoll              : Single;    
-                                        inYaw               : Single;    
-                                        inFullDraw          : Integer;    
-                                        inDrawStateInfo     : PXPLMPlaneDrawState_t);    
+                                        inPlaneIndex        : Integer;
+                                        inX                 : Single;
+                                        inY                 : Single;
+                                        inZ                 : Single;
+                                        inPitch             : Single;
+                                        inRoll              : Single;
+                                        inYaw               : Single;
+                                        inFullDraw          : Integer;
+                                        inDrawStateInfo     : PXPLMPlaneDrawState_t);
     cdecl; external XPLM_DLL;
 {$ENDIF XPLM_DEPRECATED}
 
@@ -266,7 +266,7 @@ TYPE
     WARNING: this routine does not necessarily place the airplane at the
     airport; use XPLMSetUsersAircraft to be compatible.  This routine is
     provided to do special experimentation with flight models without resetting
-    flight.                                                                    
+    flight.
    }
    PROCEDURE XPLMReinitUsersPlane;
     cdecl; external XPLM_DLL;

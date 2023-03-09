@@ -2,8 +2,8 @@
 #define _XPWidgetUtils_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -25,12 +25,13 @@
  *    behavior. Remember that the last function you add has highest priority.
  *    You can use this to change or augment the behavior of an existing
  *    finished widget.
+ * 
  * 2. You can call a widget function from inside your own widget function.
  *    This allows you to include useful behaviors in custom-built widgets. A
  *    number of the standard widgets get their behavior from this library. To
  *    do this, call the behavior function from your function first. If it
  *    returns 1, that means it handled the event and you don't need to; simply
- *    return 1.                                                               
+ *    return 1.
  *
  */
 
@@ -72,7 +73,7 @@ extern "C" {
 /*
  * XPWidgetCreate_t
  * 
- * This structure contains all of the parameters needed to create a wiget. It
+ * This structure contains all of the parameters needed to create a widget. It
  * is used with XPUCreateWidgets to create widgets in bulk from an array. All
  * parameters correspond to those of XPCreateWidget except for the container
  * index.
@@ -84,7 +85,7 @@ extern "C" {
  * 
  * If the container index is NO_PARENT, the parent widget is specified as
  * NULL. If the container index is PARAM_PARENT, the widget passed into
- * XPUCreateWidgets is used.                                                  
+ * XPUCreateWidgets is used.
  *
  */
 typedef struct {
@@ -94,9 +95,9 @@ typedef struct {
      int                       bottom;
      int                       visible;
      const char *              descriptor;
-     /* Whether ethis widget is a root wiget                                       */
+    /* Whether this widget is a root widget                                       */
      int                       isRoot;
-     /* The index of the widget to contain within, or a constant                   */
+    /* The index of the widget to be contained within, or a constant              */
      int                       containerIndex;
      XPWidgetClass             widgetClass;
 } XPWidgetCreate_t;
@@ -121,26 +122,26 @@ typedef struct {
  * 
  * You can also pass in a widget ID that will be used when the widget's parent
  * is listed as PARAM_PARENT; this allows you to embed widgets created with
- * XPUCreateWidgets in a widget created previously.                           
+ * XPUCreateWidgets in a widget created previously.
  *
  */
 WIDGET_API void       XPUCreateWidgets(
-                         const XPWidgetCreate_t * inWidgetDefs,    
-                         int                  inCount,    
-                         XPWidgetID           inParamParent,    
-                         XPWidgetID *         ioWidgets);    
+                         const XPWidgetCreate_t * inWidgetDefs,
+                         int                  inCount,
+                         XPWidgetID           inParamParent,
+                         XPWidgetID *         ioWidgets);
 
 /*
  * XPUMoveWidgetBy
  * 
- * Simply moves a widget by an amount, +x = right, +y=up, without resizing the
- * widget.                                                                    
+ * Simply moves a widget by an amount, +x = right, +y = up, without resizing
+ * the widget.
  *
  */
 WIDGET_API void       XPUMoveWidgetBy(
-                         XPWidgetID           inWidget,    
-                         int                  inDeltaX,    
-                         int                  inDeltaY);    
+                         XPWidgetID           inWidget,
+                         int                  inDeltaX,
+                         int                  inDeltaY);
 
 /***************************************************************************
  * LAYOUT MANAGERS
@@ -148,7 +149,7 @@ WIDGET_API void       XPUMoveWidgetBy(
 /*
  * The layout managers are widget behavior functions for handling where
  * widgets move. Layout managers can be called from a widget function or
- * attached to a widget later.                                                
+ * attached to a widget later.
  *
  */
 
@@ -158,14 +159,14 @@ WIDGET_API void       XPUMoveWidgetBy(
  * 
  * This function causes the widget to maintain its children in fixed position
  * relative to itself as it is resized. Use this on the top level 'window'
- * widget for your window.                                                    
+ * widget for your window.
  *
  */
 WIDGET_API int        XPUFixedLayout(
-                         XPWidgetMessage      inMessage,    
-                         XPWidgetID           inWidget,    
-                         intptr_t             inParam1,    
-                         intptr_t             inParam2);    
+                         XPWidgetMessage      inMessage,
+                         XPWidgetID           inWidget,
+                         intptr_t             inParam1,
+                         intptr_t             inParam2);
 
 /***************************************************************************
  * WIDGET PROC BEHAVIORS
@@ -173,7 +174,7 @@ WIDGET_API int        XPUFixedLayout(
 /*
  * These widget behavior functions add other useful behaviors to widgets.
  * These functions cannot be attached to a widget; they must be called from
- * your widget function.                                                      
+ * your widget function.
  *
  */
 
@@ -183,47 +184,47 @@ WIDGET_API int        XPUFixedLayout(
  * 
  * This causes the widget to bring its window to the foreground if it is not
  * already. inEatClick specifies whether clicks in the background should be
- * consumed by bringin the window to the foreground.                          
+ * consumed by bringing the window to the foreground.
  *
  */
 WIDGET_API int        XPUSelectIfNeeded(
-                         XPWidgetMessage      inMessage,    
-                         XPWidgetID           inWidget,    
-                         intptr_t             inParam1,    
-                         intptr_t             inParam2,    
-                         int                  inEatClick);    
+                         XPWidgetMessage      inMessage,
+                         XPWidgetID           inWidget,
+                         intptr_t             inParam1,
+                         intptr_t             inParam2,
+                         int                  inEatClick);
 
 /*
  * XPUDefocusKeyboard
  * 
- * This causes a click in the widget to send keyboard focus back to X-Plane.
- * This stops editing of any text fields, etc.                                
+ * This causes the widget to send keyboard focus back to X-Plane. This stops
+ * editing of any text fields, etc.
  *
  */
 WIDGET_API int        XPUDefocusKeyboard(
-                         XPWidgetMessage      inMessage,    
-                         XPWidgetID           inWidget,    
-                         intptr_t             inParam1,    
-                         intptr_t             inParam2,    
-                         int                  inEatClick);    
+                         XPWidgetMessage      inMessage,
+                         XPWidgetID           inWidget,
+                         intptr_t             inParam1,
+                         intptr_t             inParam2,
+                         int                  inEatClick);
 
 /*
  * XPUDragWidget
  * 
  * XPUDragWidget drags the widget in response to mouse clicks. Pass in not
  * only the event, but the global coordinates of the drag region, which might
- * be a sub-region of your widget (for example, a title bar).                 
+ * be a sub-region of your widget (for example, a title bar).
  *
  */
 WIDGET_API int        XPUDragWidget(
-                         XPWidgetMessage      inMessage,    
-                         XPWidgetID           inWidget,    
-                         intptr_t             inParam1,    
-                         intptr_t             inParam2,    
-                         int                  inLeft,    
-                         int                  inTop,    
-                         int                  inRight,    
-                         int                  inBottom);    
+                         XPWidgetMessage      inMessage,
+                         XPWidgetID           inWidget,
+                         intptr_t             inParam1,
+                         intptr_t             inParam2,
+                         int                  inLeft,
+                         int                  inTop,
+                         int                  inRight,
+                         int                  inBottom);
 
 #ifdef __cplusplus
 }

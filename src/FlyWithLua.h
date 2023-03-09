@@ -13,6 +13,8 @@
 #include "fmod_errors.h"
 #include "FmodIntegration.h"
 
+#include "XPLMSound.h"
+
 //Teddii: Enum fuer "logMsg"
 enum ELogType
 {

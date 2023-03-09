@@ -24,6 +24,7 @@ extern lua_State* lState;
 namespace fmodint {
 
 int fmod_initialization();
+int fmod_uninitialize();
 int fmod_data_update();
 void deinitFmodSupport();
 void RegisterFmodFunctionsToLua(lua_State* L);

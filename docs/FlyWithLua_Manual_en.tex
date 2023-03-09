@@ -876,16 +876,16 @@ Write a string into the XSquawkBox. The string will not be send to other pilots 
 	\item \emph{string} = What you want to say.
 \end{enumerate}
 
-Write a string onto the screen for a few seconds and speaks the string if text-to-speak is enabled. This function will return immediately, the string will be spoken asynchronously. If you fire up multiple strings at once, you will get a confusing mix. So take care of timing.
+Speaks the string if text-to-speak is enabled. This function will return immediately, the string will be spoken asynchronously. If you fire up multiple strings at once, you will get a confusing mix. So take care of timing. The text will be in the dev console, Log.txt file and it the ATC window if it is open.
 
 \newpage
 \subsubsection{print( "\emph{string}" )}
 
 \begin{enumerate}
-	\item \emph{string} = What you want to say.
+	\item \emph{string} = What you want to print.
 \end{enumerate}
 
-Similar to \verb|XSBSpeakString()|, but uses it's own box to display. All text will be displayed for 5 seconds, then the box fades away. To display the box again, you can move the mouse pointer to the top of the screen. To scroll through the lines, just move the mouse pointer left or right.
+Prints the string in the dev console and the Log.txt file.
 
 \subsubsection{do\_sometimes( "\emph{Lua code string}" )}
 
@@ -1466,8 +1466,7 @@ This functions rewinds the sound at the given index. In other words, the sound w
 \newpage
 \includegraphics[width=2.0cm]{FMOD Logo Black - White Background.png}\\[2ex]
 \section{Fmod sound}
-Starting with version 2.8.0 FlyWithLua will be adding Fmod support to reflect that change with X-Plane 12. Besides the info provided here there will a Fmod\_Demo.lua script showing how to start using Fmod. One of the bigest changes for that Fmod will provide is to increase the number of types of sound files you can now load with FlyWithLua. Currently that number is 20 including wav, mp3, oog. For a complete list please check here https://www.fmod.com/docs/2.02/api/core-api-sound.html\#fmod\_sound\_type.
-
+Starting with version 2.8.0 FlyWithLua will be adding Fmod support to reflect that change with X-Plane 12. Besides the info provided here there will a Fmod\_Demo.lua script showing how to start using Fmod. Starting with version 2.8.9 we are using the X-Plane Fmod SDK and supporting com1, interior, ui and master buses. If more are needed in the future they can be added but wanted to start smaller to reduce the chances of issues. One of the bigest changes for that Fmod will provide is to increase the number of types of sound files you can now load with FlyWithLua. Currently that number is 20 including wav, mp3, oog. For a complete list please check here https://www.fmod.com/docs/2.02/api/core-api-sound.html\#fmod\_sound\_type.
 
 
 \subsection{Loading sounds}
@@ -1485,10 +1484,113 @@ You fill the sound system table by loading a sound file and remembering the posi
 
 This function loads a sound file into the sound system table and gives back the index value. This is an example:
 
-
 \begin{lstlisting}
 tenft_wav = load_fmod_sound(SYSTEM_DIRECTORY .. "Resources/sounds/alert/10ft.wav")
 \end{lstlisting}
+
+
+\newpage
+\subsection{Using the sounds from the sound table}
+
+After you filled the sound system table with sound files you can use the sounds by using these functions:
+
+
+\subsubsection{ play\_sound\_on\_com1\_bus(\emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This function plays a sound file on com1 bus at the given index. This is an example:
+
+
+\begin{lstlisting}
+play_sound_on_com1_bus(tenft_wav)
+\end{lstlisting}
+
+\subsection{Stoping sounds}
+\subsubsection{ stop\_sound\_on\_com1\_bus()}
+This function stops the playing of FlyWithLua Fmod sound on com1 bus.
+
+\subsection{Fmod Com1 Bus Volume Dataref}
+This the dataref that FlyWithLua creates to adjust the FlyWithLua com1 channel group volume. It is a float and can be negitive to make the sound lower.
+
+\subsubsection{"FlyWithLua\_Com1ChannelGroup/Volume"}
+
+\subsection{Fmod Com1 Bus Mute Dataref}
+This the dataref that FlyWithLua creates to mute the FlyWithLua Com1 channel group sound. It is a bool with true being muted and false for the sound to be heard.
+
+\subsubsection{"FlyWithLua\_Com1ChannelGroup/Mute"}
+
+
+\newpage
+\subsection{Using the sounds from the sound table}
+
+After you filled the sound system table with sound files you can use the sounds by using these functions:
+
+\subsubsection{ play\_sound\_on\_interior\_bus(\emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This function plays a sound file on interior bus at the given index. This is an example:
+
+
+\begin{lstlisting}
+play_sound_on_interior_bus(tenft_wav)
+\end{lstlisting}
+
+
+\subsection{Stoping sounds}
+\subsubsection{ stop\_sound\_on\_interior\_bus()}
+This function stops the playing of FlyWithLua Fmod sound on interior bus.
+
+
+\subsection{Fmod Interior Bus Volume Dataref}
+This the dataref that FlyWithLua creates to adjust the FlyWithLua interior channel group volume. It is a float and can be negitive to make the sound lower.
+
+\subsubsection{"FlyWithLua\_InteriorChannelGroup/Volume"}
+
+\subsection{Fmod Interior Bus Mute Dataref}
+This the dataref that FlyWithLua creates to mute the FlyWithLua channel group sound. It is a bool with true being muted and false for the sound to be heard.
+
+\subsubsection{"FlyWithLua\_InteriorChannelGroup/Mute"}
+
+
+\newpage
+\subsection{Using the sounds from the sound table}
+
+After you filled the sound system table with sound files you can use the sounds by using these functions:
+
+\subsubsection{ play\_sound\_on\_ui\_bus(\emph{table position} )}
+
+\begin{enumerate}
+	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
+\end{enumerate}
+
+This function plays a sound file on ui bus at the given index. This is an example:
+
+
+\begin{lstlisting}
+play_sound_on_ui_bus(tenft_wav)
+\end{lstlisting}
+
+
+\subsection{Stoping sounds}
+\subsubsection{ stop\_sound\_on\_ui\_bus()}
+This function stops the playing of FlyWithLua Fmod sound on ui bus.
+
+
+\subsection{Fmod Ui Bus Volume Dataref}
+This the dataref that FlyWithLua creates to adjust the FlyWithLua ui channel group volume. It is a float and can be negitive to make the sound lower.
+
+\subsubsection{"FlyWithLua\_UiChannelGroup/Volume"}
+
+\subsection{Fmod Ui Bus Mute Dataref}
+This the dataref that FlyWithLua creates to mute the FlyWithLua channel group sound. It is a bool with true being muted and false for the sound to be heard.
+
+\subsubsection{"FlyWithLua\_UiChannelGroup/Mute"}
 
 
 \newpage
@@ -1511,7 +1613,7 @@ play_sound_on_master_bus(tenft_wav)
 \end{lstlisting}
 
 \subsection{Stoping sounds}
-\subsubsection{ stop\_fmod\_sound\_on\_master\_bus()}
+\subsubsection{ stop\_sound\_on\_master\_bus()}
 This function stops the playing of FlyWithLua Fmod sound on master bus.
 
 \subsection{Fmod Master Bus Volume Dataref}
@@ -1523,75 +1625,6 @@ This the dataref that FlyWithLua creates to adjust the FlyWithLua master channel
 This the dataref that FlyWithLua creates to mute the FlyWithLua Master channel group sound. It is a bool with true being muted and false for the sound to be heard.
 
 \subsubsection{"FlyWithLua\_MasterChannelGroup/Mute"}
-
-
-\newpage
-\subsection{Using the sounds from the sound table}
-
-After you filled the sound system table with sound files you can use the sounds by using these functions:
-
-
-\subsubsection{ play\_sound\_on\_radios\_bus(\emph{table position} )}
-
-\begin{enumerate}
-	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
-\end{enumerate}
-
-This function plays a sound file on radios bus at the given index. This is an example:
-
-
-\begin{lstlisting}
-play_sound_on_radios_bus(tenft_wav)
-\end{lstlisting}
-
-\subsection{Stoping sounds}
-\subsubsection{ stop\_fmod\_sound\_on\_radios\_bus()}
-This function stops the playing of FlyWithLua Fmod sound on radios bus.
-
-\subsection{Fmod Radios Bus Volume Dataref}
-This the dataref that FlyWithLua creates to adjust the FlyWithLua radios channel group volume. It is a float and can be negitive to make the sound lower.
-
-\subsubsection{"FlyWithLua\_RadiosChannelGroup/Volume"}
-
-\subsection{Fmod Radios Bus Mute Dataref}
-This the dataref that FlyWithLua creates to mute the FlyWithLua Radios channel group sound. It is a bool with true being muted and false for the sound to be heard.
-
-\subsubsection{"FlyWithLua\_RadiosChannelGroup/Mute"}
-
-\newpage
-\subsection{Using the sounds from the sound table}
-The interior bus currently has a bug where if your first plane loaded does not have Fmod Studio then we can't find the interior bus so no sound will be played. Bug report has been filed as XPD-13315.
-
-After you filled the sound system table with sound files you can use the sounds by using these functions:
-
-\subsubsection{ play\_sound\_on\_interior\_bus(\emph{table position} )}
-
-\begin{enumerate}
-	\item \emph{table position} = The index value, where your sound is stored into the sound system table. Index values starts from 0 (Zero).
-\end{enumerate}
-
-This function plays a sound file on interior bus at the given index. This is an example:
-
-
-\begin{lstlisting}
-play_sound_on_interior_bus(tenft_wav)
-\end{lstlisting}
-
-
-\subsection{Stoping sounds}
-\subsubsection{ stop\_fmod\_sound\_on\_interior\_bus()}
-This function stops the playing of FlyWithLua Fmod sound on interior bus.
-
-
-\subsection{Fmod Interior Bus Volume Dataref}
-This the dataref that FlyWithLua creates to adjust the FlyWithLua interior channel group volume. It is a float and can be negitive to make the sound lower.
-
-\subsubsection{"FlyWithLua\_InteriorChannelGroup/Volume"}
-
-\subsection{Fmod Interior Bus Mute Dataref}
-This the dataref that FlyWithLua creates to mute the FlyWithLua channel group sound. It is a bool with true being muted and false for the sound to be heard.
-
-\subsubsection{"FlyWithLua\_InteriorChannelGroup/Mute"}
 
 
 \newpage

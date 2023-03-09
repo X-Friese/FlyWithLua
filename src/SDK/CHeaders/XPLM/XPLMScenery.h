@@ -2,8 +2,8 @@
 #define _XPLMScenery_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -11,7 +11,7 @@
  * XPLMScenery
  ***************************************************************************/
 /*
- * This package contains APIs to interact with X-Plane's scenery system.      
+ * This package contains APIs to interact with X-Plane's scenery system.
  *
  */
 
@@ -44,7 +44,7 @@ extern "C" {
  * probing operations are expensive, and should be avoided via caching when
  * possible.
  * 
- * Y testing returns a location on the terrain, a normal vectory, and a
+ * Y testing returns a location on the terrain, a normal vector, and a
  * velocity vector. The normal vector tells you the slope of the terrain at
  * that point. The velocity vector tells you if that terrain is moving (and is
  * in meters/second). For example, if your Y test hits the aircraft carrier
@@ -52,7 +52,7 @@ extern "C" {
  * 
  * Note: the Y-testing API is limited to probing the loaded scenery area,
  * which is approximately 300x300 km in X-Plane 9. Probes outside this area
- * will return the height of a 0 MSL sphere.                                  
+ * will return the height of a 0 MSL sphere.
  *
  */
 
@@ -62,12 +62,12 @@ extern "C" {
  * 
  * XPLMProbeType defines the type of terrain probe - each probe has a
  * different algorithm. (Only one type of probe is provided right now, but
- * future APIs will expose more flexible or poewrful or useful probes.        
+ * future APIs will expose more flexible or powerful or useful probes.
  *
  */
 enum {
-     /* The Y probe gives you the location of the tallest physical scenery along   *
-      * the Y axis going through the queried point.                                */
+    /* The Y probe gives you the location of the tallest physical scenery along   *
+     * the Y axis going through the queried point.                                */
     xplm_ProbeY                              = 0,
 
 
@@ -77,19 +77,19 @@ typedef int XPLMProbeType;
 /*
  * XPLMProbeResult
  * 
- * Probe results - possible results from a probe query.                       
+ * Probe results - possible results from a probe query.
  *
  */
 enum {
-     /* The probe hit terrain and returned valid values.                           */
+    /* The probe hit terrain and returned valid values.                           */
     xplm_ProbeHitTerrain                     = 0,
 
-     /* An error in the API call.  Either the probe struct size is bad, or the     *
-      * probe is invalid or the type is mismatched for the specific query call.    */
+    /* An error in the API call.  Either the probe struct size is bad, the probe  *
+     * is invalid, or the type is mismatched for the specific query call.         */
     xplm_ProbeError                          = 1,
 
-     /* The probe call succeeded but there is no terrain under this point (perhaps *
-      * it is off the side of the planet?)                                         */
+    /* The probe call succeeded but there is no terrain under this point (perhaps *
+     * it is off the side of the planet?)                                         */
     xplm_ProbeMissed                         = 2,
 
 
@@ -100,7 +100,7 @@ typedef int XPLMProbeResult;
  * XPLMProbeRef
  * 
  * An XPLMProbeRef is an opaque handle to a probe, used for querying the
- * terrain.                                                                   
+ * terrain.
  *
  */
 typedef void * XPLMProbeRef;
@@ -109,54 +109,54 @@ typedef void * XPLMProbeRef;
  * XPLMProbeInfo_t
  * 
  * XPLMProbeInfo_t contains the results of a probe call. Make sure to set
- * structSize to the size of the struct before using it.                      
+ * structSize to the size of the struct before using it.
  *
  */
 typedef struct {
-     /* Size of structure in bytes - always set this before calling the XPLM.      */
+    /* Size of structure in bytes - always set this before calling the XPLM.      */
      int                       structSize;
-     /* Resulting X location of the terrain point we hit, in local OpenGL          *
-      * coordinates.                                                               */
+    /* Resulting X location of the terrain point we hit, in local OpenGL          *
+     * coordinates.                                                               */
      float                     locationX;
-     /* Resulting Y location of the terrain point we hit, in local OpenGL          *
-      * coordinates.                                                               */
+    /* Resulting Y location of the terrain point we hit, in local OpenGL          *
+     * coordinates.                                                               */
      float                     locationY;
-     /* Resulting Z location of the terrain point we hit, in local OpenGL          *
-      * coordinates.                                                               */
+    /* Resulting Z location of the terrain point we hit, in local OpenGL          *
+     * coordinates.                                                               */
      float                     locationZ;
-     /* X component of the normal vector to the terrain we found.                  */
+    /* X component of the normal vector to the terrain we found.                  */
      float                     normalX;
-     /* Y component of the normal vector to the terrain we found.                  */
+    /* Y component of the normal vector to the terrain we found.                  */
      float                     normalY;
-     /* Z component of the normal vector to the terrain we found.                  */
+    /* Z component of the normal vector to the terrain we found.                  */
      float                     normalZ;
-     /* X component of the velocity vector of the terrain we found.                */
+    /* X component of the velocity vector of the terrain we found.                */
      float                     velocityX;
-     /* Y component of the velocity vector of the terrain we found.                */
+    /* Y component of the velocity vector of the terrain we found.                */
      float                     velocityY;
-     /* Z component of the velocity vector of the terrain we found.                */
+    /* Z component of the velocity vector of the terrain we found.                */
      float                     velocityZ;
-     /* Tells if the surface we hit is water (otherwise it is land).               */
+    /* Tells if the surface we hit is water (otherwise it is land).               */
      int                       is_wet;
 } XPLMProbeInfo_t;
 
 /*
  * XPLMCreateProbe
  * 
- * Creates a new probe object of a given type and returns.                    
+ * Creates a new probe object of a given type and returns.
  *
  */
 XPLM_API XPLMProbeRef XPLMCreateProbe(
-                         XPLMProbeType        inProbeType);    
+                         XPLMProbeType        inProbeType);
 
 /*
  * XPLMDestroyProbe
  * 
- * Deallocates an existing probe object.                                      
+ * Deallocates an existing probe object.
  *
  */
 XPLM_API void       XPLMDestroyProbe(
-                         XPLMProbeRef         inProbe);    
+                         XPLMProbeRef         inProbe);
 
 /*
  * XPLMProbeTerrainXYZ
@@ -164,15 +164,15 @@ XPLM_API void       XPLMDestroyProbe(
  * Probes the terrain. Pass in the XYZ coordinate of the probe point, a probe
  * object, and an XPLMProbeInfo_t struct that has its structSize member set
  * properly. Other fields are filled in if we hit terrain, and a probe result
- * is returned.                                                               
+ * is returned.
  *
  */
 XPLM_API XPLMProbeResult XPLMProbeTerrainXYZ(
-                         XPLMProbeRef         inProbe,    
-                         float                inX,    
-                         float                inY,    
-                         float                inZ,    
-                         XPLMProbeInfo_t *    outInfo);    
+                         XPLMProbeRef         inProbe,
+                         float                inX,
+                         float                inY,
+                         float                inZ,
+                         XPLMProbeInfo_t *    outInfo);
 
 #endif /* XPLM200 */
 #if defined(XPLM300)
@@ -189,7 +189,7 @@ XPLM_API XPLMProbeResult XPLMProbeTerrainXYZ(
  * necessarily match what a magnetic compass shows as north.
  * 
  * Using this API ensures that you present the same offsets to users as
- * X-Plane's built-in instruments.                                            
+ * X-Plane's built-in instruments.
  *
  */
 
@@ -198,32 +198,32 @@ XPLM_API XPLMProbeResult XPLMProbeTerrainXYZ(
  * XPLMGetMagneticVariation
  * 
  * Returns X-Plane's simulated magnetic variation (declination) at the
- * indication latitude and longitude.                                         
+ * indication latitude and longitude.
  *
  */
 XPLM_API float      XPLMGetMagneticVariation(
-                         double               latitude,    
-                         double               longitude);    
+                         double               latitude,
+                         double               longitude);
 
 /*
  * XPLMDegTrueToDegMagnetic
  * 
  * Converts a heading in degrees relative to true north into a value relative
- * to magnetic north at the user's current location.                          
+ * to magnetic north at the user's current location.
  *
  */
 XPLM_API float      XPLMDegTrueToDegMagnetic(
-                         float                headingDegreesTrue);    
+                         float                headingDegreesTrue);
 
 /*
  * XPLMDegMagneticToDegTrue
  * 
  * Converts a heading in degrees relative to magnetic north at the user's
- * current location into a value relative to true north.                      
+ * current location into a value relative to true north.
  *
  */
 XPLM_API float      XPLMDegMagneticToDegTrue(
-                         float                headingDegreesMagnetic);    
+                         float                headingDegreesMagnetic);
 
 #endif /* XPLM300 */
 /***************************************************************************
@@ -233,7 +233,7 @@ XPLM_API float      XPLMDegMagneticToDegTrue(
  * The object drawing routines let you load and draw X-Plane OBJ files.
  * Objects are loaded by file path and managed via an opaque handle. X-Plane
  * naturally reference counts objects, so it is important that you balance
- * every successful call to XPLMLoadObject with a call to XPLMUnloadObject!   
+ * every successful call to XPLMLoadObject with a call to XPLMUnloadObject!
  *
  */
 
@@ -243,7 +243,7 @@ XPLM_API float      XPLMDegMagneticToDegTrue(
  * XPLMObjectRef
  * 
  * An XPLMObjectRef is a opaque handle to an .obj file that has been loaded
- * into memory.                                                               
+ * into memory.
  *
  */
 typedef void * XPLMObjectRef;
@@ -255,23 +255,23 @@ typedef void * XPLMObjectRef;
  * 
  * The XPLMDrawInfo_t structure contains positioning info for one object that
  * is to be drawn. Be sure to set structSize to the size of the structure for
- * future expansion.                                                          
+ * future expansion.
  *
  */
 typedef struct {
-     /* Set this to the size of this structure!                                    */
+    /* Set this to the size of this structure!                                    */
      int                       structSize;
-     /* X location of the object in local coordinates.                             */
+    /* X location of the object in local coordinates.                             */
      float                     x;
-     /* Y location of the object in local coordinates.                             */
+    /* Y location of the object in local coordinates.                             */
      float                     y;
-     /* Z location of the object in local coordinates.                             */
+    /* Z location of the object in local coordinates.                             */
      float                     z;
-     /* Pitch in degres to rotate the object, positive is up.                      */
+    /* Pitch in degres to rotate the object, positive is up.                      */
      float                     pitch;
-     /* Heading in local coordinates to rotate the object, clockwise.              */
+    /* Heading in local coordinates to rotate the object, clockwise.              */
      float                     heading;
-     /* Roll to rotate the object.                                                 */
+    /* Roll to rotate the object.                                                 */
      float                     roll;
 } XPLMDrawInfo_t;
 #endif /* XPLM200 */
@@ -287,12 +287,12 @@ typedef struct {
  * 
  * If your plugin is disabled, this callback will be delivered as soon as the
  * plugin is re-enabled. If your plugin is unloaded before this callback is
- * ever called, the SDK will release the object handle for you.               
+ * ever called, the SDK will release the object handle for you.
  *
  */
 typedef void (* XPLMObjectLoaded_f)(
-                         XPLMObjectRef        inObject,    
-                         void *               inRefcon);    
+                         XPLMObjectRef        inObject,
+                         void *               inRefcon);
 #endif /* XPLM210 */
 
 #if defined(XPLM200)
@@ -315,12 +315,12 @@ typedef void (* XPLMObjectLoaded_f)(
  * load any object that can be used in the X-Plane scenery system.
  * 
  * It is important that the datarefs an object uses for animation already be
- * loaded before you load the object. For this reason it may be necessary to
- * defer object loading until the sim has fully started.                      
+ * registered before you load the object. For this reason it may be necessary
+ * to defer object loading until the sim has fully started.
  *
  */
 XPLM_API XPLMObjectRef XPLMLoadObject(
-                         const char *         inPath);    
+                         const char *         inPath);
 #endif /* XPLM200 */
 
 #if defined(XPLM210)
@@ -338,13 +338,13 @@ XPLM_API XPLMObjectRef XPLMLoadObject(
  * 
  * There is no way to cancel an asynchronous object load; you must wait for
  * the load to complete and then release the object if it is no longer
- * desired.                                                                   
+ * desired.
  *
  */
 XPLM_API void       XPLMLoadObjectAsync(
-                         const char *         inPath,    
-                         XPLMObjectLoaded_f   inCallback,    
-                         void *               inRefcon);    
+                         const char *         inPath,
+                         XPLMObjectLoaded_f   inCallback,
+                         void *               inRefcon);
 #endif /* XPLM210 */
 
 #if defined(XPLM_DEPRECATED)
@@ -371,15 +371,15 @@ XPLM_API void       XPLMLoadObjectAsync(
  * against gravity. If this is 0, the object is drawn with your rotations from
  * local coordanates -- that is, an object with no rotations is drawn pointing
  * down the -Z axis and the Y axis of the object matches the local coordinate
- * Y axis.                                                                    
+ * Y axis.
  *
  */
 XPLM_API void       XPLMDrawObjects(
-                         XPLMObjectRef        inObject,    
-                         int                  inCount,    
-                         XPLMDrawInfo_t *     inLocations,    
-                         int                  lighting,    
-                         int                  earth_relative);    
+                         XPLMObjectRef        inObject,
+                         int                  inCount,
+                         XPLMDrawInfo_t *     inLocations,
+                         int                  lighting,
+                         int                  earth_relative);
 #endif /* XPLM_DEPRECATED */
 
 #if defined(XPLM200)
@@ -389,11 +389,11 @@ XPLM_API void       XPLMDrawObjects(
  * This routine marks an object as no longer being used by your plugin.
  * Objects are reference counted: once no plugins are using an object, it is
  * purged from memory. Make sure to call XPLMUnloadObject once for each
- * successful call to XPLMLoadObject.                                         
+ * successful call to XPLMLoadObject.
  *
  */
 XPLM_API void       XPLMUnloadObject(
-                         XPLMObjectRef        inObject);    
+                         XPLMObjectRef        inObject);
 #endif /* XPLM200 */
 
 #if defined(XPLM200)
@@ -404,7 +404,7 @@ XPLM_API void       XPLMUnloadObject(
  * The library access routines allow you to locate scenery objects via the
  * X-Plane library system. Right now library access is only provided for
  * objects, allowing plugin-drawn objects to be extended using the library
- * system.                                                                    
+ * system.
  *
  */
 
@@ -414,12 +414,12 @@ XPLM_API void       XPLMUnloadObject(
  * 
  * An XPLMLibraryEnumerator_f is a callback you provide that is called once
  * for each library element that is located. The returned paths will be
- * relative to the X-System folder.                                           
+ * relative to the X-System folder.
  *
  */
 typedef void (* XPLMLibraryEnumerator_f)(
-                         const char *         inFilePath,    
-                         void *               inRef);    
+                         const char *         inFilePath,
+                         void *               inRef);
 
 /*
  * XPLMLookupObjects
@@ -432,15 +432,15 @@ typedef void (* XPLMLibraryEnumerator_f)(
  * The latitude and longitude parameters specify the location the object will
  * be used. The library system allows for scenery packages to only provide
  * objects to certain local locations. Only objects that are allowed at the
- * latitude/longitude you provide will be returned.                           
+ * latitude/longitude you provide will be returned.
  *
  */
 XPLM_API int        XPLMLookupObjects(
-                         const char *         inPath,    
-                         float                inLatitude,    
-                         float                inLongitude,    
-                         XPLMLibraryEnumerator_f enumerator,    
-                         void *               ref);    
+                         const char *         inPath,
+                         float                inLatitude,
+                         float                inLongitude,
+                         XPLMLibraryEnumerator_f enumerator,
+                         void *               ref);
 
 #endif /* XPLM200 */
 #ifdef __cplusplus

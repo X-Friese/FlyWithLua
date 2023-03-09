@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPWidgetDefs;
@@ -17,7 +17,7 @@ USES
    text entry field, etc.
    
    Use the widget API to create widgets of various classes. You can nest them
-   into trees of widgets to create complex user interfaces.                   
+   into trees of widgets to create complex user interfaces.
 }
 
 
@@ -28,7 +28,7 @@ TYPE
     A Widget ID is an opaque unique non-zero handle identifying your widget.
     Use 0 to specify "no widget". This type is defined as wide enough to hold a
     pointer. You receive a widget ID when you create a new widget and then use
-    that widget ID to further refer to the widget.                             
+    that widget ID to further refer to the widget.
    }
    XPWidgetID = pointer;
    PXPWidgetID = ^XPWidgetID;
@@ -44,28 +44,28 @@ TYPE
     widget; it then stays there for the life of the widget.
     
     Some property IDs are predefined by the widget package; you can make up
-    your own property IDs as well.                                             
+    your own property IDs as well.
    }
    XPWidgetPropertyID = (
      { A window's refcon is an opaque value used by client code to find other data}
      { based on it.                                                               }
       xpProperty_Refcon                        = 0
  
-     { These properties are used by the utlities to implement dragging.           }
+     { These properties are used by the utilities to implement dragging.          }
      ,xpProperty_Dragging                      = 1
  
      ,xpProperty_DragXOff                      = 2
  
      ,xpProperty_DragYOff                      = 3
  
-     { Is the widget hilited?  (For widgets that support this kind of thing.)     }
+     { Is the widget highlighted?  (For widgets that support this kind of thing.) }
      ,xpProperty_Hilited                       = 4
  
      { Is there a C++ object attached to this widget?                             }
      ,xpProperty_Object                        = 5
  
      { If this property is 1, the widget package will use OpenGL to restrict      }
-     { drawing to the Wiget's exposed rectangle.                                  }
+     { drawing to the Widget's exposed rectangle.                                 }
      ,xpProperty_Clip                          = 6
  
      { Is this widget enabled (for those that have a disabled state too)?         }
@@ -87,12 +87,12 @@ TYPE
     XPMouseState_t
     
     When the mouse is clicked or dragged, a pointer to this structure is passed
-    to your widget function.                                                   
+    to your widget function.
    }
    XPMouseState_t = RECORD
      x                        : Integer;
      y                        : Integer;
-     { Mouse Button number, left = 0 (right button not yet supported.             }
+     { Mouse button number, left = 0 (right button not yet supported.             }
      button                   : Integer;
 {$IFDEF XPLM200}
      { Scroll wheel delta (button in this case would be the wheel axis number).   }
@@ -105,7 +105,7 @@ TYPE
     XPKeyState_t
     
     When a key is pressed, a pointer to this struct is passed to your widget
-    function.                                                                  
+    function.
    }
    XPKeyState_t = RECORD
      { The ASCII key that was pressed.  WARNING: this may be 0 for some non-ASCII }
@@ -122,7 +122,7 @@ TYPE
     XPWidgetGeometryChange_t
     
     This structure contains the deltas for your widget's geometry when it
-    changes.                                                                   
+    changes.
    }
    XPWidgetGeometryChange_t = RECORD
      dx                       : Integer;
@@ -137,7 +137,7 @@ TYPE
     XPDispatchMode
     
     The dispatching modes describe how the widgets library sends out messages. 
-    Currently there are three modes:                                           
+    Currently there are three modes:
    }
    XPDispatchMode = (
      { The message will only be sent to the target widget.                        }
@@ -151,7 +151,7 @@ TYPE
      { recursively depth-first.                                                   }
      ,xpMode_Recursive                         = 2
  
-     { The message is snet just to the target, but goes to every callback, even if}
+     { The message is sent just to the target, but goes to every callback, even if}
      { it is handled.                                                             }
      ,xpMode_DirectAllCallbacks                = 3
  
@@ -168,7 +168,7 @@ TYPE
     
     Widget classes define predefined widget types. A widget class basically
     specifies from a library the widget function to be used for the widget.
-    Most widgets can be made right from classes.                               
+    Most widgets can be made right from classes.
    }
    XPWidgetClass = Integer;
    PXPWidgetClass = ^XPWidgetClass;
@@ -186,7 +186,7 @@ CONST
     XPWidgetMessage
     
     Widgets receive 32-bit messages indicating what action is to be taken or
-    notifications of events. The list of messages may be expanded.             
+    notifications of events. The list of messages may be expanded.
    }
 TYPE
    XPWidgetMessage = (
@@ -251,8 +251,8 @@ TYPE
      { if someone is explicitly giving you focus.                                 }
      ,xpMsg_KeyTakeFocus                       = 6
  
-     { Keyboard focus is being taken away from you. The first parameter will be   }
-     { one if you are losing focus because another widget is taking it, or 0 if   }
+     { Keyboard focus is being taken away from you. The first parameter will be 1 }
+     { if you are losing focus because another widget is taking it, or 0 if       }
      { someone called the API to make you lose focus explicitly.                  }
      {                                                                            }
      { Dispatching: Direct                                                        }
@@ -262,7 +262,7 @@ TYPE
      ,xpMsg_KeyLoseFocus                       = 7
  
      { You receive one mousedown event per click with a mouse-state structure     }
-     { pointed to by parameter 1, by accepting this you eat the click, otherwise  }
+     { pointed to by parameter 1. By accepting this you eat the click, otherwise  }
      { your parent gets it. You will not receive drag and mouse up messages if you}
      { do not accept the down message.                                            }
      {                                                                            }
@@ -271,7 +271,7 @@ TYPE
      { moues clicks to certain areas.                                             }
      {                                                                            }
      { Dispatching: Up chain NOTE: Technically this is direct dispatched, but the }
-     { widgets library will shop it to each widget until one consumes the click,  }
+     { widgets library will ship it to each widget until one consumes the click,  }
      { making it effectively "up chain".                                          }
      {                                                                            }
      { Param 1: A pointer to an XPMouseState_t containing the mouse status.       }
@@ -321,7 +321,7 @@ TYPE
      { Param 1: The Widget ID of the child being added.                           }
      ,xpMsg_AcceptChild                        = 13
  
-     { A child has been removed from to you. The child's ID is passed in parameter}
+     { A child has been removed from you. The child's ID is passed in parameter   }
      { one.                                                                       }
      {                                                                            }
      { Dispatching: Direct                                                        }
@@ -409,17 +409,17 @@ TYPE
     
     This function defines your custom widget's behavior. It will be called by
     the widgets library to send messages to your widget. The message and widget
-    ID are passed in, as well as two ptr-width signed parameters whose meaning
-    varies with the message. Return 1 to indicate that you have processed the
-    message, 0 to indicate that you have not. For any message that is not
-    understood, return 0.                                                      
+    ID are passed in, as well as two pointer-width signed parameters whose
+    meaning varies with the message. Return 1 to indicate that you have
+    processed the message, 0 to indicate that you have not. For any message
+    that is not understood, return 0.
    }
 TYPE
      XPWidgetFunc_t = FUNCTION(
-                                    inMessage           : XPWidgetMessage;    
-                                    inWidget            : XPWidgetID;    
-                                    inParam1            : intptr_t;    
-                                    inParam2            : intptr_t) : Integer; cdecl;   
+                                    inMessage           : XPWidgetMessage;
+                                    inWidget            : XPWidgetID;
+                                    inParam1            : intptr_t;
+                                    inParam2            : intptr_t) : Integer; cdecl;
 
 
 IMPLEMENTATION

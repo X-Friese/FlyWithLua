@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPWidgetUtils;
@@ -20,12 +20,13 @@ INTERFACE
       behavior. Remember that the last function you add has highest priority.
       You can use this to change or augment the behavior of an existing
       finished widget.
+   
    2. You can call a widget function from inside your own widget function.
       This allows you to include useful behaviors in custom-built widgets. A
       number of the standard widgets get their behavior from this library. To
       do this, call the behavior function from your function first. If it
       returns 1, that means it handled the event and you don't need to; simply
-      return 1.                                                               
+      return 1.
 }
 
 USES
@@ -39,7 +40,7 @@ USES
    {
     XPWidgetCreate_t
     
-    This structure contains all of the parameters needed to create a wiget. It
+    This structure contains all of the parameters needed to create a widget. It
     is used with XPUCreateWidgets to create widgets in bulk from an array. All
     parameters correspond to those of XPCreateWidget except for the container
     index.
@@ -51,7 +52,7 @@ USES
     
     If the container index is NO_PARENT, the parent widget is specified as
     NULL. If the container index is PARAM_PARENT, the widget passed into
-    XPUCreateWidgets is used.                                                  
+    XPUCreateWidgets is used.
    }
 TYPE
    XPWidgetCreate_t = RECORD
@@ -61,9 +62,9 @@ TYPE
      bottom                   : Integer;
      visible                  : Integer;
      descriptor               : XPLMString;
-     { Whether ethis widget is a root wiget                                       }
+     { Whether this widget is a root widget                                       }
      isRoot                   : Integer;
-     { The index of the widget to contain within, or a constant                   }
+     { The index of the widget to be contained within, or a constant              }
      containerIndex           : Integer;
      widgetClass              : XPWidgetClass;
    END;
@@ -89,25 +90,25 @@ CONST
     
     You can also pass in a widget ID that will be used when the widget's parent
     is listed as PARAM_PARENT; this allows you to embed widgets created with
-    XPUCreateWidgets in a widget created previously.                           
+    XPUCreateWidgets in a widget created previously.
    }
    PROCEDURE XPUCreateWidgets(
-                                        inWidgetDefs        : PXPWidgetCreate_t;    
-                                        inCount             : Integer;    
-                                        inParamParent       : XPWidgetID;    
-                                        ioWidgets           : PXPWidgetID);    
+                                        inWidgetDefs        : PXPWidgetCreate_t;
+                                        inCount             : Integer;
+                                        inParamParent       : XPWidgetID;
+                                        ioWidgets           : PXPWidgetID);
     cdecl; external XPWIDGETS.DLL;
 
    {
     XPUMoveWidgetBy
     
-    Simply moves a widget by an amount, +x = right, +y=up, without resizing the
-    widget.                                                                    
+    Simply moves a widget by an amount, +x = right, +y = up, without resizing
+    the widget.
    }
    PROCEDURE XPUMoveWidgetBy(
-                                        inWidget            : XPWidgetID;    
-                                        inDeltaX            : Integer;    
-                                        inDeltaY            : Integer);    
+                                        inWidget            : XPWidgetID;
+                                        inDeltaX            : Integer;
+                                        inDeltaY            : Integer);
     cdecl; external XPWIDGETS.DLL;
 
 {___________________________________________________________________________
@@ -116,7 +117,7 @@ CONST
 {
    The layout managers are widget behavior functions for handling where
    widgets move. Layout managers can be called from a widget function or
-   attached to a widget later.                                                
+   attached to a widget later.
 }
 
 
@@ -125,13 +126,13 @@ CONST
     
     This function causes the widget to maintain its children in fixed position
     relative to itself as it is resized. Use this on the top level 'window'
-    widget for your window.                                                    
+    widget for your window.
    }
    FUNCTION XPUFixedLayout(
-                                        inMessage           : XPWidgetMessage;    
-                                        inWidget            : XPWidgetID;    
-                                        inParam1            : intptr_t;    
-                                        inParam2            : intptr_t) : Integer;    
+                                        inMessage           : XPWidgetMessage;
+                                        inWidget            : XPWidgetID;
+                                        inParam1            : intptr_t;
+                                        inParam2            : intptr_t) : Integer;
     cdecl; external XPWIDGETS.DLL;
 
 {___________________________________________________________________________
@@ -140,7 +141,7 @@ CONST
 {
    These widget behavior functions add other useful behaviors to widgets.
    These functions cannot be attached to a widget; they must be called from
-   your widget function.                                                      
+   your widget function.
 }
 
 
@@ -149,28 +150,28 @@ CONST
     
     This causes the widget to bring its window to the foreground if it is not
     already. inEatClick specifies whether clicks in the background should be
-    consumed by bringin the window to the foreground.                          
+    consumed by bringing the window to the foreground.
    }
    FUNCTION XPUSelectIfNeeded(
-                                        inMessage           : XPWidgetMessage;    
-                                        inWidget            : XPWidgetID;    
-                                        inParam1            : intptr_t;    
-                                        inParam2            : intptr_t;    
-                                        inEatClick          : Integer) : Integer;    
+                                        inMessage           : XPWidgetMessage;
+                                        inWidget            : XPWidgetID;
+                                        inParam1            : intptr_t;
+                                        inParam2            : intptr_t;
+                                        inEatClick          : Integer) : Integer;
     cdecl; external XPWIDGETS.DLL;
 
    {
     XPUDefocusKeyboard
     
-    This causes a click in the widget to send keyboard focus back to X-Plane.
-    This stops editing of any text fields, etc.                                
+    This causes the widget to send keyboard focus back to X-Plane. This stops
+    editing of any text fields, etc.
    }
    FUNCTION XPUDefocusKeyboard(
-                                        inMessage           : XPWidgetMessage;    
-                                        inWidget            : XPWidgetID;    
-                                        inParam1            : intptr_t;    
-                                        inParam2            : intptr_t;    
-                                        inEatClick          : Integer) : Integer;    
+                                        inMessage           : XPWidgetMessage;
+                                        inWidget            : XPWidgetID;
+                                        inParam1            : intptr_t;
+                                        inParam2            : intptr_t;
+                                        inEatClick          : Integer) : Integer;
     cdecl; external XPWIDGETS.DLL;
 
    {
@@ -178,17 +179,17 @@ CONST
     
     XPUDragWidget drags the widget in response to mouse clicks. Pass in not
     only the event, but the global coordinates of the drag region, which might
-    be a sub-region of your widget (for example, a title bar).                 
+    be a sub-region of your widget (for example, a title bar).
    }
    FUNCTION XPUDragWidget(
-                                        inMessage           : XPWidgetMessage;    
-                                        inWidget            : XPWidgetID;    
-                                        inParam1            : intptr_t;    
-                                        inParam2            : intptr_t;    
-                                        inLeft              : Integer;    
-                                        inTop               : Integer;    
-                                        inRight             : Integer;    
-                                        inBottom            : Integer) : Integer;    
+                                        inMessage           : XPWidgetMessage;
+                                        inWidget            : XPWidgetID;
+                                        inParam1            : intptr_t;
+                                        inParam2            : intptr_t;
+                                        inLeft              : Integer;
+                                        inTop               : Integer;
+                                        inRight             : Integer;
+                                        inBottom            : Integer) : Integer;
     cdecl; external XPWIDGETS.DLL;
 
 

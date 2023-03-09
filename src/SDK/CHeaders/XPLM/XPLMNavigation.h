@@ -2,8 +2,8 @@
 #define _XPLMNavigation_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -18,7 +18,7 @@
  * 
  * You can also use this API to program the FMS.  You must use the navigation
  * APIs to find the nav-aids you want to program into the FMS, since the FMS
- * is powered internally by X-Plane's navigation database.                    
+ * is powered internally by X-Plane's navigation database.
  *
  */
 
@@ -42,7 +42,7 @@ extern "C" {
  * NOTE: xplm_Nav_LatLon is a specific lat-lon coordinate entered into the
  * FMS. It will not exist in the database, and cannot be programmed into the
  * FMS. Querying the FMS for navaids will return it.  Use
- * XPLMSetFMSEntryLatLon to set a lat/lon waypoint.                           
+ * XPLMSetFMSEntryLatLon to set a lat/lon waypoint.
  *
  */
 enum {
@@ -87,7 +87,7 @@ typedef int XPLMNavType;
  * Use XPLMNavRef to refer to a nav-aid.
  * 
  * XPLM_NAV_NOT_FOUND is returned by functions that return an XPLMNavRef when
- * the iterator must be invalid.                                              
+ * the iterator must be invalid.
  *
  */
 typedef int XPLMNavRef;
@@ -99,7 +99,7 @@ typedef int XPLMNavRef;
  * 
  * This returns the very first navaid in the database.  Use this to traverse
  * the entire database.  Returns XPLM_NAV_NOT_FOUND if the nav database is
- * empty.                                                                     
+ * empty.
  *
  */
 XPLM_API XPLMNavRef XPLMGetFirstNavAid(void);
@@ -107,44 +107,44 @@ XPLM_API XPLMNavRef XPLMGetFirstNavAid(void);
 /*
  * XPLMGetNextNavAid
  * 
- * Given a valid nav aid ref, this routine returns the next navaid.  It
- * returns XPLM_NAV_NOT_FOUND if the nav aid passed in was invalid or if the
- * navaid passed in was the last one in the database.  Use this routine to
- * iterate across all like-typed navaids or the entire database.              
+ * Given a valid navaid ref, this routine returns the next navaid.  It returns
+ * XPLM_NAV_NOT_FOUND if the navaid passed in was invalid or if the navaid
+ * passed in was the last one in the database.  Use this routine to iterate
+ * across all like-typed navaids or the entire database.
  *
  */
 XPLM_API XPLMNavRef XPLMGetNextNavAid(
-                         XPLMNavRef           inNavAidRef);    
+                         XPLMNavRef           inNavAidRef);
 
 /*
  * XPLMFindFirstNavAidOfType
  * 
  * This routine returns the ref of the first navaid of the given type in the
  * database or XPLM_NAV_NOT_FOUND if there are no navaids of that type in the
- * database.  You must pass exactly one nav aid type to this routine.         
+ * database.  You must pass exactly one navaid type to this routine.
  *
  */
 XPLM_API XPLMNavRef XPLMFindFirstNavAidOfType(
-                         XPLMNavType          inType);    
+                         XPLMNavType          inType);
 
 /*
  * XPLMFindLastNavAidOfType
  * 
  * This routine returns the ref of the last navaid of the given type in the
  * database or XPLM_NAV_NOT_FOUND if there are no navaids of that type in the
- * database.  You must pass exactly one nav aid type to this routine.         
+ * database.  You must pass exactly one navaid type to this routine.
  *
  */
 XPLM_API XPLMNavRef XPLMFindLastNavAidOfType(
-                         XPLMNavType          inType);    
+                         XPLMNavType          inType);
 
 /*
  * XPLMFindNavAid
  * 
  * This routine provides a number of searching capabilities for the nav
- * database. XPLMFindNavAid will search through every nav aid whose type is
- * within inType (multiple types may be added together) and return any
- * nav-aids found based on the following rules:
+ * database. XPLMFindNavAid will search through every navaid whose type is
+ * within inType (multiple types may be added together) and return any navaids
+ * found based on the following rules:
  * 
  * * If inLat and inLon are not NULL, the navaid nearest to that lat/lon will
  *   be returned, otherwise the last navaid found will be returned.
@@ -163,16 +163,16 @@ XPLM_API XPLMNavRef XPLMFindLastNavAidOfType(
  * * Find the nearest navaid on this frequency.
  * * Find the nearest airport.
  * * Find the VOR whose ID is "KBOS".
- * * Find the nearest airport whose name contains "Chicago".                  
+ * * Find the nearest airport whose name contains "Chicago".
  *
  */
 XPLM_API XPLMNavRef XPLMFindNavAid(
-                         const char *         inNameFragment,    /* Can be NULL */
-                         const char *         inIDFragment,    /* Can be NULL */
-                         float *              inLat,    /* Can be NULL */
-                         float *              inLon,    /* Can be NULL */
-                         int *                inFrequency,    /* Can be NULL */
-                         XPLMNavType          inType);    
+                         const char *         inNameFragment,         /* Can be NULL */
+                         const char *         inIDFragment,           /* Can be NULL */
+                         float *              inLat,                  /* Can be NULL */
+                         float *              inLon,                  /* Can be NULL */
+                         int *                inFrequency,            /* Can be NULL */
+                         XPLMNavType          inType);
 
 /*
  * XPLMGetNavAidInfo
@@ -191,32 +191,32 @@ XPLM_API XPLMNavRef XPLMFindNavAid(
  * The outReg parameter tells if the navaid is within the local "region" of
  * loaded DSFs.  (This information may not be particularly useful to plugins.)
  * The parameter is a single byte value 1 for true or 0 for false, not a C
- * string.                                                                    
+ * string.
  *
  */
 XPLM_API void       XPLMGetNavAidInfo(
-                         XPLMNavRef           inRef,    
-                         XPLMNavType *        outType,    /* Can be NULL */
-                         float *              outLatitude,    /* Can be NULL */
-                         float *              outLongitude,    /* Can be NULL */
-                         float *              outHeight,    /* Can be NULL */
-                         int *                outFrequency,    /* Can be NULL */
-                         float *              outHeading,    /* Can be NULL */
-                         char *               outID,    /* Can be NULL */
-                         char *               outName,    /* Can be NULL */
-                         char *               outReg);    /* Can be NULL */
+                         XPLMNavRef           inRef,
+                         XPLMNavType *        outType,                /* Can be NULL */
+                         float *              outLatitude,            /* Can be NULL */
+                         float *              outLongitude,           /* Can be NULL */
+                         float *              outHeight,              /* Can be NULL */
+                         int *                outFrequency,           /* Can be NULL */
+                         float *              outHeading,             /* Can be NULL */
+                         char *               outID,                  /* Can be NULL */
+                         char *               outName,                /* Can be NULL */
+                         char *               outReg);                /* Can be NULL */
 
 /***************************************************************************
  * FLIGHT MANAGEMENT COMPUTER
  ***************************************************************************/
 /*
  * Note: the FMS works based on an array of entries.  Indices into the array
- * are zero-based.  Each entry is a nav-aid plus an altitude.  The FMS tracks
+ * are zero-based.  Each entry is a navaid plus an altitude.  The FMS tracks
  * the currently displayed entry and the entry that it is flying to.
  * 
  * The FMS must be programmed with contiguous entries, so clearing an entry at
  * the end shortens the effective flight plan.  There is a max of 100
- * waypoints in the flight plan.                                              
+ * waypoints in the flight plan.
  *
  */
 
@@ -224,7 +224,7 @@ XPLM_API void       XPLMGetNavAidInfo(
 /*
  * XPLMCountFMSEntries
  * 
- * This routine returns the number of entries in the FMS.                     
+ * This routine returns the number of entries in the FMS.
  *
  */
 XPLM_API int        XPLMCountFMSEntries(void);
@@ -232,7 +232,7 @@ XPLM_API int        XPLMCountFMSEntries(void);
 /*
  * XPLMGetDisplayedFMSEntry
  * 
- * This routine returns the index of the entry the pilot is viewing.          
+ * This routine returns the index of the entry the pilot is viewing.
  *
  */
 XPLM_API int        XPLMGetDisplayedFMSEntry(void);
@@ -240,7 +240,7 @@ XPLM_API int        XPLMGetDisplayedFMSEntry(void);
 /*
  * XPLMGetDestinationFMSEntry
  * 
- * This routine returns the index of the entry the FMS is flying to.          
+ * This routine returns the index of the entry the FMS is flying to.
  *
  */
 XPLM_API int        XPLMGetDestinationFMSEntry(void);
@@ -252,16 +252,16 @@ XPLM_API int        XPLMGetDestinationFMSEntry(void);
  *
  */
 XPLM_API void       XPLMSetDisplayedFMSEntry(
-                         int                  inIndex);    
+                         int                  inIndex);
 
 /*
  * XPLMSetDestinationFMSEntry
  * 
- * This routine changes which entry the FMS is flying the aircraft toward.    
+ * This routine changes which entry the FMS is flying the aircraft toward.
  *
  */
 XPLM_API void       XPLMSetDestinationFMSEntry(
-                         int                  inIndex);    
+                         int                  inIndex);
 
 /*
  * XPLMGetFMSEntryInfo
@@ -281,17 +281,17 @@ XPLM_API void       XPLMSetDestinationFMSEntry(
  * not be set to XPLM_NAV_NOT_FOUND while no data is available, and instead
  * just remain the value of the variable that you passed the pointer to.
  * Therefore, always initialize the variable to XPLM_NAV_NOT_FOUND before
- * passing the pointer to this function.                                      
+ * passing the pointer to this function.
  *
  */
 XPLM_API void       XPLMGetFMSEntryInfo(
-                         int                  inIndex,    
-                         XPLMNavType *        outType,    /* Can be NULL */
-                         char *               outID,    /* Can be NULL */
-                         XPLMNavRef *         outRef,    /* Can be NULL */
-                         int *                outAltitude,    /* Can be NULL */
-                         float *              outLat,    /* Can be NULL */
-                         float *              outLon);    /* Can be NULL */
+                         int                  inIndex,
+                         XPLMNavType *        outType,                /* Can be NULL */
+                         char *               outID,                  /* Can be NULL */
+                         XPLMNavRef *         outRef,                 /* Can be NULL */
+                         int *                outAltitude,            /* Can be NULL */
+                         float *              outLat,                 /* Can be NULL */
+                         float *              outLon);                /* Can be NULL */
 
 /*
  * XPLMSetFMSEntryInfo
@@ -303,38 +303,38 @@ XPLM_API void       XPLMGetFMSEntryInfo(
  *
  */
 XPLM_API void       XPLMSetFMSEntryInfo(
-                         int                  inIndex,    
-                         XPLMNavRef           inRef,    
-                         int                  inAltitude);    
+                         int                  inIndex,
+                         XPLMNavRef           inRef,
+                         int                  inAltitude);
 
 /*
  * XPLMSetFMSEntryLatLon
  * 
  * This routine changes the entry in the FMS to a lat/lon entry with the given
- * coordinates.                                                               
+ * coordinates.
  *
  */
 XPLM_API void       XPLMSetFMSEntryLatLon(
-                         int                  inIndex,    
-                         float                inLat,    
-                         float                inLon,    
-                         int                  inAltitude);    
+                         int                  inIndex,
+                         float                inLat,
+                         float                inLon,
+                         int                  inAltitude);
 
 /*
  * XPLMClearFMSEntry
  * 
  * This routine clears the given entry, potentially shortening the flight
- * plan.                                                                      
+ * plan.
  *
  */
 XPLM_API void       XPLMClearFMSEntry(
-                         int                  inIndex);    
+                         int                  inIndex);
 
 /***************************************************************************
  * GPS RECEIVER
  ***************************************************************************/
 /*
- * These APIs let you read data from the GPS unit.                            
+ * These APIs let you read data from the GPS unit.
  *
  */
 
@@ -342,7 +342,7 @@ XPLM_API void       XPLMClearFMSEntry(
  * XPLMGetGPSDestinationType
  * 
  * This routine returns the type of the currently selected GPS destination,
- * one of fix, airport, VOR or NDB.                                           
+ * one of fix, airport, VOR or NDB.
  *
  */
 XPLM_API XPLMNavType XPLMGetGPSDestinationType(void);
@@ -350,7 +350,7 @@ XPLM_API XPLMNavType XPLMGetGPSDestinationType(void);
 /*
  * XPLMGetGPSDestination
  * 
- * This routine returns the current GPS destination.                          
+ * This routine returns the current GPS destination.
  *
  */
 XPLM_API XPLMNavRef XPLMGetGPSDestination(void);

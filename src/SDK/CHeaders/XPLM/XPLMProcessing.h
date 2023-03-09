@@ -2,8 +2,8 @@
 #define _XPLMProcessing_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -17,8 +17,8 @@
  * and performing I/O.
  * 
  * You can receive a callback either just before or just after the per-frame
- * physics calculations happen - you can use post-FM callbacks to "patch" the
- * flight model after it has run.
+ * physics calculations happen - you can use post-flightmodel callbacks to
+ * "patch" the flight model after it has run.
  * 
  * If the user has set the number of flight model iterations per frame greater
  * than one your plugin will _not_ see this; these integrations run on the
@@ -32,8 +32,9 @@
  * 
  * WARNING: Do NOT use these callbacks to draw! You cannot draw during flight
  * loop callbacks. Use the drawing callbacks (see XPLMDisplay for more info)
- * for graphics.  (One exception: you can use a post-flight loop callback to
- * update your own off-screen FBOs.)                                          
+ * for graphics or the XPLMInstance functions for aircraft or models. (One
+ * exception: you can use a post-flight loop callback to update your own
+ * off-screen FBOs.)
  *
  */
 
@@ -52,14 +53,14 @@ extern "C" {
  * XPLMFlightLoopPhaseType
  * 
  * You can register a flight loop callback to run either before or after the
- * flight model is integrated by X-Plane.                                     
+ * flight model is integrated by X-Plane.
  *
  */
 enum {
-     /* Your callback runs before X-Plane integrates the flight model.             */
+    /* Your callback runs before X-Plane integrates the flight model.             */
     xplm_FlightLoop_Phase_BeforeFlightModel  = 0,
 
-     /* Your callback runs after X-Plane integrates the flight model.              */
+    /* Your callback runs after X-Plane integrates the flight model.              */
     xplm_FlightLoop_Phase_AfterFlightModel   = 1,
 
 
@@ -73,7 +74,7 @@ typedef int XPLMFlightLoopPhaseType;
  * 
  * This is an opaque identifier for a flight loop callback. You can use this
  * identifier to easily track and remove your callbacks, or to use the new
- * flight loop APIs.                                                          
+ * flight loop APIs.
  *
  */
 typedef void * XPLMFlightLoopID;
@@ -94,14 +95,15 @@ typedef void * XPLMFlightLoopID;
  *   dispatched.
  * - inCounter: a monotonically increasing counter, bumped once per flight
  *   loop dispatch from the sim.
- * - inRefcon: your own ptr constant from when you regitered yor callback.
+ * - inRefcon: your own pointer constant provided when you registered yor
+ *   callback.
  * 
  * Your return value controls when you will next be called.
  * 
  *  - Return 0 to stop receiving callbacks.
- *  - Pass a positive number to specify how many seconds until the next
+ *  - Return a positive number to specify how many seconds until the next
  *    callback. (You will be called at or after this time, not before.)
- *  - Pass a negative number to specify how many loops must go by until you
+ *  - Return a negative number to specify how many loops must go by until you
  *    are called. For example, -1.0 means call me the very next loop.
  * 
  * Try to run your flight loop as infrequently as is practical, and suspend it
@@ -109,22 +111,22 @@ typedef void * XPLMFlightLoopID;
  * callbacks that do nothing lowers X-Plane's frame rate.
  * 
  * Your callback will NOT be unregistered if you return 0; it will merely be
- * inactive.                                                                  
+ * inactive.
  *
  */
 typedef float (* XPLMFlightLoop_f)(
-                         float                inElapsedSinceLastCall,    
-                         float                inElapsedTimeSinceLastFlightLoop,    
-                         int                  inCounter,    
-                         void *               inRefcon);    
+                         float                inElapsedSinceLastCall,
+                         float                inElapsedTimeSinceLastFlightLoop,
+                         int                  inCounter,
+                         void *               inRefcon);
 
 #if defined(XPLM210)
 /*
  * XPLMCreateFlightLoop_t
  * 
  * XPLMCreateFlightLoop_t contains the parameters to create a new flight loop
- * callback. The strsucture can be expanded in future SDKs - always set
- * structSize to the size of your structure in bytes.                         
+ * callback. The structure may be expanded in future SDKs - always set
+ * structSize to the size of your structure in bytes.
  *
  */
 typedef struct {
@@ -144,7 +146,7 @@ typedef struct {
  * 
  * __WARNING__: XPLMGetElapsedTime is not a very good timer!  It lacks
  * precision in both its data type and its source.  Do not attempt to use it
- * for timing critical applications like network multiplayer.                 
+ * for timing critical applications like network multiplayer.
  *
  */
 XPLM_API float      XPLMGetElapsedTime(void);
@@ -153,7 +155,7 @@ XPLM_API float      XPLMGetElapsedTime(void);
  * XPLMGetCycleNumber
  * 
  * This routine returns a counter starting at zero for each sim cycle
- * computed/video frame rendered.                                             
+ * computed/video frame rendered.
  *
  */
 XPLM_API int        XPLMGetCycleNumber(void);
@@ -162,20 +164,21 @@ XPLM_API int        XPLMGetCycleNumber(void);
  * XPLMRegisterFlightLoopCallback
  * 
  * This routine registers your flight loop callback. Pass in a pointer to a
- * flight loop function and a refcon. inInterval defines when you will be
- * called. Pass in a positive number to specify seconds from registration time
- * to the next callback. Pass in a negative number to indicate when you will
- * be called (e.g. pass -1 to be called at the next cylcle). Pass 0 to not be
- * called; your callback will be inactive.
+ * flight loop function and a refcon (an optional reference value determined
+ * by you). inInterval defines when you will be called. Pass in a positive
+ * number to specify seconds from registration time to the next callback. Pass
+ * in a negative number to indicate when you will be called (e.g. pass -1 to
+ * be called at the next cylcle). Pass 0 to not be called; your callback will
+ * be inactive.
  * 
  * (This legacy function only installs pre-flight-loop callbacks; use
- * XPLMCreateFlightLoop for more control.)                                    
+ * XPLMCreateFlightLoop for more control.)
  *
  */
 XPLM_API void       XPLMRegisterFlightLoopCallback(
-                         XPLMFlightLoop_f     inFlightLoop,    
-                         float                inInterval,    
-                         void *               inRefcon);    
+                         XPLMFlightLoop_f     inFlightLoop,
+                         float                inInterval,
+                         void *               inRefcon);
 
 /*
  * XPLMUnregisterFlightLoopCallback
@@ -185,12 +188,12 @@ XPLM_API void       XPLMRegisterFlightLoopCallback(
  * it will not be called again.
  * 
  * Only use this on flight loops registered via
- * XPLMRegisterFlightLoopCallback.                                            
+ * XPLMRegisterFlightLoopCallback.
  *
  */
 XPLM_API void       XPLMUnregisterFlightLoopCallback(
-                         XPLMFlightLoop_f     inFlightLoop,    
-                         void *               inRefcon);    
+                         XPLMFlightLoop_f     inFlightLoop,
+                         void *               inRefcon);
 
 /*
  * XPLMSetFlightLoopCallbackInterval
@@ -203,14 +206,14 @@ XPLM_API void       XPLMUnregisterFlightLoopCallback(
  * positive for seconds, negative for cycles, and 0 for deactivating the
  * callback. If inRelativeToNow is 1, times are from the time of this call;
  * otherwise they are from the time the callback was last called (or the time
- * it was registered if it has never been called.                             
+ * it was registered if it has never been called.
  *
  */
 XPLM_API void       XPLMSetFlightLoopCallbackInterval(
-                         XPLMFlightLoop_f     inFlightLoop,    
-                         float                inInterval,    
-                         int                  inRelativeToNow,    
-                         void *               inRefcon);    
+                         XPLMFlightLoop_f     inFlightLoop,
+                         float                inInterval,
+                         int                  inRelativeToNow,
+                         void *               inRefcon);
 
 #if defined(XPLM210)
 /*
@@ -218,11 +221,11 @@ XPLM_API void       XPLMSetFlightLoopCallbackInterval(
  * 
  * This routine creates a flight loop callback and returns its ID. The flight
  * loop callback is created using the input param struct, and is inited to be
- * unscheduled.                                                               
+ * unscheduled.
  *
  */
 XPLM_API XPLMFlightLoopID XPLMCreateFlightLoop(
-                         XPLMCreateFlightLoop_t * inParams);    
+                         XPLMCreateFlightLoop_t * inParams);
 #endif /* XPLM210 */
 
 #if defined(XPLM210)
@@ -230,11 +233,11 @@ XPLM_API XPLMFlightLoopID XPLMCreateFlightLoop(
  * XPLMDestroyFlightLoop
  * 
  * This routine destroys a flight loop callback by ID. Only call it on flight
- * loops created with the newer XPLMCreateFlightLoop API.                     
+ * loops created with the newer XPLMCreateFlightLoop API.
  *
  */
 XPLM_API void       XPLMDestroyFlightLoop(
-                         XPLMFlightLoopID     inFlightLoopID);    
+                         XPLMFlightLoopID     inFlightLoopID);
 #endif /* XPLM210 */
 
 #if defined(XPLM210)
@@ -246,15 +249,15 @@ XPLM_API void       XPLMDestroyFlightLoop(
  * the absolute value of the input. If the interval is positive, it is a
  * duration in seconds.
  * 
- * If inRelativeToNow is true, ties are interpretted relative to the time this
+ * If inRelativeToNow is true, times are interpreted relative to the time this
  * routine is called; otherwise they are relative to the last call time or the
- * time the flight loop was registered (if never called).                     
+ * time the flight loop was registered (if never called).
  *
  */
 XPLM_API void       XPLMScheduleFlightLoop(
-                         XPLMFlightLoopID     inFlightLoopID,    
-                         float                inInterval,    
-                         int                  inRelativeToNow);    
+                         XPLMFlightLoopID     inFlightLoopID,
+                         float                inInterval,
+                         int                  inRelativeToNow);
 #endif /* XPLM210 */
 
 #ifdef __cplusplus

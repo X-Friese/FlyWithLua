@@ -2,8 +2,8 @@
 #define _XPLMPlugin_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -12,7 +12,7 @@
  ***************************************************************************/
 /*
  * These APIs provide facilities to find and work with other plugins and
- * manage other plugins.                                                      
+ * manage other plugins.
  *
  */
 
@@ -29,7 +29,7 @@ extern "C" {
  * These APIs allow you to find another plugin or yourself, or iterate across
  * all plugins.  For example, if you wrote an FMS plugin that needed to talk
  * to an autopilot plugin, you could use these APIs to locate the autopilot
- * plugin.                                                                    
+ * plugin.
  *
  */
 
@@ -38,7 +38,7 @@ extern "C" {
  * XPLMGetMyID
  * 
  * This routine returns the plugin ID of the calling plug-in.  Call this to
- * get your own ID.                                                           
+ * get your own ID.
  *
  */
 XPLM_API XPLMPluginID XPLMGetMyID(void);
@@ -47,7 +47,7 @@ XPLM_API XPLMPluginID XPLMGetMyID(void);
  * XPLMCountPlugins
  * 
  * This routine returns the total number of plug-ins that are loaded, both
- * disabled and enabled.                                                      
+ * disabled and enabled.
  *
  */
 XPLM_API int        XPLMCountPlugins(void);
@@ -57,22 +57,22 @@ XPLM_API int        XPLMCountPlugins(void);
  * 
  * This routine returns the ID of a plug-in by index.  Index is 0 based from 0
  * to XPLMCountPlugins-1, inclusive. Plugins may be returned in any arbitrary
- * order.                                                                     
+ * order.
  *
  */
 XPLM_API XPLMPluginID XPLMGetNthPlugin(
-                         int                  inIndex);    
+                         int                  inIndex);
 
 /*
  * XPLMFindPluginByPath
  * 
  * This routine returns the plug-in ID of the plug-in whose file exists at the
  * passed in absolute file system path.  XPLM_NO_PLUGIN_ID is returned if the
- * path does not point to a currently loaded plug-in.                         
+ * path does not point to a currently loaded plug-in.
  *
  */
 XPLM_API XPLMPluginID XPLMFindPluginByPath(
-                         const char *         inPath);    
+                         const char *         inPath);
 
 /*
  * XPLMFindPluginBySignature
@@ -82,11 +82,11 @@ XPLM_API XPLMPluginID XPLMFindPluginByPath(
  * signature.  Signatures are the best way to identify another plug-in as they
  * are independent of the file system path of a plug-in or the human-readable
  * plug-in name, and should be unique for all plug-ins.  Use this routine to
- * locate another plugin that your plugin interoperates with                  
+ * locate another plugin that your plugin interoperates with
  *
  */
 XPLM_API XPLMPluginID XPLMFindPluginBySignature(
-                         const char *         inSignature);    
+                         const char *         inSignature);
 
 /*
  * XPLMGetPluginInfo
@@ -98,22 +98,22 @@ XPLM_API XPLMPluginID XPLMFindPluginBySignature(
  * outName - the human-readable name of the plug-in. outFilePath - the
  * absolute file path to the file that contains this plug-in. outSignature - a
  * unique string that identifies this plug-in. outDescription - a
- * human-readable description of this plug-in.                                
+ * human-readable description of this plug-in.
  *
  */
 XPLM_API void       XPLMGetPluginInfo(
-                         XPLMPluginID         inPlugin,    
-                         char *               outName,    /* Can be NULL */
-                         char *               outFilePath,    /* Can be NULL */
-                         char *               outSignature,    /* Can be NULL */
-                         char *               outDescription);    /* Can be NULL */
+                         XPLMPluginID         inPlugin,
+                         char *               outName,                /* Can be NULL */
+                         char *               outFilePath,            /* Can be NULL */
+                         char *               outSignature,           /* Can be NULL */
+                         char *               outDescription);        /* Can be NULL */
 
 /***************************************************************************
  * ENABLING/DISABLING PLUG-INS
  ***************************************************************************/
 /*
  * These routines are used to work with plug-ins and manage them.  Most
- * plugins will not need to use these APIs.                                   
+ * plugins will not need to use these APIs.
  *
  */
 
@@ -121,11 +121,11 @@ XPLM_API void       XPLMGetPluginInfo(
 /*
  * XPLMIsPluginEnabled
  * 
- * Returns whether the specified plug-in is enabled for running.              
+ * Returns whether the specified plug-in is enabled for running.
  *
  */
 XPLM_API int        XPLMIsPluginEnabled(
-                         XPLMPluginID         inPluginID);    
+                         XPLMPluginID         inPluginID);
 
 /*
  * XPLMEnablePlugin
@@ -133,20 +133,20 @@ XPLM_API int        XPLMIsPluginEnabled(
  * This routine enables a plug-in if it is not already enabled. It returns 1
  * if the plugin was enabled or successfully enables itself, 0 if it does not.
  * Plugins may fail to enable (for example, if resources cannot be acquired)
- * by returning 0 from their XPluginEnable callback.                          
+ * by returning 0 from their XPluginEnable callback.
  *
  */
 XPLM_API int        XPLMEnablePlugin(
-                         XPLMPluginID         inPluginID);    
+                         XPLMPluginID         inPluginID);
 
 /*
  * XPLMDisablePlugin
  * 
- * This routine disableds an enabled plug-in.                                 
+ * This routine disableds an enabled plug-in.
  *
  */
 XPLM_API void       XPLMDisablePlugin(
-                         XPLMPluginID         inPluginID);    
+                         XPLMPluginID         inPluginID);
 
 /*
  * XPLMReloadPlugins
@@ -155,7 +155,7 @@ XPLM_API void       XPLMDisablePlugin(
  * return from the callback you were within (e.g. a menu select callback) you
  * will receive your XPluginDisable and XPluginStop callbacks and your DLL
  * will be unloaded, then the start process happens as if the sim was starting
- * up.                                                                        
+ * up.
  *
  */
 XPLM_API void       XPLMReloadPlugins(void);
@@ -193,7 +193,7 @@ XPLM_API void       XPLMReloadPlugins(void);
  * (e.g. be greater or equal to unsigned 0x8000000) while commands should have
  * this bit be cleared.
  * 
- * The following messages are sent to your plugin by X-Plane.                 
+ * The following messages are sent to your plugin by X-Plane.
  *
  */
 
@@ -278,18 +278,44 @@ XPLM_API void       XPLMReloadPlugins(void);
 #define XPLM_MSG_RELEASE_PLANES 111
 #endif /* XPLM303 */
 
+#if defined(XPLM400)
+/* Sent to your plugin after FMOD sound banks are loaded. The parameter is the*
+ * XPLMBankID enum in XPLMSound.h, 0 for the master bank and 1 for the radio  *
+ * bank.                                                                      */
+#define XPLM_MSG_FMOD_BANK_LOADED 112
+#endif /* XPLM400 */
+
+#if defined(XPLM400)
+/* Sent to your plugin before FMOD sound banks are unloaded. Any associated   *
+ * resources should be cleaned up at this point. The parameter is the         *
+ * XPLMBankID enum in XPLMSound.h, 0 for the master bank and 1 for the radio  *
+ * bank.                                                                      */
+#define XPLM_MSG_FMOD_BANK_UNLOADING 113
+#endif /* XPLM400 */
+
+#if defined(XPLM400)
+/* Sent to your plugin per-frame (at-most) when/if datarefs are added. It will*
+ * include the new data ref total count so that your plugin can keep a local  *
+ * cache of the total, see what's changed and know which ones to inquire about*
+ * if it cares.                                                               *
+ *                                                                            *
+ * This message is only sent to plugins that enable the                       *
+ * XPLM_WANTS_DATAREF_NOTIFICATIONS feature.                                  */
+#define XPLM_MSG_DATAREFS_ADDED 114
+#endif /* XPLM400 */
+
 /*
  * XPLMSendMessageToPlugin
  * 
  * This function sends a message to another plug-in or X-Plane.  Pass
  * XPLM_NO_PLUGIN_ID to broadcast to all plug-ins.  Only enabled plug-ins with
- * a message receive function receive the message.                            
+ * a message receive function receive the message.
  *
  */
 XPLM_API void       XPLMSendMessageToPlugin(
-                         XPLMPluginID         inPlugin,    
-                         int                  inMessage,    
-                         void *               inParam);    
+                         XPLMPluginID         inPlugin,
+                         int                  inMessage,
+                         void *               inParam);
 
 #if defined(XPLM200)
 /***************************************************************************
@@ -298,8 +324,8 @@ XPLM_API void       XPLMSendMessageToPlugin(
 /*
  * The plugin features API allows your plugin to "sign up" for additional
  * capabilities and plugin system features that are normally disabled for
- * backward compatibility.  This allows advanced plugins to "opt-in" to new
- * behavior.
+ * backward compatibility or performance.  This allows advanced plugins to
+ * "opt-in"  to new behavior.
  * 
  * Each feature is defined by a permanent string name.  The feature string
  * names will vary with the particular installation of X-Plane, so plugins
@@ -352,7 +378,15 @@ XPLM_API void       XPLMSendMessageToPlugin(
  * 
  * Before enabling this, make sure any custom widget code in your plugin is
  * prepared to cope with the UI coordinate system not being th same as the
- * OpenGL window coordinate system.                                           
+ * OpenGL window coordinate system.
+ * 
+ * XPLM_WANTS_DATAREF_NOTIFICATIONS
+ * --------------------------------
+ * 
+ * Available in the SDK 4.0.0, this capability tells X-Plane to to send the
+ * enabling plugin the new XPLM_MSG_DATAREFS_ADDED message any time new
+ * datarefs are added. The SDK will coalesce consecutive dataref registrations
+ * to minimize the number of messages sent.
  *
  */
 
@@ -362,57 +396,57 @@ XPLM_API void       XPLMSendMessageToPlugin(
  * 
  * You pass an XPLMFeatureEnumerator_f to get a list of all features supported
  * by a given version running version of X-Plane.  This routine is called once
- * for each feature.                                                          
+ * for each feature.
  *
  */
 typedef void (* XPLMFeatureEnumerator_f)(
-                         const char *         inFeature,    
-                         void *               inRef);    
+                         const char *         inFeature,
+                         void *               inRef);
 
 /*
  * XPLMHasFeature
  * 
  * This returns 1 if the given installation of X-Plane supports a feature, or
- * 0 if it does not.                                                          
+ * 0 if it does not.
  *
  */
 XPLM_API int        XPLMHasFeature(
-                         const char *         inFeature);    
+                         const char *         inFeature);
 
 /*
  * XPLMIsFeatureEnabled
  * 
  * This returns 1 if a feature is currently enabled for your plugin, or 0 if
  * it is not enabled.  It is an error to call this routine with an unsupported
- * feature.                                                                   
+ * feature.
  *
  */
 XPLM_API int        XPLMIsFeatureEnabled(
-                         const char *         inFeature);    
+                         const char *         inFeature);
 
 /*
  * XPLMEnableFeature
  * 
  * This routine enables or disables a feature for your plugin.  This will
  * change the running behavior of X-Plane and your plugin in some way,
- * depending on the feature.                                                  
+ * depending on the feature.
  *
  */
 XPLM_API void       XPLMEnableFeature(
-                         const char *         inFeature,    
-                         int                  inEnable);    
+                         const char *         inFeature,
+                         int                  inEnable);
 
 /*
  * XPLMEnumerateFeatures
  * 
  * This routine calls your enumerator callback once for each feature that this
  * running version of X-Plane supports. Use this routine to determine all of
- * the features that X-Plane can support.                                     
+ * the features that X-Plane can support.
  *
  */
 XPLM_API void       XPLMEnumerateFeatures(
-                         XPLMFeatureEnumerator_f inEnumerator,    
-                         void *               inRef);    
+                         XPLMFeatureEnumerator_f inEnumerator,
+                         void *               inRef);
 
 #endif /* XPLM200 */
 #ifdef __cplusplus

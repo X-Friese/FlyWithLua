@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMInstance;
@@ -12,11 +12,11 @@ INTERFACE
    drawing, then move or manipulate it later (as needed).
    
    This provides one tremendous benefit: it keeps all dataref operations for
-   your object in one place. Because datarefs are main thread only, allowing
-   dataref access anywhere is a serious performance bottleneck for the
-   simulator---the whole simulator has to pause and wait for each dataref
-   access. This performance penalty will only grow worse as X-Plane moves
-   toward an ever more heavily multithreaded engine.
+   your object in one place. Because datarefs access may be done from the main
+   thread only, allowing dataref access anywhere is a serious performance
+   bottleneck for the simulator - the whole simulator has to pause and wait
+   for each dataref access. This performance penalty will only grow worse as
+   X-Plane moves toward an ever more heavily multithreaded engine.
    
    The instancing API allows X-Plane to isolate all dataref manipulations for
    all plugin object drawing to one place, potentially providing huge
@@ -25,12 +25,12 @@ INTERFACE
    Here's how it works:
    
    When an instance is created, it provides a list of all datarefs you want to
-   manipulate in for the OBJ in the future. This list of datarefs replaces the
+   manipulate for the OBJ in the future. This list of datarefs replaces the
    ad-hoc collections of dataref objects previously used by art assets. Then,
    per-frame, you can manipulate the instance by passing in a "block" of
    packed floats representing the current values of the datarefs for your
    instance. (Note that the ordering of this set of packed floats must exactly
-   match the ordering of the datarefs when you created your instance.)        
+   match the ordering of the datarefs when you created your instance.)
 }
 
 USES
@@ -40,7 +40,7 @@ USES
  * Instance Creation and Destruction
  ___________________________________________________________________________}
 {
-   Registers and unregisters instances.                                       
+   Registers and unregisters instances.
 }
 
 
@@ -48,7 +48,7 @@ TYPE
    {
     XPLMInstanceRef
     
-    An opaque handle to an instance.                                           
+    An opaque handle to an instance.
    }
    XPLMInstanceRef = pointer;
    PXPLMInstanceRef = ^XPLMInstanceRef;
@@ -67,14 +67,14 @@ TYPE
       before the object is loaded. This is true even if their data will be
       provided via the instance dataref list.
     
-    * The instance dataref array must be a valid ptr to an array of at least
-      one item that is null terminated.  That is, if you do not want any
-      datarefs, you must passa ptr to an array with a null item.  You cannot
-      pass null for this.                                                      
+    * The instance dataref array must be a valid pointer to a null-terminated
+      array.  That is, if you do not want any datarefs, you must pass a pointer
+      to a one-element array containing a null item.  You cannot pass null for
+      the array itself.
    }
    FUNCTION XPLMCreateInstance(
-                                        obj                 : XPLMObjectRef;    
-                                        datarefs            : PXPLMString) : XPLMInstanceRef;    
+                                        obj                 : XPLMObjectRef;
+                                        datarefs            : PXPLMString) : XPLMInstanceRef;
     cdecl; external XPLM_DLL;
 
    {
@@ -85,10 +85,10 @@ TYPE
     
     Tip: you can release your OBJ ref after you call XPLMCreateInstance as long
     as you never use it again; the instance will maintain its own reference to
-    the OBJ and the object OBJ be deallocated when the instance is destroyed.  
+    the OBJ and the object OBJ be deallocated when the instance is destroyed.
    }
    PROCEDURE XPLMDestroyInstance(
-                                        instance            : XPLMInstanceRef);    
+                                        instance            : XPLMInstanceRef);
     cdecl; external XPLM_DLL;
 
 {___________________________________________________________________________
@@ -101,22 +101,22 @@ TYPE
     Updates both the position of the instance and all datarefs you registered
     for it.  Call this from a flight loop callback or UI callback.
     
-    __DO NOT__ call XPLMInstanceSetPosition from a drawing callback; the whole
+    __DO_NOT__ call XPLMInstanceSetPosition from a drawing callback; the whole
     point of instancing is that you do not need any drawing callbacks. Setting
     instance data from a drawing callback may have undefined consequences, and
     the drawing callback hurts FPS unnecessarily.  
     
     The memory pointed to by the data pointer must be large enough to hold one
-    float for every data ref you have registered, and must contain valid
+    float for every dataref you have registered, and must contain valid
     floating point data.
     
     BUG: before X-Plane 11.50, if you have no dataref registered, you must
-    still pass a valid pointer for data and not null.                          
+    still pass a valid pointer for data and not null.
    }
    PROCEDURE XPLMInstanceSetPosition(
-                                        instance            : XPLMInstanceRef;    
-                                        new_position        : PXPLMDrawInfo_t;    
-                                        data                : PSingle);    
+                                        instance            : XPLMInstanceRef;
+                                        new_position        : PXPLMDrawInfo_t;
+                                        data                : PSingle);
     cdecl; external XPLM_DLL;
 
 

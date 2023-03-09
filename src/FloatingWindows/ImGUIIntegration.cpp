@@ -145,6 +145,7 @@ void ImGUIWindow::buildGUI() {
             ImGuiWindowFlags_NoCollapse |
             ImGuiWindowFlags_HorizontalScrollbar;
     ImGui::Begin("FlyWithLua", nullptr, fwl_imgui_wnd_flags);
+
     if (doBuild) {
         doBuild(*this);
     }

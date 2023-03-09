@@ -5,7 +5,7 @@
 This download contains the files necessary to build plugins for X-Plane.  The 
 X-Plane plugin website is:
 
-http://https://developer.x-plane.com/sdk/
+https://developer.x-plane.com/sdk/
 
 The website contains full documentation on the SDK including tech notes, sample
 plugins, sample code, contact information, and links to the latest versions of
@@ -32,11 +32,18 @@ SDK website explains this process in more detail.
 
 This section contains per-release notes for the history of the X-Plane SDK.
 
-X-PLane SDK Release 4.0.0 beta 1 9/18/2022
+X-Plane SDK Release 4.0.0 3/7/2022
 
 The 4.0.0 SDK adds support for ARM64 Macs.  The 4.0 SDK is supported by X-Plane
-12.  The new SDK adds support for drawing hooks that draw directly to the G1000
-and other avionic cockpit devices.
+12.04 (but can be used with X-Plane 12.00 if not using the weather, sound or 
+dataref introspection APIs). New features:
+
+ - M1/ARM64 support for Mac
+ - Avionics display callbacks provide direct drawing to avionic "devices"
+ - New XPLMSound API
+ - New XPLMWeather API
+ - New dataref APIs to get the set of all datarefs programmatically and be 
+   notified of new datarefs ("introspection").  
 
 X-Plane SDK Release 3.0.2 4/29/2020
 
