@@ -2,8 +2,8 @@
 #define _XPLMDefs_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -14,11 +14,12 @@
  * This file is contains the cross-platform and basic definitions for the
  * X-Plane SDK.
  * 
- * The preprocessor macros APL and IBM must be defined to specify the
- * compilation target; define APL to 1 and IBM 0 to compile on Macintosh and
- * APL to 0 and IBM to 1 for Windows. You must specify these macro definitions
- * before including XPLMDefs.h or any other XPLM headers.  You can do this
- * using the -D command line option or a preprocessor header.                 
+ * The preprocessor macros APL, LIN and IBM must be defined to specify the
+ * compilation target; define APL to 1 to compile on Mac, IBM to 1 to compile
+ * on Windows and LIN to 1 to compile on Linux. Only one compilation target
+ * may be used at a time. You must specify these macro definitions before
+ * including XPLMDefs.h or any other XPLM headers.  You can do this using the
+ * -D command line option or a preprocessor header.
  *
  */
 
@@ -29,9 +30,8 @@ extern "C" {
 
 #if IBM
 #include <windows.h>
-#else
-#include <stdint.h>
 #endif
+#include <stdint.h>
 /***************************************************************************
  * DLL Definitions
  ***************************************************************************/
@@ -42,7 +42,7 @@ extern "C" {
  * You can prefix your five required callbacks with the PLUGIN_API macro to
  * declare them as exported C functions.  The XPLM_API macro identifies
  * functions that are provided to you via the plugin SDK.  (Link against
- * XPLM.lib to use these functions.)                                          
+ * XPLM.lib to use these functions.)
  *
  */
 
@@ -125,7 +125,7 @@ extern "C" {
  * GLOBAL DEFINITIONS
  ***************************************************************************/
 /*
- * These definitions are used in all parts of the SDK.                        
+ * These definitions are used in all parts of the SDK.
  *
  */
 
@@ -141,9 +141,9 @@ extern "C" {
  * reloading of plugins that are part of the user's aircraft.
  * 
  * For persistent identification of plug-ins, use XPLMFindPluginBySignature in
- * XPLMUtiltiies.h
+ * XPLMUtiltiies.h .
  * 
- * -1 indicates no plug-in.                                                   
+ * -1 indicates no plug-in.
  *
  */
 typedef int XPLMPluginID;
@@ -163,31 +163,31 @@ typedef int XPLMPluginID;
  * These bitfields define modifier keys in a platform independent way. When a
  * key is pressed, a series of messages are sent to your plugin.  The down
  * flag is set in the first of these messages, and the up flag in the last. 
- * While the key is held down, messages are sent with neither to indicate that
- * the key is being held down as a repeated character.
+ * While the key is held down, messages are sent with neither flag set to
+ * indicate that the key is being held down as a repeated character.
  * 
  * The control flag is mapped to the control flag on Macintosh and PC. 
  * Generally X-Plane uses the control key and not the command key on
  * Macintosh, providing a consistent interface across platforms that does not
  * necessarily match the Macintosh user interface guidelines.  There is not
  * yet a way for plugins to access the Macintosh control keys without using
- * #ifdefed code.                                                             
+ * #ifdefed code.
  *
  */
 enum {
-     /* The shift key is down                                                      */
+    /* The shift key is down                                                      */
     xplm_ShiftFlag                           = 1,
 
-     /* The option or alt key is down                                              */
+    /* The option or alt key is down                                              */
     xplm_OptionAltFlag                       = 2,
 
-     /* The control key is down*                                                   */
+    /* The control key is down                                                    */
     xplm_ControlFlag                         = 4,
 
-     /* The key is being pressed down                                              */
+    /* The key is being pressed down                                              */
     xplm_DownFlag                            = 8,
 
-     /* The key is being released                                                  */
+    /* The key is being released                                                  */
     xplm_UpFlag                              = 16,
 
 
@@ -207,7 +207,7 @@ typedef int XPLMKeyFlags;
  * ASCII key codes take into account modifier keys; shift keys will affect
  * capitals and punctuation; control key combinations may have no vaild ASCII
  * and produce NULL.  To detect control-key combinations, use virtual key
- * codes, not ASCII keys.                                                     
+ * codes, not ASCII keys.
  *
  */
 
@@ -276,7 +276,7 @@ typedef int XPLMKeyFlags;
  *    with users' abilities to use the native X-Plane key bindings.
  * 2. Some keys that do not exist on both Mac and PC keyboards are removed.
  * 3. Do not assume that the values of these keystrokes are interchangeable
- *    with MS v-keys.                                                         
+ *    with MS v-keys.
  *
  */
 
@@ -507,6 +507,16 @@ typedef int XPLMKeyFlags;
 
 #define XPLM_VK_NUMPAD_EQ    0xBD
 
+/*
+ * XPLMFixedString150_t
+ * 
+ * A container for a fixed-size string buffer of 150 characters.
+ *
+ */
+typedef struct {
+    /* The size of the struct.                                                    */
+     char                      buffer[150];
+} XPLMFixedString150_t;
 #ifdef __cplusplus
 }
 #endif

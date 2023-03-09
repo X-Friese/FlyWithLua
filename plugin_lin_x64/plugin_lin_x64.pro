@@ -25,8 +25,9 @@ INCLUDEPATH += ../src/Fmod_api/studio/inc
 INCLUDEPATH += ..
 VPATH = ..
 
-# Defined to use X-Plane SDK 3.0.0 capabilities - no backward compatibility before 11.10
-DEFINES +=  XPLM303 \
+# Defined to use X-Plane SDK 4.0.0 capabilities - no backward compatibility before 12.00
+DEFINES +=  XPLM400 \
+            XPLM303 \
             XPLM302 \
             XPLM301 \
             XPLM300 \
@@ -46,7 +47,23 @@ unix:!macx {
 }
 
 
-HEADERS +=  ../src/FlyWithLua.h \
+HEADERS +=  ../src/SDK/CHeaders/XPLM/XPLMCamera.h \
+            ../src/SDK/CHeaders/XPLM/XPLMDataAccess.h \
+            ../src/SDK/CHeaders/XPLM/XPLMDefs.h \
+            ../src/SDK/CHeaders/XPLM/XPLMDisplay.h \
+            ../src/SDK/CHeaders/XPLM/XPLMGraphics.h \
+            ../src/SDK/CHeaders/XPLM/XPLMInstance.h \
+            ../src/SDK/CHeaders/XPLM/XPLMMap.h \
+            ../src/SDK/CHeaders/XPLM/XPLMMenus.h \
+            ../src/SDK/CHeaders/XPLM/XPLMNavigation.h \
+            ../src/SDK/CHeaders/XPLM/XPLMPlanes.h \
+            ../src/SDK/CHeaders/XPLM/XPLMPlugin.h \
+            ../src/SDK/CHeaders/XPLM/XPLMProcessing.h \
+            ../src/SDK/CHeaders/XPLM/XPLMScenery.h \
+            ../src/SDK/CHeaders/XPLM/XPLMSound.h \
+            ../src/SDK/CHeaders/XPLM/XPLMUtilities.h \
+            ../src/SDK/CHeaders/XPLM/XPLMWeather.h \
+            ../src/FlyWithLua.h \
             ../src/XSBComsDefs.h \
             ../src/FloatingWindows/FloatingWindow.h \
             ../src/FloatingWindows/FLWIntegration.h \

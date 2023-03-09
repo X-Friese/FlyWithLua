@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMNavigation;
@@ -13,7 +13,7 @@ INTERFACE
    
    You can also use this API to program the FMS.  You must use the navigation
    APIs to find the nav-aids you want to program into the FMS, since the FMS
-   is powered internally by X-Plane's navigation database.                    
+   is powered internally by X-Plane's navigation database.
 }
 
 USES
@@ -33,7 +33,7 @@ USES
     NOTE: xplm_Nav_LatLon is a specific lat-lon coordinate entered into the
     FMS. It will not exist in the database, and cannot be programmed into the
     FMS. Querying the FMS for navaids will return it.  Use
-    XPLMSetFMSEntryLatLon to set a lat/lon waypoint.                           
+    XPLMSetFMSEntryLatLon to set a lat/lon waypoint.
    }
 TYPE
    XPLMNavType = (
@@ -77,7 +77,7 @@ TYPE
     Use XPLMNavRef to refer to a nav-aid.
     
     XPLM_NAV_NOT_FOUND is returned by functions that return an XPLMNavRef when
-    the iterator must be invalid.                                              
+    the iterator must be invalid.
    }
    XPLMNavRef = Integer;
    PXPLMNavRef = ^XPLMNavRef;
@@ -90,7 +90,7 @@ CONST
     
     This returns the very first navaid in the database.  Use this to traverse
     the entire database.  Returns XPLM_NAV_NOT_FOUND if the nav database is
-    empty.                                                                     
+    empty.
    }
    FUNCTION XPLMGetFirstNavAid: XPLMNavRef;
     cdecl; external XPLM_DLL;
@@ -98,13 +98,13 @@ CONST
    {
     XPLMGetNextNavAid
     
-    Given a valid nav aid ref, this routine returns the next navaid.  It
-    returns XPLM_NAV_NOT_FOUND if the nav aid passed in was invalid or if the
-    navaid passed in was the last one in the database.  Use this routine to
-    iterate across all like-typed navaids or the entire database.              
+    Given a valid navaid ref, this routine returns the next navaid.  It returns
+    XPLM_NAV_NOT_FOUND if the navaid passed in was invalid or if the navaid
+    passed in was the last one in the database.  Use this routine to iterate
+    across all like-typed navaids or the entire database.
    }
    FUNCTION XPLMGetNextNavAid(
-                                        inNavAidRef         : XPLMNavRef) : XPLMNavRef;    
+                                        inNavAidRef         : XPLMNavRef) : XPLMNavRef;
     cdecl; external XPLM_DLL;
 
    {
@@ -112,10 +112,10 @@ CONST
     
     This routine returns the ref of the first navaid of the given type in the
     database or XPLM_NAV_NOT_FOUND if there are no navaids of that type in the
-    database.  You must pass exactly one nav aid type to this routine.         
+    database.  You must pass exactly one navaid type to this routine.
    }
    FUNCTION XPLMFindFirstNavAidOfType(
-                                        inType              : XPLMNavType) : XPLMNavRef;    
+                                        inType              : XPLMNavType) : XPLMNavRef;
     cdecl; external XPLM_DLL;
 
    {
@@ -123,19 +123,19 @@ CONST
     
     This routine returns the ref of the last navaid of the given type in the
     database or XPLM_NAV_NOT_FOUND if there are no navaids of that type in the
-    database.  You must pass exactly one nav aid type to this routine.         
+    database.  You must pass exactly one navaid type to this routine.
    }
    FUNCTION XPLMFindLastNavAidOfType(
-                                        inType              : XPLMNavType) : XPLMNavRef;    
+                                        inType              : XPLMNavType) : XPLMNavRef;
     cdecl; external XPLM_DLL;
 
    {
     XPLMFindNavAid
     
     This routine provides a number of searching capabilities for the nav
-    database. XPLMFindNavAid will search through every nav aid whose type is
-    within inType (multiple types may be added together) and return any
-    nav-aids found based on the following rules:
+    database. XPLMFindNavAid will search through every navaid whose type is
+    within inType (multiple types may be added together) and return any navaids
+    found based on the following rules:
     
     * If inLat and inLon are not NULL, the navaid nearest to that lat/lon will
       be returned, otherwise the last navaid found will be returned.
@@ -154,7 +154,7 @@ CONST
     * Find the nearest navaid on this frequency.
     * Find the nearest airport.
     * Find the VOR whose ID is "KBOS".
-    * Find the nearest airport whose name contains "Chicago".                  
+    * Find the nearest airport whose name contains "Chicago".
    }
    FUNCTION XPLMFindNavAid(
                                         inNameFragment      : XPLMString;    { Can be nil }
@@ -162,7 +162,7 @@ CONST
                                         inLat               : PSingle;    { Can be nil }
                                         inLon               : PSingle;    { Can be nil }
                                         inFrequency         : PInteger;    { Can be nil }
-                                        inType              : XPLMNavType) : XPLMNavRef;    
+                                        inType              : XPLMNavType) : XPLMNavRef;
     cdecl; external XPLM_DLL;
 
    {
@@ -182,10 +182,10 @@ CONST
     The outReg parameter tells if the navaid is within the local "region" of
     loaded DSFs.  (This information may not be particularly useful to plugins.)
     The parameter is a single byte value 1 for true or 0 for false, not a C
-    string.                                                                    
+    string.
    }
    PROCEDURE XPLMGetNavAidInfo(
-                                        inRef               : XPLMNavRef;    
+                                        inRef               : XPLMNavRef;
                                         outType             : PXPLMNavType;    { Can be nil }
                                         outLatitude         : PSingle;    { Can be nil }
                                         outLongitude        : PSingle;    { Can be nil }
@@ -202,19 +202,19 @@ CONST
  ___________________________________________________________________________}
 {
    Note: the FMS works based on an array of entries.  Indices into the array
-   are zero-based.  Each entry is a nav-aid plus an altitude.  The FMS tracks
+   are zero-based.  Each entry is a navaid plus an altitude.  The FMS tracks
    the currently displayed entry and the entry that it is flying to.
    
    The FMS must be programmed with contiguous entries, so clearing an entry at
    the end shortens the effective flight plan.  There is a max of 100
-   waypoints in the flight plan.                                              
+   waypoints in the flight plan.
 }
 
 
    {
     XPLMCountFMSEntries
     
-    This routine returns the number of entries in the FMS.                     
+    This routine returns the number of entries in the FMS.
    }
    FUNCTION XPLMCountFMSEntries: Integer;
     cdecl; external XPLM_DLL;
@@ -222,7 +222,7 @@ CONST
    {
     XPLMGetDisplayedFMSEntry
     
-    This routine returns the index of the entry the pilot is viewing.          
+    This routine returns the index of the entry the pilot is viewing.
    }
    FUNCTION XPLMGetDisplayedFMSEntry: Integer;
     cdecl; external XPLM_DLL;
@@ -230,7 +230,7 @@ CONST
    {
     XPLMGetDestinationFMSEntry
     
-    This routine returns the index of the entry the FMS is flying to.          
+    This routine returns the index of the entry the FMS is flying to.
    }
    FUNCTION XPLMGetDestinationFMSEntry: Integer;
     cdecl; external XPLM_DLL;
@@ -241,16 +241,16 @@ CONST
     This routine changes which entry the FMS is showing to the index specified.
    }
    PROCEDURE XPLMSetDisplayedFMSEntry(
-                                        inIndex             : Integer);    
+                                        inIndex             : Integer);
     cdecl; external XPLM_DLL;
 
    {
     XPLMSetDestinationFMSEntry
     
-    This routine changes which entry the FMS is flying the aircraft toward.    
+    This routine changes which entry the FMS is flying the aircraft toward.
    }
    PROCEDURE XPLMSetDestinationFMSEntry(
-                                        inIndex             : Integer);    
+                                        inIndex             : Integer);
     cdecl; external XPLM_DLL;
 
    {
@@ -271,10 +271,10 @@ CONST
     not be set to XPLM_NAV_NOT_FOUND while no data is available, and instead
     just remain the value of the variable that you passed the pointer to.
     Therefore, always initialize the variable to XPLM_NAV_NOT_FOUND before
-    passing the pointer to this function.                                      
+    passing the pointer to this function.
    }
    PROCEDURE XPLMGetFMSEntryInfo(
-                                        inIndex             : Integer;    
+                                        inIndex             : Integer;
                                         outType             : PXPLMNavType;    { Can be nil }
                                         outID               : XPLMString;    { Can be nil }
                                         outRef              : PXPLMNavRef;    { Can be nil }
@@ -292,46 +292,46 @@ CONST
     support VORs and NDBs. Use the routines below to clear or fly to a lat/lon.
    }
    PROCEDURE XPLMSetFMSEntryInfo(
-                                        inIndex             : Integer;    
-                                        inRef               : XPLMNavRef;    
-                                        inAltitude          : Integer);    
+                                        inIndex             : Integer;
+                                        inRef               : XPLMNavRef;
+                                        inAltitude          : Integer);
     cdecl; external XPLM_DLL;
 
    {
     XPLMSetFMSEntryLatLon
     
     This routine changes the entry in the FMS to a lat/lon entry with the given
-    coordinates.                                                               
+    coordinates.
    }
    PROCEDURE XPLMSetFMSEntryLatLon(
-                                        inIndex             : Integer;    
-                                        inLat               : Single;    
-                                        inLon               : Single;    
-                                        inAltitude          : Integer);    
+                                        inIndex             : Integer;
+                                        inLat               : Single;
+                                        inLon               : Single;
+                                        inAltitude          : Integer);
     cdecl; external XPLM_DLL;
 
    {
     XPLMClearFMSEntry
     
     This routine clears the given entry, potentially shortening the flight
-    plan.                                                                      
+    plan.
    }
    PROCEDURE XPLMClearFMSEntry(
-                                        inIndex             : Integer);    
+                                        inIndex             : Integer);
     cdecl; external XPLM_DLL;
 
 {___________________________________________________________________________
  * GPS RECEIVER
  ___________________________________________________________________________}
 {
-   These APIs let you read data from the GPS unit.                            
+   These APIs let you read data from the GPS unit.
 }
 
    {
     XPLMGetGPSDestinationType
     
     This routine returns the type of the currently selected GPS destination,
-    one of fix, airport, VOR or NDB.                                           
+    one of fix, airport, VOR or NDB.
    }
    FUNCTION XPLMGetGPSDestinationType: XPLMNavType;
     cdecl; external XPLM_DLL;
@@ -339,7 +339,7 @@ CONST
    {
     XPLMGetGPSDestination
     
-    This routine returns the current GPS destination.                          
+    This routine returns the current GPS destination.
    }
    FUNCTION XPLMGetGPSDestination: XPLMNavRef;
     cdecl; external XPLM_DLL;

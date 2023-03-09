@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMGraphics;
@@ -12,14 +12,14 @@ INTERFACE
    as latitude, longitude and elevation.  This coordinate system never changes
    but is not very precise.
    
-   OpenGL (or 'local') coordinates are cartesian and shift with the plane. 
+   OpenGL (or 'local') coordinates are cartesian and move with the aircraft. 
    They offer more precision and are used for 3-d OpenGL drawing.  The X axis
    is aligned east-west with positive X meaning east.  The Y axis is aligned
-   straight up and down at the point 0,0,0 (but since the earth is round it is
+   straight up and down at the point 0,0,0 (but since the Earth is round it is
    not truly straight up and down at other points).  The Z axis is aligned
-   north-south at 0, 0, 0 with positive Z pointing south (but since the earth
+   north-south at 0, 0, 0 with positive Z pointing south (but since the Earth
    is round it isn't exactly north-south as you move east or west of 0, 0, 0).
-   One unit is one meter and the point 0,0,0 is on the surface of the earth at
+   One unit is one meter and the point 0,0,0 is on the surface of the Earth at
    sea level for some latitude and longitude picked by the sim such that the
    user's aircraft is reasonably nearby.
    
@@ -33,7 +33,7 @@ INTERFACE
    not attempt to do this conversion yourself; the precise 'roundness' of
    X-Plane's physics model may not match your own, and (to make things
    weirder) the user can potentially customize the physics of the current
-   planet.                                                                    
+   planet.
 }
 
 USES
@@ -43,7 +43,7 @@ USES
  * X-PLANE GRAPHICS
  ___________________________________________________________________________}
 {
-   These routines allow you to use OpenGL with X-Plane.                       
+   These routines allow you to use OpenGL with X-Plane.
 }
 
 
@@ -55,7 +55,7 @@ USES
     
     *Warning*: do not use these enums.  The only remaining use they have is to
      access the legacy compatibility v10 UI texture; if you need this, get it
-     via the Widgets library.                                                  
+     via the Widgets library.
    }
 TYPE
    XPLMTextureID = (
@@ -99,7 +99,7 @@ TYPE
     - inEnableDepthTesting - enables per pixel depth testing, as in
       glEnable(GL_DEPTH_TEST);
     - inEnableDepthWriting - enables writing back of depth information to the
-      depth bufffer, as in glDepthMask(GL_TRUE);
+      depth buffer, as in glDepthMask(GL_TRUE);
     
     The purpose of this function is to change OpenGL state while keeping
     X-Plane aware of the state changes; this keeps X-Plane from getting
@@ -116,20 +116,20 @@ TYPE
     code) may change X-Plane's state.  Always set state before drawing after
     unknown code has executed.
     
-    *Deprecation Warnings*: X-Plane's lighting and fog environemnt is
+    *Deprecation Warnings*: X-Plane's lighting and fog environment is
      significantly more complex than the fixed function pipeline can express;
      do not assume that lighting and fog state is a good approximation for 3-d
      drawing.  Prefer to use XPLMInstancing to draw objects.  All calls to
-     XPLMSetGraphicsState should have no fog or lighting.                      
+     XPLMSetGraphicsState should have no fog or lighting.
    }
    PROCEDURE XPLMSetGraphicsState(
-                                        inEnableFog         : Integer;    
-                                        inNumberTexUnits    : Integer;    
-                                        inEnableLighting    : Integer;    
-                                        inEnableAlphaTesting: Integer;    
-                                        inEnableAlphaBlending: Integer;    
-                                        inEnableDepthTesting: Integer;    
-                                        inEnableDepthWriting: Integer);    
+                                        inEnableFog         : Integer;
+                                        inNumberTexUnits    : Integer;
+                                        inEnableLighting    : Integer;
+                                        inEnableAlphaTesting: Integer;
+                                        inEnableAlphaBlending: Integer;
+                                        inEnableDepthTesting: Integer;
+                                        inEnableDepthWriting: Integer);
     cdecl; external XPLM_DLL;
 
    {
@@ -141,17 +141,17 @@ TYPE
      example, consider several plug-ins running in series; if they all use the
      'general interface' bitmap to do UI, calling this function will skip the
      rebinding of the general interface texture on all but the first plug-in,
-     which can provide better frame rate son some graphics cards.
+     which can provide better frame rates on some graphics cards.
     
     inTextureID is the ID of the texture object to bind; inTextureUnit is a
     zero-based texture unit (e.g. 0 for the first one), up to a maximum of 4
     units.  (This number may increase in future versions of X-Plane.)
     
-    Use this routine instead of glBindTexture(GL_TEXTURE_2D, ....);            
+    Use this routine instead of glBindTexture(GL_TEXTURE_2D, ....);
    }
    PROCEDURE XPLMBindTexture2d(
-                                        inTextureNum        : Integer;    
-                                        inTextureUnit       : Integer);    
+                                        inTextureNum        : Integer;
+                                        inTextureUnit       : Integer);
     cdecl; external XPLM_DLL;
 
    {
@@ -159,11 +159,11 @@ TYPE
     
     Use this routine instead of glGenTextures to generate new texture object
     IDs. This routine historically ensured that plugins don't use texure IDs
-    that X-Plane is reserving for its own use.                                 
+    that X-Plane is reserving for its own use.
    }
    PROCEDURE XPLMGenerateTextureNumbers(
-                                        outTextureIDs       : PInteger;    
-                                        inCount             : Integer);    
+                                        outTextureIDs       : PInteger;
+                                        inCount             : Integer);
     cdecl; external XPLM_DLL;
 
 {$IFDEF XPLM_DEPRECATED}
@@ -172,10 +172,10 @@ TYPE
     
     XPLMGetTexture returns the OpenGL texture ID of an X-Plane texture based on
     a generic identifying code.  For example, you can get the texture for
-    X-Plane's UI bitmaps.                                                      
+    X-Plane's UI bitmaps.
    }
    FUNCTION XPLMGetTexture(
-                                        inTexture           : XPLMTextureID) : Integer;    
+                                        inTexture           : XPLMTextureID) : Integer;
     cdecl; external XPLM_DLL;
 {$ENDIF XPLM_DEPRECATED}
 
@@ -185,15 +185,15 @@ TYPE
     This routine translates coordinates from latitude, longitude, and altitude
     to local scene coordinates. Latitude and longitude are in decimal degrees,
     and altitude is in meters MSL (mean sea level).  The XYZ coordinates are in
-    meters in the local OpenGL coordinate system.                              
+    meters in the local OpenGL coordinate system.
    }
    PROCEDURE XPLMWorldToLocal(
-                                        inLatitude          : Real;    
-                                        inLongitude         : Real;    
-                                        inAltitude          : Real;    
-                                        outX                : PReal;    
-                                        outY                : PReal;    
-                                        outZ                : PReal);    
+                                        inLatitude          : Real;
+                                        inLongitude         : Real;
+                                        inAltitude          : Real;
+                                        outX                : PReal;
+                                        outY                : PReal;
+                                        outZ                : PReal);
     cdecl; external XPLM_DLL;
 
    {
@@ -205,15 +205,15 @@ TYPE
     meters in the local OpenGL coordinate system.
     
     NOTE: world coordinates are less precise than local coordinates; you should
-    try to avoid round tripping from local to world and back.                  
+    try to avoid round tripping from local to world and back.
    }
    PROCEDURE XPLMLocalToWorld(
-                                        inX                 : Real;    
-                                        inY                 : Real;    
-                                        inZ                 : Real;    
-                                        outLatitude         : PReal;    
-                                        outLongitude        : PReal;    
-                                        outAltitude         : PReal);    
+                                        inX                 : Real;
+                                        inY                 : Real;
+                                        inZ                 : Real;
+                                        outLatitude         : PReal;
+                                        outLongitude        : PReal;
+                                        outAltitude         : PReal);
     cdecl; external XPLM_DLL;
 
    {
@@ -221,13 +221,13 @@ TYPE
     
     This routine draws a translucent dark box, partially obscuring parts of the
     screen but making text easy to read.  This is the same graphics primitive
-    used by X-Plane to show text files and ATC info.                           
+    used by X-Plane to show text files.
    }
    PROCEDURE XPLMDrawTranslucentDarkBox(
-                                        inLeft              : Integer;    
-                                        inTop               : Integer;    
-                                        inRight             : Integer;    
-                                        inBottom            : Integer);    
+                                        inLeft              : Integer;
+                                        inTop               : Integer;
+                                        inRight             : Integer;
+                                        inBottom            : Integer);
     cdecl; external XPLM_DLL;
 
 {___________________________________________________________________________
@@ -246,7 +246,7 @@ TYPE
     Note: X-Plane 7 supports proportional-spaced fonts.  Since no measuring
     routine is available yet, the SDK will normally draw using a fixed-width
     font.  You can use a dataref to enable proportional font drawing on XP7 if
-    you want to.                                                               
+    you want to.
    }
 TYPE
    XPLMFontID = (
@@ -349,20 +349,20 @@ TYPE
    {
     XPLMDrawString
     
-    This routine draws a NULL termianted string in a given font.  Pass in the
+    This routine draws a NULL terminated string in a given font.  Pass in the
     lower left pixel that the character is to be drawn onto.  Also pass the
     character and font ID. This function returns the x offset plus the width of
     all drawn characters. The color to draw in is specified as a pointer to an
     array of three floating point colors, representing RGB intensities from 0.0
-    to 1.0.                                                                    
+    to 1.0.
    }
    PROCEDURE XPLMDrawString(
-                                        inColorRGB          : PSingle;    
-                                        inXOffset           : Integer;    
-                                        inYOffset           : Integer;    
-                                        inChar              : XPLMString;    
+                                        inColorRGB          : PSingle;
+                                        inXOffset           : Integer;
+                                        inYOffset           : Integer;
+                                        inChar              : XPLMString;
                                         inWordWrapWidth     : PInteger;    { Can be nil }
-                                        inFontID            : XPLMFontID);    
+                                        inFontID            : XPLMFontID);
     cdecl; external XPLM_DLL;
 
    {
@@ -373,17 +373,17 @@ TYPE
     position, a floating point value, and formatting info.  Specify how many
     integer and how many decimal digits to show and whether to show a sign, as
     well as a character set. This routine returns the xOffset plus width of the
-    string drawn.                                                              
+    string drawn.
    }
    PROCEDURE XPLMDrawNumber(
-                                        inColorRGB          : PSingle;    
-                                        inXOffset           : Integer;    
-                                        inYOffset           : Integer;    
-                                        inValue             : Real;    
-                                        inDigits            : Integer;    
-                                        inDecimals          : Integer;    
-                                        inShowSign          : Integer;    
-                                        inFontID            : XPLMFontID);    
+                                        inColorRGB          : PSingle;
+                                        inXOffset           : Integer;
+                                        inYOffset           : Integer;
+                                        inValue             : Real;
+                                        inDigits            : Integer;
+                                        inDecimals          : Integer;
+                                        inShowSign          : Integer;
+                                        inFontID            : XPLMFontID);
     cdecl; external XPLM_DLL;
 
    {
@@ -392,10 +392,10 @@ TYPE
     This routine returns the width and height of a character in a given font.
     It also tells you if the font only supports numeric digits.  Pass NULL if
     you don't need a given field.  Note that for a proportional font the width
-    will be an arbitrary, hopefully average width.                             
+    will be an arbitrary, hopefully average width.
    }
    PROCEDURE XPLMGetFontDimensions(
-                                        inFontID            : XPLMFontID;    
+                                        inFontID            : XPLMFontID;
                                         outCharWidth        : PInteger;    { Can be nil }
                                         outCharHeight       : PInteger;    { Can be nil }
                                         outDigitsOnly       : PInteger);    { Can be nil }
@@ -409,12 +409,12 @@ TYPE
     The string is passed as a pointer plus length (and does not need to be null
     terminated); this is used to allow for measuring substrings. The return
     value is floating point; it is possible that future font drawing may allow
-    for fractional pixels.                                                     
+    for fractional pixels.
    }
    FUNCTION XPLMMeasureString(
-                                        inFontID            : XPLMFontID;    
-                                        inChar              : XPLMString;    
-                                        inNumChars          : Integer) : Single;    
+                                        inFontID            : XPLMFontID;
+                                        inChar              : XPLMString;
+                                        inNumChars          : Integer) : Single;
     cdecl; external XPLM_DLL;
 {$ENDIF XPLM200}
 

@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.8"
+#define PLUGIN_VERSION_NO "2.8.9"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -166,7 +166,7 @@
  *  v2.8.7  [changed] Fixed issue with float_wnd_set_position not puting window in correct position.
  *                    Fixed issue to make sure float_wnd window is in correct position after leaving VR going into 2d.
  *  v2.8.8  [added]   Added support for the horizontal scrollbar in Imgui windows.
- *
+ *  v2.8.9  [changed] Now using the X-Plane Fmod SDK for the com1, interior, ui and the master buses.
  *
  *
  *  Markus (Teddii):
@@ -254,6 +254,7 @@
 #include "XPLMScenery.h"
 #include "XPLMNavigation.h"
 #include "XPLMPlanes.h"
+
 #include <iostream>
 #include <cctype>
 #include <fstream>
@@ -823,8 +824,6 @@ void load_wave(const char* file_name, OpenALSoundsStructure* sound)
 }
 
 
-
-
 /**************************************************************************************************************
  * SAMPLE OEPNAL PLUGIN:
  **************************************************************************************************************/
@@ -873,6 +872,7 @@ static int ConvertPath(const char * inPath, char * outPath, int outPathMaxLen) {
 // Initialization code.
 // Trying to improve how this is done
 // William Good 01-07-2023
+
 
 void init_openal_sound()
 {
@@ -937,6 +937,7 @@ void init_openal_sound()
 
     return;
 }
+
 // ----------------- End of code from example --------------->8------------------
 
 
@@ -6547,6 +6548,9 @@ void ResetLuaEngine()
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
+    // This does not work here and not wure why
+    // I think after this call fmod is not getting initalized.
+    // fmodint::fmod_uninitialize();
 
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
     if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
@@ -6718,12 +6722,12 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "SDK_VERSION");
     lua_pushnumber(FWLLua, HostID);
     lua_setglobal(FWLLua, "XPLANE_HOSTID");
-	lua_pushstring(FWLLua, PLUGIN_VERSION);
-	lua_setglobal(FWLLua, "PLUGIN_VERSION");
-	lua_pushstring(FWLLua, PLUGIN_VERSION_NO);
-	lua_setglobal(FWLLua, "PLUGIN_VERSION_NO");
-	lua_pushstring(FWLLua, PLUGIN_VERSION_BUILD);
-	lua_setglobal(FWLLua, "PLUGIN_VERSION_BUILD");
+    lua_pushstring(FWLLua, PLUGIN_VERSION);
+    lua_setglobal(FWLLua, "PLUGIN_VERSION");
+    lua_pushstring(FWLLua, PLUGIN_VERSION_NO);
+    lua_setglobal(FWLLua, "PLUGIN_VERSION_NO");
+    lua_pushstring(FWLLua, PLUGIN_VERSION_BUILD);
+    lua_setglobal(FWLLua, "PLUGIN_VERSION_BUILD");
     char dirSep[2];
     strcpy(dirSep, XPLMGetDirectorySeparator()); // correct for each OS
     lua_pushstring(FWLLua, dirSep);
@@ -7280,6 +7284,9 @@ PLUGIN_API void XPluginStop(void)
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
+    // This does not work here and not sure why
+    // I think after this call fmod is not getting initalized.
+    // fmodint::fmod_uninitialize();
 
     // cleanup sound system
     if (my_context)
@@ -7351,6 +7358,9 @@ PLUGIN_API void XPluginDisable(void)
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
+    // This does not work here and not sure why
+    // I think after this call fmod is not getting initalized.
+    // fmodint::fmod_uninitialize();
 
     // unsubscribe messages from/to XSquawkBox
     XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_UNSUBSCRIBE, (void*) XSB_TEXT);
@@ -7483,7 +7493,6 @@ PLUGIN_API int XPluginEnable(void)
     // Initialize OpenAL sound
     init_openal_sound();
 
-
     // Starting the Lua engine
     XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
     if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
@@ -7538,10 +7547,24 @@ PLUGIN_API int XPluginEnable(void)
 }
 
 PLUGIN_API void XPluginReceiveMessage(
-        XPLMPluginID /*inFromWho*/,
+        XPLMPluginID inFrom,
         intptr_t inMessage,
-        void* /*inParam*/)
+        void* inParam)
 {
+    if(XPLM_PLUGIN_XPLANE == inFrom)
+    {
+        if(XPLM_MSG_FMOD_BANK_LOADED == inMessage && xplm_RadioBank == reinterpret_cast<uintptr_t>(inParam))
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: XPLM_MSG_FMOD_BANK_LOADED & xplm_RadioBank  true");
+            fmodint::fmod_initialization();
+        }
+
+        if(XPLM_MSG_FMOD_BANK_UNLOADING == inMessage && xplm_RadioBank == reinterpret_cast<uintptr_t>(inParam))
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: XPLM_MSG_FMOD_BANK_UNLOADING & xplm_RadioBank  true");
+            fmodint::fmod_uninitialize();
+        }
+    }
 
     char        XSBString[500];
     //char    ReadText[NORMALSTRING];
@@ -7787,7 +7810,7 @@ float MyFastLoopCallback(
 
     fmodint::fmod_data_update();
     flwnd::onFlightLoop();
-    fmodint::fmod_initialization();
+    // fmodint::fmod_initialization();
 
     return TimeBetweenCallbacks;
 }

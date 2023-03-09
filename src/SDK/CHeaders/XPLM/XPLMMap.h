@@ -2,8 +2,8 @@
 #define _XPLMMap_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -17,7 +17,7 @@
  * 
  * As of X-Plane 11, map drawing happens in three stages:
  * 
- * 1. backgrounds and "fill,"
+ * 1. backgrounds and "fill",
  * 2. icons, and
  * 3. labels.
  * 
@@ -56,7 +56,7 @@
  * In addition to mapping normal latitude/longitude locations into map
  * coordinates, the projection APIs also let you know the current heading for
  * north. (Since X-Plane 11 maps can rotate to match the heading of the user's
- * aircraft, it's not safe to assume that north is at zero degrees rotation.) 
+ * aircraft, it's not safe to assume that north is at zero degrees rotation.)
  *
  */
 
@@ -75,7 +75,7 @@ extern "C" {
  * any or all of these callbacks. They allow you to insert your own OpenGL
  * drawing, text labels, and icons into the X-Plane map at the appropriate
  * places, allowing your layer to behave as similarly to X-Plane's built-in
- * layers as possible.                                                        
+ * layers as possible.
  *
  */
 
@@ -93,7 +93,7 @@ typedef void * XPLMMapLayerID;
  * XPLMMapProjectionID
  * 
  * This is an opaque handle for a map projection. Pass it to the projection
- * APIs to translate between map coordinates and latitude/longitudes.         
+ * APIs to translate between map coordinates and latitude/longitudes.
  *
  */
 typedef void * XPLMMapProjectionID;
@@ -106,7 +106,7 @@ typedef void * XPLMMapProjectionID;
  * a different visual representation for the same elements (for instance, the
  * visual style of the terrain layer changes drastically between the VFR and
  * IFR layers), or certain layers may be disabled entirely in some map types
- * (e.g., localizers are only visible in the IFR low-enroute style).          
+ * (e.g., localizers are only visible in the IFR low-enroute style).
  *
  */
 enum {
@@ -132,17 +132,17 @@ typedef int XPLMMapStyle;
  * X-Plane icons and labels, but above the built-in "fill" layers (layers
  * providing major details, like terrain and water). Note, however, that the
  * relative ordering between the drawing callbacks of different plugins is not
- * guaranteed.                                                                
+ * guaranteed.
  *
  */
 typedef void (* XPLMMapDrawingCallback_f)(
-                         XPLMMapLayerID       inLayer,    
-                         const float *        inMapBoundsLeftTopRightBottom,    
-                         float                zoomRatio,    
-                         float                mapUnitsPerUserInterfaceUnit,    
-                         XPLMMapStyle         mapStyle,    
-                         XPLMMapProjectionID  projection,    
-                         void *               inRefcon);    
+                         XPLMMapLayerID       inLayer,
+                         const float *        inMapBoundsLeftTopRightBottom,
+                         float                zoomRatio,
+                         float                mapUnitsPerUserInterfaceUnit,
+                         XPLMMapStyle         mapStyle,
+                         XPLMMapProjectionID  projection,
+                         void *               inRefcon);
 
 /*
  * XPLMMapIconDrawingCallback_f
@@ -158,17 +158,17 @@ typedef void (* XPLMMapDrawingCallback_f)(
  * built-in X-Plane map icons of the same layer type ("fill" or "markings," as
  * determined by the XPLMMapLayerType in your XPLMCreateMapLayer_t). Note,
  * however, that the relative ordering between the drawing callbacks of
- * different plugins is not guaranteed.                                       
+ * different plugins is not guaranteed.
  *
  */
 typedef void (* XPLMMapIconDrawingCallback_f)(
-                         XPLMMapLayerID       inLayer,    
-                         const float *        inMapBoundsLeftTopRightBottom,    
-                         float                zoomRatio,    
-                         float                mapUnitsPerUserInterfaceUnit,    
-                         XPLMMapStyle         mapStyle,    
-                         XPLMMapProjectionID  projection,    
-                         void *               inRefcon);    
+                         XPLMMapLayerID       inLayer,
+                         const float *        inMapBoundsLeftTopRightBottom,
+                         float                zoomRatio,
+                         float                mapUnitsPerUserInterfaceUnit,
+                         XPLMMapStyle         mapStyle,
+                         XPLMMapProjectionID  projection,
+                         void *               inRefcon);
 
 /*
  * XPLMMapLabelDrawingCallback_f
@@ -184,17 +184,17 @@ typedef void (* XPLMMapIconDrawingCallback_f)(
  * built-in map icons and labels of the same layer type ("fill" or "markings,"
  * as determined by the XPLMMapLayerType in your XPLMCreateMapLayer_t). Note,
  * however, that the relative ordering between the drawing callbacks of
- * different plugins is not guaranteed.                                       
+ * different plugins is not guaranteed.
  *
  */
 typedef void (* XPLMMapLabelDrawingCallback_f)(
-                         XPLMMapLayerID       inLayer,    
-                         const float *        inMapBoundsLeftTopRightBottom,    
-                         float                zoomRatio,    
-                         float                mapUnitsPerUserInterfaceUnit,    
-                         XPLMMapStyle         mapStyle,    
-                         XPLMMapProjectionID  projection,    
-                         void *               inRefcon);    
+                         XPLMMapLayerID       inLayer,
+                         const float *        inMapBoundsLeftTopRightBottom,
+                         float                zoomRatio,
+                         float                mapUnitsPerUserInterfaceUnit,
+                         XPLMMapStyle         mapStyle,
+                         XPLMMapProjectionID  projection,
+                         void *               inRefcon);
 
 #endif /* XPLM300 */
 #if defined(XPLM300)
@@ -205,7 +205,7 @@ typedef void (* XPLMMapLabelDrawingCallback_f)(
  * These are various "bookkeeping" callbacks that your map layer can receive
  * (if you provide the callback in your XPLMCreateMapLayer_t). They allow you
  * to manage the lifecycle of your layer, as well as cache any
- * computationally-intensive preparation you might need for drawing.          
+ * computationally-intensive preparation you might need for drawing.
  *
  */
 
@@ -229,26 +229,26 @@ typedef void (* XPLMMapLabelDrawingCallback_f)(
  * prepare cache calls, nor will any draw call give you bounds outside these
  * total map bounds. So, if you cache the projected map coordinates of all the
  * items you might want to draw in the total map area, you can be guaranteed
- * that no draw call will be asked to do any new work.                        
+ * that no draw call will be asked to do any new work.
  *
  */
 typedef void (* XPLMMapPrepareCacheCallback_f)(
-                         XPLMMapLayerID       inLayer,    
-                         const float *        inTotalMapBoundsLeftTopRightBottom,    
-                         XPLMMapProjectionID  projection,    
-                         void *               inRefcon);    
+                         XPLMMapLayerID       inLayer,
+                         const float *        inTotalMapBoundsLeftTopRightBottom,
+                         XPLMMapProjectionID  projection,
+                         void *               inRefcon);
 
 /*
  * XPLMMapWillBeDeletedCallback_f
  * 
  * Called just before your map layer gets deleted. Because SDK-created map
  * layers have the same lifetime as the X-Plane map that contains them, if the
- * map gets unloaded from memory, your layer will too.                        
+ * map gets unloaded from memory, your layer will too.
  *
  */
 typedef void (* XPLMMapWillBeDeletedCallback_f)(
-                         XPLMMapLayerID       inLayer,    
-                         void *               inRefcon);    
+                         XPLMMapLayerID       inLayer,
+                         void *               inRefcon);
 
 #endif /* XPLM300 */
 #if defined(XPLM300)
@@ -265,7 +265,7 @@ typedef void (* XPLMMapWillBeDeletedCallback_f)(
  * Your layer's lifetime will be determined by the lifetime of the map it is
  * created in. If the map is destroyed (on the X-Plane side), your layer will
  * be too, and you'll receive a callback to your
- * XPLMMapWillBeDeletedCallback_f.                                            
+ * XPLMMapWillBeDeletedCallback_f.
  *
  */
 
@@ -274,17 +274,17 @@ typedef void (* XPLMMapWillBeDeletedCallback_f)(
  * XPLMMapLayerType
  * 
  * Indicates the type of map layer you are creating. Fill layers will always
- * be drawn beneath markings layers.                                          
+ * be drawn beneath markings layers.
  *
  */
 enum {
-     /* A layer that draws "fill" graphics, like weather patterns, terrain, etc.   *
-      * Fill layers frequently cover a large portion of the visible map area.      */
+    /* A layer that draws "fill" graphics, like weather patterns, terrain, etc.   *
+     * Fill layers frequently cover a large portion of the visible map area.      */
     xplm_MapLayer_Fill                       = 0,
 
-     /* A layer that provides markings for particular map features, like NAVAIDs,  *
-      * airports, etc. Even dense markings layers cover a small portion of the     *
-      * total map area.                                                            */
+    /* A layer that provides markings for particular map features, like NAVAIDs,  *
+     * airports, etc. Even dense markings layers cover a small portion of the     *
+     * total map area.                                                            */
     xplm_MapLayer_Markings                   = 1,
 
 
@@ -309,45 +309,45 @@ typedef int XPLMMapLayerType;
  * 
  * Each layer must be associated with exactly one map instance in X-Plane.
  * That map, and that map alone, will call your callbacks. Likewise, when that
- * map is deleted, your layer will be as well.                                
+ * map is deleted, your layer will be as well.
  *
  */
 typedef struct {
-     /* Used to inform XPLMCreateMapLayer() of the SDK version you compiled        *
-      * against; should always be set to sizeof(XPLMCreateMapLayer_t)              */
+    /* Used to inform XPLMCreateMapLayer() of the SDK version you compiled        *
+     * against; should always be set to sizeof(XPLMCreateMapLayer_t)              */
      int                       structSize;
-     /* Globally unique string identifying the map you want this layer to appear   *
-      * in. As of XPLM300, this is limited to one of XPLM_MAP_USER_INTERFACE or    *
-      * XPLM_MAP_IOS                                                               */
+    /* Globally unique string identifying the map you want this layer to appear   *
+     * in. As of XPLM300, this is limited to one of XPLM_MAP_USER_INTERFACE or    *
+     * XPLM_MAP_IOS                                                               */
      const char *              mapToCreateLayerIn;
-     /* The type of layer you are creating, used to determine draw order (all      *
-      * plugin-created markings layers are drawn above all plugin-created fill     *
-      * layers)                                                                    */
+    /* The type of layer you are creating, used to determine draw order (all      *
+     * plugin-created markings layers are drawn above all plugin-created fill     *
+     * layers)                                                                    */
      XPLMMapLayerType          layerType;
-     /* Optional callback to inform you this layer is being deleted (due to its    *
-      * owning map being destroyed)                                                */
+    /* Optional callback to inform you this layer is being deleted (due to its    *
+     * owning map being destroyed)                                                */
      XPLMMapWillBeDeletedCallback_f willBeDeletedCallback;
-     /* Optional callback you want to use to prepare your draw cache when the map  *
-      * bounds change (set to NULL if you don't want this callback)                */
+    /* Optional callback you want to use to prepare your draw cache when the map  *
+     * bounds change (set to NULL if you don't want this callback)                */
      XPLMMapPrepareCacheCallback_f prepCacheCallback;
-     /* Optional callback you want to use for arbitrary OpenGL drawing, which goes *
-      * beneath all icons in the map's layering system (set to NULL if you don't   *
-      * want this callback)                                                        */
+    /* Optional callback you want to use for arbitrary OpenGL drawing, which goes *
+     * beneath all icons in the map's layering system (set to NULL if you don't   *
+     * want this callback)                                                        */
      XPLMMapDrawingCallback_f  drawCallback;
-     /* Optional callback you want to use for drawing icons, which go above all    *
-      * built-in X-Plane icons (except the aircraft) in the map's layering system  *
-      * (set to NULL if you don't want this callback)                              */
+    /* Optional callback you want to use for drawing icons, which go above all    *
+     * built-in X-Plane icons (except the aircraft) in the map's layering system  *
+     * (set to NULL if you don't want this callback)                              */
      XPLMMapIconDrawingCallback_f iconCallback;
-     /* Optional callback you want to use for drawing map labels, which go above   *
-      * all built-in X-Plane icons and labels (except those of aircraft) in the    *
-      * map's layering system (set to NULL if you don't want this callback)        */
+    /* Optional callback you want to use for drawing map labels, which go above   *
+     * all built-in X-Plane icons and labels (except those of aircraft) in the    *
+     * map's layering system (set to NULL if you don't want this callback)        */
      XPLMMapLabelDrawingCallback_f labelCallback;
-     /* True if you want a checkbox to be created in the map UI to toggle this     *
-      * layer on and off; false if the layer should simply always be enabled       */
+    /* True if you want a checkbox to be created in the map UI to toggle this     *
+     * layer on and off; false if the layer should simply always be enabled       */
      int                       showUiToggle;
-     /* Short label to use for this layer in the user interface                    */
+    /* Short label to use for this layer in the user interface                    */
      const char *              layerName;
-     /* A reference to arbitrary data that will be passed to your callbacks        */
+    /* A reference to arbitrary data that will be passed to your callbacks        */
      void *                    refcon;
 } XPLMCreateMapLayer_t;
 
@@ -355,7 +355,7 @@ typedef struct {
  * XPLMCreateMapLayer
  * 
  * This routine creates a new map layer. You pass in an XPLMCreateMapLayer_t
- * structure with all of the fields set in.  You must set the structSize of
+ * structure with all of the fields defined.  You must set the structSize of
  * the structure to the size of the actual structure you used.
  * 
  * Returns NULL if the layer creation failed. This happens most frequently
@@ -363,22 +363,22 @@ typedef struct {
  * XPLMCreateMapLayer_t::mapToCreateLayerIn field doesn't exist (that is, if
  * XPLMMapExists() returns 0 for the specified map). You can use
  * XPLMRegisterMapCreationHook() to get a notification each time a new map is
- * opened in X-Plane, at which time you can create layers in it.              
+ * opened in X-Plane, at which time you can create layers in it.
  *
  */
 XPLM_API XPLMMapLayerID XPLMCreateMapLayer(
-                         XPLMCreateMapLayer_t * inParams);    
+                         XPLMCreateMapLayer_t * inParams);
 
 /*
  * XPLMDestroyMapLayer
  * 
  * Destroys a map layer you created (calling your
  * XPLMMapWillBeDeletedCallback_f if applicable). Returns true if a deletion
- * took place.                                                                
+ * took place.
  *
  */
 XPLM_API int        XPLMDestroyMapLayer(
-                         XPLMMapLayerID       inLayer);    
+                         XPLMMapLayerID       inLayer);
 
 /*
  * XPLMMapCreatedCallback_f
@@ -387,12 +387,12 @@ XPLM_API int        XPLMDestroyMapLayer(
  * X-Plane. This is the best time to add a custom map layer using
  * XPLMCreateMapLayer().
  * 
- * No OpenGL drawing is permitted within this callback.                       
+ * No OpenGL drawing is permitted within this callback.
  *
  */
 typedef void (* XPLMMapCreatedCallback_f)(
-                         const char *         mapIdentifier,    
-                         void *               refcon);    
+                         const char *         mapIdentifier,
+                         void *               refcon);
 
 /*
  * XPLMRegisterMapCreationHook
@@ -402,23 +402,23 @@ typedef void (* XPLMMapCreatedCallback_f)(
  * map layer using XPLMCreateMapLayer().
  * 
  * Note that you will not be notified about any maps that already exist---you
- * can use XPLMMapExists() to check for maps that were created previously.    
+ * can use XPLMMapExists() to check for maps that were created previously.
  *
  */
 XPLM_API void       XPLMRegisterMapCreationHook(
-                         XPLMMapCreatedCallback_f callback,    
-                         void *               refcon);    
+                         XPLMMapCreatedCallback_f callback,
+                         void *               refcon);
 
 /*
  * XPLMMapExists
  * 
  * Returns 1 if the map with the specified identifier already exists in
  * X-Plane. In that case, you can safely call XPLMCreateMapLayer() specifying
- * that your layer should be added to that map.                               
+ * that your layer should be added to that map.
  *
  */
 XPLM_API int        XPLMMapExists(
-                         const char *         mapIdentifier);    
+                         const char *         mapIdentifier);
 
 #endif /* XPLM300 */
 #if defined(XPLM300)
@@ -437,7 +437,7 @@ XPLM_API int        XPLMMapExists(
  * xplm_MapLayer_Fill get drawn beneath all xplm_MapLayer_Markings layers.
  * Likewise, all OpenGL drawing (performed in your layer's
  * XPLMMapDrawingCallback_f) will appear beneath any icons and labels you
- * draw.                                                                      
+ * draw.
  *
  */
 
@@ -450,14 +450,14 @@ XPLM_API int        XPLMMapExists(
  * rotated such that "up" matches the user's aircraft, but you may want to
  * draw a text label such that it is always rotated zero degrees relative to
  * the user's perspective. In that case, you would have it draw with UI
- * orientation.                                                               
+ * orientation.
  *
  */
 enum {
-     /* Orient such that a 0 degree rotation matches the map's north               */
+    /* Orient such that a 0 degree rotation matches the map's north               */
     xplm_MapOrientation_Map                  = 0,
 
-     /* Orient such that a 0 degree rotation is "up" relative to the user interface*/
+    /* Orient such that a 0 degree rotation is "up" relative to the user interface*/
     xplm_MapOrientation_UI                   = 1,
 
 
@@ -484,7 +484,7 @@ typedef int XPLMMapOrientation;
  * PNGs.
  * 
  * The UV coordinates used here treat the texture you load as being comprised
- * of a number of identically sized "cells." You specify the width and height
+ * of a number of identically sized "cells". You specify the width and height
  * in cells (ds and dt, respectively), as well as the coordinates within the
  * cell grid for the sub-image you'd like to draw.
  * 
@@ -494,21 +494,21 @@ typedef int XPLMMapOrientation;
  * 
  * This function is only valid from within an XPLMIconDrawingCallback_t (but
  * you can request an arbitrary number of icons to be drawn from within your
- * callback).                                                                 
+ * callback).
  *
  */
 XPLM_API void       XPLMDrawMapIconFromSheet(
-                         XPLMMapLayerID       layer,    
-                         const char *         inPngPath,    
-                         int                  s,    
-                         int                  t,    
-                         int                  ds,    
-                         int                  dt,    
-                         float                mapX,    
-                         float                mapY,    
-                         XPLMMapOrientation   orientation,    
-                         float                rotationDegrees,    
-                         float                mapWidth);    
+                         XPLMMapLayerID       layer,
+                         const char *         inPngPath,
+                         int                  s,
+                         int                  t,
+                         int                  ds,
+                         int                  dt,
+                         float                mapX,
+                         float                mapY,
+                         XPLMMapOrientation   orientation,
+                         float                rotationDegrees,
+                         float                mapWidth);
 
 /*
  * XPLMDrawMapLabel
@@ -516,16 +516,16 @@ XPLM_API void       XPLMDrawMapIconFromSheet(
  * Enables plugin-created map layers to draw text labels using X-Plane's
  * built-in labeling functionality. Only valid from within an
  * XPLMMapLabelDrawingCallback_f (but you can request an arbitrary number of
- * text labels to be drawn from within your callback).                        
+ * text labels to be drawn from within your callback).
  *
  */
 XPLM_API void       XPLMDrawMapLabel(
-                         XPLMMapLayerID       layer,    
-                         const char *         inText,    
-                         float                mapX,    
-                         float                mapY,    
-                         XPLMMapOrientation   orientation,    
-                         float                rotationDegrees);    
+                         XPLMMapLayerID       layer,
+                         const char *         inText,
+                         float                mapX,
+                         float                mapY,
+                         XPLMMapOrientation   orientation,
+                         float                rotationDegrees);
 
 #endif /* XPLM300 */
 #if defined(XPLM300)
@@ -544,7 +544,7 @@ XPLM_API void       XPLMDrawMapLabel(
  * 
  * Finally, the map projection can give you the current rotation of the map.
  * Since X-Plane 11 maps can rotate to match the heading of the aircraft, the
- * map's rotation can potentially change every frame.                         
+ * map's rotation can potentially change every frame.
  *
  */
 
@@ -557,15 +557,15 @@ XPLM_API void       XPLMDrawMapLabel(
  * 
  * Only valid from within a map layer callback (one of
  * XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
- * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+ * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
  *
  */
 XPLM_API void       XPLMMapProject(
-                         XPLMMapProjectionID  projection,    
-                         double               latitude,    
-                         double               longitude,    
-                         float *              outX,    
-                         float *              outY);    
+                         XPLMMapProjectionID  projection,
+                         double               latitude,
+                         double               longitude,
+                         float *              outX,
+                         float *              outY);
 
 /*
  * XPLMMapUnproject
@@ -575,15 +575,15 @@ XPLM_API void       XPLMMapProject(
  * 
  * Only valid from within a map layer callback (one of
  * XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
- * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+ * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
  *
  */
 XPLM_API void       XPLMMapUnproject(
-                         XPLMMapProjectionID  projection,    
-                         float                mapX,    
-                         float                mapY,    
-                         double *             outLatitude,    
-                         double *             outLongitude);    
+                         XPLMMapProjectionID  projection,
+                         float                mapX,
+                         float                mapY,
+                         double *             outLatitude,
+                         double *             outLongitude);
 
 /*
  * XPLMMapScaleMeter
@@ -593,13 +593,13 @@ XPLM_API void       XPLMMapUnproject(
  * 
  * Only valid from within a map layer callback (one of
  * XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
- * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+ * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
  *
  */
 XPLM_API float      XPLMMapScaleMeter(
-                         XPLMMapProjectionID  projection,    
-                         float                mapX,    
-                         float                mapY);    
+                         XPLMMapProjectionID  projection,
+                         float                mapX,
+                         float                mapY);
 
 /*
  * XPLMMapGetNorthHeading
@@ -612,13 +612,13 @@ XPLM_API float      XPLMMapScaleMeter(
  * 
  * Only valid from within a map layer callback (one of
  * XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
- * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+ * XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
  *
  */
 XPLM_API float      XPLMMapGetNorthHeading(
-                         XPLMMapProjectionID  projection,    
-                         float                mapX,    
-                         float                mapY);    
+                         XPLMMapProjectionID  projection,
+                         float                mapX,
+                         float                mapY);
 
 #endif /* XPLM300 */
 #ifdef __cplusplus

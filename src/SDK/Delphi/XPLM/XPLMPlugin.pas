@@ -1,13 +1,13 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMPlugin;
 INTERFACE
 {
    These APIs provide facilities to find and work with other plugins and
-   manage other plugins.                                                      
+   manage other plugins.
 }
 
 USES
@@ -20,7 +20,7 @@ USES
    These APIs allow you to find another plugin or yourself, or iterate across
    all plugins.  For example, if you wrote an FMS plugin that needed to talk
    to an autopilot plugin, you could use these APIs to locate the autopilot
-   plugin.                                                                    
+   plugin.
 }
 
 
@@ -28,7 +28,7 @@ USES
     XPLMGetMyID
     
     This routine returns the plugin ID of the calling plug-in.  Call this to
-    get your own ID.                                                           
+    get your own ID.
    }
    FUNCTION XPLMGetMyID: XPLMPluginID;
     cdecl; external XPLM_DLL;
@@ -37,7 +37,7 @@ USES
     XPLMCountPlugins
     
     This routine returns the total number of plug-ins that are loaded, both
-    disabled and enabled.                                                      
+    disabled and enabled.
    }
    FUNCTION XPLMCountPlugins: Integer;
     cdecl; external XPLM_DLL;
@@ -47,10 +47,10 @@ USES
     
     This routine returns the ID of a plug-in by index.  Index is 0 based from 0
     to XPLMCountPlugins-1, inclusive. Plugins may be returned in any arbitrary
-    order.                                                                     
+    order.
    }
    FUNCTION XPLMGetNthPlugin(
-                                        inIndex             : Integer) : XPLMPluginID;    
+                                        inIndex             : Integer) : XPLMPluginID;
     cdecl; external XPLM_DLL;
 
    {
@@ -58,10 +58,10 @@ USES
     
     This routine returns the plug-in ID of the plug-in whose file exists at the
     passed in absolute file system path.  XPLM_NO_PLUGIN_ID is returned if the
-    path does not point to a currently loaded plug-in.                         
+    path does not point to a currently loaded plug-in.
    }
    FUNCTION XPLMFindPluginByPath(
-                                        inPath              : XPLMString) : XPLMPluginID;    
+                                        inPath              : XPLMString) : XPLMPluginID;
     cdecl; external XPLM_DLL;
 
    {
@@ -72,10 +72,10 @@ USES
     signature.  Signatures are the best way to identify another plug-in as they
     are independent of the file system path of a plug-in or the human-readable
     plug-in name, and should be unique for all plug-ins.  Use this routine to
-    locate another plugin that your plugin interoperates with                  
+    locate another plugin that your plugin interoperates with
    }
    FUNCTION XPLMFindPluginBySignature(
-                                        inSignature         : XPLMString) : XPLMPluginID;    
+                                        inSignature         : XPLMString) : XPLMPluginID;
     cdecl; external XPLM_DLL;
 
    {
@@ -88,10 +88,10 @@ USES
     outName - the human-readable name of the plug-in. outFilePath - the
     absolute file path to the file that contains this plug-in. outSignature - a
     unique string that identifies this plug-in. outDescription - a
-    human-readable description of this plug-in.                                
+    human-readable description of this plug-in.
    }
    PROCEDURE XPLMGetPluginInfo(
-                                        inPlugin            : XPLMPluginID;    
+                                        inPlugin            : XPLMPluginID;
                                         outName             : XPLMString;    { Can be nil }
                                         outFilePath         : XPLMString;    { Can be nil }
                                         outSignature        : XPLMString;    { Can be nil }
@@ -103,17 +103,17 @@ USES
  ___________________________________________________________________________}
 {
    These routines are used to work with plug-ins and manage them.  Most
-   plugins will not need to use these APIs.                                   
+   plugins will not need to use these APIs.
 }
 
 
    {
     XPLMIsPluginEnabled
     
-    Returns whether the specified plug-in is enabled for running.              
+    Returns whether the specified plug-in is enabled for running.
    }
    FUNCTION XPLMIsPluginEnabled(
-                                        inPluginID          : XPLMPluginID) : Integer;    
+                                        inPluginID          : XPLMPluginID) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -122,19 +122,19 @@ USES
     This routine enables a plug-in if it is not already enabled. It returns 1
     if the plugin was enabled or successfully enables itself, 0 if it does not.
     Plugins may fail to enable (for example, if resources cannot be acquired)
-    by returning 0 from their XPluginEnable callback.                          
+    by returning 0 from their XPluginEnable callback.
    }
    FUNCTION XPLMEnablePlugin(
-                                        inPluginID          : XPLMPluginID) : Integer;    
+                                        inPluginID          : XPLMPluginID) : Integer;
     cdecl; external XPLM_DLL;
 
    {
     XPLMDisablePlugin
     
-    This routine disableds an enabled plug-in.                                 
+    This routine disableds an enabled plug-in.
    }
    PROCEDURE XPLMDisablePlugin(
-                                        inPluginID          : XPLMPluginID);    
+                                        inPluginID          : XPLMPluginID);
     cdecl; external XPLM_DLL;
 
    {
@@ -144,7 +144,7 @@ USES
     return from the callback you were within (e.g. a menu select callback) you
     will receive your XPluginDisable and XPluginStop callbacks and your DLL
     will be unloaded, then the start process happens as if the sim was starting
-    up.                                                                        
+    up.
    }
    PROCEDURE XPLMReloadPlugins;
     cdecl; external XPLM_DLL;
@@ -182,7 +182,7 @@ USES
    (e.g. be greater or equal to unsigned 0x8000000) while commands should have
    this bit be cleared.
    
-   The following messages are sent to your plugin by X-Plane.                 
+   The following messages are sent to your plugin by X-Plane.
 }
 
 
@@ -271,17 +271,44 @@ CONST
    XPLM_MSG_RELEASE_PLANES = 111;
 {$ENDIF XPLM303}
 
+{$IFDEF XPLM400}
+CONST
+    { Sent to your plugin after FMOD sound banks are loaded. The parameter is the}
+    { XPLMBankID enum in XPLMSound.h, 0 for the master bank and 1 for the radio  }
+    { bank.                                                                      }
+   XPLM_MSG_FMOD_BANK_LOADED = 112;
+{$ENDIF XPLM400}
+
+{$IFDEF XPLM400}
+    { Sent to your plugin before FMOD sound banks are unloaded. Any associated   }
+    { resources should be cleaned up at this point. The parameter is the         }
+    { XPLMBankID enum in XPLMSound.h, 0 for the master bank and 1 for the radio  }
+    { bank.                                                                      }
+   XPLM_MSG_FMOD_BANK_UNLOADING = 113;
+{$ENDIF XPLM400}
+
+{$IFDEF XPLM400}
+    { Sent to your plugin per-frame (at-most) when/if datarefs are added. It will}
+    { include the new data ref total count so that your plugin can keep a local  }
+    { cache of the total, see what's changed and know which ones to inquire about}
+    { if it cares.                                                               }
+    {                                                                            }
+    { This message is only sent to plugins that enable the                       }
+    { XPLM_WANTS_DATAREF_NOTIFICATIONS feature.                                  }
+   XPLM_MSG_DATAREFS_ADDED = 114;
+{$ENDIF XPLM400}
+
    {
     XPLMSendMessageToPlugin
     
     This function sends a message to another plug-in or X-Plane.  Pass
     XPLM_NO_PLUGIN_ID to broadcast to all plug-ins.  Only enabled plug-ins with
-    a message receive function receive the message.                            
+    a message receive function receive the message.
    }
    PROCEDURE XPLMSendMessageToPlugin(
-                                        inPlugin            : XPLMPluginID;    
-                                        inMessage           : Integer;    
-                                        inParam             : pointer);    
+                                        inPlugin            : XPLMPluginID;
+                                        inMessage           : Integer;
+                                        inParam             : pointer);
     cdecl; external XPLM_DLL;
 
 {$IFDEF XPLM200}
@@ -291,8 +318,8 @@ CONST
 {
    The plugin features API allows your plugin to "sign up" for additional
    capabilities and plugin system features that are normally disabled for
-   backward compatibility.  This allows advanced plugins to "opt-in" to new
-   behavior.
+   backward compatibility or performance.  This allows advanced plugins to
+   "opt-in"  to new behavior.
    
    Each feature is defined by a permanent string name.  The feature string
    names will vary with the particular installation of X-Plane, so plugins
@@ -345,7 +372,15 @@ CONST
    
    Before enabling this, make sure any custom widget code in your plugin is
    prepared to cope with the UI coordinate system not being th same as the
-   OpenGL window coordinate system.                                           
+   OpenGL window coordinate system.
+   
+   XPLM_WANTS_DATAREF_NOTIFICATIONS
+   --------------------------------
+   
+   Available in the SDK 4.0.0, this capability tells X-Plane to to send the
+   enabling plugin the new XPLM_MSG_DATAREFS_ADDED message any time new
+   datarefs are added. The SDK will coalesce consecutive dataref registrations
+   to minimize the number of messages sent.
 }
 
 
@@ -354,21 +389,21 @@ CONST
     
     You pass an XPLMFeatureEnumerator_f to get a list of all features supported
     by a given version running version of X-Plane.  This routine is called once
-    for each feature.                                                          
+    for each feature.
    }
 TYPE
      XPLMFeatureEnumerator_f = PROCEDURE(
-                                    inFeature           : XPLMString;    
-                                    inRef               : pointer); cdecl;   
+                                    inFeature           : XPLMString;
+                                    inRef               : pointer); cdecl;
 
    {
     XPLMHasFeature
     
     This returns 1 if the given installation of X-Plane supports a feature, or
-    0 if it does not.                                                          
+    0 if it does not.
    }
    FUNCTION XPLMHasFeature(
-                                        inFeature           : XPLMString) : Integer;    
+                                        inFeature           : XPLMString) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -376,10 +411,10 @@ TYPE
     
     This returns 1 if a feature is currently enabled for your plugin, or 0 if
     it is not enabled.  It is an error to call this routine with an unsupported
-    feature.                                                                   
+    feature.
    }
    FUNCTION XPLMIsFeatureEnabled(
-                                        inFeature           : XPLMString) : Integer;    
+                                        inFeature           : XPLMString) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -387,11 +422,11 @@ TYPE
     
     This routine enables or disables a feature for your plugin.  This will
     change the running behavior of X-Plane and your plugin in some way,
-    depending on the feature.                                                  
+    depending on the feature.
    }
    PROCEDURE XPLMEnableFeature(
-                                        inFeature           : XPLMString;    
-                                        inEnable            : Integer);    
+                                        inFeature           : XPLMString;
+                                        inEnable            : Integer);
     cdecl; external XPLM_DLL;
 
    {
@@ -399,11 +434,11 @@ TYPE
     
     This routine calls your enumerator callback once for each feature that this
     running version of X-Plane supports. Use this routine to determine all of
-    the features that X-Plane can support.                                     
+    the features that X-Plane can support.
    }
    PROCEDURE XPLMEnumerateFeatures(
-                                        inEnumerator        : XPLMFeatureEnumerator_f;    
-                                        inRef               : pointer);    
+                                        inEnumerator        : XPLMFeatureEnumerator_f;
+                                        inRef               : pointer);
     cdecl; external XPLM_DLL;
 
 {$ENDIF XPLM200}

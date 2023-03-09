@@ -87,3 +87,5 @@ v2.8.6 Add Global PLUGIN_VERSION predefined variables PLUGIN_VERSION, PLUGIN_VER
 v2.8.7 Fixed issue with float_wnd_set_position not positioning window correctly. Fixed issue to make sure window is in correct position after leaving VR going into 2d
 
 v2.8.8 Added support for the horizontal scrollbar in Imgui windows.
+
+v2.8.9 Added support for X-Plane Fmod SDK.

@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMDataAccess;
@@ -22,7 +22,7 @@ INTERFACE
    --------------
    
    Data references are identified by verbose, permanent string names; by
-   convention these names use path separates to form a hierarchy of datarefs,
+   convention these names use path separators to form a hierarchy of datarefs,
    e.g. (sim/cockpit/radios/nav1_freq_hz). The actual opaque numeric value of
    the data reference, as returned by the XPLM API, is implementation defined
    and changes each time X-Plane is launched; therefore you need to look up
@@ -34,22 +34,23 @@ INTERFACE
    Reading and writing data references is relatively fast (the cost is
    equivalent to two function calls through function pointers).
    
-   X-Plane publishes over 4000 datarefs; a complete list may be found in the
-   reference section of the SDK online documentation (from the SDK home page,
-   choose Documentation).
+   X-Plane publishes many thousands of datarefs; a complete list may be found
+   in the reference section of the SDK online documentation (from the SDK home
+   page, choose Documentation) and the Resources/plugins/DataRefs.txt file.
    
    Dataref Types
    -------------
    
    A note on typing: you must know the correct data type to read and write.
    APIs are provided for reading and writing data in a number of ways. You can
-   also double check the data type for a data ref. Automatic type conversion
-   is not done for you.
+   also double check the data type for a dataref. Automatic type conversion is
+   not done for you.
    
    Dataref types are a set, e.g. a dataref can be more than one type.  When
    this happens, you can choose which API you want to use to read.  For
-   example, it is not uncommon for a dataref to be of type float and double. 
-   This means you can use either XPLMGetDatad or XPLMGetDataf to read it.
+   example, it is not uncommon for a dataref to be available both as float and
+   double.  This means you can use either XPLMGetDatad or XPLMGetDataf to read
+   it.
    
    Creating New Datarefs
    ---------------------
@@ -64,15 +65,33 @@ INTERFACE
    A note for plugins sharing data with other plugins: the load order of
    plugins is not guaranteed. To make sure that every plugin publishing data
    has published their data references before other plugins try to subscribe,
-   publish your data references in your start routine but resolve them the
-   first time your 'enable' routine is called, or the first time they are
-   needed in code.
+   publish your data references in your start routine but resolve others'
+   datarefs the first time your 'enable' routine is called, or the first time
+   they are needed in code.
    
    When a plugin that created a dataref is unloaded, it becomes "orphaned". 
    The dataref handle continues to be usable, but the dataref is not writable,
    and reading it will always return 0 (or 0 items for arrays).  If the plugin
    is reloaded and re-registers the dataref, the handle becomes un-orphaned
-   and works again.                                                           
+   and works again.
+   
+   Introspection: Finding All Datarefs
+   -----------------------------------
+   
+   In the XPLM400 API, it is possible for a plugin to iterate the entire set
+   of datarefs. This functionality is meant only for "tool" add-ons, like
+   dataref browsers; normally all add-ons  should find the dataref they want
+   by name.
+   
+   Because datarefs are never destroyed during a run of the simulator (they
+   are orphaned when their providing plugin goes away until a new one
+   re-registers the dataref), the set of  datarefs for a given run of X-Plane
+   can be enumerated by index. A plugin that wants to find all new datarefs
+   can use XPLMCountDataRefs to find the number of datarefs and iterate only 
+   the ones with higher index numbers than the last iteration.
+   
+   Plugins can also receive notifications when datarefs are registered; see
+   the XPLMPlugin feature-enable API for more details.    
 }
 
 USES
@@ -83,7 +102,7 @@ USES
  ___________________________________________________________________________}
 {
    These routines allow you to access data from within X-Plane and sometimes
-   modify it.                                                                 
+   modify it.
 }
 
 
@@ -91,10 +110,10 @@ TYPE
    {
     XPLMDataRef
     
-    A data ref is an opaque handle to data provided by the simulator or another
+    A dataref is an opaque handle to data provided by the simulator or another
     plugin. It uniquely identifies one variable (or array of variables) over
     the lifetime of your plugin. You never hard code these values; you always
-    get them from XPLMFindDataRef.                                             
+    get them from XPLMFindDataRef.
    }
    XPLMDataRef = pointer;
    PXPLMDataRef = ^XPLMDataRef;
@@ -109,7 +128,7 @@ TYPE
     
     Data types each take a bit field; it is legal to have a single dataref be
     more than one type of data.  Whe this happens, you can pick any matching
-    get/set API.                                                               
+    get/set API.
    }
    XPLMDataTypeID = (
      { Data of a type the current XPLM doesn't do.                                }
@@ -136,36 +155,99 @@ TYPE
    );
    PXPLMDataTypeID = ^XPLMDataTypeID;
 
+{$IFDEF XPLM400}
+   {
+    XPLMCountDataRefs
+    
+    Returns the total number of datarefs that have been registered in X-Plane.
+   }
+   FUNCTION XPLMCountDataRefs: Integer;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM400}
+
+{$IFDEF XPLM400}
+   {
+    XPLMGetDataRefsByIndex
+    
+    Given an offset and count, this function will return an array of
+    XPLMDataRefs in that range.  The offset/count idiom is useful for things
+    like pagination.
+   }
+   PROCEDURE XPLMGetDataRefsByIndex(
+                                        offset              : Integer;
+                                        count               : Integer;
+                                        outDataRefs         : PXPLMDataRef);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM400}
+
+{$IFDEF XPLM400}
+   {
+    XPLMDataRefInfo_t
+    
+    The XPLMDataRefInfo_t structure contains all of the information about a
+    single data ref.  The structure can be expanded in future SDK APIs to
+    include more features. Always set the structSize member to the size of 
+    your struct in bytes!
+   }
+TYPE
+   XPLMDataRefInfo_t = RECORD
+     { Used to inform XPLMGetDatarefInfo() of the SDK version you compiled        }
+     { against; should always be set to sizeof(XPLMDataRefInfo_t)                 }
+     structSize               : Integer;
+     { The full name/path of the data ref                                         }
+     name                     : XPLMString;
+     type                     : XPLMDataTypeID;
+     { TRUE if the data ref permits writing to it. FALSE if it's read-only.       }
+     writable                 : Integer;
+     { The handle to the plugin that registered this dataref.                     }
+     owner                    : XPLMPluginID;
+   END;
+   PXPLMDataRefInfo_t = ^XPLMDataRefInfo_t;
+{$ENDIF XPLM400}
+
+{$IFDEF XPLM400}
+   {
+    XPLMGetDataRefInfo
+    
+    Give a data ref, this routine returns a populated struct containing the
+    available information about the dataref.
+   }
+   PROCEDURE XPLMGetDataRefInfo(
+                                        inDataRef           : XPLMDataRef;
+                                        outInfo             : PXPLMDataRefInfo_t);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM400}
+
    {
     XPLMFindDataRef
     
-    Given a c-style string that names the data ref, this routine looks up the
+    Given a C-style string that names the dataref, this routine looks up the
     actual opaque XPLMDataRef that you use to read and write the data. The
     string names for datarefs are published on the X-Plane SDK web site.
     
-    This function returns NULL if the data ref cannot be found.
+    This function returns NULL if the dataref cannot be found.
     
     NOTE: this function is relatively expensive; save the XPLMDataRef this
-    function returns for future use. Do not look up your data ref by string
-    every time you need to read or write it.                                   
+    function returns for future use. Do not look up your dataref by string
+    every time you need to read or write it.
    }
    FUNCTION XPLMFindDataRef(
-                                        inDataRefName       : XPLMString) : XPLMDataRef;    
+                                        inDataRefName       : XPLMString) : XPLMDataRef;
     cdecl; external XPLM_DLL;
 
    {
     XPLMCanWriteDataRef
     
-    Given a data ref, this routine returns true if you can successfully set the
+    Given a dataref, this routine returns true if you can successfully set the
     data, false otherwise. Some datarefs are read-only.
     
     NOTE: even if a dataref is marked writable, it may not act writable.  This
     can happen for datarefs that X-Plane writes to on every frame of
     simulation.  In some cases, the dataref is writable but you have to set a
-    separate "override" dataref to 1 to stop X-Plane from writing it.          
+    separate "override" dataref to 1 to stop X-Plane from writing it.
    }
    FUNCTION XPLMCanWriteDataRef(
-                                        inDataRef           : XPLMDataRef) : Integer;    
+                                        inDataRef           : XPLMDataRef) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -179,22 +261,22 @@ TYPE
     complete plugin reload (in which case your plugin is reloaded anyway).
     Orphaned datarefs can be safely read and return 0. Therefore you never need
     to call XPLMIsDataRefGood to 'check' the safety of a dataref.
-    (XPLMIsDatarefGood performs some slow checking of the handle validity, so
-    it has a perormance cost.)                                                 
+    (XPLMIsDataRefGood performs some slow checking of the handle validity, so
+    it has a perormance cost.)
    }
    FUNCTION XPLMIsDataRefGood(
-                                        inDataRef           : XPLMDataRef) : Integer;    
+                                        inDataRef           : XPLMDataRef) : Integer;
     cdecl; external XPLM_DLL;
 
    {
     XPLMGetDataRefTypes
     
-    This routine returns the types of the data ref for accessor use. If a data
-    ref is available in multiple data types, the bit-wise OR of these types
-    will be returned.                                                          
+    This routine returns the types of the dataref for accessor use. If a
+    dataref is available in multiple data types, the bit-wise OR of these types
+    will be returned.
    }
    FUNCTION XPLMGetDataRefTypes(
-                                        inDataRef           : XPLMDataRef) : XPLMDataTypeID;    
+                                        inDataRef           : XPLMDataRef) : XPLMDataTypeID;
     cdecl; external XPLM_DLL;
 
 {___________________________________________________________________________
@@ -204,10 +286,10 @@ TYPE
    These routines read and write the data references. For each supported data
    type there is a reader and a writer.
    
-   If the data ref is orphaned or the plugin that provides it is disabled or
+   If the dataref is orphaned, the plugin that provides it is disabled or
    there is a type mismatch, the functions that read data will return 0 as a
    default value or not modify the passed in memory. The plugins that write
-   data will not write under these circumstances or if the data ref is
+   data will not write under these circumstances or if the dataref is
    read-only.
    
    NOTE: to keep the overhead of reading datarefs low, these routines do not
@@ -216,30 +298,31 @@ TYPE
    
    For array-style datarefs, you specify the number of items to read/write and
    the offset into the array; the actual number of items read or written is
-   returned. This may be less to prevent an array-out-of-bounds error.        
+   returned. This may be less the number requested to prevent an
+   array-out-of-bounds error.
 }
 
 
    {
     XPLMGetDatai
     
-    Read an integer data ref and return its value. The return value is the
-    dataref value or 0 if the dataref is NULL or the plugin is disabled.       
+    Read an integer dataref and return its value. The return value is the
+    dataref value or 0 if the dataref is NULL or the plugin is disabled.
    }
    FUNCTION XPLMGetDatai(
-                                        inDataRef           : XPLMDataRef) : Integer;    
+                                        inDataRef           : XPLMDataRef) : Integer;
     cdecl; external XPLM_DLL;
 
    {
     XPLMSetDatai
     
-    Write a new value to an integer data ref. This routine is a no-op if the
+    Write a new value to an integer dataref. This routine is a no-op if the
     plugin publishing the dataref is disabled, the dataref is NULL, or the
-    dataref is not writable.                                                   
+    dataref is not writable.
    }
    PROCEDURE XPLMSetDatai(
-                                        inDataRef           : XPLMDataRef;    
-                                        inValue             : Integer);    
+                                        inDataRef           : XPLMDataRef;
+                                        inValue             : Integer);
     cdecl; external XPLM_DLL;
 
    {
@@ -247,22 +330,22 @@ TYPE
     
     Read a single precision floating point dataref and return its value. The
     return value is the dataref value or 0.0 if the dataref is NULL or the
-    plugin is disabled.                                                        
+    plugin is disabled.
    }
    FUNCTION XPLMGetDataf(
-                                        inDataRef           : XPLMDataRef) : Single;    
+                                        inDataRef           : XPLMDataRef) : Single;
     cdecl; external XPLM_DLL;
 
    {
     XPLMSetDataf
     
-    Write a new value to a single precision floating point data ref. This
+    Write a new value to a single precision floating point dataref. This
     routine is a no-op if the plugin publishing the dataref is disabled, the
-    dataref is NULL, or the dataref is not writable.                           
+    dataref is NULL, or the dataref is not writable.
    }
    PROCEDURE XPLMSetDataf(
-                                        inDataRef           : XPLMDataRef;    
-                                        inValue             : Single);    
+                                        inDataRef           : XPLMDataRef;
+                                        inValue             : Single);
     cdecl; external XPLM_DLL;
 
    {
@@ -270,22 +353,22 @@ TYPE
     
     Read a double precision floating point dataref and return its value. The
     return value is the dataref value or 0.0 if the dataref is NULL or the
-    plugin is disabled.                                                        
+    plugin is disabled.
    }
    FUNCTION XPLMGetDatad(
-                                        inDataRef           : XPLMDataRef) : Real;    
+                                        inDataRef           : XPLMDataRef) : Real;
     cdecl; external XPLM_DLL;
 
    {
     XPLMSetDatad
     
-    Write a new value to a double precision floating point data ref. This
+    Write a new value to a double precision floating point dataref. This
     routine is a no-op if the plugin publishing the dataref is disabled, the
-    dataref is NULL, or the dataref is not writable.                           
+    dataref is NULL, or the dataref is not writable.
    }
    PROCEDURE XPLMSetDatad(
-                                        inDataRef           : XPLMDataRef;    
-                                        inValue             : Real);    
+                                        inDataRef           : XPLMDataRef;
+                                        inValue             : Real);
     cdecl; external XPLM_DLL;
 
    {
@@ -302,13 +385,13 @@ TYPE
     Note: the semantics of array datarefs are entirely implemented by the
     plugin (or X-Plane) that provides the dataref, not the SDK itself; the
     above description is how these datarefs are intended to work, but a rogue
-    plugin may have different behavior.                                        
+    plugin may have different behavior.
    }
    FUNCTION XPLMGetDatavi(
-                                        inDataRef           : XPLMDataRef;    
+                                        inDataRef           : XPLMDataRef;
                                         outValues           : PInteger;    { Can be nil }
-                                        inOffset            : Integer;    
-                                        inMax               : Integer) : Integer;    
+                                        inOffset            : Integer;
+                                        inMax               : Integer) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -316,26 +399,26 @@ TYPE
     
     Write part or all of an integer array dataref. The values passed by
     inValues are written into the dataref starting at inOffset. Up to inCount
-    values are written; however if the values would write "off the end" of the
+    values are written; however if the values would write past the end of the
     dataref array, then fewer values are written.
     
     Note: the semantics of array datarefs are entirely implemented by the
     plugin (or X-Plane) that provides the dataref, not the SDK itself; the
     above description is how these datarefs are intended to work, but a rogue
-    plugin may have different behavior.                                        
+    plugin may have different behavior.
    }
    PROCEDURE XPLMSetDatavi(
-                                        inDataRef           : XPLMDataRef;    
-                                        inValues            : PInteger;    
-                                        inoffset            : Integer;    
-                                        inCount             : Integer);    
+                                        inDataRef           : XPLMDataRef;
+                                        inValues            : PInteger;
+                                        inoffset            : Integer;
+                                        inCount             : Integer);
     cdecl; external XPLM_DLL;
 
    {
     XPLMGetDatavf
     
     Read a part of a single precision floating point array dataref. If you pass
-    NULL for outVaules, the routine will return the size of the array, ignoring
+    NULL for outValues, the routine will return the size of the array, ignoring
     inOffset and inMax.
     
     If outValues is not NULL, then up to inMax values are copied from the
@@ -346,13 +429,13 @@ TYPE
     Note: the semantics of array datarefs are entirely implemented by the
     plugin (or X-Plane) that provides the dataref, not the SDK itself; the
     above description is how these datarefs are intended to work, but a rogue
-    plugin may have different behavior.                                        
+    plugin may have different behavior.
    }
    FUNCTION XPLMGetDatavf(
-                                        inDataRef           : XPLMDataRef;    
+                                        inDataRef           : XPLMDataRef;
                                         outValues           : PSingle;    { Can be nil }
-                                        inOffset            : Integer;    
-                                        inMax               : Integer) : Integer;    
+                                        inOffset            : Integer;
+                                        inMax               : Integer) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -361,24 +444,24 @@ TYPE
     Write part or all of a single precision floating point array dataref. The
     values passed by inValues are written into the dataref starting at
     inOffset. Up to inCount values are written; however if the values would
-    write "off the end" of the dataref array, then fewer values are written.
+    write past the end of the dataref array, then fewer values are written.
     
     Note: the semantics of array datarefs are entirely implemented by the
     plugin (or X-Plane) that provides the dataref, not the SDK itself; the
     above description is how these datarefs are intended to work, but a rogue
-    plugin may have different behavior.                                        
+    plugin may have different behavior.
    }
    PROCEDURE XPLMSetDatavf(
-                                        inDataRef           : XPLMDataRef;    
-                                        inValues            : PSingle;    
-                                        inoffset            : Integer;    
-                                        inCount             : Integer);    
+                                        inDataRef           : XPLMDataRef;
+                                        inValues            : PSingle;
+                                        inoffset            : Integer;
+                                        inCount             : Integer);
     cdecl; external XPLM_DLL;
 
    {
     XPLMGetDatab
     
-    Read a part of a byte array dataref. If you pass NULL for outVaules, the
+    Read a part of a byte array dataref. If you pass NULL for outValues, the
     routine will return the size of the array, ignoring inOffset and inMax.
     
     If outValues is not NULL, then up to inMax values are copied from the
@@ -389,13 +472,13 @@ TYPE
     Note: the semantics of array datarefs are entirely implemented by the
     plugin (or X-Plane) that provides the dataref, not the SDK itself; the
     above description is how these datarefs are intended to work, but a rogue
-    plugin may have different behavior.                                        
+    plugin may have different behavior.
    }
    FUNCTION XPLMGetDatab(
-                                        inDataRef           : XPLMDataRef;    
+                                        inDataRef           : XPLMDataRef;
                                         outValue            : pointer;    { Can be nil }
-                                        inOffset            : Integer;    
-                                        inMaxBytes          : Integer) : Integer;    
+                                        inOffset            : Integer;
+                                        inMaxBytes          : Integer) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -409,13 +492,13 @@ TYPE
     Note: the semantics of array datarefs are entirely implemented by the
     plugin (or X-Plane) that provides the dataref, not the SDK itself; the
     above description is how these datarefs are intended to work, but a rogue
-    plugin may have different behavior.                                        
+    plugin may have different behavior.
    }
    PROCEDURE XPLMSetDatab(
-                                        inDataRef           : XPLMDataRef;    
-                                        inValue             : pointer;    
-                                        inOffset            : Integer;    
-                                        inLength            : Integer);    
+                                        inDataRef           : XPLMDataRef;
+                                        inValue             : pointer;
+                                        inOffset            : Integer;
+                                        inLength            : Integer);
     cdecl; external XPLM_DLL;
 
 {___________________________________________________________________________
@@ -436,7 +519,7 @@ TYPE
    Important: you must pick a prefix for your datarefs other than "sim/" -
    this prefix is reserved for X-Plane. The X-Plane SDK website contains a
    registry where authors can select a unique first word for dataref names, to
-   prevent dataref collisions between plugins.                                
+   prevent dataref collisions between plugins.
 }
 
 
@@ -450,102 +533,102 @@ TYPE
     pointer you pass in your register routine; you can use it to locate plugin
     variables, etc.
     
-    The semantics of your callbacks are the same as the dataref accessor above
+    The semantics of your callbacks are the same as the dataref accessors above
     - basically routines like XPLMGetDatai are just pass-throughs from a caller
     to your plugin. Be particularly mindful in implementing array dataref
     read-write accessors; you are responsible for avoiding overruns, supporting
-    offset read/writes, and handling a read with a NULL buffer.                
+    offset read/writes, and handling a read with a NULL buffer.
    }
 TYPE
      XPLMGetDatai_f = FUNCTION(
-                                    inRefcon            : pointer) : Integer; cdecl;   
+                                    inRefcon            : pointer) : Integer; cdecl;
 
    {
-    XPLMSetDatai_f                                                             
+    XPLMSetDatai_f
    }
      XPLMSetDatai_f = PROCEDURE(
-                                    inRefcon            : pointer;    
-                                    inValue             : Integer); cdecl;   
+                                    inRefcon            : pointer;
+                                    inValue             : Integer); cdecl;
 
    {
-    XPLMGetDataf_f                                                             
+    XPLMGetDataf_f
    }
      XPLMGetDataf_f = FUNCTION(
-                                    inRefcon            : pointer) : Single; cdecl;   
+                                    inRefcon            : pointer) : Single; cdecl;
 
    {
-    XPLMSetDataf_f                                                             
+    XPLMSetDataf_f
    }
      XPLMSetDataf_f = PROCEDURE(
-                                    inRefcon            : pointer;    
-                                    inValue             : Single); cdecl;   
+                                    inRefcon            : pointer;
+                                    inValue             : Single); cdecl;
 
    {
-    XPLMGetDatad_f                                                             
+    XPLMGetDatad_f
    }
      XPLMGetDatad_f = FUNCTION(
-                                    inRefcon            : pointer) : Real; cdecl;   
+                                    inRefcon            : pointer) : Real; cdecl;
 
    {
-    XPLMSetDatad_f                                                             
+    XPLMSetDatad_f
    }
      XPLMSetDatad_f = PROCEDURE(
-                                    inRefcon            : pointer;    
-                                    inValue             : Real); cdecl;   
+                                    inRefcon            : pointer;
+                                    inValue             : Real); cdecl;
 
    {
-    XPLMGetDatavi_f                                                            
+    XPLMGetDatavi_f
    }
      XPLMGetDatavi_f = FUNCTION(
-                                    inRefcon            : pointer;    
+                                    inRefcon            : pointer;
                                     outValues           : PInteger;    { Can be nil }
-                                    inOffset            : Integer;    
-                                    inMax               : Integer) : Integer; cdecl;   
+                                    inOffset            : Integer;
+                                    inMax               : Integer) : Integer; cdecl;
 
    {
-    XPLMSetDatavi_f                                                            
+    XPLMSetDatavi_f
    }
      XPLMSetDatavi_f = PROCEDURE(
-                                    inRefcon            : pointer;    
-                                    inValues            : PInteger;    
-                                    inOffset            : Integer;    
-                                    inCount             : Integer); cdecl;   
+                                    inRefcon            : pointer;
+                                    inValues            : PInteger;
+                                    inOffset            : Integer;
+                                    inCount             : Integer); cdecl;
 
    {
-    XPLMGetDatavf_f                                                            
+    XPLMGetDatavf_f
    }
      XPLMGetDatavf_f = FUNCTION(
-                                    inRefcon            : pointer;    
+                                    inRefcon            : pointer;
                                     outValues           : PSingle;    { Can be nil }
-                                    inOffset            : Integer;    
-                                    inMax               : Integer) : Integer; cdecl;   
+                                    inOffset            : Integer;
+                                    inMax               : Integer) : Integer; cdecl;
 
    {
-    XPLMSetDatavf_f                                                            
+    XPLMSetDatavf_f
    }
      XPLMSetDatavf_f = PROCEDURE(
-                                    inRefcon            : pointer;    
-                                    inValues            : PSingle;    
-                                    inOffset            : Integer;    
-                                    inCount             : Integer); cdecl;   
+                                    inRefcon            : pointer;
+                                    inValues            : PSingle;
+                                    inOffset            : Integer;
+                                    inCount             : Integer); cdecl;
 
    {
-    XPLMGetDatab_f                                                             
+    XPLMGetDatab_f
    }
      XPLMGetDatab_f = FUNCTION(
-                                    inRefcon            : pointer;    
+                                    inRefcon            : pointer;
                                     outValue            : pointer;    { Can be nil }
-                                    inOffset            : Integer;    
-                                    inMaxLength         : Integer) : Integer; cdecl;   
+                                    inOffset            : Integer;
+                                    inMaxLength         : Integer) : Integer; cdecl;
 
    {
-    XPLMSetDatab_f                                                             
+    XPLMSetDatab_f
    }
      XPLMSetDatab_f = PROCEDURE(
-                                    inRefcon            : pointer;    
-                                    inValue             : pointer;    
-                                    inOffset            : Integer;    
-                                    inLength            : Integer); cdecl;   
+                                    inRefcon            : pointer;
+                                    inValue             : pointer;
+                                    inOffset            : Integer;
+                                    inLength            : Integer); cdecl;
 
    {
     XPLMRegisterDataAccessor
@@ -557,39 +640,39 @@ TYPE
     necessary. Pass NULL for data types you do not support or write accessors
     if you are read-only.
     
-    You are returned a data ref for the new item of data created. You can use
-    this data ref to unregister your data later or read or write from it.      
+    You are returned a dataref for the new item of data created. You can use
+    this dataref to unregister your data later or read or write from it.
    }
    FUNCTION XPLMRegisterDataAccessor(
-                                        inDataName          : XPLMString;    
-                                        inDataType          : XPLMDataTypeID;    
-                                        inIsWritable        : Integer;    
-                                        inReadInt           : XPLMGetDatai_f;    
-                                        inWriteInt          : XPLMSetDatai_f;    
-                                        inReadFloat         : XPLMGetDataf_f;    
-                                        inWriteFloat        : XPLMSetDataf_f;    
-                                        inReadDouble        : XPLMGetDatad_f;    
-                                        inWriteDouble       : XPLMSetDatad_f;    
-                                        inReadIntArray      : XPLMGetDatavi_f;    
-                                        inWriteIntArray     : XPLMSetDatavi_f;    
-                                        inReadFloatArray    : XPLMGetDatavf_f;    
-                                        inWriteFloatArray   : XPLMSetDatavf_f;    
-                                        inReadData          : XPLMGetDatab_f;    
-                                        inWriteData         : XPLMSetDatab_f;    
-                                        inReadRefcon        : pointer;    
-                                        inWriteRefcon       : pointer) : XPLMDataRef;    
+                                        inDataName          : XPLMString;
+                                        inDataType          : XPLMDataTypeID;
+                                        inIsWritable        : Integer;
+                                        inReadInt           : XPLMGetDatai_f;
+                                        inWriteInt          : XPLMSetDatai_f;
+                                        inReadFloat         : XPLMGetDataf_f;
+                                        inWriteFloat        : XPLMSetDataf_f;
+                                        inReadDouble        : XPLMGetDatad_f;
+                                        inWriteDouble       : XPLMSetDatad_f;
+                                        inReadIntArray      : XPLMGetDatavi_f;
+                                        inWriteIntArray     : XPLMSetDatavi_f;
+                                        inReadFloatArray    : XPLMGetDatavf_f;
+                                        inWriteFloatArray   : XPLMSetDatavf_f;
+                                        inReadData          : XPLMGetDatab_f;
+                                        inWriteData         : XPLMSetDatab_f;
+                                        inReadRefcon        : pointer;
+                                        inWriteRefcon       : pointer) : XPLMDataRef;
     cdecl; external XPLM_DLL;
 
    {
     XPLMUnregisterDataAccessor
     
     Use this routine to unregister any data accessors you may have registered.
-    You unregister a data ref by the XPLMDataRef you get back from
-    registration. Once you unregister a data ref, your function pointer will
-    not be called anymore.                                                     
+    You unregister a dataref by the XPLMDataRef you get back from registration.
+    Once you unregister a dataref, your function pointer will not be called
+    anymore.
    }
    PROCEDURE XPLMUnregisterDataAccessor(
-                                        inDataRef           : XPLMDataRef);    
+                                        inDataRef           : XPLMDataRef);
     cdecl; external XPLM_DLL;
 
 {___________________________________________________________________________
@@ -598,8 +681,8 @@ TYPE
 {
    The data reference registration APIs from the previous section allow a
    plugin to publish data in a one-owner manner; the plugin that publishes the
-   data reference owns the real memory that the data ref uses. This is
-   satisfactory for most cases, but there are also cases where plugnis need to
+   data reference owns the real memory that the dataref uses. This is
+   satisfactory for most cases, but there are also cases where plugins need to
    share actual data.
    
    With a shared data reference, no one plugin owns the actual memory for the
@@ -627,7 +710,7 @@ TYPE
    Shared data references solve two problems: if you need to have a data
    reference used by several plugins but do not know which plugins will be
    installed, or if all plugins sharing data need to be notified when that
-   data is changed, use shared data references.                               
+   data is changed, use shared data references.
 }
 
 
@@ -637,17 +720,17 @@ TYPE
     An XPLMDataChanged_f is a callback that the XPLM calls whenever any other
     plug-in modifies shared data. A refcon you provide is passed back to help
     identify which data is being changed. In response, you may want to call one
-    of the XPLMGetDataxxx routines to find the new value of the data.          
+    of the XPLMGetDataxxx routines to find the new value of the data.
    }
 TYPE
      XPLMDataChanged_f = PROCEDURE(
-                                    inRefcon            : pointer); cdecl;   
+                                    inRefcon            : pointer); cdecl;
 
    {
     XPLMShareData
     
     This routine connects a plug-in to shared data, creating the shared data if
-    necessary. inDataName is a standard path for the data ref, and inDataType
+    necessary. inDataName is a standard path for the dataref, and inDataType
     specifies the type. This function will create the data if it does not
     exist. If the data already exists but the type does not match, an error is
     returned, so it is important that plug-in authors collaborate to establish
@@ -660,13 +743,13 @@ TYPE
     the plug-in does not use global variables.
     
     A one is returned for successfully creating or finding the shared data; a
-    zero if the data already exists but is of the wrong type.                  
+    zero if the data already exists but is of the wrong type.
    }
    FUNCTION XPLMShareData(
-                                        inDataName          : XPLMString;    
-                                        inDataType          : XPLMDataTypeID;    
-                                        inNotificationFunc  : XPLMDataChanged_f;    
-                                        inNotificationRefcon: pointer) : Integer;    
+                                        inDataName          : XPLMString;
+                                        inDataType          : XPLMDataTypeID;
+                                        inNotificationFunc  : XPLMDataChanged_f;
+                                        inNotificationRefcon: pointer) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -675,13 +758,13 @@ TYPE
     This routine removes your notification function for shared data. Call it
     when done with the data to stop receiving change notifications. Arguments
     must match XPLMShareData. The actual memory will not necessarily be freed,
-    since other plug-ins could be using it.                                    
+    since other plug-ins could be using it.
    }
    FUNCTION XPLMUnshareData(
-                                        inDataName          : XPLMString;    
-                                        inDataType          : XPLMDataTypeID;    
-                                        inNotificationFunc  : XPLMDataChanged_f;    
-                                        inNotificationRefcon: pointer) : Integer;    
+                                        inDataName          : XPLMString;
+                                        inDataType          : XPLMDataTypeID;
+                                        inNotificationFunc  : XPLMDataChanged_f;
+                                        inNotificationRefcon: pointer) : Integer;
     cdecl; external XPLM_DLL;
 
 

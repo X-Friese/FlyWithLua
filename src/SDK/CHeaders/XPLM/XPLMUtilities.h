@@ -2,8 +2,8 @@
 #define _XPLMUtilities_h_
 
 /*
- * Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
- * license.txt for usage. X-Plane SDK Version: 2.1.1                          
+ * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
 
@@ -58,7 +58,7 @@ extern "C" {
  * -----------------------
  * 
  * Some of these APIs use full paths, but others use paths relative to the
- * user's X-Plane installation. This is documented on a per-API basis.        
+ * user's X-Plane installation. This is documented on a per-API basis.
  *
  */
 
@@ -68,15 +68,15 @@ extern "C" {
  * XPLMDataFileType
  * 
  * These enums define types of data files you can load or unload using the
- * SDK.                                                                       
+ * SDK.
  *
  */
 enum {
-     /* A situation (.sit) file, which starts off a flight in a given              *
-      * configuration.                                                             */
+    /* A situation (.sit) file, which starts off a flight in a given              *
+     * configuration.                                                             */
     xplm_DataFile_Situation                  = 1,
 
-     /* A situation movie (.smo) file, which replays a past flight.                */
+    /* A situation movie (.smo) file, which replays a past flight.                */
     xplm_DataFile_ReplayMovie                = 2,
 
 
@@ -88,14 +88,14 @@ typedef int XPLMDataFileType;
  * XPLMGetSystemPath
  * 
  * This function returns the full path to the X-System folder. Note that this
- * is a directory path, so it ends in a trailing : or /.
+ * is a directory path, so it ends in a trailing : or / .
  * 
  * The buffer you pass should be at least 512 characters long.  The path is
- * returned using the current native or OS path conventions.                  
+ * returned using the current native or OS path conventions.
  *
  */
 XPLM_API void       XPLMGetSystemPath(
-                         char *               outSystemPath);    
+                         char *               outSystemPath);
 
 /*
  * XPLMGetPrefsPath
@@ -103,22 +103,22 @@ XPLM_API void       XPLMGetSystemPath(
  * This routine returns a full path to a file that is within X-Plane's
  * preferences directory. (You should remove the file name back to the last
  * directory separator to get the preferences directory using
- * XPLMExtractFileAndPath.)
+ * XPLMExtractFileAndPath).
  * 
  * The buffer you pass should be at least 512 characters long.  The path is
- * returned using the current native or OS path conventions.                  
+ * returned using the current native or OS path conventions.
  *
  */
 XPLM_API void       XPLMGetPrefsPath(
-                         char *               outPrefsPath);    
+                         char *               outPrefsPath);
 
 /*
  * XPLMGetDirectorySeparator
  * 
  * This routine returns a string with one char and a null terminator that is
  * the directory separator for the current platform. This allows you to write
- * code that concatinates directory paths without having to #ifdef for
- * platform. The character returned will reflect the current file path mode.  
+ * code that concatenates directory paths without having to #ifdef for
+ * platform. The character returned will reflect the current file path mode.
  *
  */
 XPLM_API const char * XPLMGetDirectorySeparator(void);
@@ -127,20 +127,20 @@ XPLM_API const char * XPLMGetDirectorySeparator(void);
  * XPLMExtractFileAndPath
  * 
  * Given a full path to a file, this routine separates the path from the file.
- * If the path is a partial directory (e.g. ends in : or \) the trailing
+ * If the path is a partial directory (e.g. ends in : or / ) the trailing
  * directory separator is removed. This routine works in-place; a pointer to
  * the file part of the buffer is returned; the original buffer still starts
- * with the path and is null terminated with no trailing separator.           
+ * with the path and is null terminated with no trailing separator.
  *
  */
 XPLM_API char *     XPLMExtractFileAndPath(
-                         char *               inFullPath);    
+                         char *               inFullPath);
 
 /*
  * XPLMGetDirectoryContents
  * 
  * This routine returns a list of files in a directory (specified by a full
- * path, no trailing : or \). The output is returned as a list of NULL
+ * path, no trailing : or / ). The output is returned as a list of NULL
  * terminated strings. An index array (if specified) is filled with pointers
  * into the strings. The last file is indicated by a zero-length string (and
  * NULL in the indices). This routine will return 1 if you had capacity for
@@ -175,18 +175,18 @@ XPLM_API char *     XPLMExtractFileAndPath(
  * 
  * WARNING: Before X-Plane 7 this routine did not properly iterate through
  * directories. If X-Plane
- * 6 compatibility is needed, use your own code to iterate directories.       
+ * 6 compatibility is needed, use your own code to iterate directories.
  *
  */
 XPLM_API int        XPLMGetDirectoryContents(
-                         const char *         inDirectoryPath,    
-                         int                  inFirstReturn,    
-                         char *               outFileNames,    
-                         int                  inFileNameBufSize,    
-                         char **              outIndices,    /* Can be NULL */
-                         int                  inIndexCount,    
-                         int *                outTotalFiles,    /* Can be NULL */
-                         int *                outReturnedFiles);    /* Can be NULL */
+                         const char *         inDirectoryPath,
+                         int                  inFirstReturn,
+                         char *               outFileNames,
+                         int                  inFileNameBufSize,
+                         char **              outIndices,             /* Can be NULL */
+                         int                  inIndexCount,
+                         int *                outTotalFiles,          /* Can be NULL */
+                         int *                outReturnedFiles);      /* Can be NULL */
 
 #if defined(XPLM200)
 /*
@@ -194,12 +194,12 @@ XPLM_API int        XPLMGetDirectoryContents(
  * 
  * Loads a data file of a given type. Paths must be relative to the X-System
  * folder. To clear the replay, pass a NULL file name (this is only valid with
- * replay movies, not sit files).                                             
+ * replay movies, not sit files).
  *
  */
 XPLM_API int        XPLMLoadDataFile(
-                         XPLMDataFileType     inFileType,    
-                         const char *         inFilePath);    /* Can be NULL */
+                         XPLMDataFileType     inFileType,
+                         const char *         inFilePath);            /* Can be NULL */
 #endif /* XPLM200 */
 
 #if defined(XPLM200)
@@ -207,12 +207,12 @@ XPLM_API int        XPLMLoadDataFile(
  * XPLMSaveDataFile
  * 
  * Saves the current situation or replay; paths are relative to the X-System
- * folder.                                                                    
+ * folder.
  *
  */
 XPLM_API int        XPLMSaveDataFile(
-                         XPLMDataFileType     inFileType,    
-                         const char *         inFilePath);    
+                         XPLMDataFileType     inFileType,
+                         const char *         inFilePath);
 #endif /* XPLM200 */
 
 /***************************************************************************
@@ -226,7 +226,7 @@ XPLM_API int        XPLMSaveDataFile(
  * the original authors considered extending the API to other applications
  * that shared basic infrastructure with X-Plane. These enumerations are
  * hold-overs from that original roadmap; all values other than X-Plane are
- * deprecated. Your plugin should never need this enumeration.                
+ * deprecated. Your plugin should never need this enumeration.
  *
  */
 enum {
@@ -258,6 +258,22 @@ enum {
     xplm_Host_XAuto                          = 7,
 
 #endif /* XPLM_DEPRECATED */
+#if defined(XPLM_DEPRECATED)
+    xplm_Host_Xavion                         = 8,
+
+#endif /* XPLM_DEPRECATED */
+#if defined(XPLM_DEPRECATED)
+    xplm_Host_Control_Pad                    = 9,
+
+#endif /* XPLM_DEPRECATED */
+#if defined(XPLM_DEPRECATED)
+    xplm_Host_PFD_Map                        = 10,
+
+#endif /* XPLM_DEPRECATED */
+#if defined(XPLM_DEPRECATED)
+    xplm_Host_RADAR                          = 11,
+
+#endif /* XPLM_DEPRECATED */
 
 };
 typedef int XPLMHostApplicationID;
@@ -268,7 +284,7 @@ typedef int XPLMHostApplicationID;
  * These enums define what language the sim is running in. These enumerations
  * do not imply that the sim can or does run in all of these languages; they
  * simply provide a known encoding in the event that a given sim version is
- * localized to a certain language.                                           
+ * localized to a certain language.
  *
  */
 enum {
@@ -317,11 +333,11 @@ typedef int XPLMLanguageCode;
  * info in your XPluginStart and XPluginStop callbacks. To avoid causing logic
  * errors in the management code, do not call any other plugin routines from
  * your error callback - it is only meant for catching errors in the
- * debugging.                                                                 
+ * debugging.
  *
  */
 typedef void (* XPLMError_f)(
-                         const char *         inMessage);    
+                         const char *         inMessage);
 #endif /* XPLM200 */
 
 #if defined(XPLM_DEPRECATED)
@@ -335,7 +351,7 @@ typedef void (* XPLMError_f)(
  * NOTE: because plugins are always called from within the XPLM, there is no
  * need to check for initialization; it will always return 1.  This routine is
  * deprecated - you do not need to check it before continuing within your
- * plugin.                                                                    
+ * plugin.
  *
  */
 XPLM_API int        XPLMInitialized(void);
@@ -345,23 +361,23 @@ XPLM_API int        XPLMInitialized(void);
  * XPLMGetVersions
  * 
  * This routine returns the revision of both X-Plane and the XPLM DLL. All
- * versions are three-digit decimal numbers (e.g. 606 for version 6.06 of
- * X-Plane); the current revision of the XPLM is 200 (2.00). This routine also
- * returns the host ID of the app running us.
+ * versions are at least three-digit decimal numbers (e.g. 606 for version
+ * 6.06 of X-Plane); the current revision of the XPLM is 400 (4.00). This
+ * routine also returns the host ID of the app running us.
  * 
  * The most common use of this routine is to special-case around X-Plane
- * version-specific behavior.                                                 
+ * version-specific behavior.
  *
  */
 XPLM_API void       XPLMGetVersions(
-                         int *                outXPlaneVersion,    
-                         int *                outXPLMVersion,    
-                         XPLMHostApplicationID * outHostID);    
+                         int *                outXPlaneVersion,
+                         int *                outXPLMVersion,
+                         XPLMHostApplicationID * outHostID);
 
 /*
  * XPLMGetLanguage
  * 
- * This routine returns the langauge the sim is running in.                   
+ * This routine returns the langauge the sim is running in.
  *
  */
 XPLM_API XPLMLanguageCode XPLMGetLanguage(void);
@@ -392,11 +408,11 @@ XPLM_API XPLMLanguageCode XPLMGetLanguage(void);
  * 
  * To use functionality via XPLMFindSymbol you will need to copy your own
  * definitions of the X-Plane API prototypes and cast the returned pointer to
- * the correct type.                                                          
+ * the correct type.
  *
  */
 XPLM_API void *     XPLMFindSymbol(
-                         const char *         inString);    
+                         const char *         inString);
 #endif /* XPLM200 */
 
 #if defined(XPLM200)
@@ -422,11 +438,11 @@ XPLM_API void *     XPLMFindSymbol(
  * not normally run, and this may adversely affect performance, so do not
  * leave error callbacks installed in shipping plugins. Since the only useful
  * response to an error is to change code, error callbacks are not useful "in
- * the field".                                                                
+ * the field".
  *
  */
 XPLM_API void       XPLMSetErrorCallback(
-                         XPLMError_f          inCallback);    
+                         XPLMError_f          inCallback);
 #endif /* XPLM200 */
 
 /*
@@ -440,11 +456,11 @@ XPLM_API void       XPLMSetErrorCallback(
  * plugin. The X-Plane Log file is shared by X-Plane and every plugin in the
  * system, and plugins that (when functioning normally) print verbose log
  * output make it difficult for developers to find error conditions from other
- * parts of the system.                                                       
+ * parts of the system.
  *
  */
 XPLM_API void       XPLMDebugString(
-                         const char *         inString);    
+                         const char *         inString);
 
 /*
  * XPLMSpeakString
@@ -452,11 +468,11 @@ XPLM_API void       XPLMDebugString(
  * This function displays the string in a translucent overlay over the current
  * display and also speaks the string if text-to-speech is enabled. The string
  * is spoken asynchronously, this function returns immediately. This function
- * may not speak or print depending on user preferences.                      
+ * may not speak or print depending on user preferences.
  *
  */
 XPLM_API void       XPLMSpeakString(
-                         const char *         inString);    
+                         const char *         inString);
 
 /*
  * XPLMGetVirtualKeyDescription
@@ -464,11 +480,11 @@ XPLM_API void       XPLMSpeakString(
  * Given a virtual key code (as defined in XPLMDefs.h) this routine returns a
  * human-readable string describing the character. This routine is provided
  * for showing users what keyboard mappings they have set up. The string may
- * read 'unknown' or be a blank or NULL string if the virtual key is unknown. 
+ * read 'unknown' or be a blank or NULL string if the virtual key is unknown.
  *
  */
 XPLM_API const char * XPLMGetVirtualKeyDescription(
-                         char                 inVirtualKey);    
+                         char                 inVirtualKey);
 
 /*
  * XPLMReloadScenery
@@ -476,9 +492,9 @@ XPLM_API const char * XPLMGetVirtualKeyDescription(
  * XPLMReloadScenery reloads the current set of scenery. You can use this
  * function in two typical ways: simply call it to reload the scenery, picking
  * up any new installed scenery, .env files, etc. from disk. Or, change the
- * lat/ref and lon/ref data refs and then call this function to shift the
+ * lat/ref and lon/ref datarefs and then call this function to shift the
  * scenery environment.  This routine is equivalent to picking "reload
- * scenery" from the developer menu.                                          
+ * scenery" from the developer menu.
  *
  */
 XPLM_API void       XPLMReloadScenery(void);
@@ -523,7 +539,7 @@ XPLM_API void       XPLMReloadScenery(void);
  * in letting X-Plane handle or not handle the command; you are responsible
  * for passing a *balanced* number of begin and end messages to X-Plane. (E.g.
  * it is not legal to pass all the begin messages to X-Plane but hide all the
- * end messages).                                                             
+ * end messages).
  *
  */
 
@@ -531,17 +547,17 @@ XPLM_API void       XPLMReloadScenery(void);
 /*
  * XPLMCommandPhase
  * 
- * The phases of a command.                                                   
+ * The phases of a command.
  *
  */
 enum {
-     /* The command is being started.                                              */
+    /* The command is being started.                                              */
     xplm_CommandBegin                        = 0,
 
-     /* The command is continuing to execute.                                      */
+    /* The command is continuing to execute.                                      */
     xplm_CommandContinue                     = 1,
 
-     /* The command has ended.                                                     */
+    /* The command has ended.                                                     */
     xplm_CommandEnd                          = 2,
 
 
@@ -558,7 +574,7 @@ typedef int XPLMCommandPhase;
  * 
  * Note that a command is not "owned" by a particular plugin. Since many
  * plugins may participate in a command's execution, the command does not go
- * away if the plugin that created it is unloaded.                            
+ * away if the plugin that created it is unloaded.
  *
  */
 typedef void * XPLMCommandRef;
@@ -573,23 +589,23 @@ typedef void * XPLMCommandRef;
  * 
  * Your command handler should return 1 to let processing of the command
  * continue to other plugins and X-Plane, or 0 to halt processing, potentially
- * bypassing X-Plane code.                                                    
+ * bypassing X-Plane code.
  *
  */
 typedef int (* XPLMCommandCallback_f)(
-                         XPLMCommandRef       inCommand,    
-                         XPLMCommandPhase     inPhase,    
-                         void *               inRefcon);    
+                         XPLMCommandRef       inCommand,
+                         XPLMCommandPhase     inPhase,
+                         void *               inRefcon);
 
 /*
  * XPLMFindCommand
  * 
  * XPLMFindCommand looks up a command by name, and returns its command
- * reference or NULL if the command does not exist.                           
+ * reference or NULL if the command does not exist.
  *
  */
 XPLM_API XPLMCommandRef XPLMFindCommand(
-                         const char *         inName);    
+                         const char *         inName);
 
 /*
  * XPLMCommandBegin
@@ -597,33 +613,33 @@ XPLM_API XPLMCommandRef XPLMFindCommand(
  * XPLMCommandBegin starts the execution of a command, specified by its
  * command reference. The command is "held down" until XPLMCommandEnd is
  * called.  You must balance each XPLMCommandBegin call with an XPLMCommandEnd
- * call.                                                                      
+ * call.
  *
  */
 XPLM_API void       XPLMCommandBegin(
-                         XPLMCommandRef       inCommand);    
+                         XPLMCommandRef       inCommand);
 
 /*
  * XPLMCommandEnd
  * 
  * XPLMCommandEnd ends the execution of a given command that was started with
  * XPLMCommandBegin.  You must not issue XPLMCommandEnd for a command you did
- * not begin.                                                                 
+ * not begin.
  *
  */
 XPLM_API void       XPLMCommandEnd(
-                         XPLMCommandRef       inCommand);    
+                         XPLMCommandRef       inCommand);
 
 /*
  * XPLMCommandOnce
  * 
  * This executes a given command momentarily, that is, the command begins and
  * ends immediately. This is the equivalent of calling XPLMCommandBegin() and
- * XPLMCommandEnd() back ot back.                                             
+ * XPLMCommandEnd() back to back.
  *
  */
 XPLM_API void       XPLMCommandOnce(
-                         XPLMCommandRef       inCommand);    
+                         XPLMCommandRef       inCommand);
 
 /*
  * XPLMCreateCommand
@@ -631,12 +647,12 @@ XPLM_API void       XPLMCommandOnce(
  * XPLMCreateCommand creates a new command for a given string. If the command
  * already exists, the existing command reference is returned. The description
  * may appear in user interface contexts, such as the joystick configuration
- * screen.                                                                    
+ * screen.
  *
  */
 XPLM_API XPLMCommandRef XPLMCreateCommand(
-                         const char *         inName,    
-                         const char *         inDescription);    
+                         const char *         inName,
+                         const char *         inDescription);
 
 /*
  * XPLMRegisterCommandHandler
@@ -648,27 +664,27 @@ XPLM_API XPLMCommandRef XPLMCreateCommand(
  * X-Plane executes the command, and returning 0 from your callback will
  * disable X-Plane's processing of the command. If inBefore is false, your
  * callback will run after X-Plane. (You can register a single callback both
- * before and after a command.)                                               
+ * before and after a command.)
  *
  */
 XPLM_API void       XPLMRegisterCommandHandler(
-                         XPLMCommandRef       inComand,    
-                         XPLMCommandCallback_f inHandler,    
-                         int                  inBefore,    
-                         void *               inRefcon);    
+                         XPLMCommandRef       inComand,
+                         XPLMCommandCallback_f inHandler,
+                         int                  inBefore,
+                         void *               inRefcon);
 
 /*
  * XPLMUnregisterCommandHandler
  * 
  * XPLMUnregisterCommandHandler removes a command callback registered with
- * XPLMRegisterCommandHandler.                                                
+ * XPLMRegisterCommandHandler.
  *
  */
 XPLM_API void       XPLMUnregisterCommandHandler(
-                         XPLMCommandRef       inComand,    
-                         XPLMCommandCallback_f inHandler,    
-                         int                  inBefore,    
-                         void *               inRefcon);    
+                         XPLMCommandRef       inComand,
+                         XPLMCommandCallback_f inHandler,
+                         int                  inBefore,
+                         void *               inRefcon);
 
 #endif /* XPLM200 */
 #if defined(XPLM_DEPRECATED)
@@ -686,7 +702,7 @@ XPLM_API void       XPLMUnregisterCommandHandler(
  * The legacy user interaction APIs let you simulate commands the user can do
  * with a joystick, keyboard etc. Note that it is generally safer for future
  * compatibility to use one of these commands than to manipulate the
- * underlying sim data.                                                       
+ * underlying sim data.
  *
  */
 
@@ -696,7 +712,7 @@ XPLM_API void       XPLMUnregisterCommandHandler(
  * 
  * These enums represent all the keystrokes available within X-Plane. They can
  * be sent to X-Plane directly. For example, you can reverse thrust using
- * these enumerations.                                                        
+ * these enumerations.
  *
  */
 enum {
@@ -804,7 +820,7 @@ typedef int XPLMCommandKeyID;
  * These are enumerations for all of the things you can do with a joystick
  * button in X-Plane. They currently match the buttons menu in the equipment
  * setup dialog, but these enums will be stable even if they change in
- * X-Plane.                                                                   
+ * X-Plane.
  *
  */
 enum {
@@ -914,12 +930,12 @@ typedef int XPLMCommandButtonID;
  * is a raw key stroke it may be mapped by the keys file or enter text into a
  * field.
  * 
- * Deprecated: use XPLMCommandOnce                                            
+ * Deprecated: use XPLMCommandOnce
  *
  */
 XPLM_API void       XPLMSimulateKeyPress(
-                         int                  inKeyType,    
-                         int                  inKey);    
+                         int                  inKeyType,
+                         int                  inKey);
 
 /*
  * XPLMCommandKeyStroke
@@ -929,26 +945,26 @@ XPLM_API void       XPLMSimulateKeyPress(
  * remapped their keyboard. Examples of things you might do with this include
  * pausing the simulator.
  * 
- * Deprecated: use XPLMCommandOnce                                            
+ * Deprecated: use XPLMCommandOnce
  *
  */
 XPLM_API void       XPLMCommandKeyStroke(
-                         XPLMCommandKeyID     inKey);    
+                         XPLMCommandKeyID     inKey);
 
 /*
  * XPLMCommandButtonPress
  * 
  * This function simulates any of the actions that might be taken by pressing
  * a joystick button. However, this lets you call the command directly rather
- * than have to know which button is mapped where. Important: you must release
- * each button you press. The APIs are separate so that you can 'hold down' a
- * button for a fixed amount of time.
+ * than having to know which button is mapped where. Important: you must
+ * release each button you press. The APIs are separate so that you can 'hold
+ * down' a button for a fixed amount of time.
  * 
- * Deprecated: use XPLMCommandBegin.                                          
+ * Deprecated: use XPLMCommandBegin.
  *
  */
 XPLM_API void       XPLMCommandButtonPress(
-                         XPLMCommandButtonID  inButton);    
+                         XPLMCommandButtonID  inButton);
 
 /*
  * XPLMCommandButtonRelease
@@ -956,11 +972,11 @@ XPLM_API void       XPLMCommandButtonPress(
  * This function simulates any of the actions that might be taken by pressing
  * a joystick button. See XPLMCommandButtonPress.
  * 
- * Deprecated: use XPLMCommandEnd.                                            
+ * Deprecated: use XPLMCommandEnd.
  *
  */
 XPLM_API void       XPLMCommandButtonRelease(
-                         XPLMCommandButtonID  inButton);    
+                         XPLMCommandButtonID  inButton);
 
 #endif /* XPLM_DEPRECATED */
 #ifdef __cplusplus

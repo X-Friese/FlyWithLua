@@ -1,6 +1,6 @@
 {
-   Copyright 2005-2012 Sandy Barbour and Ben Supnik All rights reserved.  See
-   license.txt for usage. X-Plane SDK Version: 2.1.1                          
+   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
 UNIT XPLMMap;
@@ -12,7 +12,7 @@ INTERFACE
    
    As of X-Plane 11, map drawing happens in three stages:
    
-   1. backgrounds and "fill,"
+   1. backgrounds and "fill",
    2. icons, and
    3. labels.
    
@@ -51,7 +51,7 @@ INTERFACE
    In addition to mapping normal latitude/longitude locations into map
    coordinates, the projection APIs also let you know the current heading for
    north. (Since X-Plane 11 maps can rotate to match the heading of the user's
-   aircraft, it's not safe to assume that north is at zero degrees rotation.) 
+   aircraft, it's not safe to assume that north is at zero degrees rotation.)
 }
 
 USES
@@ -66,7 +66,7 @@ USES
    any or all of these callbacks. They allow you to insert your own OpenGL
    drawing, text labels, and icons into the X-Plane map at the appropriate
    places, allowing your layer to behave as similarly to X-Plane's built-in
-   layers as possible.                                                        
+   layers as possible.
 }
 
 
@@ -84,7 +84,7 @@ TYPE
     XPLMMapProjectionID
     
     This is an opaque handle for a map projection. Pass it to the projection
-    APIs to translate between map coordinates and latitude/longitudes.         
+    APIs to translate between map coordinates and latitude/longitudes.
    }
    XPLMMapProjectionID = pointer;
    PXPLMMapProjectionID = ^XPLMMapProjectionID;
@@ -97,7 +97,7 @@ TYPE
     a different visual representation for the same elements (for instance, the
     visual style of the terrain layer changes drastically between the VFR and
     IFR layers), or certain layers may be disabled entirely in some map types
-    (e.g., localizers are only visible in the IFR low-enroute style).          
+    (e.g., localizers are only visible in the IFR low-enroute style).
    }
    XPLMMapStyle = (
       xplm_MapStyle_VFR_Sectional              = 0
@@ -121,16 +121,16 @@ TYPE
     X-Plane icons and labels, but above the built-in "fill" layers (layers
     providing major details, like terrain and water). Note, however, that the
     relative ordering between the drawing callbacks of different plugins is not
-    guaranteed.                                                                
+    guaranteed.
    }
      XPLMMapDrawingCallback_f = PROCEDURE(
-                                    inLayer             : XPLMMapLayerID;    
-                                    inMapBoundsLeftTopRightBottom: PSingle;    
-                                    zoomRatio           : Single;    
-                                    mapUnitsPerUserInterfaceUnit: Single;    
-                                    mapStyle            : XPLMMapStyle;    
-                                    projection          : XPLMMapProjectionID;    
-                                    inRefcon            : pointer); cdecl;   
+                                    inLayer             : XPLMMapLayerID;
+                                    inMapBoundsLeftTopRightBottom: PSingle;
+                                    zoomRatio           : Single;
+                                    mapUnitsPerUserInterfaceUnit: Single;
+                                    mapStyle            : XPLMMapStyle;
+                                    projection          : XPLMMapProjectionID;
+                                    inRefcon            : pointer); cdecl;
 
    {
     XPLMMapIconDrawingCallback_f
@@ -146,16 +146,16 @@ TYPE
     built-in X-Plane map icons of the same layer type ("fill" or "markings," as
     determined by the XPLMMapLayerType in your XPLMCreateMapLayer_t). Note,
     however, that the relative ordering between the drawing callbacks of
-    different plugins is not guaranteed.                                       
+    different plugins is not guaranteed.
    }
      XPLMMapIconDrawingCallback_f = PROCEDURE(
-                                    inLayer             : XPLMMapLayerID;    
-                                    inMapBoundsLeftTopRightBottom: PSingle;    
-                                    zoomRatio           : Single;    
-                                    mapUnitsPerUserInterfaceUnit: Single;    
-                                    mapStyle            : XPLMMapStyle;    
-                                    projection          : XPLMMapProjectionID;    
-                                    inRefcon            : pointer); cdecl;   
+                                    inLayer             : XPLMMapLayerID;
+                                    inMapBoundsLeftTopRightBottom: PSingle;
+                                    zoomRatio           : Single;
+                                    mapUnitsPerUserInterfaceUnit: Single;
+                                    mapStyle            : XPLMMapStyle;
+                                    projection          : XPLMMapProjectionID;
+                                    inRefcon            : pointer); cdecl;
 
    {
     XPLMMapLabelDrawingCallback_f
@@ -171,16 +171,16 @@ TYPE
     built-in map icons and labels of the same layer type ("fill" or "markings,"
     as determined by the XPLMMapLayerType in your XPLMCreateMapLayer_t). Note,
     however, that the relative ordering between the drawing callbacks of
-    different plugins is not guaranteed.                                       
+    different plugins is not guaranteed.
    }
      XPLMMapLabelDrawingCallback_f = PROCEDURE(
-                                    inLayer             : XPLMMapLayerID;    
-                                    inMapBoundsLeftTopRightBottom: PSingle;    
-                                    zoomRatio           : Single;    
-                                    mapUnitsPerUserInterfaceUnit: Single;    
-                                    mapStyle            : XPLMMapStyle;    
-                                    projection          : XPLMMapProjectionID;    
-                                    inRefcon            : pointer); cdecl;   
+                                    inLayer             : XPLMMapLayerID;
+                                    inMapBoundsLeftTopRightBottom: PSingle;
+                                    zoomRatio           : Single;
+                                    mapUnitsPerUserInterfaceUnit: Single;
+                                    mapStyle            : XPLMMapStyle;
+                                    projection          : XPLMMapProjectionID;
+                                    inRefcon            : pointer); cdecl;
 
 {$ENDIF XPLM300}
 {$IFDEF XPLM300}
@@ -191,7 +191,7 @@ TYPE
    These are various "bookkeeping" callbacks that your map layer can receive
    (if you provide the callback in your XPLMCreateMapLayer_t). They allow you
    to manage the lifecycle of your layer, as well as cache any
-   computationally-intensive preparation you might need for drawing.          
+   computationally-intensive preparation you might need for drawing.
 }
 
 
@@ -214,25 +214,25 @@ TYPE
     prepare cache calls, nor will any draw call give you bounds outside these
     total map bounds. So, if you cache the projected map coordinates of all the
     items you might want to draw in the total map area, you can be guaranteed
-    that no draw call will be asked to do any new work.                        
+    that no draw call will be asked to do any new work.
    }
 TYPE
      XPLMMapPrepareCacheCallback_f = PROCEDURE(
-                                    inLayer             : XPLMMapLayerID;    
-                                    inTotalMapBoundsLeftTopRightBottom: PSingle;    
-                                    projection          : XPLMMapProjectionID;    
-                                    inRefcon            : pointer); cdecl;   
+                                    inLayer             : XPLMMapLayerID;
+                                    inTotalMapBoundsLeftTopRightBottom: PSingle;
+                                    projection          : XPLMMapProjectionID;
+                                    inRefcon            : pointer); cdecl;
 
    {
     XPLMMapWillBeDeletedCallback_f
     
     Called just before your map layer gets deleted. Because SDK-created map
     layers have the same lifetime as the X-Plane map that contains them, if the
-    map gets unloaded from memory, your layer will too.                        
+    map gets unloaded from memory, your layer will too.
    }
      XPLMMapWillBeDeletedCallback_f = PROCEDURE(
-                                    inLayer             : XPLMMapLayerID;    
-                                    inRefcon            : pointer); cdecl;   
+                                    inLayer             : XPLMMapLayerID;
+                                    inRefcon            : pointer); cdecl;
 
 {$ENDIF XPLM300}
 {$IFDEF XPLM300}
@@ -249,7 +249,7 @@ TYPE
    Your layer's lifetime will be determined by the lifetime of the map it is
    created in. If the map is destroyed (on the X-Plane side), your layer will
    be too, and you'll receive a callback to your
-   XPLMMapWillBeDeletedCallback_f.                                            
+   XPLMMapWillBeDeletedCallback_f.
 }
 
 
@@ -257,7 +257,7 @@ TYPE
     XPLMMapLayerType
     
     Indicates the type of map layer you are creating. Fill layers will always
-    be drawn beneath markings layers.                                          
+    be drawn beneath markings layers.
    }
 TYPE
    XPLMMapLayerType = (
@@ -292,7 +292,7 @@ CONST
     
     Each layer must be associated with exactly one map instance in X-Plane.
     That map, and that map alone, will call your callbacks. Likewise, when that
-    map is deleted, your layer will be as well.                                
+    map is deleted, your layer will be as well.
    }
 TYPE
    XPLMCreateMapLayer_t = RECORD
@@ -339,7 +339,7 @@ TYPE
     XPLMCreateMapLayer
     
     This routine creates a new map layer. You pass in an XPLMCreateMapLayer_t
-    structure with all of the fields set in.  You must set the structSize of
+    structure with all of the fields defined.  You must set the structSize of
     the structure to the size of the actual structure you used.
     
     Returns NULL if the layer creation failed. This happens most frequently
@@ -347,10 +347,10 @@ TYPE
     XPLMCreateMapLayer_t::mapToCreateLayerIn field doesn't exist (that is, if
     XPLMMapExists() returns 0 for the specified map). You can use
     XPLMRegisterMapCreationHook() to get a notification each time a new map is
-    opened in X-Plane, at which time you can create layers in it.              
+    opened in X-Plane, at which time you can create layers in it.
    }
    FUNCTION XPLMCreateMapLayer(
-                                        inParams            : PXPLMCreateMapLayer_t) : XPLMMapLayerID;    
+                                        inParams            : PXPLMCreateMapLayer_t) : XPLMMapLayerID;
     cdecl; external XPLM_DLL;
 
    {
@@ -358,10 +358,10 @@ TYPE
     
     Destroys a map layer you created (calling your
     XPLMMapWillBeDeletedCallback_f if applicable). Returns true if a deletion
-    took place.                                                                
+    took place.
    }
    FUNCTION XPLMDestroyMapLayer(
-                                        inLayer             : XPLMMapLayerID) : Integer;    
+                                        inLayer             : XPLMMapLayerID) : Integer;
     cdecl; external XPLM_DLL;
 
    {
@@ -371,12 +371,12 @@ TYPE
     X-Plane. This is the best time to add a custom map layer using
     XPLMCreateMapLayer().
     
-    No OpenGL drawing is permitted within this callback.                       
+    No OpenGL drawing is permitted within this callback.
    }
 TYPE
      XPLMMapCreatedCallback_f = PROCEDURE(
-                                    mapIdentifier       : XPLMString;    
-                                    refcon              : pointer); cdecl;   
+                                    mapIdentifier       : XPLMString;
+                                    refcon              : pointer); cdecl;
 
    {
     XPLMRegisterMapCreationHook
@@ -386,11 +386,11 @@ TYPE
     map layer using XPLMCreateMapLayer().
     
     Note that you will not be notified about any maps that already exist---you
-    can use XPLMMapExists() to check for maps that were created previously.    
+    can use XPLMMapExists() to check for maps that were created previously.
    }
    PROCEDURE XPLMRegisterMapCreationHook(
-                                        callback            : XPLMMapCreatedCallback_f;    
-                                        refcon              : pointer);    
+                                        callback            : XPLMMapCreatedCallback_f;
+                                        refcon              : pointer);
     cdecl; external XPLM_DLL;
 
    {
@@ -398,10 +398,10 @@ TYPE
     
     Returns 1 if the map with the specified identifier already exists in
     X-Plane. In that case, you can safely call XPLMCreateMapLayer() specifying
-    that your layer should be added to that map.                               
+    that your layer should be added to that map.
    }
    FUNCTION XPLMMapExists(
-                                        mapIdentifier       : XPLMString) : Integer;    
+                                        mapIdentifier       : XPLMString) : Integer;
     cdecl; external XPLM_DLL;
 
 {$ENDIF XPLM300}
@@ -421,7 +421,7 @@ TYPE
    xplm_MapLayer_Fill get drawn beneath all xplm_MapLayer_Markings layers.
    Likewise, all OpenGL drawing (performed in your layer's
    XPLMMapDrawingCallback_f) will appear beneath any icons and labels you
-   draw.                                                                      
+   draw.
 }
 
 
@@ -433,7 +433,7 @@ TYPE
     rotated such that "up" matches the user's aircraft, but you may want to
     draw a text label such that it is always rotated zero degrees relative to
     the user's perspective. In that case, you would have it draw with UI
-    orientation.                                                               
+    orientation.
    }
 TYPE
    XPLMMapOrientation = (
@@ -466,7 +466,7 @@ TYPE
     PNGs.
     
     The UV coordinates used here treat the texture you load as being comprised
-    of a number of identically sized "cells." You specify the width and height
+    of a number of identically sized "cells". You specify the width and height
     in cells (ds and dt, respectively), as well as the coordinates within the
     cell grid for the sub-image you'd like to draw.
     
@@ -476,20 +476,20 @@ TYPE
     
     This function is only valid from within an XPLMIconDrawingCallback_t (but
     you can request an arbitrary number of icons to be drawn from within your
-    callback).                                                                 
+    callback).
    }
    PROCEDURE XPLMDrawMapIconFromSheet(
-                                        layer               : XPLMMapLayerID;    
-                                        inPngPath           : XPLMString;    
-                                        s                   : Integer;    
-                                        t                   : Integer;    
-                                        ds                  : Integer;    
-                                        dt                  : Integer;    
-                                        mapX                : Single;    
-                                        mapY                : Single;    
-                                        orientation         : XPLMMapOrientation;    
-                                        rotationDegrees     : Single;    
-                                        mapWidth            : Single);    
+                                        layer               : XPLMMapLayerID;
+                                        inPngPath           : XPLMString;
+                                        s                   : Integer;
+                                        t                   : Integer;
+                                        ds                  : Integer;
+                                        dt                  : Integer;
+                                        mapX                : Single;
+                                        mapY                : Single;
+                                        orientation         : XPLMMapOrientation;
+                                        rotationDegrees     : Single;
+                                        mapWidth            : Single);
     cdecl; external XPLM_DLL;
 
    {
@@ -498,15 +498,15 @@ TYPE
     Enables plugin-created map layers to draw text labels using X-Plane's
     built-in labeling functionality. Only valid from within an
     XPLMMapLabelDrawingCallback_f (but you can request an arbitrary number of
-    text labels to be drawn from within your callback).                        
+    text labels to be drawn from within your callback).
    }
    PROCEDURE XPLMDrawMapLabel(
-                                        layer               : XPLMMapLayerID;    
-                                        inText              : XPLMString;    
-                                        mapX                : Single;    
-                                        mapY                : Single;    
-                                        orientation         : XPLMMapOrientation;    
-                                        rotationDegrees     : Single);    
+                                        layer               : XPLMMapLayerID;
+                                        inText              : XPLMString;
+                                        mapX                : Single;
+                                        mapY                : Single;
+                                        orientation         : XPLMMapOrientation;
+                                        rotationDegrees     : Single);
     cdecl; external XPLM_DLL;
 
 {$ENDIF XPLM300}
@@ -526,7 +526,7 @@ TYPE
    
    Finally, the map projection can give you the current rotation of the map.
    Since X-Plane 11 maps can rotate to match the heading of the aircraft, the
-   map's rotation can potentially change every frame.                         
+   map's rotation can potentially change every frame.
 }
 
 
@@ -538,14 +538,14 @@ TYPE
     
     Only valid from within a map layer callback (one of
     XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
-    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
    }
    PROCEDURE XPLMMapProject(
-                                        projection          : XPLMMapProjectionID;    
-                                        latitude            : Real;    
-                                        longitude           : Real;    
-                                        outX                : PSingle;    
-                                        outY                : PSingle);    
+                                        projection          : XPLMMapProjectionID;
+                                        latitude            : Real;
+                                        longitude           : Real;
+                                        outX                : PSingle;
+                                        outY                : PSingle);
     cdecl; external XPLM_DLL;
 
    {
@@ -556,14 +556,14 @@ TYPE
     
     Only valid from within a map layer callback (one of
     XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
-    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
    }
    PROCEDURE XPLMMapUnproject(
-                                        projection          : XPLMMapProjectionID;    
-                                        mapX                : Single;    
-                                        mapY                : Single;    
-                                        outLatitude         : PReal;    
-                                        outLongitude        : PReal);    
+                                        projection          : XPLMMapProjectionID;
+                                        mapX                : Single;
+                                        mapY                : Single;
+                                        outLatitude         : PReal;
+                                        outLongitude        : PReal);
     cdecl; external XPLM_DLL;
 
    {
@@ -574,12 +574,12 @@ TYPE
     
     Only valid from within a map layer callback (one of
     XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
-    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
    }
    FUNCTION XPLMMapScaleMeter(
-                                        projection          : XPLMMapProjectionID;    
-                                        mapX                : Single;    
-                                        mapY                : Single) : Single;    
+                                        projection          : XPLMMapProjectionID;
+                                        mapX                : Single;
+                                        mapY                : Single) : Single;
     cdecl; external XPLM_DLL;
 
    {
@@ -593,12 +593,12 @@ TYPE
     
     Only valid from within a map layer callback (one of
     XPLMMapPrepareCacheCallback_f, XPLMMapDrawingCallback_f,
-    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)           
+    XPLMMapIconDrawingCallback_f, or XPLMMapLabelDrawingCallback_f.)
    }
    FUNCTION XPLMMapGetNorthHeading(
-                                        projection          : XPLMMapProjectionID;    
-                                        mapX                : Single;    
-                                        mapY                : Single) : Single;    
+                                        projection          : XPLMMapProjectionID;
+                                        mapX                : Single;
+                                        mapY                : Single) : Single;
     cdecl; external XPLM_DLL;
 
 {$ENDIF XPLM300}
