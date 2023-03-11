@@ -138,18 +138,18 @@ XPLM_API FMOD_CHANNELGROUP* XPLMGetFMODChannelGroup(
  * datatype and allow simple "is OK" and "is not OK" tests.
 */
 
-enum FMOD_RESULT
+typedef enum FMOD_RESULT
 {
     FMOD_OK,
-};
-enum FMOD_SOUND_FORMAT
+} FMOD_RESULT;
+typedef enum FMOD_SOUND_FORMAT
 {
 	FMOD_SOUND_FORMAT_PCM16 = 2
-};
-struct FMOD_VECTOR
+} FMOD_SOUND_FORMAT;
+typedef struct FMOD_VECTOR
 {
 	float x, y, z;
-};
+} FMOD_VECTOR;
 typedef void FMOD_CHANNEL;
 #endif
 
