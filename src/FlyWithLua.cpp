@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.9"
+#define PLUGIN_VERSION_NO "2.8.10"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -167,6 +167,7 @@
  *                    Fixed issue to make sure float_wnd window is in correct position after leaving VR going into 2d.
  *  v2.8.8  [added]   Added support for the horizontal scrollbar in Imgui windows.
  *  v2.8.9  [changed] Now using the X-Plane Fmod SDK for the com1, interior, ui and the master buses.
+ *  v2.8.10 [changed] Removed X-Plane LuaJIT alloc because it is not needed and was causing issues with Linux.
  *
  *
  *  Markus (Teddii):
@@ -6552,32 +6553,12 @@ void ResetLuaEngine()
     // I think after this call fmod is not getting initalized.
     // fmodint::fmod_uninitialize();
 
-    XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
-    if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
-    {
-        lua_close(FWLLua);
-        lj_alloc_destroy(ud);
-    }
-    else
-    {
-        lua_close(FWLLua);
-    }
+    // XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
+    lua_close(FWLLua);
 
-    lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
-    if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
-    {
-        /* X-Plane has an allocator for us - we _must_ use it. */
-        ud = lj_alloc_create();
-        if (ud == nullptr)
-        {
-            logMsg(logToDevCon, "FlyWithLua Error: LuaJIT Kernel Panic! No space to create the Lua instance!");
-        }
-        FWLLua = lua_newstate(lj_alloc_f, ud);
-    } else
-    {
-        /* use the default allocator. */
-        FWLLua = luaL_newstate();
-    }
+    /* use the default allocator. */
+    FWLLua = luaL_newstate();
+
     sol::set_default_state(FWLLua);
 
     LuaDrawCommand.clear();
@@ -7313,17 +7294,7 @@ PLUGIN_API void XPluginDisable(void)
 
     // close Lua
     LuaIsRunning = false;
-    XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
-    if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
-    {
-        lua_close(FWLLua);
-        lj_alloc_destroy(ud);
-    }
-    else
-    {
-        lua_close(FWLLua);
-    }
-
+    lua_close(FWLLua);
 
     // killing all commands
     if (CommandTableLastElement > -1)
@@ -7494,24 +7465,8 @@ PLUGIN_API int XPluginEnable(void)
     init_openal_sound();
 
     // Starting the Lua engine
-    XPLMDataRef lua_alloc_ref = XPLMFindDataRef("sim/operation/prefs/misc/has_lua_alloc");
-    if (lua_alloc_ref && XPLMGetDatai(lua_alloc_ref))
-    {
-        /* X-Plane has an allocator for us - we _must_ use it. */
-        ud = lj_alloc_create();
-        if (ud == nullptr)
-        {
-            logMsg(logToDevCon, "FlyWithLua Error: LuaJIT Panic! No space to create the Lua instance!");
-            logMsg(logToDevCon, "FlyWithLua Info: Since we can't create the Lua instance");
-            logMsg(logToDevCon, "FlyWithLua Info: do not enable plugin by using return 0");
-            return 0;
-        }
-        FWLLua = lua_newstate(lj_alloc_f, ud);
-    } else
-    {
-        /* use the default allocator. */
-        FWLLua = luaL_newstate();
-    }
+    /* use the default allocator. */
+    FWLLua = luaL_newstate();
     sol::set_default_state(FWLLua);
 
     luaL_openlibs(FWLLua);
