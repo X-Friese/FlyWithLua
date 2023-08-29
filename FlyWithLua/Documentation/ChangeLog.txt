@@ -89,3 +89,5 @@ v2.8.7 Fixed issue with float_wnd_set_position not positioning window correctly.
 v2.8.8 Added support for the horizontal scrollbar in Imgui windows.
 
 v2.8.9 Added support for X-Plane Fmod SDK.
+
+v2.8.10 emoved X-Plane LuaJIT alloc because it is not needed and was causing issues with Linux.
