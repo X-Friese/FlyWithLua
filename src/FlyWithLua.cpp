@@ -3166,16 +3166,20 @@ static int LuaSetAxisAssignment(lua_State* L)
         CommandRefIdWanted = 65;
     else if (CommandWanted == "throttle horizontal")
         CommandRefIdWanted = 66;
-    else if (CommandWanted == "copilot pitch")
+    else if (CommandWanted == "throttle 9")
         CommandRefIdWanted = 67;
-    else if (CommandWanted == "copilot roll")
+    else if (CommandWanted == "copilot pitch")
         CommandRefIdWanted = 68;
-    else if (CommandWanted == "copilot yaw")
+    else if (CommandWanted == "copilot roll")
         CommandRefIdWanted = 69;
-    else if (CommandWanted == "copilot left toe brake")
+    else if (CommandWanted == "copilot yaw")
         CommandRefIdWanted = 70;
-    else if (CommandWanted == "copilot right toe brake")
+    else if (CommandWanted == "copilot left toe brake")
         CommandRefIdWanted = 71;
+    else if (CommandWanted == "copilot right toe brake")
+        CommandRefIdWanted = 72;
+    else if (CommandWanted == "copilot nosewheel tiller")
+        CommandRefIdWanted = 73;
 
     XPLMSetDatavi(gJoystickAxisAssignments, &CommandRefIdWanted, AxisNumber, 1);
 
