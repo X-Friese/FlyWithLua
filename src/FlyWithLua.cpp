@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.11"
+#define PLUGIN_VERSION_NO "2.8.12"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -168,7 +168,8 @@
  *  v2.8.8  [added]   Added support for the horizontal scrollbar in Imgui windows.
  *  v2.8.9  [changed] Now using the X-Plane Fmod SDK for the com1, interior, ui and the master buses.
  *  v2.8.10 [changed] Removed X-Plane LuaJIT alloc because it is not needed and was causing issues with Linux.
- *  v2.8.11 [changed] Fixed missing Throttle 9 from SaveInitalAssignments.ini Thanks XPJavelin
+ *  v2.8.11 [changed] Fixed missing Throttle 9 from SaveInitalAssignments.ini Thanks XPJavelin from x-plane.org
+ *  v2.8.12 [changed] Fixed issue with do_on_mouse_click now is only called once per mouse click Thanks apn from x-plane.org
  *
  *
  *  Markus (Teddii):
@@ -7487,7 +7488,7 @@ PLUGIN_API int XPluginEnable(void)
 
     //register the mouse capture window
     XPLMCreateWindow_t MouseWindowData;
-    MouseWindowData.structSize = 72; // SDK 2 size to work around XPD-9350
+    MouseWindowData.structSize = sizeof(MouseWindowData);
     MouseWindowData.left       = 0;
     MouseWindowData.bottom     = 0;
     XPLMGetScreenSize(&MouseWindowData.right, &MouseWindowData.top);

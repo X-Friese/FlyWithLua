@@ -93,3 +93,5 @@ v2.8.9 Added support for X-Plane Fmod SDK.
 v2.8.10 Removed X-Plane LuaJIT alloc because it is not needed and was causing issues with Linux.
 
 v2.8.11 Fixed missing Throttle 9 from SaveInitalAssignments.ini Thanks XPJavelin
+
+v2.8.12 Fixed issue with do_on_mouse_click now is only called once per mouse click Thanks apn
