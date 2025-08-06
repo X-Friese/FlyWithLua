@@ -5,7 +5,7 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  FWL_VERSION: 2.8.12
+  FWL_VERSION: 2.8.13
 
 jobs:
   build-lin:
@@ -97,7 +97,13 @@ jobs:
     needs: [build-lin, build-win, build-x64-mac, build-arm-mac]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: binaries
+          pattern: binaries-*
+                
       - uses: actions/download-artifact@v4
         with:
           name: binaries
