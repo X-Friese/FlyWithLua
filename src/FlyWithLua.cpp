@@ -3176,7 +3176,7 @@ static int LuaSetAxisAssignment(lua_State* L)
         CommandRefIdWanted = 0;
 
     // instead we have a new function
-    else if (CommandWanted == "Cowl flaps")
+    else if (CommandWanted == "cowl flaps")
         CommandRefIdWanted = 39;
 
     // and nothing for the index value 40
