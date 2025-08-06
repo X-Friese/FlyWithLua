@@ -11,7 +11,7 @@ jobs:
   build-lin:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install other dependancies
         run: |
           sudo apt-get update
@@ -24,14 +24,14 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{matrix.os}}
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
           
   build-win:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: "Windows: Configure environment"
         shell: bash
         run: |
@@ -45,14 +45,14 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{matrix.os}}
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
 
   build-x64-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Configure CMake
         working-directory: ${{github.workspace}}/src
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -65,7 +65,7 @@ jobs:
         run: mv build/mac.xpl build/mac_x64.xpl                          
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{matrix.os}}
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
       - name: List folder
@@ -74,7 +74,7 @@ jobs:
   build-arm-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Configure CMake
         working-directory: ${{github.workspace}}/src
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_ARM=ON
@@ -87,7 +87,7 @@ jobs:
         run: mv build/mac.xpl build/mac_arm.xpl                   
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{matrix.os}}
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
       - name: List folder
