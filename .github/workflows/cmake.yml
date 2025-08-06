@@ -5,13 +5,13 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  FWL_VERSION: 2.8.12
+  FWL_VERSION: 2.8.13
 
 jobs:
   build-lin:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install other dependancies
         run: |
           sudo apt-get update
@@ -22,16 +22,16 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/src
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-lin
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
           
   build-win:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: "Windows: Configure environment"
         shell: bash
         run: |
@@ -43,16 +43,16 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/src
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-win
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
 
   build-x64-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Configure CMake
         working-directory: ${{github.workspace}}/src
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -63,9 +63,9 @@ jobs:
         run: ls -R -l
       - name: Rename mac.xpl to mac_x64.xpl
         run: mv build/mac.xpl build/mac_x64.xpl                          
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-x64-mac
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
       - name: List folder
@@ -74,7 +74,7 @@ jobs:
   build-arm-mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Configure CMake
         working-directory: ${{github.workspace}}/src
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_ARM=ON
@@ -85,9 +85,9 @@ jobs:
         run: ls -R -l
       - name: Rename mac.xpl to mac_x64.xpl
         run: mv build/mac.xpl build/mac_arm.xpl                   
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-arm-mac
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
       - name: List folder
@@ -97,8 +97,14 @@ jobs:
     needs: [build-lin, build-win, build-x64-mac, build-arm-mac]
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/checkout@v4
+      
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: binaries
+          pattern: binaries-*
+                
+      - uses: actions/download-artifact@v4
         with:
           name: binaries
           path: FlyWithLua/lin_x64
@@ -114,7 +120,7 @@ jobs:
         run: rm FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl
       - name: Did we remove mac_x64.xpl & mac_arm.xpl & win.xpl    
         run: ls -R -l
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: FlyWithLua_NG+_v${{env.FWL_VERSION}}
           path: |

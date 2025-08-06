@@ -172,6 +172,8 @@
  *  v2.8.12 [changed] Fixed issue with do_on_mouse_click now is only called once per mouse click Thanks apn from x-plane.org
  *	v2.8.13 [Added]   do_every_frame_after() callback to run in FlightLoop Phase 1 (after physics processing, thus eliminating 
  *	                  graphic jitter
+ *          [Added]   do_every_frame_before() callback to run in FlightLoop Phase 1 (before physics processing)
+ *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
  *          [changed] extended logMsg() with logType=logToAll|logToDevCon|logToSqkBox. If XSquawkBox is not connected logMsg() will fall back to DevCon
@@ -2897,6 +2899,77 @@ static int LuaDoEveryFrame(lua_State* L)
     StoreLuaChunk(EveryFrameCallbackCommand, "DO_EVERY_FRAME_CHUNK");
     return 0;
 }
+
+
+// --- MULTI-CALLBACK VERSION OF: FlightLoop Callback BeforeFlightModel ---
+
+static XPLMFlightLoopID g_DoEveryFrameBefore_ID = nullptr;
+static std::vector<std::string> do_every_frame_before_code;
+
+// Called every frame before flight model is updated
+float Do_Every_Frame_Before(float inElapsedSinceLastCall, float inElapsedTimeSinceLastFlightLoop,
+                           int inCounter, void* inRefcon)
+{
+    if (!LuaIsRunning) return -1.0f;
+
+    CopyDataRefsToLua();
+
+    for (const auto& code : do_every_frame_before_code)
+    {
+        if (luaL_loadstring(FWLLua, code.c_str()) == LUA_OK)
+        {
+            if (lua_pcall(FWLLua, 0, 0, 0) != LUA_OK)
+            {
+                const char* err = lua_tostring(FWLLua, -1);
+                logMsg(logToDevCon, std::string("Error in do_every_frame_before(): ") + err);
+                lua_pop(FWLLua, 1);
+            }
+        }
+        else
+        {
+            const char* err = lua_tostring(FWLLua, -1);
+            logMsg(logToDevCon, std::string("Syntax error in do_every_frame_before(): ") + err);
+            lua_pop(FWLLua, 1);
+        }
+    }
+
+    CopyDataRefsToXPlane();
+
+    return -1.0f; // every frame
+}
+
+void Register_Do_Every_Frame_Before()
+{
+    if (g_DoEveryFrameBefore_ID != nullptr)
+        return;
+
+    XPLMCreateFlightLoop_t loop_params{};
+    loop_params.structSize = sizeof(XPLMCreateFlightLoop_t);
+    loop_params.phase = xplm_FlightLoop_Phase_BeforeFlightModel;
+    loop_params.callbackFunc = Do_Every_Frame_Before;
+    loop_params.refcon = nullptr;
+
+    g_DoEveryFrameBefore_ID = XPLMCreateFlightLoop(&loop_params);
+    XPLMScheduleFlightLoop(g_DoEveryFrameBefore_ID, -1.0, 0);
+}
+
+static int LuaDoEveryFrameBefore(lua_State* L)
+{
+    if (!lua_isstring(L, 1))
+    {
+        logMsg(logToDevCon, "FlyWithLua Error: do_every_frame_before() needs a string of Lua code.");
+        LuaIsRunning = false;
+        return 0;
+    }
+
+    std::string lua_code = lua_tostring(L, 1);
+    do_every_frame_before_code.push_back(lua_code);
+
+    return 0;
+}
+
+// ---  End DoEveryFrameBefore routines
+
 
 // --- MULTI-CALLBACK VERSION OF: FlightLoop Callback AfterFlightModel ---
 
@@ -6096,6 +6169,7 @@ void RegisterCoreCFunctionsToLua(lua_State* L)
     lua_register(L, "do_on_mouse_wheel", LuaDoEveryMouseWheel);
     lua_register(L, "do_every_draw", LuaDoEveryDrawCallback);
     lua_register(L, "do_every_frame", LuaDoEveryFrame);
+    lua_register(L, "do_every_frame_before", LuaDoEveryFrameBefore);	 // Callback before FlightModel
     lua_register(L, "do_every_frame_after", LuaDoEveryFrameAfter);	 // Callback after FlightModel
     lua_register(L, "do_often", LuaDoOften);
     lua_register(L, "do_sometimes", LuaDoSometimes);
@@ -7434,6 +7508,14 @@ PLUGIN_API void XPluginDisable(void)
     XPLMUnregisterFlightLoopCallback(MyFastLoopCallback, nullptr);
     XPLMUnregisterFlightLoopCallback(MySlowLoopCallback, nullptr);
     XPLMUnregisterFlightLoopCallback(MyEveryFrameLoopCallback, nullptr);
+
+    // Unregister and clean up the BeforeFlightModel flight loop
+    if (g_DoEveryFrameBefore_ID != nullptr)
+    {
+        XPLMDestroyFlightLoop(g_DoEveryFrameBefore_ID);
+        g_DoEveryFrameBefore_ID = nullptr;
+        do_every_frame_before_code.clear();
+    }
 	
 	// Unregister and clean up the AfterFlightModel flight loop
 	if (g_DoEveryFrameAfter_ID != nullptr)
@@ -7443,7 +7525,6 @@ PLUGIN_API void XPluginDisable(void)
 		do_every_frame_after_code.clear();
 	}
 	
-
     // write to Log.txt
     logMsg(logToDevCon, "FlyWithLua Info: FlyWithLua plugin disabled.");
 }
@@ -7498,6 +7579,8 @@ PLUGIN_API int XPluginEnable(void)
             nullptr);                     /* refcon not used. */
 
     XPLMRegisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void*) "FWLWindowDrawer");
+
+    Register_Do_Every_Frame_Before(); // Provide a callback that runs in FlightLoop Phase Before mode.
 	
 	Register_Do_Every_Frame_After(); // Provide a callback that runs in FlightLoop Phase After mode.
 

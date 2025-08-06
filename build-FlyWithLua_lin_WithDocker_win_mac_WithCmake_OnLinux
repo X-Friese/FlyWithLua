@@ -2,7 +2,7 @@
 #
 # How to run
 # cd $FlyWithLua_REPO
-# ./build-FlyWithLua_lin_WithDocker_win_mac_lin_WithCmake_OnLinux
+# ./build-FlyWithLua_lin_WithDocker_win_mac_WithCmake_OnLinux
 
 rm -r FlyWithLua/win_x64/*.xpl
 rm -r FlyWithLua/lin_x64/*.xpl

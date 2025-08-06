@@ -95,3 +95,5 @@ v2.8.10 Removed X-Plane LuaJIT alloc because it is not needed and was causing is
 v2.8.11 Fixed missing Throttle 9 from SaveInitalAssignments.ini Thanks XPJavelin
 
 v2.8.12 Fixed issue with do_on_mouse_click now is only called once per mouse click Thanks apn
+
+v2.8.13 Added do_every_frame_after() callback to run in FlightLoop Phase 1 (after physics processing, thus eliminating graphic jitter) also added do_every_frame_before() callback
