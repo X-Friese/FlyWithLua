@@ -22,7 +22,7 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/src
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: ${{github.workspace}}/build/*.xpl
@@ -43,7 +43,7 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/src
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: ${{github.workspace}}/build/*.xpl
@@ -63,7 +63,7 @@ jobs:
         run: ls -R -l
       - name: Rename mac.xpl to mac_x64.xpl
         run: mv build/mac.xpl build/mac_x64.xpl                          
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: ${{github.workspace}}/build/*.xpl
@@ -85,7 +85,7 @@ jobs:
         run: ls -R -l
       - name: Rename mac.xpl to mac_x64.xpl
         run: mv build/mac.xpl build/mac_arm.xpl                   
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: binaries
           path: ${{github.workspace}}/build/*.xpl
@@ -98,7 +98,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: binaries
           path: FlyWithLua/lin_x64
@@ -114,7 +114,7 @@ jobs:
         run: rm FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl
       - name: Did we remove mac_x64.xpl & mac_arm.xpl & win.xpl    
         run: ls -R -l
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: FlyWithLua_NG+_v${{env.FWL_VERSION}}
           path: |
