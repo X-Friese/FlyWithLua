@@ -24,7 +24,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{matrix.os}}
+          name: binaries-lin
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
           
@@ -45,7 +45,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}            
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{matrix.os}}
+          name: binaries-win
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
 
@@ -65,7 +65,7 @@ jobs:
         run: mv build/mac.xpl build/mac_x64.xpl                          
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{matrix.os}}
+          name: binaries-x64-mac
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
       - name: List folder
@@ -87,7 +87,7 @@ jobs:
         run: mv build/mac.xpl build/mac_arm.xpl                   
       - uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{matrix.os}}
+          name: binaries-arm-mac
           path: ${{github.workspace}}/build/*.xpl
           if-no-files-found: error
       - name: List folder
