@@ -1,10 +1,3 @@
-*.xpl
-
-FlyWithLua/lin_x64/*.xpl
-FlyWithLua/mac_x64/*.xpl
-FlyWithLua/win_x64/*.xpl
-
-
 #################
 ## Eclipse
 #################
