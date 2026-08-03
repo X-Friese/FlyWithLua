@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.14"
+#define PLUGIN_VERSION_NO "2.8.15"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -174,6 +174,7 @@
  *	                  graphic jitter
  *          [Added]   do_every_frame_before() callback to run in FlightLoop Phase 1 (before physics processing)
  *  v2.8.14 [Added]   UnregisterAccessor() to XPluginStop(void) to prevent a threading violation Thanks Camille
+ *  v2.8.15 [Added]   Support for imgui 1.92.8 to help have scalable fonts. Thanks to jim Kier and Steve (slgoldberg)
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found

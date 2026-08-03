@@ -20,9 +20,11 @@ extern "C" {
 // to keep track of end and begins and clean up the imgui stack
 // if lua errors
 
-
+// If you want to pass lua_State to the functions then define this value at the project level.
+#ifndef LUA_BINDINGS_LOCAL_STATE
 // define this global before you call RunString or LoadImGuiBindings
 lua_State* lState;
+#endif
 
 #ifdef ENABLE_IM_LUA_END_STACK
 // Stack for imgui begin and end
@@ -43,9 +45,13 @@ static void ImEndStack(int type);
 
 // Example lua run string function
 // returns NULL on success and error string on error
-const char * RunString(const char* szLua) {
+const char * RunString(
+#if LUA_BINDINGS_LOCAL_STATE
+    lua_State* lState, 
+#endif
+    const char* szLua) {
   if (!lState) {
-    fprintf(stderr, "You didn't assign the global lState, either assign that or refactor LoadImguiBindings and RunString\n");
+    fprintf(stderr, "You didn't pass a valid lState, either assign that or refactor LoadImguiBindings and RunString\n");
   }
 
   int iStatus = luaL_loadstring(lState, szLua);
@@ -98,9 +104,9 @@ static int impl_##name(lua_State *L) { \
 // Using unsigned int cause im lazy don't copy me
 #define IM_TEXTURE_ID_ARG(name) \
   const ImTextureID name = (ImTextureID)luaL_checkinteger(L, arg++);
-
+  
 #define DEFAULT_ARG(type, name, value) \
-  type name = value; \
+  type name = value; \  
 
 #define OPTIONAL_LABEL_ARG(name) \
   const char* name; \
@@ -113,6 +119,20 @@ static int impl_##name(lua_State *L) { \
 #define LABEL_ARG(name) \
   size_t i_##name##_size; \
   const char * name = luaL_checklstring(L, arg++, &(i_##name##_size));
+  
+#define LABEL_POINTER_ARG(name) \
+  size_t i_##name##_size; \
+  const char * content = luaL_checklstring(L, arg++, &(i_##name##_size)); \
+  size_t buf_size = luaL_checknumber(L, arg++); \
+  char * name = new char [buf_size]; \
+  std::strcpy(name, content);
+
+#define END_LABEL_POINTER(name) \
+  if (name != NULL) { \
+    lua_pushstring(L, name); \
+    delete[] name; \
+    stackval++; \
+        }  
 
 #define IM_VEC_2_ARG(name)\
   const lua_Number i_##name##_x = luaL_checknumber(L, arg++); \
@@ -148,28 +168,8 @@ static int impl_##name(lua_State *L) { \
   } \
   const ImVec4 name((double)i_##name##_x, (double)i_##name##_y, (double)i_##name##_z, (double)i_##name##_w);
 
-#define LABEL_POINTER_ARG(name) \
-  size_t i_##name##_size; \
-  const char * content = luaL_checklstring(L, arg++, &(i_##name##_size)); \
-  size_t buf_size = luaL_checknumber(L, arg++); \
-  char * name = new char [buf_size]; \
-  std::strcpy(name, content);
-
-#define END_LABEL_POINTER(name) \
-  if (name != NULL) { \
-    lua_pushstring(L, name); \
-    delete[] name; \
-    stackval++; \
-        }
-
 #define NUMBER_ARG(name)\
   lua_Number name = luaL_checknumber(L, arg++);
-  
-#define FLOAT_ARRAY_DEF(name, size)\
-    float name[size];
-
-#define FLOAT_ARRAY_ARG(name, it)\
-    name[it] = (float)luaL_checknumber(L, arg++);  
 
 #define OPTIONAL_NUMBER_ARG(name, otherwise)\
   lua_Number name = otherwise; \
@@ -177,7 +177,7 @@ static int impl_##name(lua_State *L) { \
     name = lua_tonumber(L, arg++); \
   }
 
-#define CONST_FLOAT_ARG(name) \
+#define FLOAT_ARRAY_ARG(name) \
   luaL_checktype(L, arg, LUA_TTABLE); \
   int len = lua_objlen(L, arg++); \
   std::vector<float> list; \
@@ -207,12 +207,15 @@ static int impl_##name(lua_State *L) { \
 
 #define INT_ARG(name) \
   const int name = (int)luaL_checknumber(L, arg++);
-  
-#define INT_ARRAY_DEF(name,size) \
-    int name[size];
 
-#define INT_ARRAY_ARG(name,it) \
-    name[it] = (int)luaL_checknumber(L, arg++);  
+#define OPTIONAL_ENUM_ARG(name, ename, otherwise)\
+  ename name = otherwise; \
+  if (arg <= max_args) { \
+    name = static_cast<ename>(lua_tonumber(L, arg++)); \
+  }
+
+#define ENUM_ARG(name, ename) \
+  const ename name = static_cast<ename>(luaL_checknumber(L, arg++));
 
 #define OPTIONAL_UINT_ARG(name, otherwise)\
   unsigned int name = otherwise; \
@@ -294,66 +297,6 @@ static int impl_##name(lua_State *L) { \
     stackval++; \
   }
 
-#define VOID_ARG(name) \
-    void* name = NULL; \
-    size_t arg_##name = arg++; \
-    lua_Number o_##name##_int; \
-    bool o_##name##_bool; \
-    char* o_##name##_str; \
-    int type_##name = lua_type(L, arg_##name); \
-    switch (type_##name) { \
-        case LUA_TNUMBER: \
-        { \
-            o_##name##_int = luaL_checknumber(L, arg_##name); \
-            name = (void*)&o_##name##_int; \
-            break; \
-        } \
-        case LUA_TBOOLEAN: \
-        { \
-            o_##name##_bool = lua_toboolean(L, arg_##name); \
-            name = (void*)&o_##name##_bool; \
-            break; \
-        } \
-        case LUA_TSTRING: \
-        { \
-            size_t i_##name##_size; \
-            o_##name##_str = const_cast<char*>(luaL_checklstring(L, arg_##name, &(i_##name##_size))); \
-            name = (void*)&o_##name##_str; \
-            break; \
-        } \
-    }
-
-#define OPTIONAL_VOID_ARG(name, otherwise) \
-    void* name = NULL; \
-    size_t arg_##name = arg++; \
-    if (arg_##name <= max_args) { \
-        lua_Number o_##name##_int; \
-        bool o_##name##_bool; \
-        char* o_##name##_str; \
-        int type_##name = lua_type(L, arg_##name); \
-        switch (type_##name) { \
-            case LUA_TNUMBER: \
-            { \
-                o_##name##_int = luaL_checknumber(L, arg_##name); \
-                name = (void*)&o_##name##_int; \
-                break; \
-            } \
-            case LUA_TBOOLEAN: \
-            { \
-                o_##name##_bool = lua_toboolean(L, arg_##name); \
-                name = (void*)&o_##name##_bool; \
-                break; \
-            } \
-            case LUA_TSTRING: \
-            { \
-                size_t i_##name##_size; \
-                o_##name##_str = const_cast<char*>(luaL_checklstring(L, arg_##name, &(i_##name##_size))); \
-                name = (void*)&o_##name##_str; \
-                break; \
-            } \
-        } \
-    }
-
 #define END_IMGUI_FUNC \
   return stackval; \
 }
@@ -397,6 +340,7 @@ static void ImEndStack(int type) { \
 
 #include "imgui_iterator.inl"
 
+
 static const struct luaL_Reg imguilib [] = {
 #undef IMGUI_FUNCTION
 #define IMGUI_FUNCTION(name) {#name, impl_##name},
@@ -408,14 +352,14 @@ static const struct luaL_Reg imguilib [] = {
 #define IM_TEXTURE_ID_ARG(name)
 #undef DEFAULT_ARG
 #define DEFAULT_ARG(name, x, y)
-#undef CONST_FLOAT_ARG
-#define CONST_FLOAT_ARG(name)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
 #undef LABEL_ARG
 #define LABEL_ARG(name)
-#undef CONST_FLOAT_ARG
-#define CONST_FLOAT_ARG(name)
+#undef LABEL_POINTER_ARG
+#define LABEL_POINTER_ARG(name)
+#undef END_LABEL_POINTER
+#define END_LABEL_POINTER(name)
 #undef IM_VEC_2_ARG
 #define IM_VEC_2_ARG(name)
 #undef OPTIONAL_IM_VEC_2_ARG
@@ -426,28 +370,22 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
-#undef FLOAT_ARRAY_DEF
-#define FLOAT_ARRAY_DEF(name, size)
-#undef FLOAT_ARRAY_ARG
-#define FLOAT_ARRAY_ARG(name, it)
 #undef OPTIONAL_NUMBER_ARG
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
+#undef FLOAT_ARRAY_ARG
+#define FLOAT_ARRAY_ARG(name)
 #undef FLOAT_POINTER_ARG
 #define FLOAT_POINTER_ARG(name)
-#undef LABEL_POINTER_ARG
-#define LABEL_POINTER_ARG(name)
-#undef END_LABEL_POINTER
-#define END_LABEL_POINTER(name)
 #undef END_FLOAT_POINTER
 #define END_FLOAT_POINTER(name)
 #undef OPTIONAL_INT_ARG
 #define OPTIONAL_INT_ARG(name, otherwise)
 #undef INT_ARG
 #define INT_ARG(name)
-#undef INT_ARRAY_DEF
-#define INT_ARRAY_DEF(name,size)
-#undef INT_ARRAY_ARG
-#define INT_ARRAY_ARG(name,it)
+#undef OPTIONAL_ENUM_ARG
+#define OPTIONAL_ENUM_ARG(name, ename, otherwise)
+#undef ENUM_ARG
+#define ENUM_ARG(name, ename)
 #undef OPTIONAL_UINT_ARG
 #define OPTIONAL_UINT_ARG(name, otherwise)
 #undef UINT_ARG
@@ -468,10 +406,6 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_BOOL_ARG(name, otherwise)
 #undef BOOL_ARG
 #define BOOL_ARG(name)
-#undef VOID_ARG
-#define VOID_ARG(name)
-#undef OPTIONAL_VOID_ARG
-#define OPTIONAL_VOID_ARG(name, otherwise)
 #undef CALL_FUNCTION
 #define CALL_FUNCTION(name, retType, ...)
 #undef DRAW_LIST_CALL_FUNCTION
@@ -510,8 +444,7 @@ static const struct luaL_Reg imguilib [] = {
 #define END_ENUM(name)
 
 #include "imgui_iterator.inl"
-  // impl_Button is undeclared 
-  // {"Button", impl_Button},
+//  {"Button", impl_Button},
   {NULL, NULL}
 };
 
@@ -542,10 +475,16 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define IMGUI_FUNCTION_DRAW_LIST(name)
 #undef IM_TEXTURE_ID_ARG
 #define IM_TEXTURE_ID_ARG(name)
+#undef DEFAULT_ARG
+#define DEFAULT_ARG(name, x, y)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name)
 #undef LABEL_ARG
 #define LABEL_ARG(name)
+#undef LABEL_POINTER_ARG
+#define LABEL_POINTER_ARG(name)
+#undef END_LABEL_POINTER
+#define END_LABEL_POINTER(name)
 #undef IM_VEC_2_ARG
 #define IM_VEC_2_ARG(name)
 #undef OPTIONAL_IM_VEC_2_ARG
@@ -556,12 +495,10 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
-#undef FLOAT_ARRAY_DEF
-#define FLOAT_ARRAY_DEF(name, size)
-#undef FLOAT_ARRAY_ARG
-#define FLOAT_ARRAY_ARG(name, it)
 #undef OPTIONAL_NUMBER_ARG
 #define OPTIONAL_NUMBER_ARG(name, otherwise)
+#undef FLOAT_ARRAY_ARG
+#define FLOAT_ARRAY_ARG(name)
 #undef FLOAT_POINTER_ARG
 #define FLOAT_POINTER_ARG(name)
 #undef END_FLOAT_POINTER
@@ -570,10 +507,6 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define OPTIONAL_INT_ARG(name, otherwise)
 #undef INT_ARG
 #define INT_ARG(name)
-#undef INT_ARRAY_DEF
-#define INT_ARRAY_DEF(name,size)
-#undef INT_ARRAY_ARG
-#define INT_ARRAY_ARG(name,it)
 #undef OPTIONAL_UINT_ARG
 #define OPTIONAL_UINT_ARG(name, otherwise)
 #undef UINT_ARG
@@ -594,10 +527,6 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
 #define OPTIONAL_BOOL_ARG(name, otherwise)
 #undef BOOL_ARG
 #define BOOL_ARG(name)
-#undef VOID_ARG
-#define VOID_ARG(name)
-#undef OPTIONAL_VOID_ARG
-#define OPTIONAL_VOID_ARG(name, otherwise)
 #undef CALL_FUNCTION
 #define CALL_FUNCTION(name, retType, ...)
 #undef DRAW_LIST_CALL_FUNCTION
@@ -634,31 +563,6 @@ static void PushImguiEnums(lua_State* lState, const char* tableName) {
   lua_rawset(lState, -3);
 };
 
-// Not sure why this is not working
-// #if defined LUAJIT_VERSION_NUM ==  20005
-// This is the original for LuaJIT 2.0.5
-// #if !defined LUA_VERSION_NUM || LUA_VERSION_NUM==501
-
-// This is not working but failing will give us the corect result.
-// We just do not want this code to be used if we are useing LuaJIT 2.1.0
-
-#if defined LUAJIT_VERSION_NUM == 20005
-/*
-** Adapted from Lua 5.2.0
-*/
-static void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
-  luaL_checkstack(L, nup+1, "too many upvalues");
-  for (; l->name != NULL; l++) {  /* fill the table with given functions */
-    int i;
-    lua_pushstring(L, l->name);
-    for (i = 0; i < nup; i++)  /* copy upvalues to the top */
-      lua_pushvalue(L, -(nup+1));
-    lua_pushcclosure(L, l->func, nup);  /* closure with those upvalues */
-    lua_settable(L, -(nup + 3));
-  }
-  lua_pop(L, nup);  /* remove upvalues */
-}
-#endif
 
 void LoadImguiBindings() {
   if (!lState) {

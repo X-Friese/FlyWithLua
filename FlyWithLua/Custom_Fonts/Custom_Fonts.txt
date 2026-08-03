@@ -1,0 +1,26 @@
+Starting with FlyWithLua 2.8.15 we have scalable fonts in imgui and also being able to load 3 custom fonts to use with your script. We now have a new folder in FlyWithLua called Custom_Fonts that needs to have the following 3 named fonts. As this folder will only have this text file in it you need to do this to get started.
+
+Sorry this a bit involved but did not want to put the X-Plane fonts in FlyWithLua and have to ask there permision so this is what I came up with but the benifits of this will outway and small pain doing this. 
+
+Copy ProFontWindows.ttf from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts
+Copy Roboto-Light.ttf from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts
+Copy Roboto-Regular.ttf from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts
+
+Done correctly you will have this.
+
+Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf
+Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf
+Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf
+
+So in FlyWithLua.
+
+customFont is ProFontWindows.ttf
+  
+customFont2 is Roboto-Light.ttf
+
+customFont3 is Roboto-Regular.ttf
+
+I have a imgui_fonts_demo_window.lua in Resources/plugins/FlyWithLua/Scripts (disabled) show some of the features.
+
+imgui.PushFont(customFont, 13) currently does not work like I had hoped so using a font selector.
+

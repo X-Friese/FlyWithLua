@@ -32,12 +32,9 @@
 sub does_line_match_end_block {
   my $line = shift;
 
-  # Make sure you take into account random whitespace that could happen by using \s*
+  # Make sure you take into account random whitespace that could happen by using [ ]*[\t]*
   my $match = 0;
-  $match |= $line =~ m/^\s*};\s*\/\//;  # Semicolon,    comment
-  $match |= $line =~ m/^\s*};\s*$/;     # Semicolon,    no comment
-  $match |= $line =~ m/^\s*}\s*\/\//;   # No semicolon, comment
-  $match |= $line =~ m/^\s*}\s*$/;      # No semicolon, no comment
+  $match |= $line =~ m/^};?\s*(\/\/)?/;
   return $match;
 }
 
@@ -45,7 +42,7 @@ sub does_line_match_begin_block {
   my $line = shift;
 
   my $match = 0;
-  $match |= $line =~ m/^\s*{\s*$/;
+  $match |= $line =~ m/^{\s*$/;
   return $match
 }
 
@@ -55,6 +52,8 @@ sub parse_blocks {
   my $lastline;
   my $curBlock;
   while (my $line = <STDIN>) {
+	$line =~ s/\r//g;
+
 	if (does_line_match_begin_block($line)) {
 		push @blocknames, $lastline;
 		$curBlock = "";
@@ -63,19 +62,21 @@ sub parse_blocks {
 	  
 	if (does_line_match_end_block($line)) {
 	  push @blocks, $curBlock;
+
+	  # Enforce the invariant that we should have the same number of elements in blocks / block names
+	  if (scalar @blocks != scalar @blocknames) {
+	  	print STDERR "The parser did a bad and has mismatched block open / close.";
+	  	print STDERR "This is probably a problem with the regular expression that matches block open and close.";
+	  	die
+	  }
+	    
 	  $curBlock = "";
+	    
 	  next;
 	}
 	
 	$curBlock .= $line . "\n";
-  $lastline = $line;
-  }
-
-  # Enforce the invariant that we should have the same number of elements in blocks / block names
-  if (scalar @blocks != scalar @blocknames) {
-    print STDERR "The parser did a bad and has mismatched block open / close.";
-    print STDERR "This is probably a problem with the regular expression that matches block open and close.";
-    die
+	$lastline = $line;
   }
   return (\@blocks, \@blocknames);
 }

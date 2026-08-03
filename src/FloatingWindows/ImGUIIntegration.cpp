@@ -33,33 +33,28 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
 
     auto &io = ImGui::GetIO();
     // io.RenderDrawListsFn = nullptr;
+    style.FontSizeBase = 13.0f;
+
+    io.Fonts->AddFontDefaultVector();  // Load embedded scalable font.
+    io.Fonts->AddFontDefaultBitmap();  // Load embedded bitmap font (legacy).
+    io.Fonts->AddFontDefault();        // Load embedded font (legacy: auto-selected between the two above).
+
+    // Tried to set flag here to improve font scaling but broke it
+    // io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
+
+    // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font yu want to use.
+    ImFont* customFont = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+    IM_ASSERT(customFont != NULL);
+    ImFont* customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 13);
+    IM_ASSERT(customFont2 != NULL);
+    ImFont* customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 13);
+    IM_ASSERT(customFont3 != NULL);
+
     io.IniFilename = nullptr;
     // io.OptMacOSXBehaviors = false;
     // disable OSX-like keyboard behaviours always - we don't have the keymapping for it.
     io.ConfigMacOSXBehaviors = false; // This is the new version above Imgui 1.60
     io.ConfigFlags = ImGuiConfigFlags_NavNoCaptureKeyboard;
-
-    io.KeyMap[ImGuiKey_Tab] = XPLM_VK_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow] = XPLM_VK_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = XPLM_VK_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = XPLM_VK_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = XPLM_VK_DOWN;
-    io.KeyMap[ImGuiKey_PageUp] = XPLM_VK_PRIOR;
-    io.KeyMap[ImGuiKey_PageDown] = XPLM_VK_NEXT;
-    io.KeyMap[ImGuiKey_Home] = XPLM_VK_HOME;
-    io.KeyMap[ImGuiKey_End] = XPLM_VK_END;
-    io.KeyMap[ImGuiKey_Insert] = XPLM_VK_INSERT;
-    io.KeyMap[ImGuiKey_Delete] = XPLM_VK_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = XPLM_VK_BACK;
-    io.KeyMap[ImGuiKey_Space] = XPLM_VK_SPACE;
-    io.KeyMap[ImGuiKey_Enter] = XPLM_VK_ENTER;
-    io.KeyMap[ImGuiKey_Escape] = XPLM_VK_ESCAPE;
-    io.KeyMap[ImGuiKey_A] = XPLM_VK_A;
-    io.KeyMap[ImGuiKey_C] = XPLM_VK_C;
-    io.KeyMap[ImGuiKey_V] = XPLM_VK_V;
-    io.KeyMap[ImGuiKey_X] = XPLM_VK_X;
-    io.KeyMap[ImGuiKey_Y] = XPLM_VK_Y;
-    io.KeyMap[ImGuiKey_Z] = XPLM_VK_Z;
 
     uint8_t *pixels;
     int fontTexWidth, fontTexHeight;
@@ -74,7 +69,7 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, fontTexWidth, fontTexHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
-    io.Fonts->TexID = (void *)(intptr_t)(fontTextureId);
+    io.Fonts->TexID = (ImTextureID)(intptr_t)(fontTextureId);
 }
 
 void ImGUIWindow::setBuildCallback(BuildCallback cb) {
@@ -108,8 +103,6 @@ void ImGUIWindow::onDraw() {
         requestInputFocus(true);
     } else if (!io.WantTextInput && hasKeyboardFocus) {
         requestInputFocus(false);
-        // reset keysdown otherwise we'll think any keys used to defocus the keyboard are still down!
-        std::fill(std::begin(io.KeysDown), std::end(io.KeysDown), false);
     }
 
     FloatingWindow::onDraw();
@@ -189,9 +182,13 @@ void ImGUIWindow::showGUI() {
         const ImDrawList* cmd_list = drawData->CmdLists[n];
         const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;
         const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
-        glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, pos)));
-        glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, uv)));
-        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, col)));
+        // pre v190
+        // glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, pos)));
+        // glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, uv)));
+        // glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + IM_OFFSETOF(ImDrawVert, col)));
+        glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + offsetof(ImDrawVert, pos)));
+        glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + offsetof(ImDrawVert, uv)));
+        glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (const GLvoid*)((const char*)vtx_buffer + offsetof(ImDrawVert, col)));
 
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
         {
@@ -199,7 +196,9 @@ void ImGUIWindow::showGUI() {
             if (pcmd->UserCallback) {
                 pcmd->UserCallback(cmd_list, pcmd);
             } else {
-                glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+                // pre v190
+                // glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+                XPLMBindTexture2d((int)(intptr_t)pcmd->GetTexID(), 0);
 
                 // Scissors work in viewport space - must translate the coordinates from ImGui -> Boxels, then Boxels -> Native.
                 //FIXME: it must be possible to apply the scale+transform manually to the projection matrix so we don't need to doublestep.
@@ -289,8 +288,8 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losi
     if (io.WantTextInput) {
         // If you press and hold a key, the flags will actually be down, 0, 0, ..., up
         // So the key always has to be considered as pressed unless the up flag is set
-        auto vk = static_cast<unsigned char>(virtualKey);
-        io.KeysDown[vk] = (flags & xplm_UpFlag) != xplm_UpFlag;
+        auto vk = static_cast<ImGuiKey>(virtualKey);
+        io.AddKeyEvent(vk, (flags & xplm_UpFlag) != xplm_UpFlag);
         io.KeyShift = (flags & xplm_ShiftFlag) == xplm_ShiftFlag;
         io.KeyAlt = (flags & xplm_OptionAltFlag) == xplm_OptionAltFlag;
         io.KeyCtrl = (flags & xplm_ControlFlag) == xplm_ControlFlag;
