@@ -17,16 +17,11 @@
 #ifndef FLOATINGWINDOWS_IMGUIINTEGRATION_H_
 #define FLOATINGWINDOWS_IMGUIINTEGRATION_H_
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#include <GL/glext.h>
-#endif
 
 #include <memory>
 #include <string>
 #include "FloatingWindow.h"
+#include "FlyWithLua.h"
 #include "imgui/imgui.h"
 #include "lua.hpp"
 

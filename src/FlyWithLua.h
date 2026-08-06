@@ -1,6 +1,9 @@
 #ifndef _FLYWITHLUA_H_
 #define _FLYWITHLUA_H_
 
+// (Open)GL
+#include "SystemGL.h"
+
 #include <string>
 #include <lua.hpp>
 

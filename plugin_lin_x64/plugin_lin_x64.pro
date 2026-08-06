@@ -64,6 +64,7 @@ HEADERS +=  ../src/SDK/CHeaders/XPLM/XPLMCamera.h \
             ../src/SDK/CHeaders/XPLM/XPLMUtilities.h \
             ../src/SDK/CHeaders/XPLM/XPLMWeather.h \
             ../src/FlyWithLua.h \
+            ../src/SystemGL.h \
             ../src/XSBComsDefs.h \
             ../src/FloatingWindows/FloatingWindow.h \
             ../src/FloatingWindows/FLWIntegration.h \

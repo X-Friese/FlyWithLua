@@ -281,32 +281,6 @@
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
 
-// include OpenGL
-#if IBM
-
-#include <GL/gl.h>
-#include <GL/glut.h>
-
-#else
-#if LIN
-#define TRUE 1
-#define FALSE 0
-
-// class chunk_header;
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-// #include <libudev.h>
-
-#else
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <GLUT/glut.h>
-#include <Carbon/Carbon.h>
-#endif
-
-#endif
 
 // include OpenAL
 #include "OpenAL/al.h"
@@ -1274,6 +1248,7 @@ int FWLCommandCallback(
     }
 }
 
+// GLUT function that will be obsolete after 2.8.15
 int FWLDrawWindowCallback(XPLMDrawingPhase /*inPhase*/,
                           int /*inIsBefore*/,
                           void* /*inRefcon*/)
@@ -2357,6 +2332,7 @@ static int LuaDrawString(lua_State* L)
     return 0;
 }
 
+// GLUT function that will be obsolete after 2.8.15
 static int LuaDrawStringHelv18(lua_State* L)
 {
     if (WeAreNotInDrawingState)
@@ -2396,6 +2372,7 @@ static int LuaDrawStringHelv18(lua_State* L)
     return 0;
 }
 
+// GLUT function that will be obsolete after 2.8.15
 static int LuaDrawStringHelv12(lua_State* L)
 {
     if (WeAreNotInDrawingState)
@@ -2435,6 +2412,7 @@ static int LuaDrawStringHelv12(lua_State* L)
     return 0;
 }
 
+// GLUT function that will be obsolete after 2.8.15
 static int LuaDrawStringHelv10(lua_State* L)
 {
     if (WeAreNotInDrawingState)
@@ -2474,6 +2452,7 @@ static int LuaDrawStringHelv10(lua_State* L)
     return 0;
 }
 
+// GLUT function that will be obsolete after 2.8.15
 static int LuaDrawStringTimes10(lua_State* L)
 {
     if (WeAreNotInDrawingState)
@@ -2513,6 +2492,7 @@ static int LuaDrawStringTimes10(lua_State* L)
     return 0;
 }
 
+// GLUT function that will be obsolete after 2.8.15
 static int LuaDrawStringTimes24(lua_State* L)
 {
     if (WeAreNotInDrawingState)

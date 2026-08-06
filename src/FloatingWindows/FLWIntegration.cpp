@@ -9,12 +9,7 @@
 #include <stdexcept>
 #include <sol.hpp>
 #include <iostream>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#include <GL/glext.h>
-#endif
+
 #include <XPLMDataAccess.h>
 #include <XPLMUtilities.h>
 #include "FLWIntegration.h"
