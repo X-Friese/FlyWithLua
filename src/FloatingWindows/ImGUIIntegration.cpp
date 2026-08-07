@@ -20,6 +20,71 @@
 #include <cctype>
 #include "ImGUIIntegration.h"
 
+// Mirrors source_code/core/ui/imgui_impl_xsystem.cpp:127.
+ImGuiKey XPLM_VK_to_ImGuiKey(int vkey) {
+    switch (vkey) {
+        case XPLM_VK_TAB:       return ImGuiKey_Tab;
+        case XPLM_VK_LEFT:      return ImGuiKey_LeftArrow;
+        case XPLM_VK_RIGHT:     return ImGuiKey_RightArrow;
+        case XPLM_VK_UP:        return ImGuiKey_UpArrow;
+        case XPLM_VK_DOWN:      return ImGuiKey_DownArrow;
+        case XPLM_VK_HOME:      return ImGuiKey_Home;
+        case XPLM_VK_END:       return ImGuiKey_End;
+        case XPLM_VK_INSERT:    return ImGuiKey_Insert;
+        case XPLM_VK_DELETE:    return ImGuiKey_Delete;
+        case XPLM_VK_BACK:      return ImGuiKey_Backspace;
+        case XPLM_VK_SPACE:     return ImGuiKey_Space;
+        case XPLM_VK_ENTER:     return ImGuiKey_Enter;
+        case XPLM_VK_ESCAPE:    return ImGuiKey_Escape;
+        case XPLM_VK_0:         return ImGuiKey_0;
+        case XPLM_VK_1:         return ImGuiKey_1;
+        case XPLM_VK_2:         return ImGuiKey_2;
+        case XPLM_VK_3:         return ImGuiKey_3;
+        case XPLM_VK_4:         return ImGuiKey_4;
+        case XPLM_VK_5:         return ImGuiKey_5;
+        case XPLM_VK_6:         return ImGuiKey_6;
+        case XPLM_VK_7:         return ImGuiKey_7;
+        case XPLM_VK_8:         return ImGuiKey_8;
+        case XPLM_VK_9:         return ImGuiKey_9;
+        case XPLM_VK_A: return ImGuiKey_A; case XPLM_VK_B: return ImGuiKey_B;
+        case XPLM_VK_C: return ImGuiKey_C; case XPLM_VK_D: return ImGuiKey_D;
+        case XPLM_VK_E: return ImGuiKey_E; case XPLM_VK_F: return ImGuiKey_F;
+        case XPLM_VK_G: return ImGuiKey_G; case XPLM_VK_H: return ImGuiKey_H;
+        case XPLM_VK_I: return ImGuiKey_I; case XPLM_VK_J: return ImGuiKey_J;
+        case XPLM_VK_K: return ImGuiKey_K; case XPLM_VK_L: return ImGuiKey_L;
+        case XPLM_VK_M: return ImGuiKey_M; case XPLM_VK_N: return ImGuiKey_N;
+        case XPLM_VK_O: return ImGuiKey_O; case XPLM_VK_P: return ImGuiKey_P;
+        case XPLM_VK_Q: return ImGuiKey_Q; case XPLM_VK_R: return ImGuiKey_R;
+        case XPLM_VK_S: return ImGuiKey_S; case XPLM_VK_T: return ImGuiKey_T;
+        case XPLM_VK_U: return ImGuiKey_U; case XPLM_VK_V: return ImGuiKey_V;
+        case XPLM_VK_W: return ImGuiKey_W; case XPLM_VK_X: return ImGuiKey_X;
+        case XPLM_VK_Y: return ImGuiKey_Y; case XPLM_VK_Z: return ImGuiKey_Z;
+        case XPLM_VK_F1:  return ImGuiKey_F1;  case XPLM_VK_F2:  return ImGuiKey_F2;
+        case XPLM_VK_F3:  return ImGuiKey_F3;  case XPLM_VK_F4:  return ImGuiKey_F4;
+        case XPLM_VK_F5:  return ImGuiKey_F5;  case XPLM_VK_F6:  return ImGuiKey_F6;
+        case XPLM_VK_F7:  return ImGuiKey_F7;  case XPLM_VK_F8:  return ImGuiKey_F8;
+        case XPLM_VK_F9:  return ImGuiKey_F9;  case XPLM_VK_F10: return ImGuiKey_F10;
+        case XPLM_VK_F11: return ImGuiKey_F11; case XPLM_VK_F12: return ImGuiKey_F12;
+        case XPLM_VK_F13: return ImGuiKey_F13; case XPLM_VK_F14: return ImGuiKey_F14;
+        case XPLM_VK_F15: return ImGuiKey_F15; case XPLM_VK_F16: return ImGuiKey_F16;
+        case XPLM_VK_F17: return ImGuiKey_F17; case XPLM_VK_F18: return ImGuiKey_F18;
+        case XPLM_VK_F19: return ImGuiKey_F19; case XPLM_VK_F20: return ImGuiKey_F20;
+        case XPLM_VK_F21: return ImGuiKey_F21; case XPLM_VK_F22: return ImGuiKey_F22;
+        case XPLM_VK_F23: return ImGuiKey_F23; case XPLM_VK_F24: return ImGuiKey_F24;
+        case XPLM_VK_QUOTE:     return ImGuiKey_Apostrophe;
+        case XPLM_VK_COMMA:     return ImGuiKey_Comma;
+        case XPLM_VK_MINUS:     return ImGuiKey_Minus;
+        case XPLM_VK_PERIOD:    return ImGuiKey_Period;
+        case XPLM_VK_SLASH:     return ImGuiKey_Slash;
+        case XPLM_VK_SEMICOLON: return ImGuiKey_Semicolon;
+        case XPLM_VK_EQUAL:     return ImGuiKey_Equal;
+        case XPLM_VK_LBRACE:    return ImGuiKey_LeftBracket;
+        case XPLM_VK_RBRACE:    return ImGuiKey_RightBracket;
+        case XPLM_VK_BACKSLASH: return ImGuiKey_Backslash;
+    }
+    return ImGuiKey_None;
+}
+
 namespace flwnd {
 
 ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
@@ -278,6 +343,8 @@ XPLMCursorStatus ImGUIWindow::getCursor(int x, int y) {
     return xplm_CursorDefault;
 }
 
+// This is the original I will be keeping till sure working fine
+#if 0
 void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) {
     if (losingFocus) {
         return;
@@ -307,6 +374,53 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losi
 
     FloatingWindow::onKey(key, flags, virtualKey, losingFocus);
 }
+#endif
+
+// This is from xlua and just trying to find a way to make it work
+void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_focus) {
+    ImGui::SetCurrentContext(imGuiContext);
+    auto& io = ImGui::GetIO();
+
+    // Losing-focus notification: drop pressed-key state so a key held while
+    // focus left this window doesn't stay "down" inside ImGui forever.
+    if (losing_focus) {
+        io.ClearInputKeys();
+        io.AddKeyEvent(ImGuiMod_Shift, false);
+        io.AddKeyEvent(ImGuiMod_Ctrl,  false);
+        io.AddKeyEvent(ImGuiMod_Alt,   false);
+        has_focus_ = false;
+        return;
+    }
+
+    io.AddKeyEvent(ImGuiMod_Shift, (flags & xplm_ShiftFlag) != 0);
+    io.AddKeyEvent(ImGuiMod_Ctrl,  (flags & xplm_ControlFlag) != 0);
+    io.AddKeyEvent(ImGuiMod_Alt,   (flags & xplm_OptionAltFlag) != 0);
+
+    // XPLM dispatches three flavours of key callback:
+    //   Down   = initial press        (xplm_DownFlag)
+    //   Up     = release              (xplm_UpFlag)
+    //   Repeat = OS auto-repeat       (neither flag set; gfx_window_cocoa.mm:452
+    //            deliberately strips xplm_DownFlag for isARepeat events)
+    const bool is_down   = (flags & xplm_DownFlag) != 0;
+    const bool is_up     = (flags & xplm_UpFlag)   != 0;
+    const bool is_repeat = !is_down && !is_up;
+
+    const ImGuiKey ik = XPLM_VK_to_ImGuiKey(static_cast<unsigned char>(vkey));
+    if (ik != ImGuiKey_None) {
+        if (is_down)        io.AddKeyEvent(ik, true);
+        else if (is_up)     io.AddKeyEvent(ik, false);
+        // Repeat: leave the key state alone. The initial Down already told
+        // ImGui the key is held; its own KeyRepeatDelay/Rate timers drive
+        // non-text repeat (Backspace, arrows, Delete in InputText).
+    }
+    // Forward typed characters on Down AND Repeat so InputText sees the
+    // OS-auto-repeated 'aaaaa…' stream when a printable key is held.
+    const unsigned char ukey = static_cast<unsigned char>(key);
+    if ((is_down || is_repeat) && ukey >= 0x20 && ukey < 0x7f) {
+        io.AddInputCharacter(static_cast<unsigned int>(ukey));
+    }
+}
+
 
 void ImGUIWindow::translateImguiToBoxel(float inX, float inY, int& outX, int& outY) {
     outX = (int)(mLeft + inX);

@@ -49,6 +49,7 @@ private:
     ErrorHandler onError;
     BuildCallback doBuild;
     bool stopped = false;
+    bool has_focus_ = false;     // last-known result of XPLMTakeKeyboardFocus
 
     void buildGUI();
     void showGUI();
