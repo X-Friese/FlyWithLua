@@ -27,9 +27,11 @@
 
 // Not sure why this will not work but will leave it here
 // For some visability
-// ImFont* customFont1 = nullptr;
-// ImFont* customFont2 = nullptr;
-// ImFont* customFont3 = nullptr;
+// I had to add inline to get rid of error
+inline ImFont* customFont1 = nullptr;
+inline ImFont* customFont2 = nullptr;
+inline ImFont* customFont3 = nullptr;
+
 
 namespace flwnd {
 

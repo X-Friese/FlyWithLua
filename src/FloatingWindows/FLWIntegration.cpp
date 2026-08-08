@@ -153,15 +153,15 @@ int LuaImguiPushFont(lua_State *L) {
         // This is my goal but have to get customFont1 global
         // In lua     imgui_push_font(1, 20)  will push font 1 with a 20 point font
         // Also not sure about the font number but will test later
-        // ImGui::PushFont(customFont1, point_number);
+        ImGui::PushFont(customFont1, point_number);
     }
     else if (font_number == 2) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 2 pushed");
-        // ImGui::PushFont(customFont2, point_number);
+        ImGui::PushFont(customFont2, point_number);
     }
     else if (font_number == 3) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 3 pushed");
-        // ImGui::PushFont(customFont3, point_number);
+        ImGui::PushFont(customFont3, point_number);
     }
     else {
         flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");

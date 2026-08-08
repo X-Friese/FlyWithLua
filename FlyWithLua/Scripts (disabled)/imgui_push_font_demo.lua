@@ -25,24 +25,27 @@ function ihd_on_build(ihd_wnd, x, y)
     if loop == 5 then
             
         imgui.TextUnformatted("Default Font")
-    	imgui_push_font(1, 20)
+    	imgui_push_font(1, 80)
     	imgui.TextUnformatted("Custom font 1")	
-    	-- imgui.PopFont()
+    	imgui.PopFont()
     	imgui.TextUnformatted("Default Font")
     	imgui_push_font(2, 20)
     	imgui.TextUnformatted("Custom font 2")	
-    	-- imgui.PopFont()
+    	imgui.PopFont()
     	imgui.TextUnformatted("Default Font")
     	imgui_push_font(3, 20)
     	imgui.TextUnformatted("Custom font 3")	
-    	-- imgui.PopFont()
+    	imgui.PopFont()
     	imgui.TextUnformatted("Default Font")
     	imgui_push_font(4, 20)
     	imgui.TextUnformatted("Custom font 4")	
     	imgui.PopFont()
     	imgui.TextUnformatted("Default Font")
     end
-    -- loop = loop + 1	
+    if imgui.TreeNode("Show ingui demo window") then
+        imgui.ShowDemoWindow()
+        imgui.TreePop()
+    end     
 end
 
 
