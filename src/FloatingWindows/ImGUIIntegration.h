@@ -25,6 +25,12 @@
 #include "imgui/imgui.h"
 #include "lua.hpp"
 
+// Not sure why this will not work but will leave it here
+// For some visability
+// ImFont* customFont1 = nullptr;
+// ImFont* customFont2 = nullptr;
+// ImFont* customFont3 = nullptr;
+
 namespace flwnd {
 
 class ImGUIWindow: public FloatingWindow {

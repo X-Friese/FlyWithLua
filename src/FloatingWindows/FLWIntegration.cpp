@@ -133,6 +133,44 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
     return 0;
 }
 
+
+// Not sure where the proper pplace for this is but this is where we can change the custom font to use
+// Very much a work in progress but the last piece before 2.8.15 can go final
+int LuaImguiPushFont(lua_State *L) {
+    if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to imgui_push_font");
+        FindAndQuarantine (L);
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+    // get the custom font number and convert to int
+    int font_number = static_cast<int>(lua_tointeger(L, 1));
+    // get the custom font point convert to a int then a float for PushFont
+    int font_point_number = static_cast<int>(lua_tointeger(L, 1));
+    float point_number = static_cast<float>(font_point_number);
+    if (font_number == 1) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 1 pushed");
+        // This is my goal but have to get customFont1 global
+        // In lua     imgui_push_font(1, 20)  will push font 1 with a 20 point font
+        // Also not sure about the font number but will test later
+        // ImGui::PushFont(customFont1, point_number);
+    }
+    else if (font_number == 2) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 2 pushed");
+        // ImGui::PushFont(customFont2, point_number);
+    }
+    else if (font_number == 3) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 3 pushed");
+        // ImGui::PushFont(customFont3, point_number);
+    }
+    else {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
+    }
+
+    return 0;
+}
+
+
 int LuaSetFloatingWindowPosition(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_position");
@@ -632,6 +670,7 @@ void initFloatingWindowSupport() {
 
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
+    lua_register(L, "imgui_push_font", LuaImguiPushFont);
     lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);

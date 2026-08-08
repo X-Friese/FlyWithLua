@@ -108,8 +108,11 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     // io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
     // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font yu want to use.
-    ImFont* customFont = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
-    IM_ASSERT(customFont != NULL);
+    // This is not working the way I want I want to use this call and have ImFont* customFont1 in ImGUIIntegration.cpp
+    // customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+
+    ImFont* customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+    IM_ASSERT(customFont1 != NULL);
     ImFont* customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 13);
     IM_ASSERT(customFont2 != NULL);
     ImFont* customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 13);
