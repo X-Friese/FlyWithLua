@@ -2,7 +2,7 @@
 #define _XPUIGraphics_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -12,6 +12,7 @@
  ***************************************************************************/
 
 #include "XPWidgetDefs.h"
+#include "XPLMGraphics.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +62,6 @@ enum {
 
 };
 typedef int XPWindowStyle;
-
 /*
  * XPDrawWindow
  * 
@@ -77,7 +77,6 @@ WIDGET_API void       XPDrawWindow(
                          int                  inX2,
                          int                  inY2,
                          XPWindowStyle        inStyle);
-
 /*
  * XPGetWindowDefaultDimensions
  * 
@@ -89,7 +88,6 @@ WIDGET_API void       XPGetWindowDefaultDimensions(
                          XPWindowStyle        inStyle,
                          int *                outWidth,               /* Can be NULL */
                          int *                outHeight);             /* Can be NULL */
-
 /*
  * XPElementStyle
  * 
@@ -216,7 +214,6 @@ enum {
 
 };
 typedef int XPElementStyle;
-
 /*
  * XPDrawElement
  * 
@@ -234,7 +231,6 @@ WIDGET_API void       XPDrawElement(
                          int                  inY2,
                          XPElementStyle       inStyle,
                          int                  inLit);
-
 /*
  * XPGetElementDefaultDimensions
  * 
@@ -248,7 +244,6 @@ WIDGET_API void       XPGetElementDefaultDimensions(
                          int *                outWidth,               /* Can be NULL */
                          int *                outHeight,              /* Can be NULL */
                          int *                outCanBeLit);           /* Can be NULL */
-
 /*
  * XPTrackStyle
  * 
@@ -278,7 +273,6 @@ enum {
 
 };
 typedef int XPTrackStyle;
-
 /*
  * XPDrawTrack
  * 
@@ -299,7 +293,6 @@ WIDGET_API void       XPDrawTrack(
                          int                  inValue,
                          XPTrackStyle         inTrackStyle,
                          int                  inLit);
-
 /*
  * XPGetTrackDefaultDimensions
  * 
@@ -312,7 +305,6 @@ WIDGET_API void       XPGetTrackDefaultDimensions(
                          XPTrackStyle         inStyle,
                          int *                outWidth,
                          int *                outCanBeLit);
-
 /*
  * XPGetTrackMetrics
  * 
@@ -345,7 +337,6 @@ WIDGET_API void       XPGetTrackMetrics(
                          int *                outThumbSize,
                          int *                outUpPageSize,
                          int *                outUpBtnSize);
-
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -131,7 +131,7 @@ USES
    {
     XPLMDisablePlugin
     
-    This routine disableds an enabled plug-in.
+    This routine disables an enabled plug-in.
    }
    PROCEDURE XPLMDisablePlugin(
                                         inPluginID          : XPLMPluginID);
@@ -193,7 +193,7 @@ CONST
 
     { This message is sent to your plugin whenever a new plane is loaded.  The   }
     { parameter contains the index number of the plane being loaded; 0 indicates }
-    { the user's plane.                                                          }
+    { the user's plane. The parameter is an integer bit-cast to a pointer.       }
    XPLM_MSG_PLANE_LOADED = 102;
 
     { This messages is sent whenever the user's plane is positioned at a new     }
@@ -215,9 +215,8 @@ CONST
 CONST
     { This message is sent to your plugin whenever a plane is unloaded.  The     }
     { parameter contains the index number of the plane being unloaded; 0         }
-    { indicates the user's plane.  The parameter is of type int, passed as the   }
-    { value of the pointer.  (That is: the parameter is an int, not a pointer to }
-    { an int.)                                                                   }
+    { indicates the user's plane.  The parameter is of type int, bit-cast to a   }
+    { pointer.                                                                   }
    XPLM_MSG_PLANE_UNLOADED = 106;
 {$ENDIF XPLM200}
 
@@ -237,7 +236,8 @@ CONST
     { This message is sent to your plugin right after a livery is loaded for an  }
     { airplane.  You can use this to check the new livery (via datarefs) and     }
     { react accordingly.  The parameter contains the index number of the aircraft}
-    { whose livery is changing.                                                  }
+    { whose livery is changing. The parameter is an integer, bit-cast to a       }
+    { pointer.                                                                   }
    XPLM_MSG_LIVERY_LOADED = 108;
 {$ENDIF XPLM210}
 
@@ -267,7 +267,8 @@ CONST
     { plugin ID of the plugin asking for control of the planes now. You can use  }
     { it to find out who is requesting and whether you should yield to them.     }
     { Synthetic traffic providers should always yield to online networks. The    }
-    { parameter is unused and should be ignored.                                 }
+    { parameter is unused and should be ignored. Do not send this message        }
+    { directly; always use the XPLMAcquirePlanes() call.                         }
    XPLM_MSG_RELEASE_PLANES = 111;
 {$ENDIF XPLM303}
 
@@ -275,7 +276,7 @@ CONST
 CONST
     { Sent to your plugin after FMOD sound banks are loaded. The parameter is the}
     { XPLMBankID enum in XPLMSound.h, 0 for the master bank and 1 for the radio  }
-    { bank.                                                                      }
+    { bank. The bank ID is bit-cast to a pointer.                                }
    XPLM_MSG_FMOD_BANK_LOADED = 112;
 {$ENDIF XPLM400}
 
@@ -283,7 +284,7 @@ CONST
     { Sent to your plugin before FMOD sound banks are unloaded. Any associated   }
     { resources should be cleaned up at this point. The parameter is the         }
     { XPLMBankID enum in XPLMSound.h, 0 for the master bank and 1 for the radio  }
-    { bank.                                                                      }
+    { bank. The bank ID is bit-cast to a pointer.                                }
    XPLM_MSG_FMOD_BANK_UNLOADING = 113;
 {$ENDIF XPLM400}
 
@@ -294,7 +295,8 @@ CONST
     { if it cares.                                                               }
     {                                                                            }
     { This message is only sent to plugins that enable the                       }
-    { XPLM_WANTS_DATAREF_NOTIFICATIONS feature.                                  }
+    { XPLM_WANTS_DATAREF_NOTIFICATIONS feature. The parameteter is a pointer to a}
+    { 32-bit integer containing the new number of datarefs.                      }
    XPLM_MSG_DATAREFS_ADDED = 114;
 {$ENDIF XPLM400}
 

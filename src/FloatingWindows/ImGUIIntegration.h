@@ -17,18 +17,21 @@
 #ifndef FLOATINGWINDOWS_IMGUIINTEGRATION_H_
 #define FLOATINGWINDOWS_IMGUIINTEGRATION_H_
 
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#include <GL/glext.h>
-#endif
 
 #include <memory>
 #include <string>
 #include "FloatingWindow.h"
+#include "FlyWithLua.h"
 #include "imgui/imgui.h"
 #include "lua.hpp"
+
+// Not sure why this will not work but will leave it here
+// For some visability
+// I had to add inline to get rid of error
+inline ImFont* customFont1 = nullptr;
+inline ImFont* customFont2 = nullptr;
+inline ImFont* customFont3 = nullptr;
+
 
 namespace flwnd {
 
@@ -54,6 +57,7 @@ private:
     ErrorHandler onError;
     BuildCallback doBuild;
     bool stopped = false;
+    bool has_focus_ = false;     // last-known result of XPLMTakeKeyboardFocus
 
     void buildGUI();
     void showGUI();

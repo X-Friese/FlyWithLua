@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -24,6 +24,13 @@ INTERFACE
    Flight loop scheduling, when scheduled by time, is scheduled by a "first
    callback after the deadline" schedule, e.g. your callbacks will always be
    slightly late to ensure that we don't run faster than your deadline.
+   
+   WARNING: Do NOT use the post-flightmodel callback for initialization,
+   resource creation, etc. The only recommended use of post-FM callbacks is to
+   "patch" the computed values of the flightmodel using dataref read-writes,
+   and to compute custom system values by reading the flightmodel. APIs that
+   create resources or initialize the sim may issue warnings, crash rhe sim,
+   or have unexpected results.
    
    WARNING: Do NOT use these callbacks to draw! You cannot draw during flight
    loop callbacks. Use the drawing callbacks (see XPLMDisplay for more info)

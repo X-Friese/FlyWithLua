@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -14,7 +14,7 @@ INTERFACE
 }
 
 USES
-    XPLMDefs;
+    XPLMDefs, fmod, fmod_studio;
    {$A4}
 {$IFDEF XPLM400}
 {___________________________________________________________________________
@@ -28,7 +28,8 @@ USES
     part of the simulated environment that the audio belongs in. If you use
     FMOD directly, note that COM1, COM2, Pilot and GND exist in a different
     FMOD bank so you may see these channels being unloaded/reloaded
-    independently of the others.
+    independently of the others. They may also be using a different
+    FMOD::System if the user has selected a dedicated headset output device.
    }
 TYPE
    XPLMAudioBus = (
@@ -86,7 +87,11 @@ TYPE
     Get a handle to the FMOD Studio, allowing you to load/process whatever else
     you need. This also gives access to the underlying system via
     FMOD::Studio::System::getCoreSystem() / FMOD_Studio_System_GetCoreSystem()
-    .
+    . When a separate output device is being used for the radio, this will
+    always return the FMOD::Studio that is running the environment output, as
+    before. If you want to specifically target the headset output device, you
+    can obtain that FMOD::Studio by getting one of the radio-specific output
+    channelgroups and using the getSystem() call on that.
    }
    FUNCTION XPLMGetFMODStudio: PFMOD_STUDIO_SYSTEM;
     cdecl; external XPLM_DLL;
@@ -127,9 +132,9 @@ TYPE
     instantly. Instead, it will be started the next time X-Plane refreshes the
     sound system, typically at the start of the next frame. This allows you to
     set the initial position for the sound, if required. The callback will be
-    called on the same thread as the sound is created from, and will be called
-    only once per sound. If the call fails and you provide a callback function,
-    you will get a callback with an FMOD status code.
+    called on the main thread, and will be called only once per sound. If the
+    call fails and you provide a callback function, you will get a callback
+    with an FMOD status code.
    }
    FUNCTION XPLMPlayPCMOnBus(
                                         audioBuffer         : pointer;

@@ -9,12 +9,7 @@
 #include <stdexcept>
 #include <sol.hpp>
 #include <iostream>
-#ifdef __APPLE__
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#include <GL/glext.h>
-#endif
+
 #include <XPLMDataAccess.h>
 #include <XPLMUtilities.h>
 #include "FLWIntegration.h"
@@ -137,6 +132,118 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
 
     return 0;
 }
+
+
+// Not sure where the proper pplace for this is but this is where we can change the custom font to use
+// Very much a work in progress but the last piece before 2.8.15 can go final
+int LuaImguiPushFont(lua_State *L) {
+    if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to imgui_push_font");
+        FindAndQuarantine (L);
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+    // get the custom font number and convert to int
+    int font_number = static_cast<int>(lua_tointeger(L, 1));
+    // get the custom font point convert to a int then a float for PushFont
+    int font_point_number = static_cast<int>(lua_tointeger(L, 2));
+    float custom_size;
+    if (font_point_number == 10) {
+        custom_size = 10.0f;
+    }
+    else if (font_point_number == 11) {
+        custom_size = 11.0f;
+    }
+    else if (font_point_number == 12) {
+        custom_size = 12.0f;
+    }
+    else if (font_point_number == 13) {
+        custom_size = 13.0f;
+    }
+    else if (font_point_number == 14) {
+        custom_size = 14.0f;
+    }
+    else if (font_point_number == 15) {
+        custom_size = 15.0f;
+    }
+    else if (font_point_number == 16) {
+        custom_size = 16.0f;
+    }
+    else if (font_point_number == 17) {
+        custom_size = 17.0f;
+    }
+    else if (font_point_number == 18) {
+        custom_size = 18.0f;
+    }
+    else if (font_point_number == 19) {
+        custom_size = 19.0f;
+    }
+    else if (font_point_number == 20) {
+        custom_size = 20.0f;
+    }
+    else if (font_point_number == 25) {
+        custom_size = 25.0f;
+    }
+    else if (font_point_number == 30) {
+        custom_size = 30.0f;
+    }
+    else if (font_point_number == 35) {
+        custom_size = 35.0f;
+    }
+    else if (font_point_number == 40) {
+        custom_size = 40.0f;
+    }
+    else if (font_point_number == 45) {
+        custom_size = 45.0f;
+    }
+    else if (font_point_number == 50) {
+        custom_size = 50.0f;
+    }
+    else if (font_point_number == 55) {
+        custom_size = 55.0f;
+    }
+    else if (font_point_number == 60) {
+        custom_size = 60.0f;
+    }
+    else if (font_point_number == 65) {
+        custom_size = 65.0f;
+    }
+    else {
+        custom_size = 20.0f;
+    }
+
+    // auto &style = ImGui::GetStyle();
+    if (font_number == 1) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 1 pushed");
+        // This is my goal but have to get customFont1 global
+        // In lua     imgui_push_font(1, 20)  will push font 1 with a 20 point font
+        // Also not sure about the font number but will test later
+        // ImGui::PushFont(customFont1, point_number);
+        // This did not work
+        // ImGui::PushFont(customFont1, style.FontSizeBase * percent_fraction);
+        // ImGui::PushFont(customFont1, style.FontSizeBase * 0.8f);
+        ImGui::PushFont(customFont1, custom_size);
+
+    }
+    else if (font_number == 2) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 2 pushed");
+        // This did not work
+        // ImGui::PushFont(customFont2, style.FontSizeBase * percent_fraction);
+        ImGui::PushFont(customFont2, custom_size);
+    }
+    else if (font_number == 3) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 3 pushed");
+        // this did not work
+        // ImGui::PushFont(customFont3, style.FontSizeBase * percent_fraction);
+        ImGui::PushFont(customFont3, custom_size);
+    }
+    else {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
+    }
+
+    return 0;
+}
+
 
 int LuaSetFloatingWindowPosition(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
@@ -637,6 +744,7 @@ void initFloatingWindowSupport() {
 
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
+    lua_register(L, "imgui_push_font", LuaImguiPushFont);
     lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);

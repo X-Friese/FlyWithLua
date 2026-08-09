@@ -1,26 +1,22 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use diagnostics;
-# This works for IMGUI 1.85 and does not get all functions
+#use diagnostics;
+
+# This works for IMGUI 1.91.9b and does not get all functions; 292 are supported.
 #
 # to use ./generate_imgui_bindings.pl <../imgui/imgui.h >imgui_iterator.inl
 # and define macros properly as in example imgui_lua_bindings.cpp
 #
 # check imgui_iterator for explanations of why some functions are not supported yet
-# 
-# I originaly used this modified version found at https://github.com/patrickriordan/imgui_lua_bindings
-# I am now using this modified version found at https://github.com/megumumpkin/imgui_lua_bindings
-
-# Thanks to Patrick, Folko and megumumpkin for alowing me to go on this journey bringing Imgui to FlyWithLua.
-# William R. Good (SparkerInVR) 12-16-2022
 
 require "./parse_blocks.pl";
 
 sub generateNamespaceImgui {
-  my ($imguiCodeBlock) = @_;
+  my $imguiCodeBlock = $_[0];
+  my @knownEnums = @{$_[1]};
 
-  my $lineCaptureRegex = qr" *(IMGUI_API)\s*((const char\*)|([^\s]+))\s*([^\(]+)\(([^\;]*)\);";
+  my $lineCaptureRegex = qr" *(IMGUI_API) *((const char\*)|([^ ]+)) *([^\(]+)\(([^\;]*)\)\s*;";
   my $doEndStackOptions = 1;
   my $terminator = "} \/\/ namespace ImGui";
   my $callPrefix = "";
@@ -69,13 +65,15 @@ sub generateNamespaceImgui {
     \%changeN,
     \%endN,
     \%endOverride,
+    \@knownEnums,
     $imguiCodeBlock)
 }
 
 sub generateDrawListFunctions {
-  my ($imguiCodeBlock) = @_;
+  my $imguiCodeBlock = $_[0];
+  my @knownEnums = @{$_[1]};
 
-  my $lineCaptureRegex = qr" *(IMGUI_API|inline)\s*((const char\*)|([^\s]+))\s*([^\(]+)\(([^\;]*)\);";
+  my $lineCaptureRegex = qr" *(IMGUI_API|inline) *((const char\*)|([^ ]+)) *([^\(]+)\(([^\;]*)\);";
   my $doEndStackOptions = 0;
   my $terminator = 0;
   my $callPrefix = "DRAW_LIST_";
@@ -113,6 +111,7 @@ sub generateDrawListFunctions {
     \%changeN,
     \%endN,
     \%endOverride,
+    \@knownEnums,
     $imguiCodeBlock)
 }
 
@@ -142,7 +141,8 @@ sub generateImguiGeneric {
   my %endN = %{$endNRef};
   my $endOverrideRef = shift;
   my %endOverride = %{$endOverrideRef};
-
+  my $myKnownEnums = shift;
+  my $knownEnums = join("|", @{$myKnownEnums});
   my ($imguiCodeBlock) = @_;
 
 
@@ -155,12 +155,12 @@ sub generateImguiGeneric {
   my @functionsAlreadyAdded;
   foreach $line (split /\n/, $imguiCodeBlock) {
     #replace ImVec2(x, y) with ImVec2 x, y so it's easier for regex (and ImVec4)
-    # $line =~ s/ImVec2\(([^,]*),([^\)]*)\)/ImVec2 $1 $2/g;    
-    $line =~ s/ImVec2\(([^,]*), *([^\)]*)\)/ImVec2 $1 $2/g;
+    $line =~ s/ImVec2\(([^,]*),([^\)]*)\)/ImVec2 $1 $2/g;
     $line =~ s/ImVec4\(([^,]*),([^\)]*),([^\)]*),([^\)]*)\)/ImVec4 $1 $2 $3 $4/g;
 
     #delete this so it's eaiser for regexes
-    $line =~ s/ IM_PRINTFARGS\(.\);/;/g;
+    $line =~ s/ IM_[A-Z]+[ARGS|LIST]\(.\);/;/g;
+
     if ($line =~ m/$lineCaptureRegex/) {
       print "//" . $line . "\n";
       # this will be set to 0 if something is not supported yet
@@ -175,19 +175,15 @@ sub generateImguiGeneric {
       # real c++ function name
       my $funcName = $5;
 
-	  # ********* show the functions that the parser has found	
-	  # say STDERR "Parsing function: " . $funcName;
+	  #say STDERR "Parsing function: " . $funcName;
 	  if (grep(/^$funcName$/, @functionsAlreadyAdded)) {
-		  # ******* Show functions that the parser has anready found	
-		  # say STDERR "Function Already Used: " . $funcName;
+		  #say STDERR $funcName;
 	  }
 	  push @functionsAlreadyAdded, $funcName;
 	  
       if (defined($bannedNames{$funcName})) {
         print "//Not allowed to use this function\n";
         $shouldPrint = 0;
-		# ******* Show function names that have been banned
-		# say STDERR "Function Banned Names: " . $funcName;
       }
       # c++ type of return value
       my $retType = $2;
@@ -206,34 +202,35 @@ sub generateImguiGeneric {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "bool");
         push(@after, "PUSH_BOOL(ret)");
-      } elsif ($retType =~ /^float$/) {
+      } elsif ($retType =~ /^(float|int|unsigned\s+int|double)$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
-        push(@funcArgs, "float");
+        push(@funcArgs, "$1");
         push(@after, "PUSH_NUMBER(ret)");
-      } elsif ($retType =~ /^double$/) {
+      } elsif ($knownEnums ne "" && $retType =~ /^($knownEnums)$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
-        push(@funcArgs, "double");
-        push(@after, "PUSH_NUMBER(ret)")
+        push(@funcArgs, "$1");
+        push(@after, "PUSH_NUMBER(ret)");
       } elsif ($retType =~ /^ImVec2$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "ImVec2");
         push(@after, "PUSH_NUMBER(ret.x)");
         push(@after, "PUSH_NUMBER(ret.y)");
+      } elsif ($retType =~ /^ImVec4$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "ImVec4");
+        push(@after, "PUSH_NUMBER(ret.x)");
+        push(@after, "PUSH_NUMBER(ret.y)");
+        push(@after, "PUSH_NUMBER(ret.z)");
+        push(@after, "PUSH_NUMBER(ret.w)");
       } elsif ($retType =~ /^(unsigned int|ImGuiID|ImU32)$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "unsigned int");
-        push(@after, "PUSH_NUMBER(ret)");
-      } elsif ($retType =~ /^int$/) {
-        $callMacro = "${callPrefix}CALL_FUNCTION";
-        push(@funcArgs, "int");
         push(@after, "PUSH_NUMBER(ret)");
       } else {
         print "// Unsupported return type $retType\n";
         $shouldPrint = 0;
       }
       for (my $i = 0; $i < @args; $i++) {
-		# ****** show the function name and the $args[$i] to find which type it is
-		# say STDERR "Parsing function: " . $funcName . '   $args[$i]: ' . $args[$i];
         # bool * x = NULL or bool * x
         if ($args[$i] =~ m/^ *bool *\* *([^ =\[]*)( = NULL|) *$/) {
           my $name = $1;
@@ -250,13 +247,8 @@ sub generateImguiGeneric {
           push(@before, "FLOAT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_FLOAT_POINTER($name)");
-        # const float * x
-        } elsif ($args[$i] =~ m/^ *const float *\* *([^ =\[]*)$/) {
-          my $name = $1;
-          push(@before, "CONST_FLOAT_ARG($name)");
-          push(@funcArgs, $name);
-        #float a or float a = number
-        } elsif ($args[$i] =~ m/^ *float *([^ =\[]*)( *= *[^ ]*|)$/) {
+          #float a or float a = number
+        } elsif ($args[$i] =~ m/^ *(?:float|double) *([^ =\[]*)( *= *[^ ]*|)$/) {
           my $name = $1;
           if ($2 =~ m/^ *= *([^ ]*)$/) {
             push(@before, "OPTIONAL_NUMBER_ARG($name, $1)");
@@ -264,25 +256,6 @@ sub generateImguiGeneric {
             push(@before, "NUMBER_ARG($name)");
           }
           push(@funcArgs, $name);
-        #float a[n]
-        } elsif ($args[$i] =~ m/^ *float *([^ =\[]*) *\[([0-9]*)\]$/) {
-          my $name = $1;
-          my $count = $2;
-
-          push(@before, "FLOAT_ARRAY_DEF($name,$count)");
-
-          my @it = (0..($count-1));
-          for(@it){
-            push(@before, "FLOAT_ARRAY_ARG($name,$_)");
-            push(@after, "PUSH_NUMBER($name [ $_ ])");
-          }
-          push(@funcArgs, $name);  
-        # char * x
-        } elsif ($args[$i] =~ m/^ *char *\* *([^ =\[]*)$/) {
-          my $name = $1;
-          push(@before, "LABEL_POINTER_ARG($name)");
-          push(@funcArgs, $name);
-          push(@after, "END_LABEL_POINTER($name)");
           # const char* a or const char* a = NULL or "blah"
         } elsif ($args[$i] =~ m/^ *const char\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
           my $name = $1;
@@ -292,119 +265,52 @@ sub generateImguiGeneric {
             push(@before, "LABEL_ARG($name)");
           }
           push(@funcArgs, $name);
-        } elsif ($args[$i] =~ m/^ void*\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
-		  my $name = $1;
-		  if ($funcName =~ m/^ *(InputText|InputTextMultiline|InputTextWithHint)$/) {
-		    # say STDERR "******* name:  " . $name . "  From function: " . $funcName;
-		    push(@before, "DEFAULT_ARG(void*, $name, NULL)");
-			push(@funcArgs, $name);
-		  }
-        } elsif ($args[$i] =~ m/^ ImGuiInputTextCallback *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
-		  my $name = $1;
-		  if ($funcName =~ m/^ *(InputText|InputTextMultiline|InputTextWithHint)$/) {
-		    # say STDERR "******* name:  " . $name . "  From function: " . $funcName;
-		    push(@before, "DEFAULT_ARG(ImGuiInputTextCallback, $name, NULL)");
-			push(@funcArgs, $name);
-		  }
-        } elsif ($args[$i] =~ m/^ *(size_t buf_size)$/) {
-		  my $name = "buf_size";
-		  if ($funcName =~ m/^ *(InputText|InputTextMultiline|InputTextWithHint)$/) {
-		    # say STDERR "******* name:  " . $name . "  From function: " . $funcName;
-			push(@funcArgs, $name);
-		  }
         #const ImVec2& with default or not
-        } elsif ($args[$i] =~ m/^ *const ImVec2& ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
+        } elsif ($args[$i] =~ m/^ *(?:const\s+ImVec2&|ImVec2) ([^ ]*) *(= * ImVec2 [^\s]+ +[^\s]+|) *$/) {
           my $name = $1;
-          if ($2 =~ m/^= * ImVec2 ([^ ]*) ([^ ]*)$/) {
+          if ($2 =~ m/^= * ImVec2 ([^\s]+)\s+([^\s]+)$/) {
             push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
           } else {
             push(@before, "IM_VEC_2_ARG($name)");
           }
           push(@funcArgs, $name);
-        # ImVec2 * with default or not
-        } elsif ($args[$i] =~ m/^ *ImVec2 ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
-		  my $name = $1;
-		  # ******* Show if any function has a ImVec2 in the $args[$i]
-		  # say STDERR "******* name: " . $name . "* ImVec2 found in function: " . $funcName; 
-          if ($2 =~ m/^= * ImVec2 ([^ ]*) ([^ ]*)$/) {
-            push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
-          } else {
-            push(@before, "IM_VEC_2_ARG($name)");
-          }
+        # ImVec2 
+        } elsif ($args[$i] =~ m/^ *ImVec2 ([^ ]*) *$/) {
+          my $name = $1;
+          push(@before, "IM_VEC_2_ARG($name)");
           push(@funcArgs, $name);
         #const ImVec4& with default or not
-        } elsif ($args[$i] =~ m/^ *const ImVec4& ([^ ]*) *(= * ImVec4 [^ ]* [^ ]* [^ ]* [^ ]*|) *$/) {
+        } elsif ($args[$i] =~ m/^ *(?:const\s+ImVec4&|ImVec4) ([^ ]*) *(= * ImVec4 [^\s]*\s+[^\s]*\s+[^\s]*\s+[^\s]*|) *$/) {
           my $name = $1;
-          if ($2 =~ m/^= * ImVec4 ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*)$/) {
+          if ($2 =~ m/^= * ImVec4 ([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)$/) {
             push(@before, "OPTIONAL_IM_VEC_4_ARG($name, $1, $2, $3, $4)");
           } else {
             push(@before, "IM_VEC_4_ARG($name)");
           }
           push(@funcArgs, $name);
-          # one of the various enums
+        } elsif ($args[$i] =~ m/^\s*(ImGuiKey|ImGuiDir|ImGuiMouseSource|ImGuiSortDirection|ImDrawFlags)\s+(\w+)\s*(=\s*\w+|) *$/) {
+         my $name = $2;
+         my $ename = $1;
+          if ($3 =~ m/^=\s*(\w+)$/) {
+            push(@before, "OPTIONAL_ENUM_ARG($name, $ename, $1)");
+          } else {
+            push(@before, "ENUM_ARG($name, $ename)");
+          }
+          push(@funcArgs, $name);
+          # one of the various generic enums
           # we are handling these as ints
-        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiSortDirection|ImGuiStyleVar|ImGuiTableBgTarget|ImDrawFlags|ImDrawListFlags|ImFontAtlasFlags|ImGuiBackendFlags|ImGuiButtonFlags|ImGuiColorEditFlags|ImGuiConfigFlags|ImGuiComboFlags|ImGuiDragDropFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiInputTextFlags|ImGuiKeyModFlags|ImGuiPopupFlags|ImGuiSelectableFlags|ImGuiSliderFlags|ImGuiTabBarFlags|ImGuiTabItemFlags|ImGuiTableFlags|ImGuiTableColumnFlags|ImGuiTableRowFlags|ImGuiTreeNodeFlags|ImGuiViewportFlags|ImGuiWindowFlags) ([^ ]*)( = 0|) *$/) {
-		 # ***********  Show it any of the Enums/Flags declared as int have been found
-		 # For some reason ImDrawCornerFlags is not being found that is used in AddRect, AddRectFilled and AddImageRounded functions. 	
-		 # say STDERR "****** found ints enums: " . $args[$i] . " in function: " . $funcName;
-        #These are ints
-          my $name = $2;
-          if ($3 =~ m/^ = 0$/) {
-              push(@before, "OPTIONAL_INT_ARG($name, 0)");
+        } elsif ($args[$i] =~ m/^ *($knownEnums)\s+(\w+)\s*(=\s*\w+|)\s*$/) {
+         #These are ints
+         my $name = $2;
+          if ($3 =~ m/^=\s*(\w+)$/) {
+            push(@before, "OPTIONAL_INT_ARG($name, $1)");
           } else {
             push(@before, "INT_ARG($name)");
           }
           push(@funcArgs, $name);
-        #int with default value or not
+          # one of the various typed enums
+          #int with default value or not
         } elsif ($args[$i] =~ m/^ *int ([^ =\[]*)( = [^ ]*|) *$/) {
-		  # ******* Show if any function has a int in the $args[$i]
-		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
-          my $name = $1;
-          if ($2 =~ m/^ = ([^ ]*)$/) {
-            push(@before, "OPTIONAL_INT_ARG($name, $1)");
-          } else {
-            push(@before, "INT_ARG($name)");
-          }
-          push(@funcArgs, $name);
-        #int a[n]
-        } elsif ($args[$i] =~ m/^ *int ([^ =\[]*) *\[([0-9]*)\]$/) {
-          my $name = $1;
-          my $count = $2;
-
-          push(@before, "INT_ARRAY_DEF($name,$count)");
-
-          my @it = (0..($count-1));
-          for(@it){
-            push(@before, "INT_ARRAY_ARG($name,$_)");
-            push(@after, "PUSH_NUMBER($name [ $_ ])");
-          }
-          push(@funcArgs, $name);  
-        #ImDrawCornerFlags with default value or not
-        } elsif ($args[$i] =~ m/^ *ImDrawCornerFlags ([^ =\[]*)( = [^ ]*|) *$/) {
-		  # ******* Show if any function has a ImDrawCornerFlags in the $args[$i]
-		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
-          my $name = $1;
-          if ($2 =~ m/^ = ([^ ]*)$/) {
-            push(@before, "OPTIONAL_INT_ARG($name, $1)");
-          } else {
-            push(@before, "INT_ARG($name)");
-          }
-          push(@funcArgs, $name);
-        #ImGuiMouseButton with default value or not
-        } elsif ($args[$i] =~ m/^ *ImGuiMouseButton ([^ =\[]*)( = [^ ]*|) *$/) {
-		  # ******* Show if any function has a ImGuiMouseButton in the $args[$i]
-		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
-          my $name = $1;
-          if ($2 =~ m/^ = ([^ ]*)$/) {
-            push(@before, "OPTIONAL_INT_ARG($name, $1)");
-          } else {
-            push(@before, "INT_ARG($name)");
-          }
-          push(@funcArgs, $name);
-          #ImGuiPopupFlags with default value or not
-        } elsif ($args[$i] =~ m/^ *ImGuiPopupFlags ([^ =\[]*)( = [^ ]*|) *$/) {
-		  # ******* Show if any function has a ImGuiPopupFlags in the $args[$i]
-		  # say STDERR "*******  found: " . $args[$i] . "  in function: " . $funcName;
           my $name = $1;
           if ($2 =~ m/^ = ([^ ]*)$/) {
             push(@before, "OPTIONAL_INT_ARG($name, $1)");
@@ -449,18 +355,9 @@ sub generateImguiGeneric {
           push(@before, "UINT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_UINT_POINTER($name)");
-        # const void* or void * a types and can have default value or not
-        } elsif ($args[$i] =~ m/^ *(const|) *void *\* *([^ =\[]*)( *= *[^ ]*|)$/) {
-          my $name = $2;
-          if ($3 =~ m/^ *= *([^ ]*)$/) {
-            push(@before, "OPTIONAL_VOID_ARG($name, $1)");
-          } else {
-            push(@before, "VOID_ARG($name)");
-          }
-          push(@funcArgs, $name);  
-        # we don't support variadic functions yet but we let you use it without extra variables
+          # we don't support variadic functions yet but we let you use it without extra variables
         } elsif ($args[$i] =~ m/^ *\.\.\. *$/) {
-          print "// Variadic functions aren't suppported but here it is anyway\n";
+          print "// Variadic functions aren't supported but here it is anyway\n";
         } else {
           print "// Unsupported arg type " . $args[$i] . "\n";
           $shouldPrint = 0;
@@ -474,6 +371,7 @@ sub generateImguiGeneric {
         }
         $funcNames{$luaFunc} = 1;
 
+		
         print "IMGUI_FUNCTION${functionSuffix}($luaFunc)\n";
         for (my $i = 0; $i < @before; $i++) {
           print $before[$i] . "\n";
@@ -563,7 +461,7 @@ sub generateEnums {
   my $enumName = shift;
   my ($imguiCodeBlock) = @_;
 
-  my $lineCaptureRegex = qr"^ *(ImGui|ImDraw|ImFont)([^, _]+)_([a-zA-Z0-9]+)\b";
+  my $lineCaptureRegex = qr"^ *(ImGui)([^, _]+)_([a-zA-Z0-9]+)\b";
 
   print "START_ENUM($enumName)\n";
   my $line;
@@ -591,25 +489,28 @@ my @blocknames = @$blocknamesref;
 # splits up its header to multiple instances of namespace ImGui, this would break.
 my $alreadyParsedMainImguiNamespace = 0;
 
+my @knownEnums = ();
 for (my $i=0; $i < scalar @blocks; $i++) {
-  print "//" . $blocknames[$i] . "\n";
-  if (($blocknames[$i] =~ /^namespace ImGui\s*$/) and not $alreadyParsedMainImguiNamespace) {
-	print STDERR "Normal Imgui functions:   ";
-	$alreadyParsedMainImguiNamespace = 1;
-    generateNamespaceImgui($blocks[$i]);
-  }
-  if ($blocknames[$i] =~ m/enum ImGui(.*)_\n/) {
-    generateEnums($1, $blocks[$i]);
-  }
-  if ($blocknames[$i] =~ m/enum ImDraw(.*)_\n/) {
-    generateEnums($1, $blocks[$i]);
-  }
-  if ($blocknames[$i] =~ m/enum ImFont(.*)_\n/) {
-    generateEnums($1, $blocks[$i]);
-  }
-  if ($blocknames[$i] eq "struct ImDrawList\n") {
-	print STDERR "Imgui DrawList functions: ";
-    generateDrawListFunctions($blocks[$i]);
+  if ($blocknames[$i] =~ m/enum ImGui([\w_]*)_\n/) {
+	push @knownEnums, "ImGui" . $1;
   }
 }
+
+for (my $i=0; $i < scalar @blocks; $i++) {
+  print "//" . $blocknames[$i] . "\n";
+
+  if (($blocknames[$i] eq "namespace ImGui\n") and not $alreadyParsedMainImguiNamespace) {
+	$alreadyParsedMainImguiNamespace = 1;
+    generateNamespaceImgui($blocks[$i], \@knownEnums);
+  }
+
+  if ($blocknames[$i] =~ m/enum ImGui([\w_]*)_\n/) {
+    generateEnums($1, $blocks[$i]);
+  }
+
+  if ($blocknames[$i] eq "struct ImDrawList\n") {
+    generateDrawListFunctions($blocks[$i], \@knownEnums);
+  }
+}
+
 

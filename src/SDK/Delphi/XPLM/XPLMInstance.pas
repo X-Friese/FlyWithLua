@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -77,6 +77,22 @@ TYPE
                                         datarefs            : PXPLMString) : XPLMInstanceRef;
     cdecl; external XPLM_DLL;
 
+{$IFDEF XPLM420}
+   {
+    XPLMInstanceSetAutoShift
+    
+    XPLMInstanceSetAutoShift tells X-Plane to move the location of your
+    instance every time the sim\'s local coordinate sytem changes, so that a
+    static instance does not have to be moved. Without this, a plugin is
+    responsible for updating an instance's local position when the  coordinate
+    system shifts. Use this for static instances that you would not otherwise
+    have to move.
+   }
+   PROCEDURE XPLMInstanceSetAutoShift(
+                                        instance            : XPLMInstanceRef);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM420}
+
    {
     XPLMDestroyInstance
     
@@ -118,6 +134,29 @@ TYPE
                                         new_position        : PXPLMDrawInfo_t;
                                         data                : PSingle);
     cdecl; external XPLM_DLL;
+
+{$IFDEF XPLM420}
+   {
+    XPLMInstanceSetPositionDouble
+    
+    Updates both the position of the instance and all datarefs you registered
+    for it.  Call this from a flight loop callback or UI callback.
+    
+    __DO_NOT__ call XPLMInstanceSetPositionDouble from a drawing callback; the
+    whole point of instancing is that you do not need any drawing  callbacks.
+    Setting instance data from a drawing callback may have undefined
+    consequences, and the drawing callback hurts FPS unnecessarily.  
+    
+    The memory pointed to by the data pointer must be large enough to hold one
+    float for every dataref you have registered, and must contain valid
+    floating point data.
+   }
+   PROCEDURE XPLMInstanceSetPositionDouble(
+                                        instance            : XPLMInstanceRef;
+                                        new_position        : PXPLMDrawInfoDouble_t;
+                                        data                : PSingle);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM420}
 
 
 IMPLEMENTATION

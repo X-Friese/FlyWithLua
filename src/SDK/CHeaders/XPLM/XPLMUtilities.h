@@ -2,7 +2,7 @@
 #define _XPLMUtilities_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -62,7 +62,6 @@ extern "C" {
  *
  */
 
-
 #if defined(XPLM200)
 /*
  * XPLMDataFileType
@@ -83,7 +82,6 @@ enum {
 };
 typedef int XPLMDataFileType;
 #endif /* XPLM200 */
-
 /*
  * XPLMGetSystemPath
  * 
@@ -96,7 +94,6 @@ typedef int XPLMDataFileType;
  */
 XPLM_API void       XPLMGetSystemPath(
                          char *               outSystemPath);
-
 /*
  * XPLMGetPrefsPath
  * 
@@ -111,7 +108,6 @@ XPLM_API void       XPLMGetSystemPath(
  */
 XPLM_API void       XPLMGetPrefsPath(
                          char *               outPrefsPath);
-
 /*
  * XPLMGetDirectorySeparator
  * 
@@ -122,7 +118,6 @@ XPLM_API void       XPLMGetPrefsPath(
  *
  */
 XPLM_API const char * XPLMGetDirectorySeparator(void);
-
 /*
  * XPLMExtractFileAndPath
  * 
@@ -135,7 +130,6 @@ XPLM_API const char * XPLMGetDirectorySeparator(void);
  */
 XPLM_API char *     XPLMExtractFileAndPath(
                          char *               inFullPath);
-
 /*
  * XPLMGetDirectoryContents
  * 
@@ -187,7 +181,6 @@ XPLM_API int        XPLMGetDirectoryContents(
                          int                  inIndexCount,
                          int *                outTotalFiles,          /* Can be NULL */
                          int *                outReturnedFiles);      /* Can be NULL */
-
 #if defined(XPLM200)
 /*
  * XPLMLoadDataFile
@@ -201,7 +194,6 @@ XPLM_API int        XPLMLoadDataFile(
                          XPLMDataFileType     inFileType,
                          const char *         inFilePath);            /* Can be NULL */
 #endif /* XPLM200 */
-
 #if defined(XPLM200)
 /*
  * XPLMSaveDataFile
@@ -214,7 +206,6 @@ XPLM_API int        XPLMSaveDataFile(
                          XPLMDataFileType     inFileType,
                          const char *         inFilePath);
 #endif /* XPLM200 */
-
 /***************************************************************************
  * X-PLANE MISC
  ***************************************************************************/
@@ -277,7 +268,6 @@ enum {
 
 };
 typedef int XPLMHostApplicationID;
-
 /*
  * XPLMLanguageCode
  * 
@@ -318,10 +308,13 @@ enum {
     xplm_Language_Chinese                    = 10,
 
 #endif /* XPLM300 */
+#if defined(XPLM400)
+    xplm_Language_Ukrainian                  = 11,
+
+#endif /* XPLM400 */
 
 };
 typedef int XPLMLanguageCode;
-
 #if defined(XPLM200)
 /*
  * XPLMError_f
@@ -339,7 +332,6 @@ typedef int XPLMLanguageCode;
 typedef void (* XPLMError_f)(
                          const char *         inMessage);
 #endif /* XPLM200 */
-
 #if defined(XPLM_DEPRECATED)
 /*
  * XPLMInitialized
@@ -356,7 +348,6 @@ typedef void (* XPLMError_f)(
  */
 XPLM_API int        XPLMInitialized(void);
 #endif /* XPLM_DEPRECATED */
-
 /*
  * XPLMGetVersions
  * 
@@ -373,7 +364,6 @@ XPLM_API void       XPLMGetVersions(
                          int *                outXPlaneVersion,
                          int *                outXPLMVersion,
                          XPLMHostApplicationID * outHostID);
-
 /*
  * XPLMGetLanguage
  * 
@@ -381,7 +371,6 @@ XPLM_API void       XPLMGetVersions(
  *
  */
 XPLM_API XPLMLanguageCode XPLMGetLanguage(void);
-
 #if defined(XPLM200)
 /*
  * XPLMFindSymbol
@@ -414,7 +403,6 @@ XPLM_API XPLMLanguageCode XPLMGetLanguage(void);
 XPLM_API void *     XPLMFindSymbol(
                          const char *         inString);
 #endif /* XPLM200 */
-
 #if defined(XPLM200)
 /*
  * XPLMSetErrorCallback
@@ -444,7 +432,6 @@ XPLM_API void *     XPLMFindSymbol(
 XPLM_API void       XPLMSetErrorCallback(
                          XPLMError_f          inCallback);
 #endif /* XPLM200 */
-
 /*
  * XPLMDebugString
  * 
@@ -461,7 +448,6 @@ XPLM_API void       XPLMSetErrorCallback(
  */
 XPLM_API void       XPLMDebugString(
                          const char *         inString);
-
 /*
  * XPLMSpeakString
  * 
@@ -473,7 +459,6 @@ XPLM_API void       XPLMDebugString(
  */
 XPLM_API void       XPLMSpeakString(
                          const char *         inString);
-
 /*
  * XPLMGetVirtualKeyDescription
  * 
@@ -485,7 +470,6 @@ XPLM_API void       XPLMSpeakString(
  */
 XPLM_API const char * XPLMGetVirtualKeyDescription(
                          char                 inVirtualKey);
-
 /*
  * XPLMReloadScenery
  * 
@@ -498,7 +482,6 @@ XPLM_API const char * XPLMGetVirtualKeyDescription(
  *
  */
 XPLM_API void       XPLMReloadScenery(void);
-
 #if defined(XPLM200)
 /***************************************************************************
  * X-PLANE COMMAND MANAGEMENT
@@ -543,7 +526,6 @@ XPLM_API void       XPLMReloadScenery(void);
  *
  */
 
-
 /*
  * XPLMCommandPhase
  * 
@@ -563,7 +545,6 @@ enum {
 
 };
 typedef int XPLMCommandPhase;
-
 /*
  * XPLMCommandRef
  * 
@@ -578,7 +559,6 @@ typedef int XPLMCommandPhase;
  *
  */
 typedef void * XPLMCommandRef;
-
 /*
  * XPLMCommandCallback_f
  * 
@@ -596,7 +576,6 @@ typedef int (* XPLMCommandCallback_f)(
                          XPLMCommandRef       inCommand,
                          XPLMCommandPhase     inPhase,
                          void *               inRefcon);
-
 /*
  * XPLMFindCommand
  * 
@@ -606,7 +585,6 @@ typedef int (* XPLMCommandCallback_f)(
  */
 XPLM_API XPLMCommandRef XPLMFindCommand(
                          const char *         inName);
-
 /*
  * XPLMCommandBegin
  * 
@@ -618,7 +596,6 @@ XPLM_API XPLMCommandRef XPLMFindCommand(
  */
 XPLM_API void       XPLMCommandBegin(
                          XPLMCommandRef       inCommand);
-
 /*
  * XPLMCommandEnd
  * 
@@ -629,7 +606,6 @@ XPLM_API void       XPLMCommandBegin(
  */
 XPLM_API void       XPLMCommandEnd(
                          XPLMCommandRef       inCommand);
-
 /*
  * XPLMCommandOnce
  * 
@@ -640,7 +616,6 @@ XPLM_API void       XPLMCommandEnd(
  */
 XPLM_API void       XPLMCommandOnce(
                          XPLMCommandRef       inCommand);
-
 /*
  * XPLMCreateCommand
  * 
@@ -653,7 +628,6 @@ XPLM_API void       XPLMCommandOnce(
 XPLM_API XPLMCommandRef XPLMCreateCommand(
                          const char *         inName,
                          const char *         inDescription);
-
 /*
  * XPLMRegisterCommandHandler
  * 
@@ -672,7 +646,6 @@ XPLM_API void       XPLMRegisterCommandHandler(
                          XPLMCommandCallback_f inHandler,
                          int                  inBefore,
                          void *               inRefcon);
-
 /*
  * XPLMUnregisterCommandHandler
  * 
@@ -685,7 +658,6 @@ XPLM_API void       XPLMUnregisterCommandHandler(
                          XPLMCommandCallback_f inHandler,
                          int                  inBefore,
                          void *               inRefcon);
-
 #endif /* XPLM200 */
 #if defined(XPLM_DEPRECATED)
 /***************************************************************************
@@ -705,7 +677,6 @@ XPLM_API void       XPLMUnregisterCommandHandler(
  * underlying sim data.
  *
  */
-
 
 /*
  * XPLMCommandKeyID
@@ -813,7 +784,6 @@ enum {
           xplm_key_max
 };
 typedef int XPLMCommandKeyID;
-
 /*
  * XPLMCommandButtonID
  * 
@@ -921,7 +891,6 @@ enum {
           xplm_joy_max
 };
 typedef int XPLMCommandButtonID;
-
 /*
  * XPLMSimulateKeyPress
  * 
@@ -936,7 +905,7 @@ typedef int XPLMCommandButtonID;
 XPLM_API void       XPLMSimulateKeyPress(
                          int                  inKeyType,
                          int                  inKey);
-
+#if defined(XPLM_DEPRECATED)
 /*
  * XPLMCommandKeyStroke
  * 
@@ -950,7 +919,8 @@ XPLM_API void       XPLMSimulateKeyPress(
  */
 XPLM_API void       XPLMCommandKeyStroke(
                          XPLMCommandKeyID     inKey);
-
+#endif /* XPLM_DEPRECATED */
+#if defined(XPLM_DEPRECATED)
 /*
  * XPLMCommandButtonPress
  * 
@@ -965,7 +935,8 @@ XPLM_API void       XPLMCommandKeyStroke(
  */
 XPLM_API void       XPLMCommandButtonPress(
                          XPLMCommandButtonID  inButton);
-
+#endif /* XPLM_DEPRECATED */
+#if defined(XPLM_DEPRECATED)
 /*
  * XPLMCommandButtonRelease
  * 
@@ -977,7 +948,7 @@ XPLM_API void       XPLMCommandButtonPress(
  */
 XPLM_API void       XPLMCommandButtonRelease(
                          XPLMCommandButtonID  inButton);
-
+#endif /* XPLM_DEPRECATED */
 #endif /* XPLM_DEPRECATED */
 #ifdef __cplusplus
 }

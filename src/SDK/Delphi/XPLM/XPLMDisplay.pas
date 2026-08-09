@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -272,13 +272,30 @@ TYPE
  * AVIONICS API
  ___________________________________________________________________________}
 {
-   Drawing callbacks for before and after X-Plane draws the instrument screen
-   can be registered for every  cockpit device. If the user plane does not
-   have the device installed, your callback will not be called!  Use the
-   return value to enable or disable X-Plane's drawing. By drawing into the
-   framebuffer of the avionics device, your modifications will be visible
-   regardless whether the device's screen is in a 3d cockpit or a popup
-   window.
+   The Avionics API allows you to customize the drawing and behaviour of the
+   built-in cockpit devices (GNS, G1000, etc.), and create your own cockpit
+   devices. For built-in devices, you can draw before and/or after X-Plane
+   does, and optionally prevent X-Plane from drawing the screen at all.
+   Customized built-in devices and custom devices are available in the 3D
+   cockpit as well as in the form of pop-up/pop-out windows.
+   
+   The API also allows you to receive mouse interaction events for your device
+   (click down, drag, and up, mouse wheel scroll, cursor) for both screen and
+   bezel. While these always work when the device is popped-up in its window,
+   you must add a `ATTR_manip_device` manipulator on top of your screen in
+   order to receive mouse events from the 3D cockpit.
+   
+   You can also use the avionics API to control the state and location of
+   cockpit devices' pop-up windows.
+   
+   When working with avionics devices, all co-ordinates you receive when
+   drawing or dealing with click events are in texels. The x-axis grows right,
+   the y-axis grows up. In bezel callbacks, the origin is at the bottom left
+   corner of the bezel. In screen callbacks, the origin is at the bottom-left
+   of the screen. X-Plane takes care of scaling your screen and bezel if the
+   user pops out the device's window: you should always draw your screen and
+   bezel as if they were at the size you specified when registering callbacks
+   or creating a device.
 }
 
 
@@ -344,17 +361,29 @@ TYPE
      { Primus Radio Management Unit, copilot side.                                }
      ,xplm_device_Primus_RMU_2                 = 17
  
+     { Airbus MCDU, pilot side.                                                   }
+     ,xplm_device_MCDU_1                       = 18
+ 
+     { Airbus MCDU, copilot side.                                                 }
+     ,xplm_device_MCDU_2                       = 19
+ 
+{$IFDEF XPLM430}
+     { Airbus MCDU 3.                                                             }
+     ,xplm_device_MCDU_3                       = 24
+{$ENDIF XPLM430}
+ 
    );
    PXPLMDeviceID = ^XPLMDeviceID;
 
    {
     XPLMAvionicsCallback_f
     
-    This is the prototype for your drawing callback.  You are passed in the
-    device you are enhancing/replacing,  and whether it is before or after
-    X-Plane drawing. If you are before X-Plane, return 1 to let X-Plane draw or
-    0 to suppress X-Plane drawing.  If you are after the phase the return value
-    is ignored.
+    This is the prototype for drawing callbacks for customized built-in device.
+    You are passed in the device you are enhancing/replacing, and (if this is
+    used for a built-in device that you are customizing) whether it is before
+    or after X-Plane drawing. If you are before X-Plane, return 1 to let
+    X-Plane draw or 0 to suppress X-Plane drawing. If you are called after
+    X-Plane, the return value is ignored.
     
     Refcon is a unique value that you specify when registering the callback,
     allowing you to slip a pointer to your own data to the callback.
@@ -368,13 +397,84 @@ TYPE
                                     inIsBefore          : Integer;
                                     inRefcon            : pointer) : Integer; cdecl;
 
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsMouse_f
+    
+    Mouse click callback for clicks into your screen or (2D-popup) bezel,
+    useful if the device you are making simulates a touch-screen the user can
+    click in the 3d cockpit, or if your pop-up's bezel has buttons that the
+    user can click. Return 1 to consume the event, or 0 to let X-Plane process
+    it (for stock avionics devices).
+   }
+TYPE
+     XPLMAvionicsMouse_f = FUNCTION(
+                                    x                   : Integer;
+                                    y                   : Integer;
+                                    inMouse             : XPLMMouseStatus;
+                                    inRefcon            : pointer) : Integer; cdecl;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsMouseWheel_f
+    
+    Mouse wheel callback for scroll actions into your screen or (2D-popup)
+    bezel, useful if your bezel has knobs that can be turned using the mouse
+    wheel, or if you want to simulate pinch-to-zoom on a touchscreen. Return 1
+    to consume the event, or 0 to let X-Plane process it (for stock avionics
+    devices). The number of "clicks" indicates how far the wheel was turned
+    since the last callback. The wheel is 0 for the vertical axis or 1 for the
+    horizontal axis (for OS/mouse combinations that support this).
+   }
+     XPLMAvionicsMouseWheel_f = FUNCTION(
+                                    x                   : Integer;
+                                    y                   : Integer;
+                                    wheel               : Integer;
+                                    clicks              : Integer;
+                                    inRefcon            : pointer) : Integer; cdecl;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsCursor_f
+    
+    Cursor callback that decides which cursor to show when the mouse is over
+    your screen or (2D-popup) bezel. Return xplm_CursorDefault to let X-Plane
+    use which cursor to show, or other values to force the cursor to a
+    particular one (see XPLMCursorStatus).
+   }
+     XPLMAvionicsCursor_f = FUNCTION(
+                                    x                   : Integer;
+                                    y                   : Integer;
+                                    inRefcon            : pointer) : XPLMCursorStatus; cdecl;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsKeyboard_f
+    
+    Key callback called when your device is popped up and you've requested to
+    capture the keyboard.  Return 1 to consume the event, or 0 to let X-Plane
+    process it (for stock avionics devices).
+   }
+     XPLMAvionicsKeyboard_f = FUNCTION(
+                                    inKey               : XPLMChar;
+                                    inFlags             : XPLMKeyFlags;
+                                    inVirtualKey        : XPLMChar;
+                                    inRefCon            : pointer;
+                                    losingFocus         : Integer) : Integer; cdecl;
+{$ENDIF XPLM410}
+
+TYPE
    {
     XPLMAvionicsID
     
     This is an opaque identifier for an avionics display that you enhance or
     replace.  When you register your callbacks (via
-    XPLMRegisterAvionicsCallbacksEx()), you will specify callbacks to handle
-    drawing, and get back such a handle. 
+    XPLMRegisterAvionicsCallbacksEx()) or create a new device (via
+    XPLMCreateAvionicsDevice()), you will specify drawing and mouse callbacks,
+    and get back such a handle.
    }
    XPLMAvionicsID = pointer;
    PXPLMAvionicsID = ^XPLMAvionicsID;
@@ -383,20 +483,65 @@ TYPE
     XPLMCustomizeAvionics_t
     
     The XPLMCustomizeAvionics_t structure defines all of the parameters used to
-    replace or  enhance avionics for using XPLMRegisterAvionicsCallbacksEx(). 
-    The structure will be expanded in future SDK APIs to include more features.
-    Always set the structSize member to the size of  your struct in bytes!
+    replace or  enhance built-in simulator avionics devices using
+    XPLMRegisterAvionicsCallbacksEx(). The structure will be expanded in future
+    SDK APIs to include more features. Always set the structSize member to the
+    size of your struct in bytes!
    }
    XPLMCustomizeAvionics_t = RECORD
      { Used to inform XPLMRegisterAvionicsCallbacksEx() of the SDK version you    }
      { compiled against; should always be set to sizeof(XPLMCustomizeAvionics_t)  }
      structSize               : Integer;
-     { Which avionics device you want your drawing applied to.                    }
+     { The built-in avionics device to which you want your drawing applied.       }
      deviceId                 : XPLMDeviceID;
      { The draw callback to be called before X-Plane draws.                       }
      drawCallbackBefore       : XPLMAvionicsCallback_f;
      { The draw callback to be called after X-Plane has drawn.                    }
      drawCallbackAfter        : XPLMAvionicsCallback_f;
+{$IFDEF XPLM410}
+     { The mouse click callback that is called when the user clicks onto the      }
+     { device's bezel.                                                            }
+     bezelClickCallback       : XPLMAvionicsMouse_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The mouse click callback that is called when the user clicks onto the      }
+     { device's bezel.                                                            }
+     bezelRightClickCallback  : XPLMAvionicsMouse_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The callback that is called when the users uses the scroll wheel over the  }
+     { device's bezel.                                                            }
+     bezelScrollCallback      : XPLMAvionicsMouseWheel_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The callback that lets you determine what cursor should be shown when the  }
+     { mouse is over the device's bezel.                                          }
+     bezelCursorCallback      : XPLMAvionicsCursor_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The mouse click callback that is called when the user clicks onto the      }
+     { device's screen.                                                           }
+     screenTouchCallback      : XPLMAvionicsMouse_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The right mouse click callback that is called when the user clicks onto the}
+     { device's screen.                                                           }
+     screenRightTouchCallback : XPLMAvionicsMouse_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The callback that is called when the users uses the scroll wheel over the  }
+     { device's screen.                                                           }
+     screenScrollCallback     : XPLMAvionicsMouseWheel_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The callback that lets you determine what cursor should be shown when the  }
+     { mouse is over the device's screen.                                         }
+     screenCursorCallback     : XPLMAvionicsCursor_f;
+{$ENDIF XPLM410}
+{$IFDEF XPLM410}
+     { The key callback that is called when the user types in the device's popup. }
+     keyboardCallback         : XPLMAvionicsKeyboard_f;
+{$ENDIF XPLM410}
      { A reference which will be passed into each of your draw callbacks. Use this}
      { to pass information to yourself as needed.                                 }
      refcon                   : pointer;
@@ -406,26 +551,463 @@ TYPE
    {
     XPLMRegisterAvionicsCallbacksEx
     
-    This routine registers your callbacks for a device. This returns a handle. 
-    If the returned handle is NULL, there was a problem interpreting your
-    input,  most likely the struct size was wrong for your SDK version.  If the
-    returned handle is not NULL, your callbacks will be called according to
-    schedule  as long as your plugin is not deactivated, or unloaded, or your
+    This routine registers your callbacks for a built-in device. This returns a
+    handle. If the returned handle is NULL, there was a problem interpreting
+    your input, most likely the struct size was wrong for your SDK version. If
+    the returned handle is not NULL, your callbacks will be called according to
+    schedule as long as your plugin is not deactivated, or unloaded, or you
     call XPLMUnregisterAvionicsCallbacks().
+    
+    Note that you cannot register new callbacks for a device that is not a
+    built-in one (for example a device that you have created, or a device
+    another plugin has created).
    }
    FUNCTION XPLMRegisterAvionicsCallbacksEx(
                                         inParams            : PXPLMCustomizeAvionics_t) : XPLMAvionicsID;
     cdecl; external XPLM_DLL;
 
    {
+    XPLMGetAvionicsHandle
+    
+    This routine registers no callbacks for a built-in cockpit device, but
+    returns a handle which allows you to interact with it using the Avionics
+    Device API. Use this if you do not wish to intercept drawing, clicks and
+    touchscreen calls to a device, but want to interact with its popup
+    programmatically. This is equivalent to calling
+    XPLMRegisterAvionicsCallbackEx() with NULL for all callbacks.
+   }
+   FUNCTION XPLMGetAvionicsHandle(
+                                        inDeviceID          : XPLMDeviceID) : XPLMAvionicsID;
+    cdecl; external XPLM_DLL;
+
+   {
     XPLMUnregisterAvionicsCallbacks
     
-    This routine unregisters your callbacks for a device. They will no longer
-    be called.
+    This routine unregisters your callbacks for a built-in device. You should
+    only call this for handles you acquired from
+    XPLMRegisterAvionicsCallbacksEx(). They will no longer be called.
    }
    PROCEDURE XPLMUnregisterAvionicsCallbacks(
                                         inAvionicsId        : XPLMAvionicsID);
     cdecl; external XPLM_DLL;
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsScreenCallback_f
+    
+    This is the prototype for drawing callbacks for custom devices' screens.
+    Refcon is a unique value that you specify when creating the device,
+    allowing you to slip a pointer to your own data to the callback.
+    
+    Upon entry the OpenGL context will be correctly set up for you and OpenGL
+    will be in panel coordinates for 2d drawing.  The OpenGL state (texturing,
+    etc.) will be unknown. X-Plane does not clear your screen for you between
+    calls - this means you can re-use portions to save drawing, but otherwise
+    you must call glClear() to erase the screen's contents.
+   }
+TYPE
+     XPLMAvionicsScreenCallback_f = PROCEDURE(
+                                    inRefcon            : pointer); cdecl;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsBezelCallback_f
+    
+    This is the prototype for drawing callbacks for custom devices' bezel. You
+    are passed in the red, green, and blue values you can optinally use for
+    tinting your bezel accoring to ambiant light.
+    
+    Refcon is a unique value that you specify when creating the device,
+    allowing you to slip a pointer to your own data to the callback.
+    
+    Upon entry the OpenGL context will be correctly set up for you and OpenGL
+    will be in panel coordinates for 2d drawing.  The OpenGL state (texturing,
+    etc.) will be unknown.
+   }
+     XPLMAvionicsBezelCallback_f = PROCEDURE(
+                                    inAmbiantR          : Single;
+                                    inAmbiantG          : Single;
+                                    inAmbiantB          : Single;
+                                    inRefcon            : pointer); cdecl;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsBrightness_f
+    
+    This is the prototype for screen brightness callbacks for custom devices.
+    If you provide a callback, you can return the ratio of the screen's maximum
+    brightness that the simulator should use when displaying the screen in the
+    3D cockpit.
+    
+    inRheoValue is the current ratio value (between 0 and 1) of the instrument
+    brightness rheostat to which the device is bound.
+    
+    inAmbientBrightness is the value (between 0 and 1) that the callback should
+    return for the screen to be at a usable brightness based on ambient light
+    (if your device has a photo cell and automatically adjusts its brightness,
+    you can return this and your screen will be at the optimal brightness to be
+    readable, but not blind the pilot).
+    
+    inBusVoltsRatio is the ratio of the nominal voltage currently present on
+    the bus to which the device is bound, or -1 if the device is not bound to
+    the current aircraft.
+    
+    Refcon is a unique value that you specify when creating the device,
+    allowing you to slip a pointer to your own data to the callback.
+   }
+     XPLMAvionicsBrightness_f = FUNCTION(
+                                    inRheoValue         : Single;
+                                    inAmbiantBrightness : Single;
+                                    inBusVoltsRatio     : Single;
+                                    inRefcon            : pointer) : Single; cdecl;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMCreateAvionics_t
+    
+    The XPLMCreateAvionics_t structure defines all of the parameters used to
+    generate your own glass cockpit device by using XPLMCreateAvionicsEx(). The
+    structure will be expanded in future SDK APIs to include more features.
+    Always set the structSize member to the size of your struct in bytes!
+   }
+   XPLMCreateAvionics_t = RECORD
+     { Used to inform XPLMCreateAvionicsEx() of the SDK version you compiled      }
+     { against; should always be set to sizeof(XPLMCreateAvionics_t)              }
+     structSize               : Integer;
+     { Width of the device's screen in pixels.                                    }
+     screenWidth              : Integer;
+     { Height of the device's screen in pixels.                                   }
+     screenHeight             : Integer;
+     { Width of the bezel around your device's screen for 2D pop-ups.             }
+     bezelWidth               : Integer;
+     { Height of the bezel around your device's screen for 2D pop-ups.            }
+     bezelHeight              : Integer;
+     { The screen's lateral offset into the bezel for 2D pop-ups.                 }
+     screenOffsetX            : Integer;
+     { The screen's vertical offset into the bezel for 2D pop-ups.                }
+     screenOffsetY            : Integer;
+     { If set to true (1), X-Plane won't call your plugin to re-render the        }
+     { device's screen every frame. Instead, you should tell X-Plane you want to  }
+     { refresh your screen with XPLMAvionicsNeedsDrawing(), and X-Plane will call }
+     { you before rendering the next simulator frame.                             }
+     drawOnDemand             : Integer;
+     { The draw callback you will use to draw the 2D-popup bezel. This is called  }
+     { only when the popup window is visible, and X-Plane is about to draw the    }
+     { bezel in it.                                                               }
+     bezelDrawCallback        : XPLMAvionicsBezelCallback_f;
+     { The draw callback you will be using to draw into the device's screen       }
+     { framebuffer.                                                               }
+     drawCallback             : XPLMAvionicsScreenCallback_f;
+     { The mouse click callback that is called when the user clicks onto your     }
+     { bezel.                                                                     }
+     bezelClickCallback       : XPLMAvionicsMouse_f;
+     { The mouse click callback that is called when the user clicks onto your     }
+     { bezel.                                                                     }
+     bezelRightClickCallback  : XPLMAvionicsMouse_f;
+     { The callback that is called when the users uses the scroll wheel over your }
+     { avionics' bezel.                                                           }
+     bezelScrollCallback      : XPLMAvionicsMouseWheel_f;
+     { The callback that lets you determine what cursor should be shown when the  }
+     { mouse is over your device's bezel.                                         }
+     bezelCursorCallback      : XPLMAvionicsCursor_f;
+     { The mouse click callback that is called when the user clicks onto your     }
+     { screen.                                                                    }
+     screenTouchCallback      : XPLMAvionicsMouse_f;
+     { The right mouse click callback that is called when the user clicks onto    }
+     { your screen.                                                               }
+     screenRightTouchCallback : XPLMAvionicsMouse_f;
+     { The callback that is called when the users uses the scroll wheel over your }
+     { avionics' screen.                                                          }
+     screenScrollCallback     : XPLMAvionicsMouseWheel_f;
+     { The callback that lets you determine what cursor should be shown when the  }
+     { mouse is over your device's screen.                                        }
+     screenCursorCallback     : XPLMAvionicsCursor_f;
+     { The key callback that is called when the user types in your popup.         }
+     keyboardCallback         : XPLMAvionicsKeyboard_f;
+     { The callback that is called to determine the absolute brightness of the    }
+     { device's screen. Set to NULL to use X-Plane's default behaviour.           }
+     brightnessCallback       : XPLMAvionicsBrightness_f;
+     { A null-terminated string of maximum 64 characters to uniquely identify your}
+     { cockpit device. This must be unique (you cannot re-use an ID that X-Plane  }
+     { or another plugin provides), and it must not contain spaces. This is the   }
+     { string the OBJ file must reference when marking polygons with              }
+     { ATTR_cockpit_device. The string is copied when you call                    }
+     { XPLMCreateAvionicsEx, so you don't need to hold this string in memory after}
+     { the call.                                                                  }
+     deviceID                 : XPLMString;
+     { A null-terminated string to give a user-readable name to your device, which}
+     { can be presented in UI dialogs.                                            }
+     deviceName               : XPLMString;
+     { A reference which will be passed into your draw and mouse callbacks. Use   }
+     { this to pass information to yourself as needed.                            }
+     refcon                   : pointer;
+   END;
+   PXPLMCreateAvionics_t = ^XPLMCreateAvionics_t;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMCreateAvionicsEx
+    
+    Creates a new cockpit device to be used in the 3D cockpit. You can call
+    this at any time: if an aircraft referencing your device is loaded before
+    your plugin, the simulator will make sure to retroactively map your display
+    into it.
+    
+                When you are done with the device, and at least before your
+                plugin is unloaded, you should destroy the device using
+                XPLMDestroyAvionics().
+   }
+   FUNCTION XPLMCreateAvionicsEx(
+                                        inParams            : PXPLMCreateAvionics_t) : XPLMAvionicsID;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMDestroyAvionics
+    
+    Destroys the cockpit device and deallocates its screen's memory. You should
+    only ever call this for devices that you created using
+    XPLMCreateAvionicsEx(), not X-Plane' built-ine devices you have customised.
+   }
+   PROCEDURE XPLMDestroyAvionics(
+                                        inHandle            : XPLMAvionicsID);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMIsAvionicsBound
+    
+    Returns true (1) if the cockpit device with the given handle is used by the
+    current aircraft.
+   }
+   FUNCTION XPLMIsAvionicsBound(
+                                        inHandle            : XPLMAvionicsID) : Integer;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMSetAvionicsBrightnessRheo
+    
+    Sets the brightness setting's value, between 0 and 1, for the screen of the
+    cockpit device with the given handle.
+    
+    If the device is bound to the current aircraft, this is a shortcut to
+    setting the brightness rheostat value using the
+    `sim/cockpit2/switches/instrument_brightness_ratio[]` dataref; this sets
+    the slot in the `instrument_brightness_ratio` array to which the device is
+    bound.
+    
+    If the device is not currently bound, the device keeps track of its own
+    screen brightness rheostat, allowing you to control the brightness even
+    though it isn't connected to the `instrument_brightness_ratio` dataref.
+   }
+   PROCEDURE XPLMSetAvionicsBrightnessRheo(
+                                        inHandle            : XPLMAvionicsID;
+                                        brightness          : Single);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMGetAvionicsBrightnessRheo
+    
+    Returns the brightness setting value, between 0 and 1, for the screen of
+    the cockpit device with the given handle.
+    
+            If the device is bound to the current aircraft, this is a shortcut
+            to getting the brightness rheostat value from the
+            `sim/cockpit2/switches/instrument_brightness_ratio[]` dataref; this
+            gets the slot in the `instrument_brightness_ratio` array to which
+            the device is bound.
+    
+            If the device is not currently bound, this returns the device's own
+            brightness rheostat value.
+   }
+   FUNCTION XPLMGetAvionicsBrightnessRheo(
+                                        inHandle            : XPLMAvionicsID) : Single;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMGetAvionicsBusVoltsRatio
+    
+    Returns the ratio of the nominal voltage (1.0 means full nominal voltage)
+    of the electrical bus to which the given avionics device is bound, or -1 if
+    the device is not bound to the current aircraft.
+   }
+   FUNCTION XPLMGetAvionicsBusVoltsRatio(
+                                        inHandle            : XPLMAvionicsID) : Single;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMIsCursorOverAvionics
+    
+    Returns true (1) if the mouse is currently over the screen of cockpit
+    device with the given handle. If they are not NULL, the optional x and y
+    arguments are filled with the co-ordinates of the mouse cursor in device
+    co-ordinates.
+   }
+   FUNCTION XPLMIsCursorOverAvionics(
+                                        inHandle            : XPLMAvionicsID;
+                                        outX                : PInteger;    { Can be nil }
+                                        outY                : PInteger) : Integer;    { Can be nil }
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMAvionicsNeedsDrawing
+    
+    Tells X-Plane that your device's screen needs to be re-drawn. If your
+    device is marked for on-demand drawing, X-Plane will call your screen
+    drawing callback before drawing the next simulator frame. If your device is
+    already drawn every frame, this has no effect.
+   }
+   PROCEDURE XPLMAvionicsNeedsDrawing(
+                                        inHandle            : XPLMAvionicsID);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMSetAvionicsPopupVisible
+    
+    Shows or hides the popup window for a cockpit device.
+   }
+   PROCEDURE XPLMSetAvionicsPopupVisible(
+                                        inHandle            : XPLMAvionicsID;
+                                        inVisible           : Integer);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMIsAvionicsPopupVisible
+    
+    Returns true (1) if the popup window for a cockpit device is visible.
+   }
+   FUNCTION XPLMIsAvionicsPopupVisible(
+                                        inHandle            : XPLMAvionicsID) : Integer;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMPopOutAvionics
+    
+    Pops out the window for a cockpit device.
+   }
+   PROCEDURE XPLMPopOutAvionics(
+                                        inHandle            : XPLMAvionicsID);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMIsAvionicsPoppedOut
+    
+    Returns true (1) if the popup window for a cockpit device is popped out.
+   }
+   FUNCTION XPLMIsAvionicsPoppedOut(
+                                        inHandle            : XPLMAvionicsID) : Integer;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMTakeAvionicsKeyboardFocus
+    
+    This routine gives keyboard focus to the popup window of a custom cockpit
+    device, if it is visible.
+   }
+   PROCEDURE XPLMTakeAvionicsKeyboardFocus(
+                                        inHandle            : XPLMAvionicsID);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMHasAvionicsKeyboardFocus
+    
+    Returns true (1) if the popup window for a cockpit device has keyboard
+    focus.
+   }
+   FUNCTION XPLMHasAvionicsKeyboardFocus(
+                                        inHandle            : XPLMAvionicsID) : Integer;
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMGetAvionicsGeometry
+    
+    Returns the bounds of a cockpit device's popup window in the X-Plane
+    coordinate system.
+   }
+   PROCEDURE XPLMGetAvionicsGeometry(
+                                        inHandle            : XPLMAvionicsID;
+                                        outLeft             : PInteger;    { Can be nil }
+                                        outTop              : PInteger;    { Can be nil }
+                                        outRight            : PInteger;    { Can be nil }
+                                        outBottom           : PInteger);    { Can be nil }
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMSetAvionicsGeometry
+    
+    Sets the size and position of a cockpit device's popup window in the
+    X-Plane coordinate system.
+   }
+   PROCEDURE XPLMSetAvionicsGeometry(
+                                        inHandle            : XPLMAvionicsID;
+                                        inLeft              : Integer;
+                                        inTop               : Integer;
+                                        inRight             : Integer;
+                                        inBottom            : Integer);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMGetAvionicsGeometryOS
+    
+    Returns the bounds of a cockpit device's popped-out window.
+   }
+   PROCEDURE XPLMGetAvionicsGeometryOS(
+                                        inHandle            : XPLMAvionicsID;
+                                        outLeft             : PInteger;    { Can be nil }
+                                        outTop              : PInteger;    { Can be nil }
+                                        outRight            : PInteger;    { Can be nil }
+                                        outBottom           : PInteger);    { Can be nil }
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
+
+{$IFDEF XPLM410}
+   {
+    XPLMSetAvionicsGeometryOS
+    
+    Sets the size and position of a cockpit device's popped-out window.
+   }
+   PROCEDURE XPLMSetAvionicsGeometryOS(
+                                        inHandle            : XPLMAvionicsID;
+                                        inLeft              : Integer;
+                                        inTop               : Integer;
+                                        inRight             : Integer;
+                                        inBottom            : Integer);
+    cdecl; external XPLM_DLL;
+{$ENDIF XPLM410}
 
 {$ENDIF XPLM400}
 {___________________________________________________________________________
@@ -526,26 +1108,6 @@ TYPE
                                     losingFocus         : Integer); cdecl;
 
    {
-    XPLMMouseStatus
-    
-    When the mouse is clicked, your mouse click routine is called repeatedly. 
-    It is first called with the mouse down message.  It is then called zero or
-    more times with the mouse-drag message, and finally it is called once with
-    the mouse up message.  All of these messages will be directed to the same
-    window; you are guaranteed to not receive a drag or mouse-up event without
-    first receiving the corresponding mouse-down.
-   }
-   XPLMMouseStatus = (
-      xplm_MouseDown                           = 1
- 
-     ,xplm_MouseDrag                           = 2
- 
-     ,xplm_MouseUp                             = 3
- 
-   );
-   PXPLMMouseStatus = ^XPLMMouseStatus;
-
-   {
     XPLMHandleMouseClick_f
     
     You receive this call for one of three events:
@@ -578,31 +1140,6 @@ TYPE
 
 {$IFDEF XPLM200}
    {
-    XPLMCursorStatus
-    
-    XPLMCursorStatus describes how you would like X-Plane to manage the cursor.
-    See XPLMHandleCursor_f for more info.
-   }
-TYPE
-   XPLMCursorStatus = (
-     { X-Plane manages the cursor normally, plugin does not affect the cusrsor.   }
-      xplm_CursorDefault                       = 0
- 
-     { X-Plane hides the cursor.                                                  }
-     ,xplm_CursorHidden                        = 1
- 
-     { X-Plane shows the cursor as the default arrow.                             }
-     ,xplm_CursorArrow                         = 2
- 
-     { X-Plane shows the cursor but lets you select an OS cursor.                 }
-     ,xplm_CursorCustom                        = 3
- 
-   );
-   PXPLMCursorStatus = ^XPLMCursorStatus;
-{$ENDIF XPLM200}
-
-{$IFDEF XPLM200}
-   {
     XPLMHandleCursor_f
     
     The SDK calls your cursor status callback when the mouse is over your
@@ -631,6 +1168,7 @@ TYPE
     left of the global desktop space. In both cases, x increases as you move
     right, and y increases as you move up.
    }
+TYPE
      XPLMHandleCursor_f = FUNCTION(
                                     inWindowID          : XPLMWindowID;
                                     x                   : Integer;

@@ -2,7 +2,7 @@
 #define _XPLMGraphics_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -56,7 +56,6 @@ extern "C" {
  *
  */
 
-
 /*
  * XPLMTextureID
  * 
@@ -82,10 +81,21 @@ enum {
     xplm_Tex_AircraftLiteMap                 = 2,
 
 #endif /* XPLM_DEPRECATED */
+#if defined(XPLM420)
+    /* The weather radar instrument texture as controlled by the pilot-side radar *
+     * controls                                                                   */
+    xplm_Tex_Radar_Pilot                     = 3,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /*         The weather radar instrument texture as controlled by the          *
+     *         copilot-side radar controls                                        */
+    xplm_Tex_Radar_Copilot                   = 4,
+
+#endif /* XPLM420 */
 
 };
 typedef int XPLMTextureID;
-
 /*
  * XPLMSetGraphicsState
  * 
@@ -142,7 +152,6 @@ XPLM_API void       XPLMSetGraphicsState(
                          int                  inEnableAlphaBlending,
                          int                  inEnableDepthTesting,
                          int                  inEnableDepthWriting);
-
 /*
  * XPLMBindTexture2d
  * 
@@ -164,7 +173,6 @@ XPLM_API void       XPLMSetGraphicsState(
 XPLM_API void       XPLMBindTexture2d(
                          int                  inTextureNum,
                          int                  inTextureUnit);
-
 /*
  * XPLMGenerateTextureNumbers
  * 
@@ -176,20 +184,16 @@ XPLM_API void       XPLMBindTexture2d(
 XPLM_API void       XPLMGenerateTextureNumbers(
                          int *                outTextureIDs,
                          int                  inCount);
-
-#if defined(XPLM_DEPRECATED)
 /*
  * XPLMGetTexture
  * 
  * XPLMGetTexture returns the OpenGL texture ID of an X-Plane texture based on
  * a generic identifying code.  For example, you can get the texture for
- * X-Plane's UI bitmaps.
+ * X-Plane's  weather radar.
  *
  */
 XPLM_API int        XPLMGetTexture(
                          XPLMTextureID        inTexture);
-#endif /* XPLM_DEPRECATED */
-
 /*
  * XPLMWorldToLocal
  * 
@@ -206,7 +210,6 @@ XPLM_API void       XPLMWorldToLocal(
                          double *             outX,
                          double *             outY,
                          double *             outZ);
-
 /*
  * XPLMLocalToWorld
  * 
@@ -226,7 +229,6 @@ XPLM_API void       XPLMLocalToWorld(
                          double *             outLatitude,
                          double *             outLongitude,
                          double *             outAltitude);
-
 /*
  * XPLMDrawTranslucentDarkBox
  * 
@@ -240,7 +242,6 @@ XPLM_API void       XPLMDrawTranslucentDarkBox(
                          int                  inTop,
                          int                  inRight,
                          int                  inBottom);
-
 /***************************************************************************
  * X-PLANE TEXT
  ***************************************************************************/
@@ -357,7 +358,6 @@ enum {
 
 };
 typedef int XPLMFontID;
-
 /*
  * XPLMDrawString
  * 
@@ -373,10 +373,9 @@ XPLM_API void       XPLMDrawString(
                          float *              inColorRGB,
                          int                  inXOffset,
                          int                  inYOffset,
-                         char *               inChar,
+                         const char *         inChar,
                          int *                inWordWrapWidth,        /* Can be NULL */
                          XPLMFontID           inFontID);
-
 /*
  * XPLMDrawNumber
  * 
@@ -397,7 +396,6 @@ XPLM_API void       XPLMDrawNumber(
                          int                  inDecimals,
                          int                  inShowSign,
                          XPLMFontID           inFontID);
-
 /*
  * XPLMGetFontDimensions
  * 
@@ -412,7 +410,6 @@ XPLM_API void       XPLMGetFontDimensions(
                          int *                outCharWidth,           /* Can be NULL */
                          int *                outCharHeight,          /* Can be NULL */
                          int *                outDigitsOnly);         /* Can be NULL */
-
 #if defined(XPLM200)
 /*
  * XPLMMeasureString
@@ -429,7 +426,6 @@ XPLM_API float      XPLMMeasureString(
                          const char *         inChar,
                          int                  inNumChars);
 #endif /* XPLM200 */
-
 #ifdef __cplusplus
 }
 #endif

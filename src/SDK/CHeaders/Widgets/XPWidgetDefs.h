@@ -2,7 +2,7 @@
 #define _XPWidgetDefs_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -61,7 +61,6 @@ extern "C" {
  *
  */
 
-
 /*
  * XPWidgetID
  * 
@@ -72,7 +71,6 @@ extern "C" {
  *
  */
 typedef void * XPWidgetID;
-
 /*
  * XPWidgetPropertyID
  * 
@@ -124,7 +122,6 @@ enum {
 
 };
 typedef int XPWidgetPropertyID;
-
 /*
  * XPMouseState_t
  * 
@@ -142,7 +139,6 @@ typedef struct {
      int                       delta;
 #endif /* XPLM200 */
 } XPMouseState_t;
-
 /*
  * XPKeyState_t
  * 
@@ -159,7 +155,6 @@ typedef struct {
     /* The virtual key code for the key                                           */
      char                      vkey;
 } XPKeyState_t;
-
 /*
  * XPWidgetGeometryChange_t
  * 
@@ -174,7 +169,6 @@ typedef struct {
      int                       dwidth;
      int                       dheight;
 } XPWidgetGeometryChange_t;
-
 /*
  * XPDispatchMode
  * 
@@ -206,7 +200,6 @@ enum {
 
 };
 typedef int XPDispatchMode;
-
 /*
  * XPWidgetClass
  * 
@@ -216,11 +209,9 @@ typedef int XPDispatchMode;
  *
  */
 typedef int XPWidgetClass;
-
 /* An unspecified widget class.  Other widget classes are in                  *
  * XPStandardWidgets.h                                                        */
 #define xpWidgetClass_None   0
-
 /***************************************************************************
  * WIDGET MESSAGES
  ***************************************************************************/
@@ -443,7 +434,6 @@ enum {
 
 };
 typedef int XPWidgetMessage;
-
 /***************************************************************************
  * WIDGET CALLBACK FUNCTION
  ***************************************************************************/
@@ -464,7 +454,6 @@ typedef int (* XPWidgetFunc_t)(
                          XPWidgetID           inWidget,
                          intptr_t             inParam1,
                          intptr_t             inParam2);
-
 #ifdef __cplusplus
 }
 #endif

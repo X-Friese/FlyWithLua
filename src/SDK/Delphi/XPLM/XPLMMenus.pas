@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -203,9 +203,6 @@ TYPE
     XPLMAppendMenuSeparator
     
     This routine adds a separator to the end of a menu.
-    
-    Returns a negative index if the append failed (due to an invalid parent
-    menu argument).
    }
    PROCEDURE XPLMAppendMenuSeparator(
                                         inMenu              : XPLMMenuID);

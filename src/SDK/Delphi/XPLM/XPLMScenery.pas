@@ -1,5 +1,5 @@
 {
-   Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+   Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
    rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
 }
 
@@ -261,6 +261,34 @@ TYPE
    END;
    PXPLMDrawInfo_t = ^XPLMDrawInfo_t;
 {$ENDIF XPLM200}
+
+{$IFDEF XPLM420}
+   {
+    XPLMDrawInfoDouble_t
+    
+    The XPLMDrawInfo_t structure contains positioning info for one object that
+    is to be drawn. Be sure to set structSize to the size of the structure for
+    future expansion.
+   }
+TYPE
+   XPLMDrawInfoDouble_t = RECORD
+     { Set this to the size of this structure!                                    }
+     structSize               : Integer;
+     { X location of the object in local coordinates.                             }
+     x                        : Real;
+     { Y location of the object in local coordinates.                             }
+     y                        : Real;
+     { Z location of the object in local coordinates.                             }
+     z                        : Real;
+     { Pitch in degres to rotate the object, positive is up.                      }
+     pitch                    : Real;
+     { Heading in local coordinates to rotate the object, clockwise.              }
+     heading                  : Real;
+     { Roll to rotate the object.                                                 }
+     roll                     : Real;
+   END;
+   PXPLMDrawInfoDouble_t = ^XPLMDrawInfoDouble_t;
+{$ENDIF XPLM420}
 
 {$IFDEF XPLM210}
    {

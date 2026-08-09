@@ -2,6 +2,7 @@
 -- Folke Will 2018-07-15
 -- Willian R. Good 2020-07-08 Updated to reflect now supporting Imgui 1.77
 -- Willian R. Good 2022-04-03 Updated to reflect now supporting Imgui 1.85
+-- Willian R. Good 2026-07-30 Updated to reflect now supporting Imgui 1.92.8
 
 -- It is suggested to look at the window created by this script while reading this.
 
@@ -86,7 +87,7 @@ function build_demo(wnd, x, y)
     -- The easiest thing we can do in imgui is drawing text. The function is called TextUnformatted because
     -- it doesn't support C-style format strings. imgui has a function called Text() that does support these
     -- format strings, but it is not supported in lua.
-    imgui.TextUnformatted("Hello, World! Imgui 1.85 demo for FlyWithLua")
+    imgui.TextUnformatted("Hello, World! Imgui 1.92 demo for FlyWithLua")
 
     -- Since TextUnformatted does not support format strings, you can use lua to create a string on the fly:
     imgui.TextUnformatted("Window size: " .. win_width .. ", " .. win_height)
@@ -555,10 +556,26 @@ function build_demo(wnd, x, y)
     end
     
     if imgui.TreeNode("Fonts") then
-        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFFA89300) -- Strong Artic Blue Text
+        imgui.PushStyleColor(imgui.constant.Col.Text, 0xFF00FF00) -- Green text for more contrast
         imgui.TextUnformatted("We cannot curently change the font we can change the color")
+        imgui.SetWindowFontScale(0.5)
+        imgui.TextUnformatted("We can also change the scale to 0.5")
+        imgui.SetWindowFontScale(0.625)
+        imgui.TextUnformatted("We can also change the scale to 0.625")        
+        imgui.SetWindowFontScale(0.75)
+        imgui.TextUnformatted("We can also change the scale to 0.75")
+        imgui.SetWindowFontScale(0.875)
+        imgui.TextUnformatted("We can also change the scale to 0.875")        
+        imgui.SetWindowFontScale(1.0)
+        imgui.TextUnformatted("We can also change the scale to 1.0")
+        imgui.SetWindowFontScale(1.125)
+        imgui.TextUnformatted("We can also change the scale to 1.125")        
+        imgui.SetWindowFontScale(1.25)
+        imgui.TextUnformatted("We can also change the scale to 1.25")
+        imgui.SetWindowFontScale(1.375)
+        imgui.TextUnformatted("We can also change the scale to 1.375")        
         imgui.SetWindowFontScale(1.5)
-        imgui.TextUnformatted("We can also change the scale")
+        imgui.TextUnformatted("We can also change the scale to 1.5")
         imgui.SetWindowFontScale(1.0)
         imgui.TextUnformatted("Because this is the font scale for the window we need to make sure")
         imgui.TextUnformatted("we have changed it back to the default of 1.0.")
@@ -607,6 +624,12 @@ function build_demo(wnd, x, y)
 
         imgui.TreePop()
     end
+    
+    if imgui.TreeNode("Show ingui demo window") then
+        imgui.ShowDemoWindow()
+        imgui.TreePop()
+    end
+    
 end
 
 function closed_demo(wnd)

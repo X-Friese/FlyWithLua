@@ -2,7 +2,7 @@
 #define _XPLMDefs_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -31,6 +31,7 @@ extern "C" {
 #if IBM
 #include <windows.h>
 #endif
+
 #include <stdint.h>
 /***************************************************************************
  * DLL Definitions
@@ -45,7 +46,6 @@ extern "C" {
  * XPLM.lib to use these functions.)
  *
  */
-
 
 #ifdef __cplusplus
 	#if APL
@@ -120,7 +120,6 @@ extern "C" {
 #else
 	#error "Platform not defined!"
 #endif
-
 /***************************************************************************
  * GLOBAL DEFINITIONS
  ***************************************************************************/
@@ -128,7 +127,6 @@ extern "C" {
  * These definitions are used in all parts of the SDK.
  *
  */
-
 
 /*
  * XPLMPluginID
@@ -147,16 +145,12 @@ extern "C" {
  *
  */
 typedef int XPLMPluginID;
-
 /* No plugin.                                                                 */
 #define XPLM_NO_PLUGIN_ID    (-1)
-
 /* X-Plane itself                                                             */
 #define XPLM_PLUGIN_XPLANE   (0)
-
-/* The current XPLM revision is 4.00 (400).                                   */
-#define kXPLM_Version        (400)
-
+/* The current XPLM revision is 4.3.0 (430).                                  */
+#define kXPLM_Version        (430)
 /*
  * XPLMKeyFlags
  * 
@@ -193,7 +187,6 @@ enum {
 
 };
 typedef int XPLMKeyFlags;
-
 /***************************************************************************
  * ASCII CONTROL KEY CODES
  ***************************************************************************/
@@ -211,45 +204,25 @@ typedef int XPLMKeyFlags;
  *
  */
 
-
 #define XPLM_KEY_RETURN      13
-
 #define XPLM_KEY_ESCAPE      27
-
 #define XPLM_KEY_TAB         9
-
 #define XPLM_KEY_DELETE      8
-
 #define XPLM_KEY_LEFT        28
-
 #define XPLM_KEY_RIGHT       29
-
 #define XPLM_KEY_UP          30
-
 #define XPLM_KEY_DOWN        31
-
 #define XPLM_KEY_0           48
-
 #define XPLM_KEY_1           49
-
 #define XPLM_KEY_2           50
-
 #define XPLM_KEY_3           51
-
 #define XPLM_KEY_4           52
-
 #define XPLM_KEY_5           53
-
 #define XPLM_KEY_6           54
-
 #define XPLM_KEY_7           55
-
 #define XPLM_KEY_8           56
-
 #define XPLM_KEY_9           57
-
 #define XPLM_KEY_DECIMAL     46
-
 /***************************************************************************
  * VIRTUAL KEY CODES
  ***************************************************************************/
@@ -280,233 +253,121 @@ typedef int XPLMKeyFlags;
  *
  */
 
-
 #define XPLM_VK_BACK         0x08
-
 #define XPLM_VK_TAB          0x09
-
 #define XPLM_VK_CLEAR        0x0C
-
 #define XPLM_VK_RETURN       0x0D
-
 #define XPLM_VK_ESCAPE       0x1B
-
 #define XPLM_VK_SPACE        0x20
-
 #define XPLM_VK_PRIOR        0x21
-
 #define XPLM_VK_NEXT         0x22
-
 #define XPLM_VK_END          0x23
-
 #define XPLM_VK_HOME         0x24
-
 #define XPLM_VK_LEFT         0x25
-
 #define XPLM_VK_UP           0x26
-
 #define XPLM_VK_RIGHT        0x27
-
 #define XPLM_VK_DOWN         0x28
-
 #define XPLM_VK_SELECT       0x29
-
 #define XPLM_VK_PRINT        0x2A
-
 #define XPLM_VK_EXECUTE      0x2B
-
 #define XPLM_VK_SNAPSHOT     0x2C
-
 #define XPLM_VK_INSERT       0x2D
-
 #define XPLM_VK_DELETE       0x2E
-
 #define XPLM_VK_HELP         0x2F
-
 /* XPLM_VK_0 thru XPLM_VK_9 are the same as ASCII '0' thru '9' (0x30 - 0x39)  */
 #define XPLM_VK_0            0x30
-
 #define XPLM_VK_1            0x31
-
 #define XPLM_VK_2            0x32
-
 #define XPLM_VK_3            0x33
-
 #define XPLM_VK_4            0x34
-
 #define XPLM_VK_5            0x35
-
 #define XPLM_VK_6            0x36
-
 #define XPLM_VK_7            0x37
-
 #define XPLM_VK_8            0x38
-
 #define XPLM_VK_9            0x39
-
 /* XPLM_VK_A thru XPLM_VK_Z are the same as ASCII 'A' thru 'Z' (0x41 - 0x5A)  */
 #define XPLM_VK_A            0x41
-
 #define XPLM_VK_B            0x42
-
 #define XPLM_VK_C            0x43
-
 #define XPLM_VK_D            0x44
-
 #define XPLM_VK_E            0x45
-
 #define XPLM_VK_F            0x46
-
 #define XPLM_VK_G            0x47
-
 #define XPLM_VK_H            0x48
-
 #define XPLM_VK_I            0x49
-
 #define XPLM_VK_J            0x4A
-
 #define XPLM_VK_K            0x4B
-
 #define XPLM_VK_L            0x4C
-
 #define XPLM_VK_M            0x4D
-
 #define XPLM_VK_N            0x4E
-
 #define XPLM_VK_O            0x4F
-
 #define XPLM_VK_P            0x50
-
 #define XPLM_VK_Q            0x51
-
 #define XPLM_VK_R            0x52
-
 #define XPLM_VK_S            0x53
-
 #define XPLM_VK_T            0x54
-
 #define XPLM_VK_U            0x55
-
 #define XPLM_VK_V            0x56
-
 #define XPLM_VK_W            0x57
-
 #define XPLM_VK_X            0x58
-
 #define XPLM_VK_Y            0x59
-
 #define XPLM_VK_Z            0x5A
-
 #define XPLM_VK_NUMPAD0      0x60
-
 #define XPLM_VK_NUMPAD1      0x61
-
 #define XPLM_VK_NUMPAD2      0x62
-
 #define XPLM_VK_NUMPAD3      0x63
-
 #define XPLM_VK_NUMPAD4      0x64
-
 #define XPLM_VK_NUMPAD5      0x65
-
 #define XPLM_VK_NUMPAD6      0x66
-
 #define XPLM_VK_NUMPAD7      0x67
-
 #define XPLM_VK_NUMPAD8      0x68
-
 #define XPLM_VK_NUMPAD9      0x69
-
 #define XPLM_VK_MULTIPLY     0x6A
-
 #define XPLM_VK_ADD          0x6B
-
 #define XPLM_VK_SEPARATOR    0x6C
-
 #define XPLM_VK_SUBTRACT     0x6D
-
 #define XPLM_VK_DECIMAL      0x6E
-
 #define XPLM_VK_DIVIDE       0x6F
-
 #define XPLM_VK_F1           0x70
-
 #define XPLM_VK_F2           0x71
-
 #define XPLM_VK_F3           0x72
-
 #define XPLM_VK_F4           0x73
-
 #define XPLM_VK_F5           0x74
-
 #define XPLM_VK_F6           0x75
-
 #define XPLM_VK_F7           0x76
-
 #define XPLM_VK_F8           0x77
-
 #define XPLM_VK_F9           0x78
-
 #define XPLM_VK_F10          0x79
-
 #define XPLM_VK_F11          0x7A
-
 #define XPLM_VK_F12          0x7B
-
 #define XPLM_VK_F13          0x7C
-
 #define XPLM_VK_F14          0x7D
-
 #define XPLM_VK_F15          0x7E
-
 #define XPLM_VK_F16          0x7F
-
 #define XPLM_VK_F17          0x80
-
 #define XPLM_VK_F18          0x81
-
 #define XPLM_VK_F19          0x82
-
 #define XPLM_VK_F20          0x83
-
 #define XPLM_VK_F21          0x84
-
 #define XPLM_VK_F22          0x85
-
 #define XPLM_VK_F23          0x86
-
 #define XPLM_VK_F24          0x87
-
 /* The following definitions are extended and are not based on the Microsoft  *
  * key set.                                                                   */
 #define XPLM_VK_EQUAL        0xB0
-
 #define XPLM_VK_MINUS        0xB1
-
 #define XPLM_VK_RBRACE       0xB2
-
 #define XPLM_VK_LBRACE       0xB3
-
 #define XPLM_VK_QUOTE        0xB4
-
 #define XPLM_VK_SEMICOLON    0xB5
-
 #define XPLM_VK_BACKSLASH    0xB6
-
 #define XPLM_VK_COMMA        0xB7
-
 #define XPLM_VK_SLASH        0xB8
-
 #define XPLM_VK_PERIOD       0xB9
-
 #define XPLM_VK_BACKQUOTE    0xBA
-
 #define XPLM_VK_ENTER        0xBB
-
 #define XPLM_VK_NUMPAD_ENT   0xBC
-
 #define XPLM_VK_NUMPAD_EQ    0xBD
-
 /*
  * XPLMFixedString150_t
  * 
@@ -517,6 +378,158 @@ typedef struct {
     /* The size of the struct.                                                    */
      char                      buffer[150];
 } XPLMFixedString150_t;
+#if defined(XPLM200)
+/*
+ * XPLMCursorStatus
+ * 
+ * XPLMCursorStatus describes how you would like X-Plane to manage the cursor.
+ * See XPLMHandleCursor_f for more info.
+ *
+ */
+enum {
+    /* X-Plane manages the cursor normally, plugin does not affect the cusrsor.   */
+    xplm_CursorDefault                       = 0,
+
+    /* X-Plane hides the cursor.                                                  */
+    xplm_CursorHidden                        = 1,
+
+    /* X-Plane shows the cursor as the default arrow.                             */
+    xplm_CursorArrow                         = 2,
+
+    /* X-Plane shows the cursor but lets you select an OS cursor.                 */
+    xplm_CursorCustom                        = 3,
+
+#if defined(XPLM420)
+    /* X-Plane shows a small bi-directional knob-rotating cursor.                 */
+    xplm_CursorRotateSmall                   = 4,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a small counter-clockwise knob-rotating cursor.              */
+    xplm_CursorRotateSmallLeft               = 5,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a small clockwise knob-rotating cursor.                      */
+    xplm_CursorRotateSmallRight              = 6,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a medium bi-directional knob-rotating cursor.                */
+    xplm_CursorRotateMedium                  = 7,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a medium counter-clockwise knob-rotating cursor.             */
+    xplm_CursorRotateMediumLeft              = 8,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a medium clockwise knob-rotating cursor.                     */
+    xplm_CursorRotateMediumRight             = 9,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a large bi-directional knob-rotating cursor.                 */
+    xplm_CursorRotateLarge                   = 10,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a large counter-clockwise knob-rotating cursor.              */
+    xplm_CursorRotateLargeLeft               = 11,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a large clockwise knob-rotating cursor.                      */
+    xplm_CursorRotateLargeRight              = 12,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows an up-and-down arrows cursor.                                */
+    xplm_CursorUpDown                        = 13,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a down arrow cursor.                                         */
+    xplm_CursorDown                          = 14,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows an up arrow cursor.                                          */
+    xplm_CursorUp                            = 15,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a left-right arrow cursor.                                   */
+    xplm_CursorLeftRight                     = 16,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a left arrow cursor.                                         */
+    xplm_CursorLeft                          = 17,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a right arrow cursor.                                        */
+    xplm_CursorRight                         = 18,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a button-pushing cursor.                                     */
+    xplm_CursorButton                        = 19,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a handle-grabbing cursor.                                    */
+    xplm_CursorHandle                        = 20,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a four-arrows cursor.                                        */
+    xplm_CursorFourArrows                    = 21,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a cursor to drag a horizontal splitter bar.                  */
+    xplm_CursorSplitterH                     = 22,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows a cursor to drag a vertical splitter bar.                    */
+    xplm_CursorSplitterV                     = 23,
+
+#endif /* XPLM420 */
+#if defined(XPLM420)
+    /* X-Plane shows an I-Beam cursor for text editing.                           */
+    xplm_CursorText                          = 24,
+
+#endif /* XPLM420 */
+
+};
+typedef int XPLMCursorStatus;
+#endif /* XPLM200 */
+/*
+ * XPLMMouseStatus
+ * 
+ *     When the mouse is clicked, your mouse click routine is called
+ *     repeatedly.  It is first called with the mouse down message.  It is
+ *     then called zero or more times with the mouse-drag message, and finally
+ *     it is called once with the mouse up message.  All of these messages
+ *     will be directed to the same window; you are guaranteed to not receive
+ *     a drag or mouse-up event without first receiving the corresponding
+ *     mouse-down.
+ *
+ */
+enum {
+    xplm_MouseDown                           = 1,
+
+    xplm_MouseDrag                           = 2,
+
+    xplm_MouseUp                             = 3,
+
+
+};
+typedef int XPLMMouseStatus;
 #ifdef __cplusplus
 }
 #endif

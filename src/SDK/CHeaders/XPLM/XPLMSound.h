@@ -2,7 +2,7 @@
 #define _XPLMSound_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -37,7 +37,8 @@ extern "C" {
  * part of the simulated environment that the audio belongs in. If you use
  * FMOD directly, note that COM1, COM2, Pilot and GND exist in a different
  * FMOD bank so you may see these channels being unloaded/reloaded
- * independently of the others.
+ * independently of the others. They may also be using a different
+ * FMOD::System if the user has selected a dedicated headset output device.
  *
  */
 enum {
@@ -72,7 +73,6 @@ enum {
 
 };
 typedef int XPLMAudioBus;
-
 /*
  * XPLMBankID
  * 
@@ -91,7 +91,6 @@ enum {
 };
 typedef int XPLMBankID;
 
-
 /* 
  * If you want to get full access to FMOD sound features, you need to include fmod.h or fmod.hpp yourself FIRST.
  * If you only need the basic wrapper functions which allow 3D placement and playback on a specified channel, there
@@ -107,18 +106,20 @@ typedef int XPLMBankID;
  *            with their C++ equivalents. See https://www.fmod.com/docs/2.02/api/white-papers-handle-system.html .
  */
 #if defined(_FMOD_COMMON_H)
-
 /*
  * XPLMGetFMODStudio
  * 
  * Get a handle to the FMOD Studio, allowing you to load/process whatever else
  * you need. This also gives access to the underlying system via
  * FMOD::Studio::System::getCoreSystem() / FMOD_Studio_System_GetCoreSystem()
- * .
+ * . When a separate output device is being used for the radio, this will
+ * always return the FMOD::Studio that is running the environment output, as
+ * before. If you want to specifically target the headset output device, you
+ * can obtain that FMOD::Studio by getting one of the radio-specific output
+ * channelgroups and using the getSystem() call on that.
  *
  */
 XPLM_API FMOD_STUDIO_SYSTEM* XPLMGetFMODStudio(void);
-
 /*
  * XPLMGetFMODChannelGroup
  * 
@@ -128,7 +129,6 @@ XPLM_API FMOD_STUDIO_SYSTEM* XPLMGetFMODStudio(void);
  */
 XPLM_API FMOD_CHANNELGROUP* XPLMGetFMODChannelGroup(
                          XPLMAudioBus         audioType);
-
 
 #else
 /*
@@ -152,7 +152,6 @@ typedef struct FMOD_VECTOR
 } FMOD_VECTOR;
 typedef void FMOD_CHANNEL;
 #endif
-
 /*
  * XPLMPCMComplete_f
  * 
@@ -164,7 +163,6 @@ typedef void FMOD_CHANNEL;
 typedef void (* XPLMPCMComplete_f)(
                          void *               inRefcon,
                          FMOD_RESULT          status);
-
 /*
  * XPLMPlayPCMOnBus
  * 
@@ -178,9 +176,9 @@ typedef void (* XPLMPCMComplete_f)(
  * instantly. Instead, it will be started the next time X-Plane refreshes the
  * sound system, typically at the start of the next frame. This allows you to
  * set the initial position for the sound, if required. The callback will be
- * called on the same thread as the sound is created from, and will be called
- * only once per sound. If the call fails and you provide a callback function,
- * you will get a callback with an FMOD status code.
+ * called on the main thread, and will be called only once per sound. If the
+ * call fails and you provide a callback function, you will get a callback
+ * with an FMOD status code.
  *
  */
 XPLM_API FMOD_CHANNEL* XPLMPlayPCMOnBus(
@@ -193,7 +191,6 @@ XPLM_API FMOD_CHANNEL* XPLMPlayPCMOnBus(
                          XPLMAudioBus         audioType,
                          XPLMPCMComplete_f    inCallback,
                          void *               inRefcon);              /* Can be NULL */
-
 /*
  * XPLMStopAudio
  * 
@@ -204,7 +201,6 @@ XPLM_API FMOD_CHANNEL* XPLMPlayPCMOnBus(
  */
 XPLM_API FMOD_RESULT XPLMStopAudio(
                          FMOD_CHANNEL*        fmod_channel);
-
 /*
  * XPLMSetAudioPosition
  * 
@@ -216,7 +212,6 @@ XPLM_API FMOD_RESULT XPLMSetAudioPosition(
                          FMOD_CHANNEL*        fmod_channel,
                          FMOD_VECTOR*         position,
                          FMOD_VECTOR*         velocity);
-
 /*
  * XPLMSetAudioFadeDistance
  * 
@@ -232,7 +227,6 @@ XPLM_API FMOD_RESULT XPLMSetAudioFadeDistance(
                          FMOD_CHANNEL*        fmod_channel,
                          float                min_fade_distance,
                          float                max_fade_distance);
-
 /*
  * XPLMSetAudioVolume
  * 
@@ -245,7 +239,6 @@ XPLM_API FMOD_RESULT XPLMSetAudioFadeDistance(
 XPLM_API FMOD_RESULT XPLMSetAudioVolume(
                          FMOD_CHANNEL*        fmod_channel,
                          float                source_volume);
-
 /*
  * XPLMSetAudioPitch
  * 
@@ -255,7 +248,6 @@ XPLM_API FMOD_RESULT XPLMSetAudioVolume(
 XPLM_API FMOD_RESULT XPLMSetAudioPitch(
                          FMOD_CHANNEL*        fmod_channel,
                          float                audio_pitch_hz);
-
 /*
  * XPLMSetAudioCone
  * 
@@ -270,7 +262,6 @@ XPLM_API FMOD_RESULT XPLMSetAudioCone(
                          float                outside_angle,
                          float                outside_volume,
                          FMOD_VECTOR*         orientation);
-
 #endif /* XPLM400 */
 #ifdef __cplusplus
 }

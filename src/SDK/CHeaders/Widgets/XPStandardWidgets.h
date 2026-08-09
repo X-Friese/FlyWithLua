@@ -2,7 +2,7 @@
 #define _XPStandardWidgets_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -44,9 +44,7 @@ extern "C" {
  *
  */
 
-
 #define xpWidgetClass_MainWindow 1
-
 /*
  * Main Window Type Values
  * 
@@ -62,7 +60,6 @@ enum {
 
 
 };
-
 /*
  * Main Window Properties
  *
@@ -78,7 +75,6 @@ enum {
 
 
 };
-
 /*
  * MainWindow Messages
  *
@@ -89,7 +85,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * SUB WINDOW
  ***************************************************************************/
@@ -100,9 +95,7 @@ enum {
  *
  */
 
-
 #define xpWidgetClass_SubWindow 2
-
 /*
  * SubWindow Type Values
  * 
@@ -121,7 +114,6 @@ enum {
 
 
 };
-
 /*
  * SubWindow Properties
  *
@@ -133,7 +125,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * BUTTON
  ***************************************************************************/
@@ -157,9 +148,7 @@ enum {
  *
  */
 
-
 #define xpWidgetClass_Button 3
-
 /*
  * Button Types
  * 
@@ -187,7 +176,6 @@ enum {
 
 
 };
-
 /*
  * Button Behavior Values
  * 
@@ -212,7 +200,6 @@ enum {
 
 
 };
-
 /*
  * Button Properties
  *
@@ -232,7 +219,6 @@ enum {
 
 
 };
-
 /*
  * Button Messages
  * 
@@ -258,7 +244,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * TEXT FIELD
  ***************************************************************************/
@@ -281,9 +266,7 @@ enum {
  *
  */
 
-
 #define xpWidgetClass_TextField 4
-
 /*
  * Text Field Type Values
  * 
@@ -304,7 +287,6 @@ enum {
 
 
 };
-
 /*
  * Text Field Properties
  *
@@ -345,7 +327,6 @@ enum {
 
 
 };
-
 /*
  * Text Field Messages
  *
@@ -357,7 +338,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * SCROLL BAR
  ***************************************************************************/
@@ -368,9 +348,7 @@ enum {
  *
  */
 
-
 #define xpWidgetClass_ScrollBar 5
-
 /*
  * Scroll Bar Type Values
  * 
@@ -386,7 +364,6 @@ enum {
 
 
 };
-
 /*
  * Scroll Bar Properties
  *
@@ -413,7 +390,6 @@ enum {
 
 
 };
-
 /*
  * Scroll Bar Messages
  *
@@ -425,7 +401,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * CAPTION
  ***************************************************************************/
@@ -436,9 +411,7 @@ enum {
  *
  */
 
-
 #define xpWidgetClass_Caption 6
-
 /*
  * Caption Properties
  *
@@ -450,7 +423,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * GENERAL GRAPHICS
  ***************************************************************************/
@@ -460,9 +432,7 @@ enum {
  *
  */
 
-
 #define xpWidgetClass_GeneralGraphics 7
-
 /*
  * General Graphics Types Values
  * 
@@ -510,7 +480,6 @@ enum {
 
 
 };
-
 /*
  * General Graphics Properties
  *
@@ -521,7 +490,6 @@ enum {
 
 
 };
-
 /***************************************************************************
  * PROGRESS INDICATOR
  ***************************************************************************/
@@ -531,7 +499,6 @@ enum {
  */
 
 #define xpWidgetClass_Progress 8
-
 /*
  * Progress Indicator Properties
  *
@@ -548,7 +515,6 @@ enum {
 
 
 };
-
 #ifdef __cplusplus
 }
 #endif

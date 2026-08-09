@@ -2,7 +2,7 @@
 #define _XPWidgetUtils_h_
 
 /*
- * Copyright 2005-2022 Laminar Research, Sandy Barbour and Ben Supnik All
+ * Copyright 2005-2025 Laminar Research, Sandy Barbour and Ben Supnik All
  * rights reserved.  See license.txt for usage. X-Plane SDK Version: 4.0.0
  *
  */
@@ -69,7 +69,6 @@ extern "C" {
 
 #define IN_RECT(x, y, l, t, r, b)	\
 	(((x) >= (l)) && ((x) <= (r)) && ((y) >= (b)) && ((y) <= (t)))
-
 /*
  * XPWidgetCreate_t
  * 
@@ -101,14 +100,10 @@ typedef struct {
      int                       containerIndex;
      XPWidgetClass             widgetClass;
 } XPWidgetCreate_t;
-
 #define NO_PARENT            -1
-
 #define PARAM_PARENT         -2
-
 #define WIDGET_COUNT(x) ((sizeof(x) / sizeof(XPWidgetCreate_t)))
-        
-/*
+        /*
  * XPUCreateWidgets
  * 
  * This function creates a series of widgets from a table (see
@@ -130,7 +125,6 @@ WIDGET_API void       XPUCreateWidgets(
                          int                  inCount,
                          XPWidgetID           inParamParent,
                          XPWidgetID *         ioWidgets);
-
 /*
  * XPUMoveWidgetBy
  * 
@@ -142,7 +136,6 @@ WIDGET_API void       XPUMoveWidgetBy(
                          XPWidgetID           inWidget,
                          int                  inDeltaX,
                          int                  inDeltaY);
-
 /***************************************************************************
  * LAYOUT MANAGERS
  ***************************************************************************/
@@ -152,7 +145,6 @@ WIDGET_API void       XPUMoveWidgetBy(
  * attached to a widget later.
  *
  */
-
 
 /*
  * XPUFixedLayout
@@ -167,7 +159,6 @@ WIDGET_API int        XPUFixedLayout(
                          XPWidgetID           inWidget,
                          intptr_t             inParam1,
                          intptr_t             inParam2);
-
 /***************************************************************************
  * WIDGET PROC BEHAVIORS
  ***************************************************************************/
@@ -177,7 +168,6 @@ WIDGET_API int        XPUFixedLayout(
  * your widget function.
  *
  */
-
 
 /*
  * XPUSelectIfNeeded
@@ -193,7 +183,6 @@ WIDGET_API int        XPUSelectIfNeeded(
                          intptr_t             inParam1,
                          intptr_t             inParam2,
                          int                  inEatClick);
-
 /*
  * XPUDefocusKeyboard
  * 
@@ -207,7 +196,6 @@ WIDGET_API int        XPUDefocusKeyboard(
                          intptr_t             inParam1,
                          intptr_t             inParam2,
                          int                  inEatClick);
-
 /*
  * XPUDragWidget
  * 
@@ -225,7 +213,6 @@ WIDGET_API int        XPUDragWidget(
                          int                  inTop,
                          int                  inRight,
                          int                  inBottom);
-
 #ifdef __cplusplus
 }
 #endif
