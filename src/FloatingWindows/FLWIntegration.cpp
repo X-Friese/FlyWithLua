@@ -135,7 +135,6 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
 
 
 // Not sure where the proper pplace for this is but this is where we can change the custom font to use
-// Very much a work in progress but the last piece before 2.8.15 can go final
 int LuaImguiPushFont(lua_State *L) {
     if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to imgui_push_font");
@@ -145,8 +144,8 @@ int LuaImguiPushFont(lua_State *L) {
     }
     // get the custom font number and convert to int
     int font_number = static_cast<int>(lua_tointeger(L, 1));
-    // get the custom font point convert to a int then a float for PushFont
     int font_point_number = static_cast<int>(lua_tointeger(L, 2));
+    // This is the only way I could get this to work ugly but works
     float custom_size;
     if (font_point_number == 10) {
         custom_size = 10.0f;
@@ -212,33 +211,18 @@ int LuaImguiPushFont(lua_State *L) {
         custom_size = 20.0f;
     }
 
-    // auto &style = ImGui::GetStyle();
-    if (font_number == 1) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 1 pushed");
-        // This is my goal but have to get customFont1 global
-        // In lua     imgui_push_font(1, 20)  will push font 1 with a 20 point font
-        // Also not sure about the font number but will test later
-        // ImGui::PushFont(customFont1, point_number);
-        // This did not work
-        // ImGui::PushFont(customFont1, style.FontSizeBase * percent_fraction);
-        // ImGui::PushFont(customFont1, style.FontSizeBase * 0.8f);
-        ImGui::PushFont(customFont1, custom_size);
-
+     if (font_number == 1) {
+         ImGui::PushFont(customFont1, custom_size);
     }
     else if (font_number == 2) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 2 pushed");
-        // This did not work
-        // ImGui::PushFont(customFont2, style.FontSizeBase * percent_fraction);
         ImGui::PushFont(customFont2, custom_size);
     }
     else if (font_number == 3) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 3 pushed");
-        // this did not work
-        // ImGui::PushFont(customFont3, style.FontSizeBase * percent_fraction);
         ImGui::PushFont(customFont3, custom_size);
     }
     else {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
+         // Just don't think this is a good idea as you will not see the font
+         // flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
     }
 
     return 0;

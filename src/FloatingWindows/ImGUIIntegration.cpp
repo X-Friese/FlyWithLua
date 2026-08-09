@@ -105,12 +105,11 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     io.Fonts->AddFontDefault();        // Load embedded font (legacy: auto-selected between the two above).
 
     // Tried to set flag here to improve font scaling but broke it
+    // For this to work need to stop using legacy backend in part
+    // means removing Glut helper.
     // io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
-    // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font yu want to use.
-    // This is not working the way I want I want to use this call and have ImFont* customFont1 in ImGUIIntegration.cpp
-    // customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
-
+    // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
     customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 20);
     IM_ASSERT(customFont1 != NULL);
     customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 20);
