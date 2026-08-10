@@ -27,13 +27,18 @@ I have a imgui_fonts_demo_window_macro.lua in Resources/plugins/FlyWithLua/Scrip
 I have a imgui_load_then_push_font_demo.lua in Resources/plugins/FlyWithLua/Scripts (disabled) which shows how to use the new imgui_push_font(1, 20).
 
 
-imgui.PushFont(1, 20) So this will use the ProFontWindows.ttf font with a size of 20.
+imgui_push_font(1, 20) So this will use the ProFontWindows.ttf font with a size of 20.
 
-imgui.PushFont(2, 25) So this will use the Roboto-Light.ttf font with a size of 25.
+imgui_push_font(2, 25) So this will use the Roboto-Light.ttf font with a size of 25.
 
-imgui.PushFont(3, 30) So this will use the Roboto-Regular.ttf font with a size of 30.
+imgui_push_font(3, 30) So this will use the Roboto-Regular.ttf font with a size of 30.
 
-The range for the fonts is 1 thru 3
+The range for the fonts is 0 thru 3
+
+A 0 is a NULL and will use the same font but change its size
+
+so imgui_push_font(0, 30) will use the current font and change size to 30
+
 
 The range for the font size is 10 thru 20 in steps of 1 so 10, 11, 12, 13...20
 

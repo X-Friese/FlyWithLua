@@ -211,15 +211,18 @@ int LuaImguiPushFont(lua_State *L) {
         custom_size = 20.0f;
     }
 
-     if (font_number == 1) {
-         ImGui::PushFont(customFont1, custom_size);
+    if (font_number == 0) {
+         ImGui::PushFont(NULL, custom_size);
+    }
+    else if (font_number == 1) {
+        ImGui::PushFont(customFont1, custom_size);
     }
     else if (font_number == 2) {
         ImGui::PushFont(customFont2, custom_size);
     }
-    else if (font_number == 3) {
-        ImGui::PushFont(customFont3, custom_size);
-    }
+     else if (font_number == 3) {
+         ImGui::PushFont(customFont3, custom_size);
+     }
     else {
          // Just don't think this is a good idea as you will not see the font
          // flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
