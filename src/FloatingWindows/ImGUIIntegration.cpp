@@ -98,7 +98,6 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
 
     auto &io = ImGui::GetIO();
     // io.RenderDrawListsFn = nullptr;
-    style.FontSizeBase = 13.0f;
 
     io.Fonts->AddFontDefaultVector();  // Load embedded scalable font.
     io.Fonts->AddFontDefaultBitmap();  // Load embedded bitmap font (legacy).
@@ -110,12 +109,26 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     // io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
     // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
-    customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 20);
+    customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
     IM_ASSERT(customFont1 != NULL);
-    customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 20);
+    customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 16);
     IM_ASSERT(customFont2 != NULL);
-    customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 20);
+    customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 20);
     IM_ASSERT(customFont3 != NULL);
+
+    customFont4 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 13);
+    IM_ASSERT(customFont4 != NULL);
+    customFont5 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 16);
+    IM_ASSERT(customFont5 != NULL);
+    customFont6 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 20);
+    IM_ASSERT(customFont6 != NULL);
+
+    customFont7 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 13);
+    IM_ASSERT(customFont7 != NULL);
+    customFont8 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 16);
+    IM_ASSERT(customFont8 != NULL);
+    customFont9 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 20);
+    IM_ASSERT(customFont9 != NULL);
 
     io.IniFilename = nullptr;
     // io.OptMacOSXBehaviors = false;

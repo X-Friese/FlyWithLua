@@ -31,6 +31,12 @@
 inline ImFont* customFont1 = nullptr;
 inline ImFont* customFont2 = nullptr;
 inline ImFont* customFont3 = nullptr;
+inline ImFont* customFont4 = nullptr;
+inline ImFont* customFont5 = nullptr;
+inline ImFont* customFont6 = nullptr;
+inline ImFont* customFont7 = nullptr;
+inline ImFont* customFont8 = nullptr;
+inline ImFont* customFont9 = nullptr;
 
 
 namespace flwnd {

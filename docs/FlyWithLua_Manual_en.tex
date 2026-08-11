@@ -3745,7 +3745,7 @@ Example for monitor 1: tOS[1].inLeft; tOS[1].inBottom; monitor 2: tOS[2].inLeft;
 
 Starting with version 2.7.0 NG we have imgui windows that can be in 2d, popped out or in VR. They are X-Plane 11 Window API style windows that use imgui widgets and can be created with Lua. There are examples of these kind of windows in the "Scripts (disabled)" folder and are prefaced with "imgui\_".
 
-Starting with version 2.8.15 NG+ we can now load three custom fonts and control there font size in a lua script because we are now using imgui v1.92.8.When FlyWithLua starts it is looking for ProFontWindows.ttf, Roboto-Light.ttf and Roboto-Regular.ttf located in the new Resources/plugins/FlyWithLua/Custom\_Fonts folder. This folder has a Custom\_Fonts.txt file explaining what you need to do to make this work. We have added a function called imgui\_push\_font(1, 20) that will be descriped below.
+Starting with version 2.8.15 NG+ we can now load three custom fonts in three different sizes. Because we are now using imgui v1.92.8.When FlyWithLua starts it is looking for ProFontWindows.ttf, Roboto-Light.ttf and Roboto-Regular.ttf located in the new Resources/plugins/FlyWithLua/Custom\_Fonts folder. This folder has a Custom\_Fonts.txt file explaining what you need to do to make this work. We have added a function called imgui\_push\_font(1) that will be descriped below.
 
 \subsection{demo\_wnd = float\_wnd\_create(800, 450, 1, true)}
 
@@ -3839,9 +3839,9 @@ is the handle of the window. It is the same handle as the one returned by float\
 
 This function is called when the user closes the window. Drawing or calling imgui functions is not allowed in this function as the window is already destroyed.
 
-\subsection{function imgui\_push\_font(1, 20)}
+\subsection{function imgui\_push\_font(1)}
 
-This function will tell FWL to use the first font with a size of 20. Since we can have 3 different custom fonts 0 thru 3 are valid. 0 is special because it is NULL so when set the font will not change just the size. Next number is font size and its range is 10 thru 20 with steps of 1 so 10, 11, 12, 13...20. and then 20 thru 65 with steps of 5 so 20, 25, 30, 35...65. I have tried to make bad entries a non issue but you will tell me if I did a good enough job at that.
+This function will tell FWL to use the first font with a size of 13. Since we can have 3 different custom fonts in 3 different sizes 1 thru 9 are valid. I have tried to make bad entries a non issue but you will tell me if I did a good enough job at that.
 
 Please look in Resources/plugins/FlyWithLua/Custom\_Fonts folder for the Custom\_Fonts.txt file for further info.
 
