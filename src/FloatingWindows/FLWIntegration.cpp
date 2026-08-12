@@ -147,12 +147,9 @@ int LuaImguiPushFont(lua_State *L) {
     // This is the only way I could get this to work ugly but works
     // float custom_size;
 
-    ImGuiStyle& style = ImGui::GetStyle();
+    // ImGuiStyle& style = ImGui::GetStyle();
 
-    if (font_number == 0) {
-         ImGui::PushFont(NULL, style.FontSizeBase);
-    }
-    else if (font_number == 1) {
+    if (font_number == 1) {
         ImGui::PushFont(customFont1);
     }
     else if (font_number == 2) {
@@ -189,7 +186,6 @@ int LuaImguiPushFont(lua_State *L) {
 
     return 0;
 }
-
 
 int LuaSetFloatingWindowPosition(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {

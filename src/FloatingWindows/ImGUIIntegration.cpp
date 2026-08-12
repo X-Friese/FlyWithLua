@@ -99,6 +99,12 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     auto &io = ImGui::GetIO();
     // io.RenderDrawListsFn = nullptr;
 
+    if (flywithlua::imgui_debug_popup == 1) {
+        io.ConfigDebugHighlightIdConflicts = true;
+    } else {
+        io.ConfigDebugHighlightIdConflicts = false;
+    }
+
     io.Fonts->AddFontDefaultVector();  // Load embedded scalable font.
     io.Fonts->AddFontDefaultBitmap();  // Load embedded bitmap font (legacy).
     io.Fonts->AddFontDefault();        // Load embedded font (legacy: auto-selected between the two above).
@@ -108,26 +114,31 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     // means removing Glut helper.
     // io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
+    float font_size1 = static_cast<float>(flywithlua::imgui_font_size1);
+    float font_size2 = static_cast<float>(flywithlua::imgui_font_size2);
+    float font_size3 = static_cast<float>(flywithlua::imgui_font_size3);
+
     // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
-    customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+    // customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+    customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", font_size1);
     IM_ASSERT(customFont1 != NULL);
-    customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 16);
+    customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", font_size2);
     IM_ASSERT(customFont2 != NULL);
-    customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 20);
+    customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", font_size3);
     IM_ASSERT(customFont3 != NULL);
 
-    customFont4 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 13);
+    customFont4 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", font_size1);
     IM_ASSERT(customFont4 != NULL);
-    customFont5 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 16);
+    customFont5 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", font_size2);
     IM_ASSERT(customFont5 != NULL);
-    customFont6 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 20);
+    customFont6 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", font_size3);
     IM_ASSERT(customFont6 != NULL);
 
-    customFont7 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 13);
+    customFont7 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size1);
     IM_ASSERT(customFont7 != NULL);
-    customFont8 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 16);
+    customFont8 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size2);
     IM_ASSERT(customFont8 != NULL);
-    customFont9 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 20);
+    customFont9 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size3);
     IM_ASSERT(customFont9 != NULL);
 
     io.IniFilename = nullptr;

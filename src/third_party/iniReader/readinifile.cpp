@@ -39,4 +39,17 @@ void flywithlua::process_read_ini_file()
 
   // Do we want to enable verbose logging mode?
   readOptionAsInt("VerboseMode", &verbose_logging_mode);
+
+  // Do we want to enable imgui debug popup?
+  readOptionAsInt("ImguiDebugPopup", &imgui_debug_popup);
+
+  // Do we want to enable imgui debug popup?
+  readOptionAsInt("ImguiFontSize1", &imgui_font_size1);
+
+  // Do we want to enable imgui debug popup?
+  readOptionAsInt("ImguiFontSize2", &imgui_font_size2);
+
+  // Do we want to enable imgui debug popup?
+  readOptionAsInt("ImguiFontSize3", &imgui_font_size3);
+
 }
