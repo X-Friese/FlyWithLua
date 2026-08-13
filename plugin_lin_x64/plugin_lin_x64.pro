@@ -84,6 +84,7 @@ HEADERS +=  ../src/SDK/CHeaders/XPLM/XPLMCamera.h \
             ../src/third_party/luajit/luaconf.h \
             ../src/third_party/luajit/luajit.h \
             ../src/third_party/luajit/lualib.h \
+            ../src/third_party/sol2/upstream/sol.hpp \
             ../src/OpenAL/al.h \
             ../src/OpenAL/alc.h \
             ../src/OpenAL/alext.h \

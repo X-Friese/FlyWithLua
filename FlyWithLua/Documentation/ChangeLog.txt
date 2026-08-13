@@ -101,3 +101,5 @@ v2.8.13 Added do_every_frame_after() callback to run in FlightLoop Phase 1 (afte
 v2.8.14 Added UnregisterAccessor() to XPluginStop(void) to prevent a threading violation Thanks Camille
 
 v2.8.15 Updated to imgui 1.92.8. Now have default scalable fonts. Can load 3 custom fonts
+
+v2.8.16 Added to the fwl_prefs.ini file being able to disable the imgui debug popup for non developers. Also in the fwl_prefs.ini can set the three font sizes to better match your project.

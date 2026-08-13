@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.15"
+#define PLUGIN_VERSION_NO "2.8.16"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -175,7 +175,8 @@
  *          [Added]   do_every_frame_before() callback to run in FlightLoop Phase 1 (before physics processing)
  *  v2.8.14 [Added]   UnregisterAccessor() to XPluginStop(void) to prevent a threading violation Thanks Camille
  *  v2.8.15 [Added]   Support for imgui 1.92.8 to help have scalable fonts. Thanks to jim Kier and Steve (slgoldberg)
- *
+ *  v2.8.16 [Added]   To the fwl_prefs.ini file able to disable the imgui debug popup for non developers.
+ *                    Also in the fwl_prefs.ini can set the three font sizes to better match your project.
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
  *          [changed] extended logMsg() with logType=logToAll|logToDevCon|logToSqkBox. If XSquawkBox is not connected logMsg() will fall back to DevCon
@@ -1065,6 +1066,10 @@ int found_bad_function_script = 0;
 
 int developer_mode = 0;
 int verbose_logging_mode = 0;
+int imgui_debug_popup = 0;
+int imgui_font_size1 = 13;
+int imgui_font_size2 = 16;
+int imgui_font_size3 = 20;
 
 clock_t speak_time;
 

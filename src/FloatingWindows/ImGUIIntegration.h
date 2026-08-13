@@ -31,6 +31,15 @@
 inline ImFont* customFont1 = nullptr;
 inline ImFont* customFont2 = nullptr;
 inline ImFont* customFont3 = nullptr;
+inline ImFont* customFont4 = nullptr;
+inline ImFont* customFont5 = nullptr;
+inline ImFont* customFont6 = nullptr;
+inline ImFont* customFont7 = nullptr;
+inline ImFont* customFont8 = nullptr;
+inline ImFont* customFont9 = nullptr;
+
+// AI made this but can't get it to work
+// inline ImFont* myFonts[10] = { nullptr, customFont1, customFont2, customFont3, customFont4, customFont5, customFont6, customFont7, customFont8, customFont9};
 
 
 namespace flwnd {

@@ -98,25 +98,49 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
 
     auto &io = ImGui::GetIO();
     // io.RenderDrawListsFn = nullptr;
-    style.FontSizeBase = 13.0f;
+
+    if (flywithlua::imgui_debug_popup == 1) {
+        io.ConfigDebugHighlightIdConflicts = true;
+    } else {
+        io.ConfigDebugHighlightIdConflicts = false;
+    }
 
     io.Fonts->AddFontDefaultVector();  // Load embedded scalable font.
     io.Fonts->AddFontDefaultBitmap();  // Load embedded bitmap font (legacy).
     io.Fonts->AddFontDefault();        // Load embedded font (legacy: auto-selected between the two above).
 
     // Tried to set flag here to improve font scaling but broke it
+    // For this to work need to stop using legacy backend in part
+    // means removing Glut helper.
     // io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
 
-    // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font yu want to use.
-    // This is not working the way I want I want to use this call and have ImFont* customFont1 in ImGUIIntegration.cpp
-    // customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+    float font_size1 = static_cast<float>(flywithlua::imgui_font_size1);
+    float font_size2 = static_cast<float>(flywithlua::imgui_font_size2);
+    float font_size3 = static_cast<float>(flywithlua::imgui_font_size3);
 
-    customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 20);
+    // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
+    // customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", 13);
+    customFont1 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", font_size1);
     IM_ASSERT(customFont1 != NULL);
-    customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", 20);
+    customFont2 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", font_size2);
     IM_ASSERT(customFont2 != NULL);
-    customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", 20);
+    customFont3 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf", font_size3);
     IM_ASSERT(customFont3 != NULL);
+
+    customFont4 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", font_size1);
+    IM_ASSERT(customFont4 != NULL);
+    customFont5 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", font_size2);
+    IM_ASSERT(customFont5 != NULL);
+    customFont6 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf", font_size3);
+    IM_ASSERT(customFont6 != NULL);
+
+    customFont7 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size1);
+    IM_ASSERT(customFont7 != NULL);
+    customFont8 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size2);
+    IM_ASSERT(customFont8 != NULL);
+    customFont9 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size3);
+    IM_ASSERT(customFont9 != NULL);
+
 
     io.IniFilename = nullptr;
     // io.OptMacOSXBehaviors = false;
@@ -380,13 +404,15 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losi
 #endif
 
 // This is from xlua and just trying to find a way to make it work
-void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_focus) {
+// This code had made the text input backspace and delete work.
+// The original code is above commented out
+void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) {
     ImGui::SetCurrentContext(imGuiContext);
     auto& io = ImGui::GetIO();
 
     // Losing-focus notification: drop pressed-key state so a key held while
     // focus left this window doesn't stay "down" inside ImGui forever.
-    if (losing_focus) {
+    if (losingFocus) {
         io.ClearInputKeys();
         io.AddKeyEvent(ImGuiMod_Shift, false);
         io.AddKeyEvent(ImGuiMod_Ctrl,  false);
@@ -408,7 +434,7 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_foc
     const bool is_up     = (flags & xplm_UpFlag)   != 0;
     const bool is_repeat = !is_down && !is_up;
 
-    const ImGuiKey ik = XPLM_VK_to_ImGuiKey(static_cast<unsigned char>(vkey));
+    const ImGuiKey ik = XPLM_VK_to_ImGuiKey(static_cast<unsigned char>(virtualKey));
     if (ik != ImGuiKey_None) {
         if (is_down)        io.AddKeyEvent(ik, true);
         else if (is_up)     io.AddKeyEvent(ik, false);
@@ -422,6 +448,13 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_foc
     if ((is_down || is_repeat) && ukey >= 0x20 && ukey < 0x7f) {
         io.AddInputCharacter(static_cast<unsigned int>(ukey));
     }
+
+    // This was in the original above that is commented out
+    buildGUI();
+
+    // This was in the original above that is commented out
+    FloatingWindow::onKey(key, flags, virtualKey, losingFocus);
+
 }
 
 

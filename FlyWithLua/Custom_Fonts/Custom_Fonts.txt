@@ -14,11 +14,26 @@ Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf
 
 So in FlyWithLua.
 
-ProFontWindows.ttf is 1
-  
-Roboto-Light.ttf is 2
+ProFontWindows.ttf size 13 is 1
 
-Roboto-Regular.ttf is 3
+ProFontWindows.ttf size 16 is 2
+
+ProFontWindows.ttf size 20 is 3
+
+  
+Roboto-Light.ttf size 13 is 4
+
+Roboto-Light.ttf size 16 is 5
+
+Roboto-Light.ttf size 20 is 6
+
+
+Roboto-Regular.ttf size 13 is 7
+
+Roboto-Regular.ttf size 16 is 8
+
+Roboto-Regular.ttf size 20 is 9
+
 
 I have a imgui_fonts_demo_window.lua in Resources/plugins/FlyWithLua/Scripts (disabled) show some of the features.
 
@@ -27,17 +42,14 @@ I have a imgui_fonts_demo_window_macro.lua in Resources/plugins/FlyWithLua/Scrip
 I have a imgui_load_then_push_font_demo.lua in Resources/plugins/FlyWithLua/Scripts (disabled) which shows how to use the new imgui_push_font(1, 20).
 
 
-imgui.PushFont(1, 20) So this will use the ProFontWindows.ttf font with a size of 20.
+imgui_push_font(1) So this will use the ProFontWindows.ttf font with a size of 13.
 
-imgui.PushFont(2, 25) So this will use the Roboto-Light.ttf font with a size of 25.
+imgui_push_font(4) So this will use the Roboto-Light.ttf font with a size of 13.
 
-imgui.PushFont(3, 30) So this will use the Roboto-Regular.ttf font with a size of 30.
+imgui_push_font(7) So this will use the Roboto-Regular.ttf font with a size of 13.
 
-The range for the fonts is 1 thru 3
+The range for the fonts is 0 thru 3
 
-The range for the font size is 10 thru 20 in steps of 1 so 10, 11, 12, 13...20
-
-The range for the font size is also 20 thru 65 in steps of 5 so 20, 25, 30, 35...65
 
 Also please don't forget you have to move the three supported from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts before any of this can work.
 

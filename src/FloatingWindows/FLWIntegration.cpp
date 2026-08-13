@@ -135,9 +135,8 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
 
 
 // Not sure where the proper pplace for this is but this is where we can change the custom font to use
-// Very much a work in progress but the last piece before 2.8.15 can go final
 int LuaImguiPushFont(lua_State *L) {
-    if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2)) {
+    if (!lua_isnumber(L, 1)) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to imgui_push_font");
         FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
@@ -145,101 +144,78 @@ int LuaImguiPushFont(lua_State *L) {
     }
     // get the custom font number and convert to int
     int font_number = static_cast<int>(lua_tointeger(L, 1));
-    // get the custom font point convert to a int then a float for PushFont
-    int font_point_number = static_cast<int>(lua_tointeger(L, 2));
-    float custom_size;
-    if (font_point_number == 10) {
-        custom_size = 10.0f;
-    }
-    else if (font_point_number == 11) {
-        custom_size = 11.0f;
-    }
-    else if (font_point_number == 12) {
-        custom_size = 12.0f;
-    }
-    else if (font_point_number == 13) {
-        custom_size = 13.0f;
-    }
-    else if (font_point_number == 14) {
-        custom_size = 14.0f;
-    }
-    else if (font_point_number == 15) {
-        custom_size = 15.0f;
-    }
-    else if (font_point_number == 16) {
-        custom_size = 16.0f;
-    }
-    else if (font_point_number == 17) {
-        custom_size = 17.0f;
-    }
-    else if (font_point_number == 18) {
-        custom_size = 18.0f;
-    }
-    else if (font_point_number == 19) {
-        custom_size = 19.0f;
-    }
-    else if (font_point_number == 20) {
-        custom_size = 20.0f;
-    }
-    else if (font_point_number == 25) {
-        custom_size = 25.0f;
-    }
-    else if (font_point_number == 30) {
-        custom_size = 30.0f;
-    }
-    else if (font_point_number == 35) {
-        custom_size = 35.0f;
-    }
-    else if (font_point_number == 40) {
-        custom_size = 40.0f;
-    }
-    else if (font_point_number == 45) {
-        custom_size = 45.0f;
-    }
-    else if (font_point_number == 50) {
-        custom_size = 50.0f;
-    }
-    else if (font_point_number == 55) {
-        custom_size = 55.0f;
-    }
-    else if (font_point_number == 60) {
-        custom_size = 60.0f;
-    }
-    else if (font_point_number == 65) {
-        custom_size = 65.0f;
-    }
-    else {
-        custom_size = 20.0f;
-    }
+    // This is the only way I could get this to work ugly but works
+    // float custom_size;
 
-    // auto &style = ImGui::GetStyle();
+
+    // ImGuiStyle& style = ImGui::GetStyle();
+
+    // AI created this but had a 7 instead of a 9 might try it later to see if I can get it to work
+    // I did try this but could not get it to work so went back to my way that works.
+#if 0
+    if (font_number >= 1 && font_number <= 9) {
+        ImFont* chosenFont = myFonts[font_number];
+        if (chosenFont != nullptr) {
+            ImGui::PushFont(chosenFont);
+        }
+    }
+#endif
+
+    // Wraping every ImGui::PushFont() with a != nullptr trying to find my CTD sometimes on windows closing.
+    // It sadly did not help so not sure where this issue might be when clicking on the red close button.
+    // It does not happen every time but when it does the GDB demp is exactly the same.
+
     if (font_number == 1) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 1 pushed");
-        // This is my goal but have to get customFont1 global
-        // In lua     imgui_push_font(1, 20)  will push font 1 with a 20 point font
-        // Also not sure about the font number but will test later
-        // ImGui::PushFont(customFont1, point_number);
-        // This did not work
-        // ImGui::PushFont(customFont1, style.FontSizeBase * percent_fraction);
-        // ImGui::PushFont(customFont1, style.FontSizeBase * 0.8f);
-        ImGui::PushFont(customFont1, custom_size);
-
+        if (customFont1 != nullptr) {
+            ImGui::PushFont(customFont1, customFont1->LegacySize);
+        }
     }
     else if (font_number == 2) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 2 pushed");
-        // This did not work
-        // ImGui::PushFont(customFont2, style.FontSizeBase * percent_fraction);
-        ImGui::PushFont(customFont2, custom_size);
+        if (customFont2 != nullptr) {
+            ImGui::PushFont(customFont2, customFont2->LegacySize);
+        }
     }
-    else if (font_number == 3) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: Custom font 3 pushed");
-        // this did not work
-        // ImGui::PushFont(customFont3, style.FontSizeBase * percent_fraction);
-        ImGui::PushFont(customFont3, custom_size);
+     else if (font_number == 3) {
+        if (customFont3 != nullptr) {
+            ImGui::PushFont(customFont3, customFont3->LegacySize);
+        }
+     }
+    else if (font_number == 4) {
+        if (customFont4 != nullptr) {
+            ImGui::PushFont(customFont4, customFont4->LegacySize);
+        }
     }
+    else if (font_number == 5) {
+        if (customFont5 != nullptr) {
+            ImGui::PushFont(customFont5, customFont5->LegacySize);
+        }
+    }
+     else if (font_number == 6) {
+        if (customFont6 != nullptr) {
+            ImGui::PushFont(customFont6, customFont6->LegacySize);
+        }
+     }
+    else if (font_number == 7) {
+        if (customFont7 != nullptr) {
+            ImGui::PushFont(customFont7, customFont7->LegacySize);
+        }
+    }
+    else if (font_number == 8) {
+        if (customFont8 != nullptr) {
+            ImGui::PushFont(customFont8, customFont8->LegacySize);
+        }
+    }
+     else if (font_number == 9) {
+        if (customFont9 != nullptr) {
+            ImGui::PushFont(customFont9, customFont9->LegacySize);
+        }
+     }
+
     else {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
+         // Just don't think this is a good idea as you will not see the font
+         // flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
     }
+
 
     return 0;
 }
