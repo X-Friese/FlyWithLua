@@ -141,6 +141,7 @@ ImGUIWindow::ImGUIWindow(int width, int height, int decoration):
     customFont9 = io.Fonts->AddFontFromFileTTF("./Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf", font_size3);
     IM_ASSERT(customFont9 != NULL);
 
+
     io.IniFilename = nullptr;
     // io.OptMacOSXBehaviors = false;
     // disable OSX-like keyboard behaviours always - we don't have the keymapping for it.
@@ -403,13 +404,15 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losi
 #endif
 
 // This is from xlua and just trying to find a way to make it work
-void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_focus) {
+// This code had made the text input backspace and delete work.
+// The original code is above commented out
+void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) {
     ImGui::SetCurrentContext(imGuiContext);
     auto& io = ImGui::GetIO();
 
     // Losing-focus notification: drop pressed-key state so a key held while
     // focus left this window doesn't stay "down" inside ImGui forever.
-    if (losing_focus) {
+    if (losingFocus) {
         io.ClearInputKeys();
         io.AddKeyEvent(ImGuiMod_Shift, false);
         io.AddKeyEvent(ImGuiMod_Ctrl,  false);
@@ -431,7 +434,7 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_foc
     const bool is_up     = (flags & xplm_UpFlag)   != 0;
     const bool is_repeat = !is_down && !is_up;
 
-    const ImGuiKey ik = XPLM_VK_to_ImGuiKey(static_cast<unsigned char>(vkey));
+    const ImGuiKey ik = XPLM_VK_to_ImGuiKey(static_cast<unsigned char>(virtualKey));
     if (ik != ImGuiKey_None) {
         if (is_down)        io.AddKeyEvent(ik, true);
         else if (is_up)     io.AddKeyEvent(ik, false);
@@ -445,6 +448,13 @@ void ImGUIWindow::onKey(char key, XPLMKeyFlags flags, char vkey, bool losing_foc
     if ((is_down || is_repeat) && ukey >= 0x20 && ukey < 0x7f) {
         io.AddInputCharacter(static_cast<unsigned int>(ukey));
     }
+
+    // This was in the original above that is commented out
+    buildGUI();
+
+    // This was in the original above that is commented out
+    FloatingWindow::onKey(key, flags, virtualKey, losingFocus);
+
 }
 
 

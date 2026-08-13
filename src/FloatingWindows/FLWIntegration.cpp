@@ -147,36 +147,68 @@ int LuaImguiPushFont(lua_State *L) {
     // This is the only way I could get this to work ugly but works
     // float custom_size;
 
+
     // ImGuiStyle& style = ImGui::GetStyle();
 
+    // AI created this but had a 7 instead of a 9 might try it later to see if I can get it to work
+    // I did try this but could not get it to work so went back to my way that works.
+#if 0
+    if (font_number >= 1 && font_number <= 9) {
+        ImFont* chosenFont = myFonts[font_number];
+        if (chosenFont != nullptr) {
+            ImGui::PushFont(chosenFont);
+        }
+    }
+#endif
+
+    // Wraping every ImGui::PushFont() with a != nullptr trying to find my CTD sometimes on windows closing.
+    // It sadly did not help so not sure where this issue might be when clicking on the red close button.
+    // It does not happen every time but when it does the GDB demp is exactly the same.
+
     if (font_number == 1) {
-        ImGui::PushFont(customFont1);
+        if (customFont1 != nullptr) {
+            ImGui::PushFont(customFont1, customFont1->LegacySize);
+        }
     }
     else if (font_number == 2) {
-        ImGui::PushFont(customFont2);
+        if (customFont2 != nullptr) {
+            ImGui::PushFont(customFont2, customFont2->LegacySize);
+        }
     }
      else if (font_number == 3) {
-         ImGui::PushFont(customFont3);
+        if (customFont3 != nullptr) {
+            ImGui::PushFont(customFont3, customFont3->LegacySize);
+        }
      }
-
     else if (font_number == 4) {
-        ImGui::PushFont(customFont4);
+        if (customFont4 != nullptr) {
+            ImGui::PushFont(customFont4, customFont4->LegacySize);
+        }
     }
     else if (font_number == 5) {
-        ImGui::PushFont(customFont5);
+        if (customFont5 != nullptr) {
+            ImGui::PushFont(customFont5, customFont5->LegacySize);
+        }
     }
      else if (font_number == 6) {
-         ImGui::PushFont(customFont6);
+        if (customFont6 != nullptr) {
+            ImGui::PushFont(customFont6, customFont6->LegacySize);
+        }
      }
-
     else if (font_number == 7) {
-        ImGui::PushFont(customFont7);
+        if (customFont7 != nullptr) {
+            ImGui::PushFont(customFont7, customFont7->LegacySize);
+        }
     }
     else if (font_number == 8) {
-        ImGui::PushFont(customFont8);
+        if (customFont8 != nullptr) {
+            ImGui::PushFont(customFont8, customFont8->LegacySize);
+        }
     }
      else if (font_number == 9) {
-         ImGui::PushFont(customFont9);
+        if (customFont9 != nullptr) {
+            ImGui::PushFont(customFont9, customFont9->LegacySize);
+        }
      }
 
     else {
@@ -184,8 +216,10 @@ int LuaImguiPushFont(lua_State *L) {
          // flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
     }
 
+
     return 0;
 }
+
 
 int LuaSetFloatingWindowPosition(lua_State *L) {
     if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3)) {
