@@ -33,6 +33,9 @@ include_directories("${CMAKE_SOURCE_DIR}/hidapi")
 include_directories("${CMAKE_SOURCE_DIR}/.")
 include_directories("${CMAKE_SOURCE_DIR}/FloatingWindows")
 include_directories("${CMAKE_SOURCE_DIR}/imgui")
+# NOTE: ImgWindow has its own SystemGL.h (GL only, no GLUT) that differs from ${CMAKE_SOURCE_DIR}/SystemGL.h.
+# Keep this directory listed AFTER "${CMAKE_SOURCE_DIR}/." above so any bare <SystemGL.h> resolves to ours.
+include_directories("${CMAKE_SOURCE_DIR}/ImgWindow")
 include_directories("${CMAKE_SOURCE_DIR}/OpenAL")
 include_directories("${CMAKE_SOURCE_DIR}/third_party/luajit")
 include_directories("${CMAKE_SOURCE_DIR}/Fmod")
@@ -71,6 +74,14 @@ endif ()
 
 # Enable all X-Plane SDK APIs up to the newest version.
 add_definitions(-DXPLM200=1 -DXPLM210=1 -DXPLM300=1 -DXPLM301=1 -DXPLM302=1 -DXPLM303=1 -DXPLM400=1)
+# ImgWindow "dynamic bridge": render ImGui through X-Plane's Panel Graphics (Vulkan/Metal) when the sim
+# provides XPLM 4.4 (X-Plane 12.4.4+), and fall back to legacy OpenGL on older simulators (back to 11.10).
+#
+# !!! NEVER define XPLM440 (not even XPLM440=0) anywhere in this file !!!
+# Doing so forces static binding to the XPLM 4.4 SDK, switches XPLMCreateWindow_t to the 4.4 struct size,
+# disables the OpenGL fallback and breaks X-Plane 11 and X-Plane 12 builds older than 12.4.4b3. ImgWindow
+# resolves the Panel Graphics entry points at runtime, so XPLM400 above is the correct upper limit.
+add_definitions(-DIMGWINDOW_USE_PANEL_GRAPHICS)
 # Define platform macros.
 add_definitions(-DAPL=$<BOOL:${APPLE}> -DIBM=$<BOOL:${WIN32}> -DLIN=$<AND:$<BOOL:${UNIX}>,$<NOT:$<BOOL:${APPLE}>>>)
 
@@ -102,7 +113,11 @@ add_compile_options(-O3 -fPIC)
 # X-Plane plugin
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
-list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/ImGUIIntegration.cpp FloatingWindows/FloatingWindow.cpp)
+list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp)
+# ImgWindow v2 (git submodule, 'dev' branch). It ships no CMakeLists.txt, so its sources are compiled directly.
+list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
+# Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
+list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
 list(APPEND FLYWITHLUA_SRCS Fmod/FmodIntegration.cpp)
 if (WIN32)

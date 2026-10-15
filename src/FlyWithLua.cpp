@@ -281,6 +281,7 @@
 #include <sol.hpp>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FLWIntegration.h"
+#include "FlyWithLuaImGui.h"
 
 
 // include OpenAL
@@ -7439,6 +7440,10 @@ PLUGIN_API void XPluginDisable(void)
     LuaIsRunning = false;
     lua_close(FWLLua);
 
+    // Tear down the shared ImGui font atlas. All floating windows are closed first (see above and
+    // TeardownImGui() Step 0), and Lua is gone, so nothing can draw against the dead atlas.
+    TeardownImGui();
+
     // killing all commands
     if (CommandTableLastElement > -1)
     {
@@ -7626,6 +7631,16 @@ PLUGIN_API int XPluginEnable(void)
 
     // Initialize OpenAL sound
     init_openal_sound();
+
+    // Build the shared ImGui font atlas. The font sizes come from fwl_prefs.ini, which on a
+    // cold start has not been read yet at this point (it is otherwise first read on
+    // XPLM_MSG_AIRPORT_LOADED), so read it now. This must happen before any script can open
+    // a window, i.e. before the Lua engine starts below.
+    ReadPrefFile();
+    if (!InitializeImGui())
+    {
+        logMsg(logToDevCon, "FlyWithLua Error: Unable to initialize the shared ImGui font atlas.");
+    }
 
     // Starting the Lua engine
     /* use the default allocator. */

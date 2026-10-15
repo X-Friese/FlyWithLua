@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <algorithm>
 #include <sol.hpp>
 #include <iostream>
 
@@ -14,7 +15,8 @@
 #include <XPLMUtilities.h>
 #include "FLWIntegration.h"
 #include "FloatingWindow.h"
-#include "ImGUIIntegration.h"
+#include "FlyWithLuaWindow.h"
+#include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -42,30 +44,37 @@ typedef std::function<sol::protected_function()> CallbackProvider;
 typedef void(CallbackSetter)(sol::light<FloatingWindow>, CallbackProvider const&);
 
 std::vector<std::shared_ptr<FloatingWindow>> floatingWindows;
-std::vector<GLuint> textureIDs;
+std::vector<ImTextureID> textureIDs;
 
-int loadImage(const std::string&fileName) {
+ImTextureID loadImage(const std::string& fileName) {
     int imgWidth, imgHeight, nComps;
-    uint8_t *data = stbi_load(fileName.c_str(), &imgWidth, &imgHeight, &nComps, sizeof(uint32_t));
+    // Always force 4-channel RGBA
+    uint8_t *data = stbi_load(fileName.c_str(), &imgWidth, &imgHeight, &nComps, 4);
 
     if (!data) {
         throw std::runtime_error(std::string("Couldn't load image: ") + stbi_failure_reason());
     }
 
-    int id;
-    XPLMGenerateTextureNumbers(&id, 1);
-    XPLMBindTexture2d(id, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0,
-            GL_RGBA, imgWidth, imgHeight, 0,
-            GL_RGBA, GL_UNSIGNED_BYTE, data);
-
+    // Static unified API - handles Metal, Vulkan, and OpenGL automatically
+    ImTextureID id = ImgWindow::CreateTexture(data, imgWidth, imgHeight);
     stbi_image_free(data);
-    textureIDs.push_back(id);
 
+    if (id == (ImTextureID)0) {
+        throw std::runtime_error("ImgWindow::CreateTexture failed");
+    }
+
+    textureIDs.push_back(id);
     return id;
+}
+
+void deleteImage(ImTextureID textureId) {
+    if (textureId != (ImTextureID)0) {
+        ImgWindow::DeleteTexture(textureId);
+        auto it = std::find(textureIDs.begin(), textureIDs.end(), textureId);
+        if (it != textureIDs.end()) {
+            textureIDs.erase(it);
+        }
+    }
 }
 
 int LuaCreateFloatingWindow(lua_State *L) {
@@ -85,9 +94,9 @@ int LuaCreateFloatingWindow(lua_State *L) {
 
     try {
         if (withImgui) {
-            wnd = std::make_shared<ImGUIWindow>(width, height, decoration);
+            wnd = std::make_shared<FlyWithLuaWindow>(width, height, decoration);
         } else {
-            wnd = std::make_shared<FloatingWindow>(width, height, decoration);
+            wnd = std::make_shared<LegacyFloatingWindow>(width, height, decoration);
         }
         floatingWindows.push_back(wnd);
         lua_pushlightuserdata(L, wnd.get());
@@ -112,6 +121,7 @@ int LuaDestroyFloatingWindow(lua_State *L) {
     for (auto wndPtr: floatingWindows) {
         if (wndPtr.get() == wnd) {
             // this will lead to actual destruction in the flightloop callback
+            wndPtr->setIsCmdVisible(1);
             wndPtr->setVisible(false);
         }
     }
@@ -246,8 +256,8 @@ int LuaLoadFloatinWindowImage(lua_State *L) {
 
     std::string name = lua_tostring(L, 1);
     try {
-        int id = loadImage(name);
-        lua_pushinteger(L, id);
+        ImTextureID id = loadImage(name);
+        lua_pushinteger(L, (lua_Integer)(intptr_t)id);
         return 1;
     } catch (const std::exception &e) {
         std::string err = std::string("FlyWithLua Error: Couldn't load image: ") + e.what() + " in " + name;
@@ -257,6 +267,19 @@ int LuaLoadFloatinWindowImage(lua_State *L) {
         flywithlua::LuaIsRunning = false;
         return 0;
     }
+}
+
+int LuaDeleteFloatingWindowImage(lua_State *L) {
+    if (!lua_isnumber(L, 1)) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_delete_image");
+        FindAndQuarantine (L);
+        flywithlua::LuaIsRunning = false;
+        return 0;
+    }
+
+    ImTextureID id = (ImTextureID)(intptr_t)lua_tointeger(L, 1);
+    deleteImage(id);
+    return 0;
 }
 
 /**
@@ -623,13 +646,13 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
  * @param builder_provider A lambda, which returns the actual window builder from Lua.
  */
 void LuaSetImguiBuilder(sol::light<FloatingWindow> fwnd, CallbackProvider const& builder_provider) {
-    auto* wnd = dynamic_cast<ImGUIWindow*>(static_cast<FloatingWindow*>(fwnd));
+    auto* wnd = dynamic_cast<FlyWithLuaWindow*>(static_cast<FloatingWindow*>(fwnd));
     if (!wnd) {
         flywithlua::panic("FlyWithLua Error: Wrong window type passed to float_wnd_set_imgui_builder");
         return;
     }
 
-    wnd->setBuildCallback([builder_provider] (ImGUIWindow& iwnd) {
+    wnd->setBuildCallback([builder_provider] (FlyWithLuaWindow& iwnd) {
         if (!flywithlua::LuaIsRunning)  {
             return;
         }
@@ -725,6 +748,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
     lua_register(L, "float_wnd_load_image", LuaLoadFloatinWindowImage);
+    lua_register(L, "float_wnd_delete_image", LuaDeleteFloatingWindowImage);
     lua_register(L, "float_wnd_destroy", LuaDestroyFloatingWindow);
     lua_register(L, "float_wnd_get_visible", LuaFloatingWindowGetVisible);
     lua_register(L, "float_wnd_set_visible", LuaFloatingWindowSetVisible);
@@ -754,9 +778,10 @@ void initFloatingWindowSupport() {
 
 void deinitFloatingWindowSupport() {
     floatingWindows.clear();
-    if (!textureIDs.empty()) {
-        glDeleteTextures(textureIDs.size(), textureIDs.data());
+    for (auto texId : textureIDs) {
+        ImgWindow::DeleteTexture(texId);
     }
+    textureIDs.clear();
 }
 
 bool FindAndQuarantine (lua_State *L)
