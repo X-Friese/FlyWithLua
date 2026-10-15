@@ -118,8 +118,27 @@ add_compile_options(-O3 -fPIC)
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp)
+# Automatically fetch ImgWindow submodule if missing (e.g. cloned without --recurse-submodules or checked out without submodule update)
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp")
+    find_package(Git QUIET)
+    if (GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
+        message(STATUS "src/ImgWindow submodule not found. Initializing and updating via git...")
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
+            RESULT_VARIABLE GIT_SUBMOD_RESULT
+        )
+        if (NOT GIT_SUBMOD_RESULT EQUAL "0")
+            message(FATAL_ERROR "Failed to update submodules automatically. Please run: git submodule update --init --recursive")
+        endif ()
+    else ()
+        message(FATAL_ERROR "src/ImgWindow is missing! Please run: git submodule update --init --recursive")
+    endif ()
+endif ()
+
 # ImgWindow v2 (git submodule, pinned to tagged release v2.1.0). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
+set_source_files_properties(ImgWindow/ImgWindow.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
 list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
