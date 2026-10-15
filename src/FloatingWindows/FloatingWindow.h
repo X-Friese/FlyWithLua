@@ -51,10 +51,10 @@ public:
 
     virtual XPLMWindowID getXWindow() = 0;
 
-    virtual void setDrawCallback(DrawCallback cb) {}
-    virtual void setClickCallback(ClickCallback cb) {}
-    virtual void setCloseCallback(CloseCallback cb) {}
-    virtual void setKeyCallback(KeyCallback cb) {}
+    virtual void setDrawCallback(DrawCallback /* cb */) {}
+    virtual void setClickCallback(ClickCallback /* cb */) {}
+    virtual void setCloseCallback(CloseCallback /* cb */) {}
+    virtual void setKeyCallback(KeyCallback /* cb */) {}
 };
 
 class LegacyFloatingWindow : public FloatingWindow {

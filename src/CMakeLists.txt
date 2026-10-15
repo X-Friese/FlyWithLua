@@ -92,6 +92,10 @@ if (CREATECOMPLETEEDITION)
     add_definitions(-DCREATECOMPLETEEDITION)
 endif ()
 
+if (APPLE)
+    add_definitions(-DGL_SILENCE_DEPRECATION)
+endif ()
+
 # Force-enable exception support. This is most likely redundant, although for C
 # code the default is the opposite. Since we are mixing C++ and C libraries,
 # safer to set it on?
@@ -114,7 +118,7 @@ add_compile_options(-O3 -fPIC)
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp)
-# ImgWindow v2 (git submodule, 'dev' branch). It ships no CMakeLists.txt, so its sources are compiled directly.
+# ImgWindow v2 (git submodule, pinned to tagged release v2.1.0). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
 list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp)

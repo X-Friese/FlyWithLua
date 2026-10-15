@@ -53,26 +53,26 @@ void LegacyFloatingWindow::createWindow() {
     params.bottom = winTop - 100 - height;
     params.visible = 1;
     params.refcon = this;
-    params.drawWindowFunc = [] (XPLMWindowID id, void *ref) {
+    params.drawWindowFunc = [] (XPLMWindowID /* id */, void *ref) {
         try {
             reinterpret_cast<LegacyFloatingWindow*>(ref)->onDraw();
         } catch (std::exception& e) {
             flywithlua::logMsg(logToDevCon, std::string("Caught error: ") + e.what());
         }
     };
-    params.handleMouseClickFunc = [] (XPLMWindowID id, int x, int y, XPLMMouseStatus status, void *ref) -> int {
+    params.handleMouseClickFunc = [] (XPLMWindowID /* id */, int x, int y, XPLMMouseStatus status, void *ref) -> int {
         return reinterpret_cast<LegacyFloatingWindow *>(ref)->onClick(x, y, status);
     };
-    params.handleRightClickFunc = [] (XPLMWindowID id, int x, int y, XPLMMouseStatus status, void *ref) -> int {
+    params.handleRightClickFunc = [] (XPLMWindowID /* id */, int x, int y, XPLMMouseStatus status, void *ref) -> int {
         return reinterpret_cast<LegacyFloatingWindow *>(ref)->onRightClick(x, y, status);
     };
-    params.handleKeyFunc = [] (XPLMWindowID id, char key, XPLMKeyFlags flags, char vKey, void *ref, int losingFocus) {
+    params.handleKeyFunc = [] (XPLMWindowID /* id */, char key, XPLMKeyFlags flags, char vKey, void *ref, int losingFocus) {
         reinterpret_cast<LegacyFloatingWindow *>(ref)->onKey(key, flags, vKey, losingFocus);
     };
-    params.handleCursorFunc = [] (XPLMWindowID id, int x, int y, void *ref) -> XPLMCursorStatus {
+    params.handleCursorFunc = [] (XPLMWindowID /* id */, int x, int y, void *ref) -> XPLMCursorStatus {
         return reinterpret_cast<LegacyFloatingWindow *>(ref)->getCursor(x, y);
     };
-    params.handleMouseWheelFunc =  [] (XPLMWindowID id, int x, int y, int wheel, int clicks, void *ref) -> int {
+    params.handleMouseWheelFunc =  [] (XPLMWindowID /* id */, int x, int y, int wheel, int clicks, void *ref) -> int {
         return reinterpret_cast<LegacyFloatingWindow *>(ref)->onMouseWheel(x, y, wheel, clicks);
     };
     params.layer = xplm_WindowLayerFloatingWindows;
@@ -273,7 +273,7 @@ void LegacyFloatingWindow::setVisible(bool visible) {
     XPLMSetWindowIsVisible(window, visible);
 }
 
-bool LegacyFloatingWindow::onRightClick(int x, int y, XPLMMouseStatus status) {
+bool LegacyFloatingWindow::onRightClick(int /* x */, int /* y */, XPLMMouseStatus /* status */) {
     return true;
 }
 
@@ -287,11 +287,11 @@ void LegacyFloatingWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, 
     }
 }
 
-XPLMCursorStatus LegacyFloatingWindow::getCursor(int x, int y) {
+XPLMCursorStatus LegacyFloatingWindow::getCursor(int /* x */, int /* y */) {
     return xplm_CursorDefault;
 }
 
-bool LegacyFloatingWindow::onMouseWheel(int x, int y, int wheel, int clicks) {
+bool LegacyFloatingWindow::onMouseWheel(int /* x */, int /* y */, int /* wheel */, int /* clicks */) {
     return true;
 }
 

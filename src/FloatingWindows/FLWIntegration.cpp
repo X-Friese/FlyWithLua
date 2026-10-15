@@ -383,8 +383,8 @@ int LuaFloatingWindowSetVisible(lua_State *L) {
 
     FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
 
-    wnd->setIsCmdVisible(lua_tonumber(L, 2));
-    wnd->setVisible(lua_tonumber(L, 2));
+    wnd->setIsCmdVisible(lua_tointeger(L, 2));
+    wnd->setVisible(lua_toboolean(L, 2) != 0 || lua_tointeger(L, 2) != 0);
 
     return 0;
 }
@@ -563,12 +563,12 @@ int LuaSetFloatingWindowGeometry(lua_State *L) {
  * @param on_click_provider A lambda, which returns the actual on_click handler from Lua.
  */
 void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider const& on_click_provider) {
-    static_cast<FloatingWindow*>(fwnd)->setClickCallback([on_click_provider] (FloatingWindow &fwnd, int x, int y, XPLMMouseStatus status) {
+    static_cast<FloatingWindow*>(fwnd)->setClickCallback([on_click_provider] (FloatingWindow &targetWnd, int x, int y, XPLMMouseStatus status) {
         if (!flywithlua::LuaIsRunning)  {
             return;
         }
 
-        XPLMWindowID window = fwnd.getXWindow();
+        XPLMWindowID window = targetWnd.getXWindow();
 
         auto on_click = on_click_provider();
         if (!on_click) {
@@ -584,7 +584,7 @@ void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         flywithlua::CopyDataRefsToLua();
 
-        auto result = on_click(sol::light<FloatingWindow>(fwnd), x - left, y - bottom, status);
+        auto result = on_click(sol::light<FloatingWindow>(targetWnd), x - left, y - bottom, status);
         if (!result.valid()) {
             sol::error err = result;
             flywithlua::panic(err.what());
@@ -603,12 +603,12 @@ void LuaSetOnClickCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
  * @param on_close_provider A lambda, which returns the actual on_close handler from Lua.
  */
 void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider const& on_close_provider) {
-    static_cast<FloatingWindow*>(fwnd)->setCloseCallback([on_close_provider] (FloatingWindow &fwnd) {
+    static_cast<FloatingWindow*>(fwnd)->setCloseCallback([on_close_provider] (FloatingWindow &targetWnd) {
         if (!flywithlua::LuaIsRunning)  {
             return;
         }
 
-        XPLMWindowID window = fwnd.getXWindow();
+        XPLMWindowID window = targetWnd.getXWindow();
 
         auto on_close = on_close_provider();
         if (!on_close) {
@@ -621,7 +621,7 @@ void LuaSetOnCloseCallback(sol::light<FloatingWindow> fwnd, CallbackProvider con
 
         flywithlua::CopyDataRefsToLua();
 
-        auto result = on_close(sol::light<FloatingWindow>(fwnd));
+        auto result = on_close(sol::light<FloatingWindow>(targetWnd));
         if (!result.valid()) {
             sol::error err = result;
             flywithlua::panic(err.what());
