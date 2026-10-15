@@ -67,7 +67,7 @@ HEADERS +=  ../src/SDK/CHeaders/XPLM/XPLMCamera.h \
             ../src/SystemGL.h \
             ../src/XSBComsDefs.h \
             ../src/FloatingWindows/FloatingWindow.h \
-            ../src/FloatingWindows/FLWIntegration.h \
+            ../src/FloatingWindows/FWLIntegration.h \
             ../src/FloatingWindows/ImGUIIntegration.h \
             ../src/FloatingWindows/stb_image.h \
             ../src/hidapi/hidapi.h \
@@ -111,7 +111,7 @@ HEADERS +=  ../src/SDK/CHeaders/XPLM/XPLMCamera.h \
 
 
 SOURCES +=  ../src/FlyWithLua.cpp \
-            ../src/FloatingWindows/FLWIntegration.cpp \
+            ../src/FloatingWindows/FWLIntegration.cpp \
             ../src/FloatingWindows/ImGUIIntegration.cpp \
             ../src/FloatingWindows/FloatingWindow.cpp \
             ../src/hidapi/linux/hid.c \

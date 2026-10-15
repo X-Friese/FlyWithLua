@@ -13,7 +13,7 @@
 
 #include <XPLMDataAccess.h>
 #include <XPLMUtilities.h>
-#include "FLWIntegration.h"
+#include "FWLIntegration.h"
 #include "FloatingWindow.h"
 #include "FlyWithLuaWindow.h"
 #include "../FlyWithLuaImGui.h"

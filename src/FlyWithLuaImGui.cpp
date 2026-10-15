@@ -8,7 +8,7 @@
 
 #include "FlyWithLua.h"
 #include "FlyWithLuaImGui.h"
-#include "FloatingWindows/FLWIntegration.h"
+#include "FloatingWindows/FWLIntegration.h"
 #include "ImgWindow.h"
 
 ImFont* customFont1 = nullptr;

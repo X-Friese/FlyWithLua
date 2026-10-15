@@ -117,7 +117,7 @@ add_compile_options(-O3 -fPIC)
 # X-Plane plugin
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
-list(APPEND FLYWITHLUA_SRCS FloatingWindows/FLWIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp)
+list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp)
 # Automatically fetch ImgWindow submodule if missing (e.g. cloned without --recurse-submodules or checked out without submodule update)
 if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp")
     find_package(Git QUIET)

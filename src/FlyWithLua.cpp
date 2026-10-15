@@ -280,7 +280,7 @@
 #include <vector>
 #include <sol.hpp>
 #include "XSBComDefs.h"
-#include "FloatingWindows/FLWIntegration.h"
+#include "FloatingWindows/FWLIntegration.h"
 #include "FlyWithLuaImGui.h"
 
 
