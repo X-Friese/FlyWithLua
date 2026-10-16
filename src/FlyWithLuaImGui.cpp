@@ -66,9 +66,16 @@ bool InitializeImGui()
 
     ImFontAtlas* atlas = ImgWindow::sFontAtlas->getAtlas();
 
-    // Same default fonts, in the same order, as the legacy per-window setup.
-    atlas->AddFontDefaultVector();                // Load embedded scalable font.
-    atlas->AddFontDefaultBitmap();                // Load embedded bitmap font (legacy).
+    if (flywithlua::proggy_clean_default == 1)
+    {
+        atlas->AddFontDefaultBitmap();                // Load embedded bitmap font (legacy).
+        atlas->AddFontDefaultVector();                // Load embedded scalable font.
+    } else {
+        // Same default fonts, in the same order, as the legacy per-window setup.
+        atlas->AddFontDefaultVector();                // Load embedded scalable font.
+        atlas->AddFontDefaultBitmap();                // Load embedded bitmap font (legacy).
+    }
+
     ImgWindow::sFontAtlas->AddFontDefault();      // Load embedded font (legacy: auto-selected between the two above).
 
     const float font_size1 = static_cast<float>(flywithlua::imgui_font_size1);

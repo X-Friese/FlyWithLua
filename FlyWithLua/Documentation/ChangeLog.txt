@@ -103,3 +103,5 @@ v2.8.14 Added UnregisterAccessor() to XPluginStop(void) to prevent a threading v
 v2.8.15 Updated to imgui 1.92.8. Now have default scalable fonts. Can load 3 custom fonts
 
 v2.8.16 Added to the fwl_prefs.ini file being able to disable the imgui debug popup for non developers. Also in the fwl_prefs.ini can set the three font sizes to better match your project.
+
+v2.8.17 imgui now uses panel graphics if using X-Plane 12.4.4+ thanks to slgoldberg. We have retained using OpenGL for previous versions.

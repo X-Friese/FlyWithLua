@@ -43,13 +43,16 @@ void flywithlua::process_read_ini_file()
   // Do we want to enable imgui debug popup?
   readOptionAsInt("ImguiDebugPopup", &imgui_debug_popup);
 
-  // Do we want to enable imgui debug popup?
+  // Set font size1
   readOptionAsInt("ImguiFontSize1", &imgui_font_size1);
 
-  // Do we want to enable imgui debug popup?
+  // Set font size2
   readOptionAsInt("ImguiFontSize2", &imgui_font_size2);
 
-  // Do we want to enable imgui debug popup?
+  // Set font size3
   readOptionAsInt("ImguiFontSize3", &imgui_font_size3);
+
+  // Do we want to proggy clean to be the default?
+  readOptionAsInt("ProggyCleanDefault", &proggy_clean_default);
 
 }

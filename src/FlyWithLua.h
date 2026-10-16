@@ -59,6 +59,7 @@ extern int imgui_debug_popup;
 extern int imgui_font_size1;
 extern int imgui_font_size2;
 extern int imgui_font_size3;
+extern int proggy_clean_default;
 }
 
 #endif

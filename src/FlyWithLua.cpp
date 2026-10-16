@@ -1073,6 +1073,7 @@ int imgui_debug_popup = 0;
 int imgui_font_size1 = 13;
 int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;
+int proggy_clean_default = 0;
 
 clock_t speak_time;
 
