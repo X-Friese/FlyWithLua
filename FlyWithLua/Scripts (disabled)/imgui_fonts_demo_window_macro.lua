@@ -1,5 +1,7 @@
 -- Imgui Fonts Demo Window Macro
--- William R. Good 08-06-26
+-- William R. Good 10-16-26
+-- This does work but the text is not ver sharp
+-- If you want sharper text then look at ingui_custon_fonts_demo_window
 
 if not SUPPORTS_FLOATING_WINDOWS then
     -- to make sure the script doesn't stop old FlyWithLua versions

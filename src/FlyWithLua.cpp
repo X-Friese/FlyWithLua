@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.16"
+#define PLUGIN_VERSION_NO "2.8.17"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -177,6 +177,8 @@
  *  v2.8.15 [Added]   Support for imgui 1.92.8 to help have scalable fonts. Thanks to jim Kier and Steve (slgoldberg)
  *  v2.8.16 [Added]   To the fwl_prefs.ini file able to disable the imgui debug popup for non developers.
  *                    Also in the fwl_prefs.ini can set the three font sizes to better match your project.
+ *  v2.8.17 [Added]   imgui now uses panel graphics if using X-Plane 12.4.4+ thanks to slgoldberg.
+ *                    We have retained using OpenGL for previous versions.
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
  *          [changed] extended logMsg() with logType=logToAll|logToDevCon|logToSqkBox. If XSquawkBox is not connected logMsg() will fall back to DevCon
