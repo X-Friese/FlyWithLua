@@ -28,7 +28,7 @@ void multMatrixVec4f(GLfloat dst[4], const GLfloat m[16], const GLfloat v[4]) {
 
 namespace flwnd {
 
-FloatingWindow::FloatingWindow(int winWidth, int winHeight, int winDecoration):
+LegacyFloatingWindow::LegacyFloatingWindow(int winWidth, int winHeight, int winDecoration):
     width(winWidth),
     height(winHeight),
     decoration(winDecoration)
@@ -41,7 +41,7 @@ FloatingWindow::FloatingWindow(int winWidth, int winHeight, int winDecoration):
     createWindow();
 }
 
-void FloatingWindow::createWindow() {
+void LegacyFloatingWindow::createWindow() {
     int winLeft, winTop, winRight, winBot;
     XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
@@ -53,27 +53,27 @@ void FloatingWindow::createWindow() {
     params.bottom = winTop - 100 - height;
     params.visible = 1;
     params.refcon = this;
-    params.drawWindowFunc = [] (XPLMWindowID id, void *ref) {
+    params.drawWindowFunc = [] (XPLMWindowID /* id */, void *ref) {
         try {
-            reinterpret_cast<FloatingWindow*>(ref)->onDraw();
+            reinterpret_cast<LegacyFloatingWindow*>(ref)->onDraw();
         } catch (std::exception& e) {
             flywithlua::logMsg(logToDevCon, std::string("Caught error: ") + e.what());
         }
     };
-    params.handleMouseClickFunc = [] (XPLMWindowID id, int x, int y, XPLMMouseStatus status, void *ref) -> int {
-        return reinterpret_cast<FloatingWindow *>(ref)->onClick(x, y, status);
+    params.handleMouseClickFunc = [] (XPLMWindowID /* id */, int x, int y, XPLMMouseStatus status, void *ref) -> int {
+        return reinterpret_cast<LegacyFloatingWindow *>(ref)->onClick(x, y, status);
     };
-    params.handleRightClickFunc = [] (XPLMWindowID id, int x, int y, XPLMMouseStatus status, void *ref) -> int {
-        return reinterpret_cast<FloatingWindow *>(ref)->onRightClick(x, y, status);
+    params.handleRightClickFunc = [] (XPLMWindowID /* id */, int x, int y, XPLMMouseStatus status, void *ref) -> int {
+        return reinterpret_cast<LegacyFloatingWindow *>(ref)->onRightClick(x, y, status);
     };
-    params.handleKeyFunc = [] (XPLMWindowID id, char key, XPLMKeyFlags flags, char vKey, void *ref, int losingFocus) {
-        reinterpret_cast<FloatingWindow *>(ref)->onKey(key, flags, vKey, losingFocus);
+    params.handleKeyFunc = [] (XPLMWindowID /* id */, char key, XPLMKeyFlags flags, char vKey, void *ref, int losingFocus) {
+        reinterpret_cast<LegacyFloatingWindow *>(ref)->onKey(key, flags, vKey, losingFocus);
     };
-    params.handleCursorFunc = [] (XPLMWindowID id, int x, int y, void *ref) -> XPLMCursorStatus {
-        return reinterpret_cast<FloatingWindow *>(ref)->getCursor(x, y);
+    params.handleCursorFunc = [] (XPLMWindowID /* id */, int x, int y, void *ref) -> XPLMCursorStatus {
+        return reinterpret_cast<LegacyFloatingWindow *>(ref)->getCursor(x, y);
     };
-    params.handleMouseWheelFunc =  [] (XPLMWindowID id, int x, int y, int wheel, int clicks, void *ref) -> int {
-        return reinterpret_cast<FloatingWindow *>(ref)->onMouseWheel(x, y, wheel, clicks);
+    params.handleMouseWheelFunc =  [] (XPLMWindowID /* id */, int x, int y, int wheel, int clicks, void *ref) -> int {
+        return reinterpret_cast<LegacyFloatingWindow *>(ref)->onMouseWheel(x, y, wheel, clicks);
     };
     params.layer = xplm_WindowLayerFloatingWindows;
 
@@ -88,27 +88,27 @@ void FloatingWindow::createWindow() {
     moveFromOrToVR();
 }
 
-void FloatingWindow::setDrawCallback(DrawCallback cb) {
+void LegacyFloatingWindow::setDrawCallback(DrawCallback cb) {
     onDrawCB = cb;
 }
 
-void FloatingWindow::setClickCallback(ClickCallback cb) {
+void LegacyFloatingWindow::setClickCallback(ClickCallback cb) {
     onClickCB = cb;
 }
 
-void FloatingWindow::setCloseCallback(CloseCallback cb) {
+void LegacyFloatingWindow::setCloseCallback(CloseCallback cb) {
     onCloseCB = cb;
 }
 
-void FloatingWindow::setKeyCallback(KeyCallback cb) {
+void LegacyFloatingWindow::setKeyCallback(KeyCallback cb) {
     onKeyCB = cb;
 }
 
-void FloatingWindow::setTitle(const char *title) {
+void LegacyFloatingWindow::setTitle(const char *title) {
     XPLMSetWindowTitle(window, title);
 }
 
-void FloatingWindow::setPosition(int posx, int posy) {
+void LegacyFloatingWindow::setPosition(int posx, int posy) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -120,15 +120,15 @@ void FloatingWindow::setPosition(int posx, int posy) {
     }
 }
 
-bool FloatingWindow::isPopped() {
+bool LegacyFloatingWindow::isPopped() {
     return XPLMWindowIsPoppedOut(window);
 }
 
-bool FloatingWindow::isFront() {
+bool LegacyFloatingWindow::isFront() {
     return XPLMIsWindowInFront(window);
 }
 
-void FloatingWindow::bringToFront() {
+void LegacyFloatingWindow::bringToFront() {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -137,15 +137,15 @@ void FloatingWindow::bringToFront() {
     }
 }
 
-void FloatingWindow::setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight) {
+void LegacyFloatingWindow::setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight) {
     XPLMSetWindowResizingLimits(window, minwidth, minheight, maxwidth, maxheight);
 }
 
-void FloatingWindow::setPositioningMode(int pmode, int monindex) {
+void LegacyFloatingWindow::setPositioningMode(int pmode, int monindex) {
     XPLMSetWindowPositioningMode(window, static_cast<XPLMWindowPositioningMode>(pmode), monindex);
 }
 
-void FloatingWindow::setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity) {
+void LegacyFloatingWindow::setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -154,7 +154,7 @@ void FloatingWindow::setGravity(float inLeftGravity, float inTopGravity, float i
     }
 }
 
-void FloatingWindow::setWindowGeometry(int mleft, int mtop, int mright, int mbot) {
+void LegacyFloatingWindow::setWindowGeometry(int mleft, int mtop, int mright, int mbot) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -163,7 +163,7 @@ void FloatingWindow::setWindowGeometry(int mleft, int mtop, int mright, int mbot
     }
 }
 
-void FloatingWindow::setWindowGeometryOS(int mleft, int mtop, int mright, int mbot) {
+void LegacyFloatingWindow::setWindowGeometryOS(int mleft, int mtop, int mright, int mbot) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -172,7 +172,7 @@ void FloatingWindow::setWindowGeometryOS(int mleft, int mtop, int mright, int mb
     }
 }
 
-void FloatingWindow::setWindowGeometryVR(int bWidth, int bHeight) {
+void LegacyFloatingWindow::setWindowGeometryVR(int bWidth, int bHeight) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -181,11 +181,11 @@ void FloatingWindow::setWindowGeometryVR(int bWidth, int bHeight) {
     }
 }
 
-bool FloatingWindow::isVR() {
+bool LegacyFloatingWindow::isVR() {
     return XPLMWindowIsInVR(window);
 }
 
-void FloatingWindow::setIsCmdVisible(int fCondition) {
+void LegacyFloatingWindow::setIsCmdVisible(int fCondition) {
 
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
@@ -194,11 +194,11 @@ void FloatingWindow::setIsCmdVisible(int fCondition) {
     }
 }
 
-bool FloatingWindow::getIsCmdVisible() {
+bool LegacyFloatingWindow::getIsCmdVisible() {
     return isCmdVisible;
 }
 
-void FloatingWindow::moveFromOrToVR() {
+void LegacyFloatingWindow::moveFromOrToVR() {
     bool vrEnabled = XPLMGetDatai(vrEnabledRef);
 
     if (vrEnabled && !isInVR) {
@@ -217,22 +217,22 @@ void FloatingWindow::moveFromOrToVR() {
     }
 }
 
-void FloatingWindow::requestInputFocus(bool req) {
+void LegacyFloatingWindow::requestInputFocus(bool req) {
     XPLMTakeKeyboardFocus(req ? window : nullptr);
 }
 
-bool FloatingWindow::hasInputFocus() {
+bool LegacyFloatingWindow::hasInputFocus() {
     return XPLMHasKeyboardFocus(window);
 }
 
-void FloatingWindow::updateMatrices() {
+void LegacyFloatingWindow::updateMatrices() {
     // Get the current modelview matrix, viewport, and projection matrix from X-Plane
     XPLMGetDatavf(modeliewMatrixRef, mModelView, 0, 16);
     XPLMGetDatavf(projectionMatrixRef, mProjection, 0, 16);
     XPLMGetDatavi(viewportRef, mViewport, 0, 4);
 }
 
-void FloatingWindow::boxelsToNative(int x, int y, int& outX, int& outY) {
+void LegacyFloatingWindow::boxelsToNative(int x, int y, int& outX, int& outY) {
     GLfloat boxelPos[4] = { (GLfloat) x, (GLfloat) y, 0, 1 };
     GLfloat eye[4], ndc[4];
 
@@ -246,38 +246,38 @@ void FloatingWindow::boxelsToNative(int x, int y, int& outX, int& outY) {
     outY = static_cast<int>((ndc[1] * 0.5f + 0.5f) * mViewport[3] + mViewport[1]);
 }
 
-void FloatingWindow::onDraw() {
+void LegacyFloatingWindow::onDraw() {
     if (onDrawCB) {
         onDrawCB(*this);
     }
 }
 
-bool FloatingWindow::onClick(int x, int y, XPLMMouseStatus status) {
+bool LegacyFloatingWindow::onClick(int x, int y, XPLMMouseStatus status) {
     if (onClickCB) {
         onClickCB(*this, x, y, status);
     }
     return true;
 }
 
-void FloatingWindow::reportClose() {
+void LegacyFloatingWindow::reportClose() {
     if (onCloseCB) {
         onCloseCB(*this);
     }
 }
 
-bool FloatingWindow::isVisible() const {
+bool LegacyFloatingWindow::isVisible() const {
     return XPLMGetWindowIsVisible(window);
 }
 
-void FloatingWindow::setVisible(bool visible) {
+void LegacyFloatingWindow::setVisible(bool visible) {
     XPLMSetWindowIsVisible(window, visible);
 }
 
-bool FloatingWindow::onRightClick(int x, int y, XPLMMouseStatus status) {
+bool LegacyFloatingWindow::onRightClick(int /* x */, int /* y */, XPLMMouseStatus /* status */) {
     return true;
 }
 
-void FloatingWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) {
+void LegacyFloatingWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus) {
     if (losingFocus) {
         return;
     }
@@ -287,19 +287,19 @@ void FloatingWindow::onKey(char key, XPLMKeyFlags flags, char virtualKey, bool l
     }
 }
 
-XPLMCursorStatus FloatingWindow::getCursor(int x, int y) {
+XPLMCursorStatus LegacyFloatingWindow::getCursor(int /* x */, int /* y */) {
     return xplm_CursorDefault;
 }
 
-bool FloatingWindow::onMouseWheel(int x, int y, int wheel, int clicks) {
+bool LegacyFloatingWindow::onMouseWheel(int /* x */, int /* y */, int /* wheel */, int /* clicks */) {
     return true;
 }
 
-XPLMWindowID FloatingWindow::getXWindow() {
+XPLMWindowID LegacyFloatingWindow::getXWindow() {
     return window;
 }
 
-FloatingWindow::~FloatingWindow() {
+LegacyFloatingWindow::~LegacyFloatingWindow() {
     XPLMDestroyWindow(window);
 }
 

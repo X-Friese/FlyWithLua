@@ -24,37 +24,73 @@ public:
     using CloseCallback = std::function<void(FloatingWindow &)>;
     using KeyCallback = std::function<void(FloatingWindow &, char, char, XPLMKeyFlags)>;
 
-    FloatingWindow(int winWidth, int winHeight, int winDecoration);
-    void setDrawCallback(DrawCallback cb);
-    void setClickCallback(ClickCallback cb);
-    void setCloseCallback(CloseCallback cb);
-    void setKeyCallback(KeyCallback cb);
+    virtual ~FloatingWindow() = default;
 
-    void setTitle(const char *title);
-    void setPosition(int posx, int posy);
-    bool isVisible() const;
-    void setVisible(bool visible);
-    void moveFromOrToVR();
-    void requestInputFocus(bool req);
-    bool hasInputFocus();
-    void reportClose();
-    void boxelsToNative(int x, int y, int &outX, int &outY);
+    virtual void setTitle(const char *title) = 0;
+    virtual void setPosition(int posx, int posy) = 0;
+    virtual bool isVisible() const = 0;
+    virtual void setVisible(bool visible) = 0;
+    virtual void moveFromOrToVR() = 0;
+    virtual void requestInputFocus(bool req) = 0;
+    virtual bool hasInputFocus() = 0;
+    virtual void reportClose() = 0;
+    virtual void boxelsToNative(int x, int y, int &outX, int &outY) = 0;
 
-    bool isPopped();
-    bool isFront();
-    void bringToFront();
-    void setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight);
-    void setPositioningMode(int pmode, int monindex);
-    void setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity);
-    void setWindowGeometry(int mleft, int mtop, int mright, int mbot);
-    void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot);
-    void setWindowGeometryVR(int bWidth, int bHeight);
-    bool isVR();
-    void setIsCmdVisible(int fCondition);
-    bool getIsCmdVisible();
+    virtual bool isPopped() = 0;
+    virtual bool isFront() = 0;
+    virtual void bringToFront() = 0;
+    virtual void setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight) = 0;
+    virtual void setPositioningMode(int pmode, int monindex) = 0;
+    virtual void setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity) = 0;
+    virtual void setWindowGeometry(int mleft, int mtop, int mright, int mbot) = 0;
+    virtual void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot) = 0;
+    virtual void setWindowGeometryVR(int bWidth, int bHeight) = 0;
+    virtual bool isVR() = 0;
+    virtual void setIsCmdVisible(int fCondition) = 0;
+    virtual bool getIsCmdVisible() = 0;
 
-    XPLMWindowID getXWindow();
-    virtual ~FloatingWindow();
+    virtual XPLMWindowID getXWindow() = 0;
+
+    virtual void setDrawCallback(DrawCallback /* cb */) {}
+    virtual void setClickCallback(ClickCallback /* cb */) {}
+    virtual void setCloseCallback(CloseCallback /* cb */) {}
+    virtual void setKeyCallback(KeyCallback /* cb */) {}
+};
+
+class LegacyFloatingWindow : public FloatingWindow {
+public:
+    LegacyFloatingWindow(int winWidth, int winHeight, int winDecoration);
+    virtual ~LegacyFloatingWindow();
+
+    void setDrawCallback(DrawCallback cb) override;
+    void setClickCallback(ClickCallback cb) override;
+    void setCloseCallback(CloseCallback cb) override;
+    void setKeyCallback(KeyCallback cb) override;
+
+    void setTitle(const char *title) override;
+    void setPosition(int posx, int posy) override;
+    bool isVisible() const override;
+    void setVisible(bool visible) override;
+    void moveFromOrToVR() override;
+    void requestInputFocus(bool req) override;
+    bool hasInputFocus() override;
+    void reportClose() override;
+    void boxelsToNative(int x, int y, int &outX, int &outY) override;
+
+    bool isPopped() override;
+    bool isFront() override;
+    void bringToFront() override;
+    void setResizingLimits(int minwidth, int minheight, int maxwidth, int maxheight) override;
+    void setPositioningMode(int pmode, int monindex) override;
+    void setGravity(float inLeftGravity, float inTopGravity, float inRightGravity, float inBottomGravity) override;
+    void setWindowGeometry(int mleft, int mtop, int mright, int mbot) override;
+    void setWindowGeometryOS(int mleft, int mtop, int mright, int mbot) override;
+    void setWindowGeometryVR(int bWidth, int bHeight) override;
+    bool isVR() override;
+    void setIsCmdVisible(int fCondition) override;
+    bool getIsCmdVisible() override;
+
+    XPLMWindowID getXWindow() override;
 
 protected:
     void updateMatrices();
@@ -64,7 +100,7 @@ protected:
     virtual void onKey(char key, XPLMKeyFlags flags, char virtualKey, bool losingFocus);
     virtual XPLMCursorStatus getCursor(int x, int y);
     virtual bool onMouseWheel(int x, int y, int wheel, int clicks);
-    
+
 private:
     XPLMWindowID window{};
     int width, height, decoration;
@@ -84,7 +120,7 @@ private:
     ClickCallback onClickCB;
     CloseCallback onCloseCB;
     KeyCallback onKeyCB;
-    
+
     void createWindow();
 };
 
