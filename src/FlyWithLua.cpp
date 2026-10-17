@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.16"
+#define PLUGIN_VERSION_NO "2.8.18"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -177,6 +177,11 @@
  *  v2.8.15 [Added]   Support for imgui 1.92.8 to help have scalable fonts. Thanks to jim Kier and Steve (slgoldberg)
  *  v2.8.16 [Added]   To the fwl_prefs.ini file able to disable the imgui debug popup for non developers.
  *                    Also in the fwl_prefs.ini can set the three font sizes to better match your project.
+ *  v2.8.17 [Added]   imgui now uses panel graphics if using X-Plane 12.4.4+ thanks to slgoldberg.
+ *                    We have retained using OpenGL for previous versions.
+ *  v2.8.18 [Added]   We now have Roboto-Light.ttf, Roboto-Regular.ttf and Roboto-Medium.ttf included with the package.
+ *                    You can add three custon fonts by enabling UseCustomFonts and adding there names to the fwl_prefs.ini file.
+ *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
  *          [changed] extended logMsg() with logType=logToAll|logToDevCon|logToSqkBox. If XSquawkBox is not connected logMsg() will fall back to DevCon
@@ -280,7 +285,8 @@
 #include <vector>
 #include <sol.hpp>
 #include "XSBComDefs.h"
-#include "FloatingWindows/FLWIntegration.h"
+#include "FloatingWindows/FWLIntegration.h"
+#include "FlyWithLuaImGui.h"
 
 
 // include OpenAL
@@ -935,6 +941,9 @@ std::string systemDir;
 std::string internalsDir;
 std::string modulesDir;
 std::string quarantineDir;
+std::string imgui_custom_font1;
+std::string imgui_custom_font2;
+std::string imgui_custom_font3;
 // END added by Sparker
 
 void process_read_ini_file();
@@ -1070,6 +1079,8 @@ int imgui_debug_popup = 0;
 int imgui_font_size1 = 13;
 int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;
+int proggy_clean_default = 0;
+int use_custom_fonts = 0;
 
 clock_t speak_time;
 
@@ -7439,6 +7450,10 @@ PLUGIN_API void XPluginDisable(void)
     LuaIsRunning = false;
     lua_close(FWLLua);
 
+    // Tear down the shared ImGui font atlas. All floating windows are closed first (see above and
+    // TeardownImGui() Step 0), and Lua is gone, so nothing can draw against the dead atlas.
+    TeardownImGui();
+
     // killing all commands
     if (CommandTableLastElement > -1)
     {
@@ -7626,6 +7641,16 @@ PLUGIN_API int XPluginEnable(void)
 
     // Initialize OpenAL sound
     init_openal_sound();
+
+    // Build the shared ImGui font atlas. The font sizes come from fwl_prefs.ini, which on a
+    // cold start has not been read yet at this point (it is otherwise first read on
+    // XPLM_MSG_AIRPORT_LOADED), so read it now. This must happen before any script can open
+    // a window, i.e. before the Lua engine starts below.
+    ReadPrefFile();
+    if (!InitializeImGui())
+    {
+        logMsg(logToDevCon, "FlyWithLua Error: Unable to initialize the shared ImGui font atlas.");
+    }
 
     // Starting the Lua engine
     /* use the default allocator. */

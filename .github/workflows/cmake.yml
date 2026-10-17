@@ -5,13 +5,15 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  FWL_VERSION: 2.8.16
+  FWL_VERSION: 2.8.18
 
 jobs:
   build-lin:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - name: Install other dependancies
         run: |
           sudo apt-get update
@@ -32,6 +34,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - name: "Windows: Configure environment"
         shell: bash
         run: |
@@ -53,6 +57,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - name: Configure CMake
         working-directory: ${{github.workspace}}/src
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -75,6 +81,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - name: Configure CMake
         working-directory: ${{github.workspace}}/src
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_ARM=ON
@@ -98,6 +106,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       
       - uses: actions/upload-artifact/merge@v7
         with:

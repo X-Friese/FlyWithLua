@@ -4,8 +4,8 @@
  *   Released as public domain code.
  *
  */
-#ifndef FLOATINGWINDOWS_FLWINTEGRATION_H_
-#define FLOATINGWINDOWS_FLWINTEGRATION_H_
+#ifndef FLOATINGWINDOWS_FWLINTEGRATION_H_
+#define FLOATINGWINDOWS_FWLINTEGRATION_H_
 
 #include "lua.hpp"
 
@@ -22,4 +22,4 @@ bool FindAndQuarantine (lua_State *L);
 
 }
 
-#endif /* FLOATINGWINDOWS_FLWINTEGRATION_H_ */
+#endif /* FLOATINGWINDOWS_FWLINTEGRATION_H_ */
