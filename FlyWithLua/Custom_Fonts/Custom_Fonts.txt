@@ -1,57 +1,85 @@
-Starting with FlyWithLua 2.8.15 we have scalable fonts in imgui and also being able to load 3 custom fonts to use with your script. We now have a new folder in FlyWithLua called Custom_Fonts that needs to have the following 3 named fonts. As this folder will only have this text file in it you need to do this to get started.
+Starting with FlyWithLua 2.8.15 we have scalable fonts in imgui and also being able to load 3 custom fonts to use with your script. We now have a new folder in FlyWithLua called Custom_Fonts that has the following 3 named fonts.
 
-Sorry this a bit involved but did not want to put the X-Plane fonts in FlyWithLua and have to ask there permision so this is what I came up with but the benifits of this will outway and small pain doing this. 
+In this folder you will see.
 
-Copy ProFontWindows.ttf from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts
-Copy Roboto-Light.ttf from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts
-Copy Roboto-Regular.ttf from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts
-
-Done correctly you will have this.
-
-Resources/plugins/FlyWithLua/Custom_Fonts/ProFontWindows.ttf
 Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Light.ttf
 Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Regular.ttf
+Resources/plugins/FlyWithLua/Custom_Fonts/Roboto-Medium.ttf
 
 So in FlyWithLua.
 
-ProFontWindows.ttf size 13 is 1
+Roboto-Light.ttf size 13 is 1
 
-ProFontWindows.ttf size 16 is 2
+Roboto-Light.ttf size 16 is 2
 
-ProFontWindows.ttf size 20 is 3
+Roboto-Light.ttf size 20 is 3
 
   
-Roboto-Light.ttf size 13 is 4
+Roboto-Regular.ttf size 13 is 4
 
-Roboto-Light.ttf size 16 is 5
+Roboto-Regular.ttf size 16 is 5
 
-Roboto-Light.ttf size 20 is 6
+Roboto-Regular.ttf size 20 is 6
 
 
-Roboto-Regular.ttf size 13 is 7
+Roboto-Medium.ttf size 13 is 7
 
-Roboto-Regular.ttf size 16 is 8
+Roboto-Medium.ttf size 16 is 8
 
-Roboto-Regular.ttf size 20 is 9
+Roboto-Medium.ttf size 20 is 9
 
 
 I have a imgui_fonts_demo_window.lua in Resources/plugins/FlyWithLua/Scripts (disabled) show some of the features.
 
 I have a imgui_fonts_demo_window_macro.lua in Resources/plugins/FlyWithLua/Scripts (disabled) which start from the macro menu and will start better in VR.
 
-I have a imgui_load_then_push_font_demo.lua in Resources/plugins/FlyWithLua/Scripts (disabled) which shows how to use the new imgui_push_font(1, 20).
+I have a imgui_custom_fonts_demo_window.lua in Resources/plugins/FlyWithLua/Scripts (disabled) which shows how to use the new imgui_push_font(1, 20).
 
 
-imgui_push_font(1) So this will use the ProFontWindows.ttf font with a size of 13.
+imgui_push_font(1) So this will use the Roboto-Light.ttf font with a size of 13.
 
 imgui_push_font(4) So this will use the Roboto-Light.ttf font with a size of 13.
 
-imgui_push_font(7) So this will use the Roboto-Regular.ttf font with a size of 13.
+imgui_push_font(7) So this will use the Roboto-Light.ttf font with a size of 13.
 
 The range for the fonts is 0 thru 3
 
+This section of the fwl_prefs.ini is for fonts.
 
-Also please don't forget you have to move the three supported from Resources/fonts to Resources/plugins/FlyWithLua/Custom_Fonts before any of this can work.
+*********************************************************************
+;ImguiFontSize1 = 13 Initial font1 size
+ImguiFontSize1 = 13
+
+;ImguiFontSize2 = 16 Initial font2 size
+ImguiFontSize2 = 16
+
+;ImguiFontSize3 = 20 Initial font3 size
+ImguiFontSize3 = 20
+
+;ProggyCleanDefault = 0 You are using ProggyForever
+;ProggyCleanDefault = 1 You are using ProggyClean
+ProggyCleanDefault = 0
+
+;UseCustomFonts = 0 You are not using custom fonts
+;UseCustomFonts = 1 You are using custom fonts
+UseCustomFonts = 0
+
+;mguiCustomFont1 = Roboto-Light.ttf This is one of the default fonts
+;mguiCustomFont1 = Your font name.ttf that you added to the Custom_Fonts folder
+; It will use numbers 1-3  1 being font1 size
+ImguiCustomFont1 = Roboto-Light.ttf
+
+;ImguiCustomFont2 = Roboto-Regular.ttf This is one of the default fonts
+;ImguiCustomFont2 = Your font name.ttf that you added to the Custom_Fonts folder
+; It will use numbers 4-6  4 being font1 size
+ImguiCustomFont2 = Roboto-Regular.ttf
+
+;ImguiCustomFont3 = Roboto-Medium.ttf This is one of the default fonts
+;ImguiCustomFont3 = Your font name.ttf that you added to the Custom_Fonts folder
+; It will use numbers 7-9  7 being font1 size
+ImguiCustomFont3 = Roboto-Medium.ttf
+
+**************************************************************
 
 If you have any suggestions or comments please feel free to reach out.
 

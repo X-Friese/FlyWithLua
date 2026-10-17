@@ -55,4 +55,15 @@ void flywithlua::process_read_ini_file()
   // Do we want to proggy clean to be the default?
   readOptionAsInt("ProggyCleanDefault", &proggy_clean_default);
 
+  // Use Custom Fonts?
+  readOptionAsInt("UseCustomFonts", &use_custom_fonts);
+
+  // Privide Custom Font One Name
+  imgui_custom_font1 = getOptionToString("ImguiCustomFont1");
+
+  // Privide Custom Font Two Name
+  imgui_custom_font2 = getOptionToString("ImguiCustomFont2");
+
+  // Privide Custom Font Three Name
+  imgui_custom_font3 = getOptionToString("ImguiCustomFont3");
 }

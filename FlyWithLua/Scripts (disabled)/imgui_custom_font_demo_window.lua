@@ -1,4 +1,4 @@
--- Imgui Custon Font Demo Window
+-- Imgui Custom Font Demo Window
 -- William R. Good 10-16-26
 
 -- V 1.00 
@@ -9,9 +9,6 @@ if not SUPPORTS_FLOATING_WINDOWS then
 end
 
 -----------------------------------Variables go here--------------------------------------------
-dataref("frame_rate_period", "sim/operation/misc/frame_rate_period", "readonly")
-dataref("framerate_period", "sim/time/framerate_period", "readonly")
-dataref("gpu_time_per_frame_sec_approx", "sim/time/gpu_time_per_frame_sec_approx", "readonly")
 
 
 -- Isolate tracking states securely
@@ -34,36 +31,38 @@ local function icfdw_on_build(wnd, x, y)
     
     imgui.SameLine()
     imgui.TextUnformatted("This button hides this window")
- 
-    imgui_push_font(1)
-	imgui.TextUnformatted("ProFontWindows.ttf Font Size 13")
-    imgui.PopFont()	
-    imgui_push_font(2)
-	imgui.TextUnformatted("ProFontWindows.ttf Font Size 16")
-    imgui.PopFont()		
-    imgui_push_font(3)
-	imgui.TextUnformatted("ProFontWindows.ttf Font Size 20")	
-    imgui.PopFont()
     
-    imgui_push_font(4)
+    imgui_push_font(1)
 	imgui.TextUnformatted("Roboto-Light.ttf Font Size 13")
     imgui.PopFont()	
-    imgui_push_font(5)
+    imgui_push_font(2)
 	imgui.TextUnformatted("Roboto-Light.ttf Font Size 16")
     imgui.PopFont()		
-    imgui_push_font(6)
+    imgui_push_font(3)
 	imgui.TextUnformatted("Roboto-Light.ttf Font Size 20")	
     imgui.PopFont()    
-
-    imgui_push_font(7)
+    
+    imgui_push_font(4)
 	imgui.TextUnformatted("Roboto-Regular.ttf Font Size 13")
     imgui.PopFont()	
-    imgui_push_font(8)
+    imgui_push_font(5)
 	imgui.TextUnformatted("Roboto-Regular.ttf Font Size 16")
     imgui.PopFont()		
-    imgui_push_font(8)
+    imgui_push_font(6)
 	imgui.TextUnformatted("Roboto-Regular.ttf Font Size 20")	
-    imgui.PopFont() 
+    imgui.PopFont()
+ 
+    imgui_push_font(7)
+	imgui.TextUnformatted("Roboto-Medium.ttf Font Size 13")
+    imgui.PopFont()	
+    imgui_push_font(8)
+	imgui.TextUnformatted("Roboto-Medium.ttf Font Size 16")
+    imgui.PopFont()		
+    imgui_push_font(9)
+	imgui.TextUnformatted("Roboto-Medium.ttf Font Size 20")	
+    imgui.PopFont()
+ 
+ 
 
 end
 

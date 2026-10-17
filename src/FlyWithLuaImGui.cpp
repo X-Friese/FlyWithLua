@@ -82,18 +82,40 @@ bool InitializeImGui()
     const float font_size2 = static_cast<float>(flywithlua::imgui_font_size2);
     const float font_size3 = static_cast<float>(flywithlua::imgui_font_size3);
 
-    // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
-    customFont1 = LoadCustomFont("ProFontWindows.ttf", font_size1);
-    customFont2 = LoadCustomFont("ProFontWindows.ttf", font_size2);
-    customFont3 = LoadCustomFont("ProFontWindows.ttf", font_size3);
+    std::string custom_font1 = static_cast<std::string>(flywithlua::imgui_custom_font1);
+    std::string custom_font2 = static_cast<std::string>(flywithlua::imgui_custom_font2);
+    std::string custom_font3 = static_cast<std::string>(flywithlua::imgui_custom_font3);
 
-    customFont4 = LoadCustomFont("Roboto-Light.ttf", font_size1);
-    customFont5 = LoadCustomFont("Roboto-Light.ttf", font_size2);
-    customFont6 = LoadCustomFont("Roboto-Light.ttf", font_size3);
+    // use_custom_fonts
+    if (flywithlua::use_custom_fonts == 1)
+    {
+        // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
+        customFont1 = LoadCustomFont(custom_font1.c_str(), font_size1);
+        customFont2 = LoadCustomFont(custom_font1.c_str(), font_size2);
+        customFont3 = LoadCustomFont(custom_font1.c_str(), font_size3);
 
-    customFont7 = LoadCustomFont("Roboto-Regular.ttf", font_size1);
-    customFont8 = LoadCustomFont("Roboto-Regular.ttf", font_size2);
-    customFont9 = LoadCustomFont("Roboto-Regular.ttf", font_size3);
+        customFont4 = LoadCustomFont(custom_font2.c_str(), font_size1);
+        customFont5 = LoadCustomFont(custom_font2.c_str(), font_size2);
+        customFont6 = LoadCustomFont(custom_font2.c_str(), font_size3);
+
+        customFont7 = LoadCustomFont(custom_font3.c_str(), font_size1);
+        customFont8 = LoadCustomFont(custom_font3.c_str(), font_size2);
+        customFont9 = LoadCustomFont(custom_font3.c_str(), font_size3);
+
+    } else {
+        // Here we load some custom fonts in FlyWithLua folder Custom_Fonts. This should allow you to pick the font you want to use.
+        customFont1 = LoadCustomFont("Roboto-Light.ttf", font_size1);
+        customFont2 = LoadCustomFont("Roboto-Light.ttf", font_size2);
+        customFont3 = LoadCustomFont("Roboto-Light.ttf", font_size3);
+
+        customFont4 = LoadCustomFont("Roboto-Regular.ttf", font_size1);
+        customFont5 = LoadCustomFont("Roboto-Regular.ttf", font_size2);
+        customFont6 = LoadCustomFont("Roboto-Regular.ttf", font_size3);
+
+        customFont7 = LoadCustomFont("Roboto-Medium.ttf", font_size1);
+        customFont8 = LoadCustomFont("Roboto-Medium.ttf", font_size2);
+        customFont9 = LoadCustomFont("Roboto-Medium.ttf", font_size3);
+    }
 
     // Note: the GPU upload happens lazily, when the first window draws.
     return true;

@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.17"
+#define PLUGIN_VERSION_NO "2.8.18"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -179,6 +179,9 @@
  *                    Also in the fwl_prefs.ini can set the three font sizes to better match your project.
  *  v2.8.17 [Added]   imgui now uses panel graphics if using X-Plane 12.4.4+ thanks to slgoldberg.
  *                    We have retained using OpenGL for previous versions.
+ *  v2.8.18 [Added]   We now have Roboto-Light.ttf, Roboto-Regular.ttf and Roboto-Medium.ttf included with the package.
+ *                    You can add three custon fonts by enabling UseCustomFonts and adding there names to the fwl_prefs.ini file.
+ *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
  *          [changed] extended logMsg() with logType=logToAll|logToDevCon|logToSqkBox. If XSquawkBox is not connected logMsg() will fall back to DevCon
@@ -938,6 +941,9 @@ std::string systemDir;
 std::string internalsDir;
 std::string modulesDir;
 std::string quarantineDir;
+std::string imgui_custom_font1;
+std::string imgui_custom_font2;
+std::string imgui_custom_font3;
 // END added by Sparker
 
 void process_read_ini_file();
@@ -1074,6 +1080,7 @@ int imgui_font_size1 = 13;
 int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;
 int proggy_clean_default = 0;
+int use_custom_fonts = 0;
 
 clock_t speak_time;
 
