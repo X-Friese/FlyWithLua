@@ -64,13 +64,6 @@ public:
     virtual ImGuiWindowFlags_ beforeBegin() override;
 
 private:
-    struct InitialBounds {
-        int left, top, right, bottom;
-        InitialBounds(int w, int h);
-    };
-
-    FlyWithLuaWindow(const InitialBounds& bounds, int decoration);
-
     BuildCallback doBuild;
     ErrorHandler onError;
     CloseCallback onCloseCB;

@@ -136,7 +136,7 @@ if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp")
     endif ()
 endif ()
 
-# ImgWindow v2 (git submodule, pinned to tagged release v2.1.0). It ships no CMakeLists.txt, so its sources are compiled directly.
+# ImgWindow v2 (git submodule, pinned to tagged release v2.2.0). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
 set_source_files_properties(ImgWindow/ImgWindow.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
