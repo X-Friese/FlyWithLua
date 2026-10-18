@@ -9,26 +9,17 @@
 
 namespace flwnd {
 
-FlyWithLuaWindow::InitialBounds::InitialBounds(int w, int h) {
-    int sl, st, sr, sb;
-    XPLMGetScreenBoundsGlobal(&sl, &st, &sr, &sb);
-    left = sl + 100;
-    top = st - 100;
-    right = left + w;
-    bottom = top - h;
+namespace {
+    inline WindowGeometry GetDefaultFlyWithLuaGeometry(int width, int height) {
+        int sl = 0, st = 0;
+        XPLMGetScreenBoundsGlobal(&sl, &st, nullptr, nullptr);
+        return WindowGeometry::FromTopLeft(sl + 100, st - 100, width, height);
+    }
 }
 
 FlyWithLuaWindow::FlyWithLuaWindow(int width, int height, int decoration) :
-    FlyWithLuaWindow(InitialBounds(width, height), decoration)
-{
-}
-
-FlyWithLuaWindow::FlyWithLuaWindow(const InitialBounds& bounds, int decoration) :
     ImgWindow(
-        bounds.left,
-        bounds.top,
-        bounds.right,
-        bounds.bottom,
+        GetDefaultFlyWithLuaGeometry(width, height),
         static_cast<XPLMWindowDecoration>(decoration),
         xplm_WindowLayerFloatingWindows,
         false)
