@@ -53,7 +53,7 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 2.  Checkout and configure the project:
 
     ```
-    git clone https://github.com/X-Friese/FlyWithLua.git
+    git clone --recurse-submodules https://github.com/X-Friese/FlyWithLua.git
     cd FlyWithLua
     cmake -G "MinGW Makefiles" -S .\src -B .\build -DCMAKE_BUILD_TYPE=RelWithDebInfo
     ```
@@ -78,7 +78,7 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 2. Checkout and configure the project:
 
    ```
-   git clone https://github.com/X-Friese/FlyWithLua.git
+   git clone --recurse-submodules https://github.com/X-Friese/FlyWithLua.git
    cd FlyWithLua
    cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo
    ```
@@ -98,7 +98,7 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 2. Checkout and configure the project:
 
    ```
-   git clone https://github.com/X-Friese/FlyWithLua.git
+   git --recurse-submodules clone https://github.com/X-Friese/FlyWithLua.git
    cd FlyWithLua
    cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo
    ```
