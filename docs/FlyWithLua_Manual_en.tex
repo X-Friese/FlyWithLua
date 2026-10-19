@@ -3745,7 +3745,7 @@ Example for monitor 1: tOS[1].inLeft; tOS[1].inBottom; monitor 2: tOS[2].inLeft;
 
 Starting with version 2.7.0 NG we have imgui windows that can be in 2d, popped out or in VR. They are X-Plane 11 Window API style windows that use imgui widgets and can be created with Lua. There are examples of these kind of windows in the "Scripts (disabled)" folder and are prefaced with "imgui\_".
 
-Starting with version 2.8.15 NG+ we can now load three custom fonts in three different sizes. Because we are now using imgui v1.92.8.When FlyWithLua starts it is looking for ProFontWindows.ttf, Roboto-Light.ttf and Roboto-Regular.ttf located in the new Resources/plugins/FlyWithLua/Custom\_Fonts folder. This folder has a Custom\_Fonts.txt file explaining what you need to do to make this work. We have added a function called imgui\_push\_font(1) that will be descriped below.
+Starting with version 2.8.15 NG+ we can now load three custom fonts in three different sizes. Because we are now using imgui v1.92.8.When FlyWithLua starts it is looking for Roboto-Light.ttf, Roboto-Regular.ttf and Roboto-Medium.ttf located in the new Resources/plugins/FlyWithLua/Custom\_Fonts folder. This folder has a Custom\_Fonts.txt file explaining what you need to do to make this work. We have added a function called imgui\_push\_font(1) that will be descriped below.
 
 \subsection{demo\_wnd = float\_wnd\_create(800, 450, 1, true)}
 
@@ -3818,17 +3818,9 @@ to set the window title after it was closed.
 
 imgui supports drawing images, so let's load one. The images must always be loaded globally to make sure they are only loaded once per script!
 
-imgui widgets have no state, that means we need to store states of checkboxes, radio buttons etc. globally.
+\subsection{float\_wnd\_delete\_image(image\_id )}
 
-makeRed = false
-\newline
-sliderVal = 0
-\newline
-choice = 1
-\newline
-angle = 0
-\newline
-text = ""
+When you are done with it it can be deleated with this command.
 
 \subsection{function build\_demo(wnd, x, y)}
 
@@ -3844,6 +3836,20 @@ This function is called when the user closes the window. Drawing or calling imgu
 This function will tell FWL to use the first font with a size of 13. Since we can have 3 different custom fonts in 3 different sizes 1 thru 9 are valid. I have tried to make bad entries a non issue but you will tell me if I did a good enough job at that.
 
 Please look in Resources/plugins/FlyWithLua/Custom\_Fonts folder for the Custom\_Fonts.txt file for further info.
+
+\subsection{}
+imgui widgets have no state, that means we need to store states of checkboxes, radio buttons etc. globally.
+
+makeRed = false
+\newline
+sliderVal = 0
+\newline
+choice = 1
+\newline
+angle = 0
+\newline
+text = ""
+
 
 \newpage
 \section{Debugging}
@@ -4034,13 +4040,31 @@ ImguiFontSize2 = 16 \newline
 ;ImguiFontSize3 = 20 Initial font1 size \newline
 ImguiFontSize3 = 20 \newline
 
+;ProggyCleanDefault = 0 You are using ProggyForever \newline
+;ProggyCleanDefault = 1 You are using ProggyClean \newline
+ProggyCleanDefault = 0 \newline
+
+\newpage
+
+;ImguiCustomFont1 = Roboto-Light.ttf This is one of the default fonts \newline
+;ImguiCustomFont1 = Your font name.ttf that you added to the Custom\_Fonts folder \newline
+;It will use numbers 1-3  1 being font1 size \newline
+ImguiCustomFont1 = Roboto-Light.ttf \newline
+
+;ImguiCustomFont2 = Roboto-Regular.ttf This is one of the default fonts \newline
+;ImguiCustomFont2 = Your font name.ttf that you added to the Custom\_Fonts folder \newline
+; It will use numbers 4-6  4 being font1 size \newline
+ImguiCustomFont2 = Roboto-Regular.ttf \newline
+
+;ImguiCustomFont3 = Roboto-Medium.ttf This is one of the default fonts \newline
+;ImguiCustomFont3 = Your font name.ttf that you added to the Custom\_Fonts folder \newline
+; It will use numbers 7-9  7 being font1 size \newline
+ImguiCustomFont3 = Roboto-Medium.ttf
+
 If you change the 0 to a 1 you will be in developer mode and will disable the (Quarantine) folder
 functions. This will be this way until you change it back to the default of 0.
 
 These new changes in 2.8.16 allow you to to disable the imgui debug popup for non developers.
-
-The next three allow you to set 3 different font sizes.
-
 
 \newpage
 \section{The new 64-bit architecture}
