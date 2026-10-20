@@ -7418,9 +7418,7 @@ PLUGIN_API void XPluginStop(void)
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
-    // This does not work here and not sure why
-    // I think after this call fmod is not getting initalized.
-    // fmodint::fmod_uninitialize();
+    fmodint::fmod_uninitialize();
     fmodint::UnRegisterAccessor();
 
     // cleanup sound system
@@ -7487,9 +7485,7 @@ PLUGIN_API void XPluginDisable(void)
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
-    // This does not work here and not sure why
-    // I think after this call fmod is not getting initalized.
-    // fmodint::fmod_uninitialize();
+    fmodint::fmod_uninitialize();
 
     // unsubscribe messages from/to XSquawkBox
     XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_UNSUBSCRIBE, (void*) XSB_TEXT);
@@ -7641,6 +7637,12 @@ PLUGIN_API int XPluginEnable(void)
 
     // Initialize OpenAL sound
     init_openal_sound();
+
+    // Re-initialize FMOD sound if FMOD Studio is already running in X-Plane (e.g. across plugin reload)
+    if (XPLMGetFMODStudio() != nullptr)
+    {
+        fmodint::fmod_initialization();
+    }
 
     // Build the shared ImGui font atlas. The font sizes come from fwl_prefs.ini, which on a
     // cold start has not been read yet at this point (it is otherwise first read on
