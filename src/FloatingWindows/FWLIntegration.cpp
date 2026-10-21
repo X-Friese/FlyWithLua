@@ -48,6 +48,16 @@ typedef void(CallbackSetter)(sol::light<FloatingWindow>, CallbackProvider const&
 std::vector<std::shared_ptr<FloatingWindow>> floatingWindows;
 std::vector<ImTextureID> textureIDs;
 
+inline FloatingWindow* GetValidFloatingWindow(void* ptr) {
+    if (!ptr) return nullptr;
+    for (const auto& wndPtr : floatingWindows) {
+        if (wndPtr.get() == ptr) {
+            return wndPtr.get();
+        }
+    }
+    return nullptr;
+}
+
 ImTextureID loadImage(const std::string& fileName) {
     int imgWidth, imgHeight, nComps;
     // Always force 4-channel RGBA
@@ -145,8 +155,10 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-    wnd->setTitle(lua_tostring(L, 2));
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (wnd) {
+        wnd->setTitle(lua_tostring(L, 2));
+    }
 
     return 0;
 }
@@ -257,9 +269,10 @@ int LuaSetFloatingWindowPosition(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-
-    wnd->setPosition(lua_tonumber(L, 2), lua_tonumber(L, 3));
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (wnd) {
+        wnd->setPosition(lua_tonumber(L, 2), lua_tonumber(L, 3));
+    }
 
     return 0;
 }
@@ -350,7 +363,11 @@ int LuaGetXPLMWindowHandle(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushnil(L);
+        return 1;
+    }
     XPLMWindowID window = wnd->getXWindow();
     lua_pushlightuserdata(L, window);
     return 1;
@@ -364,7 +381,12 @@ int LuaGetFloatingWindowDimensions(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushnumber(L, 0);
+        lua_pushnumber(L, 0);
+        return 2;
+    }
     auto xwnd = wnd->getXWindow();
 
     int left, top, right, bottom;
@@ -384,7 +406,11 @@ int LuaFloatingWindowGetVisible(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
 
     lua_pushboolean(L, wnd->isVisible());
 
@@ -399,7 +425,10 @@ int LuaFloatingWindowSetVisible(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        return 0;
+    }
 
     bool visible = false;
     int cmdVal = 0;
@@ -425,7 +454,11 @@ int LuaFloatingWindowIsPopped(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
 
     lua_pushboolean(L, wnd->isPopped());
 
@@ -440,7 +473,11 @@ int LuaFloatingWindowIsFront(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
 
     lua_pushboolean(L, wnd->isFront());
 
@@ -455,7 +492,10 @@ int LuaFloatingWindowBringToFront(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        return 0;
+    }
 
     wnd->bringToFront();
 
@@ -470,7 +510,11 @@ int LuaFloatingWindowIsVR(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
 
     lua_pushboolean(L, wnd->isVR());
 
@@ -485,7 +529,10 @@ int LuaSetFloatingWindowResizingLimits(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        return 0;
+    }
 
     wnd->setResizingLimits(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
 
@@ -500,7 +547,10 @@ int LuaSetFloatingWindowPositioningMode(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        return 0;
+    }
 
     wnd->setPositioningMode(lua_tonumber(L, 2), lua_tonumber(L, 3));
 
@@ -515,7 +565,10 @@ int LuaSetFloatingWindowGravity(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        return 0;
+    }
 
     wnd->setGravity(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
 
@@ -530,7 +583,15 @@ int LuaGetFloatingWindowGeometry(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushnumber(L, 0);
+        lua_pushnumber(L, 0);
+        lua_pushnumber(L, 0);
+        lua_pushnumber(L, 0);
+        return 4;
+    }
+
     XPLMWindowID window = wnd->getXWindow();
 
     // For VR: gLeft = Width; gTop = Height
@@ -561,17 +622,20 @@ int LuaSetFloatingWindowGeometry(lua_State *L) {
 
     if (lua_islightuserdata(L, 1)) {
 
-        FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
-
-        if (wnd->isVR() && lua_isnumber(L, 2) && lua_isnumber(L, 3)) {
-            wnd->setWindowGeometryVR(lua_tonumber(L, 2), lua_tonumber(L, 3));
-            return 0;
-        } else if (lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5)) {
-            if (wnd->isPopped()) {
-                wnd->setWindowGeometryOS(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
-            } else {
-                wnd->setWindowGeometry(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
+        FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+        if (wnd) {
+            if (wnd->isVR() && lua_isnumber(L, 2) && lua_isnumber(L, 3)) {
+                wnd->setWindowGeometryVR(lua_tonumber(L, 2), lua_tonumber(L, 3));
+                return 0;
+            } else if (lua_isnumber(L, 2) && lua_isnumber(L, 3) && lua_isnumber(L, 4) && lua_isnumber(L, 5)) {
+                if (wnd->isPopped()) {
+                    wnd->setWindowGeometryOS(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
+                } else {
+                    wnd->setWindowGeometry(lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4), lua_tonumber(L, 5));
+                }
+                return 0;
             }
+        } else {
             return 0;
         }
     }
@@ -588,7 +652,9 @@ int LuaFloatingWindowSetImguiCursorHandling(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) return 0;
+
     bool enable = false;
     if (lua_isboolean(L, 2)) {
         enable = (lua_toboolean(L, 2) != 0);
@@ -609,7 +675,12 @@ int LuaFloatingWindowGetImguiCursorHandling(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
     auto fwlWnd = dynamic_cast<FlyWithLuaWindow *>(wnd);
     if (fwlWnd) {
         lua_pushboolean(L, fwlWnd->getImguiCursorHandling());
@@ -625,7 +696,9 @@ int LuaFloatingWindowSetScrolling(lua_State *L) {
         return 0;
     }
 
-    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    FloatingWindow *wnd = GetValidFloatingWindow(lua_touserdata(L, 1));
+    if (!wnd) return 0;
+
     bool enable = false;
     if (lua_isboolean(L, 2)) {
         enable = (lua_toboolean(L, 2) != 0);
