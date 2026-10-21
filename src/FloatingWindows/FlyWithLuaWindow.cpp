@@ -49,7 +49,11 @@ void FlyWithLuaWindow::buildInterface() {
 ImGuiWindowFlags_ FlyWithLuaWindow::beforeBegin() {
     auto &io = ImGui::GetIO();
     io.ConfigDebugHighlightIdConflicts = (flywithlua::imgui_debug_popup == 1);
-    return static_cast<ImGuiWindowFlags_>(ImGuiWindowFlags_HorizontalScrollbar);
+    ImGuiWindowFlags_ flags = static_cast<ImGuiWindowFlags_>(ImGuiWindowFlags_HorizontalScrollbar);
+    if (!mAllowScrolling) {
+        flags = static_cast<ImGuiWindowFlags_>(flags | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    }
+    return flags;
 }
 
 void FlyWithLuaWindow::setBuildCallback(BuildCallback cb) {

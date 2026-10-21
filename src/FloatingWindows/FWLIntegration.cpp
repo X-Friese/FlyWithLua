@@ -619,6 +619,27 @@ int LuaFloatingWindowGetImguiCursorHandling(lua_State *L) {
     return 1;
 }
 
+int LuaFloatingWindowSetScrolling(lua_State *L) {
+    if (!lua_islightuserdata(L, 1) || (!lua_isboolean(L, 2) && !lua_isnumber(L, 2))) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_scrolling");
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    bool enable = false;
+    if (lua_isboolean(L, 2)) {
+        enable = (lua_toboolean(L, 2) != 0);
+    } else {
+        enable = (lua_tointeger(L, 2) != 0);
+    }
+
+    auto fwlWnd = dynamic_cast<FlyWithLuaWindow *>(wnd);
+    if (fwlWnd) {
+        fwlWnd->setScrollingAllowed(enable);
+    }
+    return 0;
+}
+
 /**
  * Set floating window mouse handler from Lua.
  *
@@ -831,6 +852,8 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_use_imgui_cursors", LuaFloatingWindowSetImguiCursorHandling);
     lua_register(L, "float_wnd_get_imgui_cursor_handling", LuaFloatingWindowGetImguiCursorHandling);
     lua_register(L, "float_wnd_get_use_imgui_cursors", LuaFloatingWindowGetImguiCursorHandling);
+    lua_register(L, "float_wnd_set_scrolling", LuaFloatingWindowSetScrolling);
+    lua_register(L, "float_wnd_set_scroll_handling", LuaFloatingWindowSetScrolling);
 
     // Register modern font functions inside the imgui table namespace
     lua_getglobal(L, "imgui");

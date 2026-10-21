@@ -65,6 +65,9 @@ public:
     }
     bool getImguiCursorHandling() const { return mUseImgCursors; }
 
+    void setScrollingAllowed(bool allow) { mAllowScrolling = allow; }
+    bool isScrollingAllowed() const { return mAllowScrolling; }
+
     // ImgWindow overrides
     virtual void buildInterface() override;
     virtual ImGuiWindowFlags_ beforeBegin() override;
@@ -77,6 +80,7 @@ private:
     bool stopped = false;
     bool isCmdVisible = false;
     bool mUseImgCursors = true;
+    bool mAllowScrolling = true;
 };
 
 } // namespace flwnd
