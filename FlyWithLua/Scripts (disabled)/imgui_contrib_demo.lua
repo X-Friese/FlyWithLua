@@ -68,9 +68,9 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.Unindent(40)
                 imgui.Spacing()
 
-                imgui.MD.Text("<code dark>*italic*, **bold**, ***bold italic***</code>")
+                imgui.MD.Text("<code dark>*italic*, _italic_, **bold**, __bold__</code>")
                 imgui.Indent(40)
-                imgui.MD.Text("Body paragraph with *italic text*, **bold text**, and ***bold italic text***.")
+                imgui.MD.Text("Body paragraph with *italic text*, _underscore italic_, and **bold text**.")
                 imgui.Unindent(40)
                 imgui.Spacing()
 
@@ -158,11 +158,13 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.Unindent(40)
 
                 imgui.Spacing()
-                imgui.MD.Text("<code dark>imgui.Markdown.ButtonMD(\"Execute Check: Clicked **%d times**##mddemo\", tooltip)</code>")
+                imgui.MD.Text("<code dark>imgui.Markdown.ButtonMD(\"Execute Diagnostic Check##mddemo\", rich_tooltip_markdown)</code>")
                 imgui.Indent(40)
-                if imgui.Markdown.ButtonMD(string.format("Execute Check: Clicked **%d times**##mddemo", md_button_clicks), "Click to increment counter!") then
+                local btn_tip = string.format("### Diagnostic Check\nTotal clicks registered: **%d**\nStatus: <pill green>READY</pill>", md_button_clicks)
+                if imgui.Markdown.ButtonMD(string.format("Execute Check (Clicks: %d)##mddemo", md_button_clicks), btn_tip) then
                     md_button_clicks = md_button_clicks + 1
                 end
+                imgui.MD.Text("*(Hover over the button above to view its rich Markdown tooltip!)*")
                 imgui.Unindent(40)
             end
 
@@ -348,19 +350,23 @@ function contrib_demo_on_build(wnd, x, y)
 
             imgui.Spacing()
             imgui.Separator()
-            imgui.TextUnformatted("TimedTooltip aliases:")
+            imgui.TextUnformatted("TimedTooltip aliases (hover each bullet to preview):")
 
             imgui.Bullet()
-            imgui.TimedTooltip.Text("`imgui.TimedTooltip.Text(...)` -- Canonical namespace")
+            imgui.MD.Text("`<code dark>imgui.TimedTooltip.Text(...)</code>` -- Canonical namespace")
+            imgui.TimedTooltip.Text("Active via imgui.TimedTooltip.Text()")
 
             imgui.Bullet()
-            TimedTooltip.Text("`TimedTooltip.Text(...)` -- Global scope alias")
+            imgui.MD.Text("`<code dark>TimedTooltip.Text(...)</code>` -- Global scope alias")
+            TimedTooltip.Text("Active via TimedTooltip.Text()")
 
             imgui.Bullet()
-            imgui.TimedTooltip.MD.Text("`imgui.TimedTooltip.MD.Text(...)` -- Compound TimedTooltip Markdown")
+            imgui.MD.Text("`<code dark>imgui.TimedTooltip.MD.Text(...)</code>` -- Compound TimedTooltip Markdown")
+            imgui.TimedTooltip.MD.Text("<pill green>Active</pill> via **imgui.TimedTooltip.MD.Text()**")
 
             imgui.Bullet()
-            TimedTooltip.MD.Text("`TimedTooltip.MD.Text(...)` -- Global TimedTooltip Markdown")
+            imgui.MD.Text("`<code dark>TimedTooltip.MD.Text(...)</code>` -- Global TimedTooltip Markdown")
+            TimedTooltip.MD.Text("<pill blue>Active</pill> via **TimedTooltip.MD.Text()**")
 
             imgui.EndTabItem()
         end
