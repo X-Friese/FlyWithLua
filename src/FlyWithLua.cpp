@@ -1077,6 +1077,7 @@ int found_bad_function_script = 0;
 int developer_mode = 0;
 int verbose_logging_mode = 0;
 int imgui_debug_popup = 0;
+int imgui_mouse_cursors = 1;
 int imgui_font_size1 = 13;
 int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;

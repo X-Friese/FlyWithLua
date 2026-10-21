@@ -22,7 +22,8 @@ FlyWithLuaWindow::FlyWithLuaWindow(int width, int height, int decoration) :
         GetDefaultFlyWithLuaGeometry(width, height),
         static_cast<XPLMWindowDecoration>(decoration),
         xplm_WindowLayerFloatingWindows,
-        false)
+        flywithlua::imgui_mouse_cursors != 0),
+    mUseImgCursors(flywithlua::imgui_mouse_cursors != 0)
 {
     SetWindowTitle("FlyWithLua");
     SetVisible(true);

@@ -214,6 +214,16 @@ function contrib_demo_on_build(wnd, x, y)
 
             imgui.Spacing()
             imgui.Separator()
+            imgui.MD.Text("### ImGui Mouse Cursors")
+            local cur_cursors = float_wnd_get_imgui_cursor_handling(wnd)
+            local cursor_changed, new_cursor_state = imgui.ToggleButton("Dynamic ImGui Cursors", cur_cursors)
+            if cursor_changed then
+                float_wnd_set_imgui_cursor_handling(wnd, new_cursor_state)
+            end
+            imgui.TimedTooltip.Text("Toggles dynamic ImGui cursors (Hand over links/buttons, I-beam over text) vs native hardware mouse.")
+
+            imgui.Spacing()
+            imgui.Separator()
             imgui.MD.Text("### Hyperlink Widgets")
 
             imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")

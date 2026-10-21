@@ -1,4 +1,5 @@
 #include "FWLContribBindings.h"
+#include "FlyWithLuaWindow.h"
 #include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
 #include "imgui.h"
@@ -353,6 +354,37 @@ static int LuaGetMouseWheel(lua_State* L) {
     return 1;
 }
 
+static int LuaSetCursorHandling(lua_State* L) {
+    if (lua_gettop(L) >= 1) {
+        if (lua_islightuserdata(L, 1) && lua_gettop(L) >= 2) {
+            auto wnd = reinterpret_cast<flwnd::FloatingWindow*>(lua_touserdata(L, 1));
+            bool enable = lua_toboolean(L, 2) != 0;
+            auto fwlWnd = dynamic_cast<flwnd::FlyWithLuaWindow*>(wnd);
+            if (fwlWnd) {
+                fwlWnd->setImguiCursorHandling(enable);
+            }
+        } else if (lua_isboolean(L, 1) || lua_isnumber(L, 1)) {
+            bool enable = lua_isboolean(L, 1) ? (lua_toboolean(L, 1) != 0) : (lua_tointeger(L, 1) != 0);
+            flywithlua::imgui_mouse_cursors = enable ? 1 : 0;
+        }
+    }
+    lua_pushboolean(L, flywithlua::imgui_mouse_cursors != 0);
+    return 1;
+}
+
+static int LuaGetCursorHandling(lua_State* L) {
+    if (lua_gettop(L) >= 1 && lua_islightuserdata(L, 1)) {
+        auto wnd = reinterpret_cast<flwnd::FloatingWindow*>(lua_touserdata(L, 1));
+        auto fwlWnd = dynamic_cast<flwnd::FlyWithLuaWindow*>(wnd);
+        if (fwlWnd) {
+            lua_pushboolean(L, fwlWnd->getImguiCursorHandling());
+            return 1;
+        }
+    }
+    lua_pushboolean(L, flywithlua::imgui_mouse_cursors != 0);
+    return 1;
+}
+
 // ----------------------------------------------------------------------------
 // Registration & Namespace / Alias Hierarchy Setup
 // ----------------------------------------------------------------------------
@@ -489,6 +521,13 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaTextLink);                  lua_setfield(L, -2, "text_link");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "GetMouseWheel");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "get_mouse_wheel");
+
+    lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "SetCursorHandling");
+    lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "set_cursor_handling");
+    lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "EnableMouseCursors");
+    lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "enable_mouse_cursors");
+    lua_pushcfunction(L, LuaGetCursorHandling);         lua_setfield(L, -2, "GetCursorHandling");
+    lua_pushcfunction(L, LuaGetCursorHandling);         lua_setfield(L, -2, "get_cursor_handling");
 
     // 7. Global convenience aliases (matching contrib-global.h in C++)
     lua_getfield(L, -1, "TimedTooltip");

@@ -59,6 +59,12 @@ public:
     void setBuildCallback(BuildCallback cb);
     void setErrorHandler(ErrorHandler eh);
 
+    void setImguiCursorHandling(bool enable) {
+        mUseImgCursors = enable;
+        SetImgCursorHandling(enable);
+    }
+    bool getImguiCursorHandling() const { return mUseImgCursors; }
+
     // ImgWindow overrides
     virtual void buildInterface() override;
     virtual ImGuiWindowFlags_ beforeBegin() override;
@@ -70,6 +76,7 @@ private:
 
     bool stopped = false;
     bool isCmdVisible = false;
+    bool mUseImgCursors = true;
 };
 
 } // namespace flwnd

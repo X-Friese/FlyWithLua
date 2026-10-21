@@ -96,7 +96,13 @@ int LuaCreateFloatingWindow(lua_State *L) {
 
     try {
         if (withImgui) {
-            wnd = std::make_shared<FlyWithLuaWindow>(width, height, decoration);
+            auto fwlWnd = std::make_shared<FlyWithLuaWindow>(width, height, decoration);
+            // Allow optional 5th argument to explicitly override mouse cursor handling
+            if (lua_gettop(L) >= 5 && (lua_isboolean(L, 5) || lua_isnumber(L, 5))) {
+                bool enable_cursors = lua_isboolean(L, 5) ? (lua_toboolean(L, 5) != 0) : (lua_tointeger(L, 5) != 0);
+                fwlWnd->setImguiCursorHandling(enable_cursors);
+            }
+            wnd = fwlWnd;
         } else {
             wnd = std::make_shared<LegacyFloatingWindow>(width, height, decoration);
         }
@@ -576,6 +582,43 @@ int LuaSetFloatingWindowGeometry(lua_State *L) {
     return 0;
 }
 
+int LuaFloatingWindowSetImguiCursorHandling(lua_State *L) {
+    if (!lua_islightuserdata(L, 1) || (!lua_isboolean(L, 2) && !lua_isnumber(L, 2))) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_imgui_cursor_handling");
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    bool enable = false;
+    if (lua_isboolean(L, 2)) {
+        enable = (lua_toboolean(L, 2) != 0);
+    } else {
+        enable = (lua_tointeger(L, 2) != 0);
+    }
+
+    auto fwlWnd = dynamic_cast<FlyWithLuaWindow *>(wnd);
+    if (fwlWnd) {
+        fwlWnd->setImguiCursorHandling(enable);
+    }
+    return 0;
+}
+
+int LuaFloatingWindowGetImguiCursorHandling(lua_State *L) {
+    if (!lua_islightuserdata(L, 1)) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_get_imgui_cursor_handling");
+        return 0;
+    }
+
+    FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
+    auto fwlWnd = dynamic_cast<FlyWithLuaWindow *>(wnd);
+    if (fwlWnd) {
+        lua_pushboolean(L, fwlWnd->getImguiCursorHandling());
+    } else {
+        lua_pushboolean(L, false);
+    }
+    return 1;
+}
+
 /**
  * Set floating window mouse handler from Lua.
  *
@@ -784,6 +827,10 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
+    lua_register(L, "float_wnd_set_imgui_cursor_handling", LuaFloatingWindowSetImguiCursorHandling);
+    lua_register(L, "float_wnd_set_use_imgui_cursors", LuaFloatingWindowSetImguiCursorHandling);
+    lua_register(L, "float_wnd_get_imgui_cursor_handling", LuaFloatingWindowGetImguiCursorHandling);
+    lua_register(L, "float_wnd_get_use_imgui_cursors", LuaFloatingWindowGetImguiCursorHandling);
 
     // Register modern font functions inside the imgui table namespace
     lua_getglobal(L, "imgui");
