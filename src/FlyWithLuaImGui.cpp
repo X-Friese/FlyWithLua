@@ -16,6 +16,7 @@
 #include "FlyWithLua.h"
 #include "FlyWithLuaImGui.h"
 #include "FloatingWindows/FWLIntegration.h"
+#include "FloatingWindows/FWLContribBindings.h"
 #include "ImgWindow.h"
 #include "third_party/iniReader/inireader.h"
 #include "XPLMProcessing.h"
@@ -364,6 +365,9 @@ bool InitializeImGui()
             }
         }
     }
+
+    // Wire semantic fonts (H1, H2, Bold, Italic, Mono) to the ImGui Markdown engine
+    flywithlua::UpdateContribMarkdownFonts();
 
     // Note: the GPU upload happens lazily, when the first window draws.
     return true;
