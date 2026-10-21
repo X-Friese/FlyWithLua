@@ -84,36 +84,43 @@ function contrib_demo_on_build(wnd, x, y)
             if imgui.CollapsingHeader("Pills, Badges & Custom Colors", 32) then
                 imgui.MD.Text("Enhance telemetry and cockpit status displays using inline XML-style tags:")
                 imgui.Spacing()
-                imgui.MD.Text("Status Pills:")
+                imgui.MD.Text("Status Pills (hover to inspect):")
                 imgui.MD.Text("  `<pill green>SYSTEMS NORMAL</pill>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<pill green>SYSTEMS NORMAL</pill>")
+                imgui.TimedTooltip.Text("Bus voltage nominal; all avionics systems operational.")
 
                 imgui.MD.Text("  `<pill warning>LOW FUEL</pill>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<pill warning>LOW FUEL</pill>")
+                imgui.TimedTooltip.Text("Fuel quantity in left and right wing tanks < 15%.")
 
                 imgui.MD.Text("  `<pill error>ENGINE 2 FIRE</pill>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<pill error>ENGINE 2 FIRE</pill>")
+                imgui.TimedTooltip.Text("Fire handle illuminated. Pull and discharge fire agent.")
 
                 imgui.MD.Text("  `<pill gray>OFFLINE</pill>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<pill gray>OFFLINE</pill>")
+                imgui.TimedTooltip.Text("Subsystem powered down or disengaged.")
 
                 imgui.Spacing()
-                imgui.MD.Text("Badges:")
+                imgui.MD.Text("Badges (hover to inspect):")
                 imgui.MD.Text("  `<badge blue>V2.2.1</badge>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<badge blue>V2.2.1</badge>")
+                imgui.TimedTooltip.Text("FlyWithLua NG+ release version tag.")
 
                 imgui.MD.Text("  `<badge purple>PRO</badge>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<badge purple>PRO</badge>")
+                imgui.TimedTooltip.Text("Advanced plugin and developer tools active.")
 
                 imgui.MD.Text("  `<badge green>XP12.4.4+</badge>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<badge green>XP12.4.4+</badge>")
+                imgui.TimedTooltip.Text("Certified compatible with X-Plane 12.4.4 and newer.")
 
                 imgui.Spacing()
                 imgui.MD.Text("Keyboard shortcuts:")
@@ -158,12 +165,23 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.Unindent(40)
 
                 imgui.Spacing()
+                imgui.MD.Text("<code dark>imgui.TextLink(\"...\") and imgui.ButtonLink(\"...\")</code>")
+                imgui.Indent(40)
+                imgui.TextLink("FlyWithLua Organization Portal", "https://forums.x-plane.org")
+                imgui.SameLine()
+                imgui.TextUnformatted(" | ")
+                imgui.SameLine()
+                imgui.ButtonLink("Issue Tracker & Bug Reports", "https://github.com/sparker256/FlyWithLua/issues")
+                imgui.Unindent(40)
+
+                imgui.Spacing()
                 imgui.MD.Text("<code dark>imgui.Markdown.ButtonMD(\"Execute Diagnostic Check##mddemo\", rich_tooltip_markdown)</code>")
                 imgui.Indent(40)
                 local btn_tip = string.format("### Diagnostic Check\nTotal clicks registered: **%d**\nStatus: <pill green>READY</pill>", md_button_clicks)
                 if imgui.Markdown.ButtonMD(string.format("Execute Check (Clicks: %d)##mddemo", md_button_clicks), btn_tip) then
                     md_button_clicks = md_button_clicks + 1
                 end
+                imgui.TimedTooltip.Text("Click to advance diagnostic execution cycle.")
                 imgui.MD.Text("*(Hover over the button above to view its rich Markdown tooltip!)*")
                 imgui.Unindent(40)
             end
