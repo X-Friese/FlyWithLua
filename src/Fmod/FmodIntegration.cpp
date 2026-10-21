@@ -780,6 +780,14 @@ int fmod_initialization()
             fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_master, flywithlua_master_channel_group, true, nullptr);
             FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
         }
+
+        // Synchronously flush the newly created channel groups to the FMOD mixer
+        if (fmod_system_sdk != nullptr) {
+            FMOD_System_Update(fmod_system_sdk);
+        }
+        if (fmod_studio_sdk != nullptr) {
+            FMOD_Studio_System_Update(fmod_studio_sdk);
+        }
     }
     catch (exception const& e)
     {
@@ -794,6 +802,11 @@ int fmod_initialization()
 
 int fmod_uninitialize()
 {
+    // Idempotency guard: if already uninitialized, return immediately
+    if (fmod_studio_sdk == nullptr && flywithlua_com1_channel_group == nullptr) {
+        return 0;
+    }
+
     char buf4[200];
     sprintf(buf4, "FlyWithLua Info: fmod_uninitialize() FmodSounds.size =  %d\n", int(FmodSounds.size()));
     XPLMDebugString(buf4);
@@ -807,23 +820,32 @@ int fmod_uninitialize()
                 fmod_sound_pointer[i] = nullptr;
             }
         }
+        FmodSounds.clear();
+        fmod_sound_index = 0;
     }
 
-    if (flywithlua_com1_channel_group != nullptr) {
-        FMOD_ChannelGroup_Release(flywithlua_com1_channel_group);
-        flywithlua_com1_channel_group = nullptr;
+    // Stop active channels in custom channel groups before releasing to prevent
+    // asynchronous mixer thread dereferencing half-deallocated DSP graph nodes.
+    auto safe_release_cg = [](FMOD_CHANNELGROUP*& cg) {
+        if (cg != nullptr) {
+            FMOD_ChannelGroup_Stop(cg);
+            FMOD_ChannelGroup_Release(cg);
+            cg = nullptr;
+        }
+    };
+
+    safe_release_cg(flywithlua_com1_channel_group);
+    safe_release_cg(flywithlua_interior_channel_group);
+    safe_release_cg(flywithlua_ui_channel_group);
+    safe_release_cg(flywithlua_master_channel_group);
+
+    // Synchronously flush the FMOD command queue to ensure the background mixer
+    // thread processes the channel group detachments and releases before uninitialize returns.
+    if (fmod_system_sdk != nullptr) {
+        FMOD_System_Update(fmod_system_sdk);
     }
-    if (flywithlua_interior_channel_group != nullptr) {
-        FMOD_ChannelGroup_Release(flywithlua_interior_channel_group);
-        flywithlua_interior_channel_group = nullptr;
-    }
-    if (flywithlua_ui_channel_group != nullptr) {
-        FMOD_ChannelGroup_Release(flywithlua_ui_channel_group);
-        flywithlua_ui_channel_group = nullptr;
-    }
-    if (flywithlua_master_channel_group != nullptr) {
-        FMOD_ChannelGroup_Release(flywithlua_master_channel_group);
-        flywithlua_master_channel_group = nullptr;
+    if (fmod_studio_sdk != nullptr) {
+        FMOD_Studio_System_Update(fmod_studio_sdk);
     }
 
     fmod_studio_sdk = nullptr;
@@ -834,8 +856,6 @@ int fmod_uninitialize()
     cg_sdk_audio_ui = nullptr;
     cg_sdk_master = nullptr;
 
-    FmodSounds.clear();
-    fmod_sound_index = 0;
     init = true;
 
     sprintf(buf4, "FlyWithLua Info: fmod_uninitialize()  Should be 0 now FmodSounds.size =  %d\n", int(FmodSounds.size()));
@@ -907,19 +927,18 @@ int fmod_data_update()
 
 
 void deinitFmodSupport() {
+    if (FmodSounds.empty()) {
+        return;
+    }
     // Trying to understand why I need two different
     // functions to de or un initalize fmod.
     char buf3[200];
     sprintf(buf3, "FlyWithLua Info:  deinitFmodSupport() FmodSounds.size =  %d\n", int(FmodSounds.size()));
     XPLMDebugString(buf3);
-    if (int(FmodSounds.size()) > 0) {
-        sprintf(buf3, "FlyWithLua Info: deinitFmodSupport() if (int(FmodSounds.size()) > 0) FmodSounds.size =  %d\n", int(FmodSounds.size()));
-        XPLMDebugString(buf3);
-        for (int i = 1; i <= int(FmodSounds.size()); ++i) {
-            if (fmod_sound_pointer[i] != nullptr) {
-                FMOD_Sound_Release(fmod_sound_pointer[i]);
-                fmod_sound_pointer[i] = nullptr;
-            }
+    for (int i = 1; i <= int(FmodSounds.size()); ++i) {
+        if (fmod_sound_pointer[i] != nullptr) {
+            FMOD_Sound_Release(fmod_sound_pointer[i]);
+            fmod_sound_pointer[i] = nullptr;
         }
     }
 
