@@ -186,8 +186,22 @@ int LuaImguiPushFont(lua_State *L) {
             target_font = flywithlua::GetFontByName(font_name);
         }
         if (target_font == nullptr) {
-            flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont: Font '" + font_name + "' not found, falling back to default font.");
+            // If no explicit size was given, check if font_name ends with -<size> (e.g. "Roboto-Light-20")
+            if (font_size <= 0.0f) {
+                size_t dash = font_name.rfind('-');
+                if (dash != std::string::npos && dash + 1 < font_name.size()) {
+                    try {
+                        font_size = std::stof(font_name.substr(dash + 1));
+                    } catch (...) {}
+                }
+            }
+
             target_font = flywithlua::GetDefaultFont();
+            if (font_size > 0.0f) {
+                flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont: Font '" + font_name + "' not found, falling back to default font @ " + std::to_string(static_cast<int>(font_size)) + "px.");
+            } else {
+                flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont: Font '" + font_name + "' not found, falling back to default font.");
+            }
         }
     } else {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont expected font name (string) or index (number), falling back to default font.");

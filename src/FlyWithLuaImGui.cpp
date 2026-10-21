@@ -18,6 +18,7 @@
 #include "FloatingWindows/FWLIntegration.h"
 #include "ImgWindow.h"
 #include "third_party/iniReader/inireader.h"
+#include "XPLMProcessing.h"
 
 ImFont* customFont1 = nullptr;
 ImFont* customFont2 = nullptr;
@@ -400,7 +401,11 @@ void TeardownImGui()
         ImgWindow::sFontAtlas.reset();
     }
 
-    // Step 4: flush the deferred deletion queue so the atlas (and any custom
+    // Step 4: Force all ImgWindow instances to skip ImGui rendering for the next few cycles
+    // (ABC pattern), preventing texture flicker or race conditions while the atlas settles.
+    ImgWindow::sBlankoutUntilCycle = XPLMGetCycleNumber() + 4;
+
+    // Step 5: flush the deferred deletion queue so the atlas (and any custom
     // textures) are purged from VRAM now; no further flight loop will do it.
     ImgWindow::Shutdown();
 }

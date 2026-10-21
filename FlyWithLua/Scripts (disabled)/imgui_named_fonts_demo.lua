@@ -8,8 +8,8 @@ if not SUPPORTS_FLOATING_WINDOWS then
     return
 end
 
-named_font_demo_wnd = float_wnd_create(600, 480, 1, true)
-float_wnd_set_position(named_font_demo_wnd, 150, 150)
+named_font_demo_wnd = float_wnd_create(780, 580, 1, true)
+float_wnd_set_position(named_font_demo_wnd, 120, 120)
 float_wnd_set_title(named_font_demo_wnd, "Named Fonts Demo")
 float_wnd_set_imgui_builder(named_font_demo_wnd, "named_font_demo_on_build")
 float_wnd_set_onclose(named_font_demo_wnd, "named_font_demo_on_close")
@@ -18,58 +18,58 @@ function named_font_demo_on_build(wnd, x, y)
     imgui.TextUnformatted("FlyWithLua Modern Named Font Registry Demo")
     imgui.Separator()
 
-    imgui.TextUnformatted("1. Default fonts:")
+    imgui.TextUnformatted("1. Default ImGui fonts:")
     imgui.PushFont("ProggyClean")
-    imgui.TextUnformatted("  ProggyClean: The classic bitmap font (13px)")
+    imgui.TextUnformatted("  [ProggyClean 13px] The classic pixel-crisp bitmap font")
     imgui.PopFont()
 
     imgui.PushFont("ProggyForever")
-    imgui.TextUnformatted("  ProggyForever: The scalable vector default font")
+    imgui.TextUnformatted("  [ProggyForever] Scalable vector default font")
     imgui.PopFont()
 
     imgui.Separator()
-    imgui.TextUnformatted("2. Bundled TTF fonts at standard sizes:")
+    imgui.TextUnformatted("2. Bundled TTF fonts rendered in their own typeface:")
 
     imgui.PushFont("Roboto-Light-13")
-    imgui.TextUnformatted("  Roboto-Light (13px)")
+    imgui.TextUnformatted("  Roboto-Light-13: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Light-16")
-    imgui.TextUnformatted("  Roboto-Light (16px)")
+    imgui.TextUnformatted("  Roboto-Light-16: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Light-20")
-    imgui.TextUnformatted("  Roboto-Light (20px)")
+    imgui.TextUnformatted("  Roboto-Light-20: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Regular-13")
-    imgui.TextUnformatted("  Roboto-Regular (13px)")
+    imgui.TextUnformatted("  Roboto-Regular-13: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Regular-16")
-    imgui.TextUnformatted("  Roboto-Regular (16px)")
+    imgui.TextUnformatted("  Roboto-Regular-16: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Regular-20")
-    imgui.TextUnformatted("  Roboto-Regular (20px)")
+    imgui.TextUnformatted("  Roboto-Regular-20: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Medium-13")
-    imgui.TextUnformatted("  Roboto-Medium (13px)")
+    imgui.TextUnformatted("  Roboto-Medium-13: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Medium-16")
-    imgui.TextUnformatted("  Roboto-Medium (16px)")
+    imgui.TextUnformatted("  Roboto-Medium-16: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.PushFont("Roboto-Medium-20")
-    imgui.TextUnformatted("  Roboto-Medium (20px)")
+    imgui.TextUnformatted("  Roboto-Medium-20: Sphinx of black quartz, judge my vow. (12345)")
     imgui.PopFont()
 
     imgui.Separator()
     imgui.TextUnformatted("3. Dynamic sizing via 2nd parameter:")
-    imgui.PushFont("Roboto-Regular", 24)
-    imgui.TextUnformatted("  Roboto-Regular dynamically scaled to 24px")
+    imgui.PushFont("Roboto-Regular", 26)
+    imgui.TextUnformatted("  Roboto-Regular scaled to 26px on the fly!")
     imgui.PopFont()
 
     imgui.Separator()
@@ -82,10 +82,12 @@ function named_font_demo_on_build(wnd, x, y)
     imgui.PopFont()
 
     imgui.Separator()
-    if imgui.TreeNode("Show all registered fonts") then
+    if imgui.TreeNode("Show all registered fonts (rendered in each font)") then
         local fonts = imgui.get_font_list()
         for i, name in ipairs(fonts) do
-            imgui.BulletText(name)
+            imgui.PushFont(name)
+            imgui.BulletText(string.format("%s: Quick brown fox 12345", name))
+            imgui.PopFont()
         end
         imgui.TreePop()
     end
