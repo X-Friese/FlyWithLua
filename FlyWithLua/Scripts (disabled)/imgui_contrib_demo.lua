@@ -164,6 +164,7 @@ function contrib_demo_on_build(wnd, x, y)
                 if imgui.Markdown.ButtonMD(string.format("Execute Check (Clicks: %d)##mddemo", md_button_clicks), btn_tip) then
                     md_button_clicks = md_button_clicks + 1
                 end
+                imgui.TimedTooltip.Text("Click to advance diagnostic execution cycle.")
                 imgui.MD.Text("*(Hover over the button above to view its rich Markdown tooltip!)*")
                 imgui.Unindent(40)
             end
@@ -230,6 +231,8 @@ function contrib_demo_on_build(wnd, x, y)
         if imgui.BeginTabItem("Modern Widgets") then
             imgui.Spacing()
             imgui.MD.Text("### Smooth Animated & Specialized Widgets")
+            imgui.MD.Text("*(Tip: Mouse-wheel directly over switches flips states; clicking toggles via either the buttons or labels)*")
+            imgui.Spacing()
 
             -- Row 1: Avionics Master & De-Ice System (Side-by-side)
             local toggle_changed, new_toggle = imgui.ToggleButton("Avionics Master Switch", avionics_master_state)
