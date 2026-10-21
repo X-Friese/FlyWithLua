@@ -17,6 +17,7 @@
 #include "FlyWithLuaImGui.h"
 #include "FloatingWindows/FWLIntegration.h"
 #include "ImgWindow.h"
+#include "third_party/iniReader/inireader.h"
 
 ImFont* customFont1 = nullptr;
 ImFont* customFont2 = nullptr;
@@ -304,6 +305,59 @@ bool InitializeImGui()
                     std::string stem = entry.path().stem().string();
                     if (flywithlua::GetFontByName(stem) == nullptr) {
                         LoadFontTriplet(filename, font_size1, font_size2, font_size3);
+                    }
+                }
+            }
+        }
+    }
+
+    // Load any user-defined named fonts from fwl_prefs.ini
+    // Syntax: Font.<AliasName> = <FontFile.ttf>, <SizeInPixels>
+    // e.g.: Font.Roboto-Light-11 = Roboto-Light.ttf, 11
+    //       Font.Heading = Roboto-Medium.ttf, 24
+    for (const auto& [key, val] : getAllIniOptions()) {
+        if (key.rfind("Font.", 0) == 0 || key.rfind("font.", 0) == 0 ||
+            key.rfind("Font_", 0) == 0 || key.rfind("font_", 0) == 0) {
+            std::string alias = key.substr(5); // strip "Font." / "Font_"
+            if (alias.empty() || val.empty()) {
+                continue;
+            }
+
+            std::string fontFile;
+            float fontSize = font_size1;
+
+            size_t commaPos = val.find(',');
+            if (commaPos != std::string::npos) {
+                fontFile = val.substr(0, commaPos);
+                std::string sizeStr = val.substr(commaPos + 1);
+                // trim whitespace
+                size_t startF = fontFile.find_first_not_of(" \t\r\n");
+                size_t endF = fontFile.find_last_not_of(" \t\r\n");
+                fontFile = (startF != std::string::npos) ? fontFile.substr(startF, endF - startF + 1) : "";
+
+                size_t startS = sizeStr.find_first_not_of(" \t\r\n");
+                size_t endS = sizeStr.find_last_not_of(" \t\r\n");
+                sizeStr = (startS != std::string::npos) ? sizeStr.substr(startS, endS - startS + 1) : "";
+                try {
+                    fontSize = std::stof(sizeStr);
+                } catch (...) {
+                    fontSize = font_size1;
+                }
+            } else {
+                fontFile = val;
+                size_t startF = fontFile.find_first_not_of(" \t\r\n");
+                size_t endF = fontFile.find_last_not_of(" \t\r\n");
+                fontFile = (startF != std::string::npos) ? fontFile.substr(startF, endF - startF + 1) : "";
+            }
+
+            if (!fontFile.empty() && fontSize > 0.0f) {
+                ImFont* font = LoadCustomFont(fontFile.c_str(), fontSize);
+                if (font != nullptr) {
+                    RegisterFontInternal(alias, font, true);
+                    RegisterFontInternal(key, font, false);
+                    std::string sizeSuffix = "-" + std::to_string(static_cast<int>(fontSize));
+                    if (alias.find(sizeSuffix) == std::string::npos) {
+                        RegisterFontInternal(alias + sizeSuffix, font, false);
                     }
                 }
             }
