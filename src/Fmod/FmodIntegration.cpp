@@ -712,6 +712,12 @@ void UnRegisterAccessor()
 
 int fmod_initialization()
 {
+    // Check if already initialized to avoid duplicate channel groups
+    if (flywithlua_com1_channel_group != nullptr)
+    {
+        return 0;
+    }
+
     // Use the X-Plane 12 SDK sound API to get a pointer to the FMOD studio system
     fmod_studio_sdk = XPLMGetFMODStudio();
     if(nullptr == fmod_studio_sdk)
@@ -724,7 +730,7 @@ int fmod_initialization()
         FMOD_RESULT fwl_result;
 
         // Get a pointer to the FMOD core system
-        fwl_result = FMOD_Studio_System_GetCoreSystem(XPLMGetFMODStudio(), &fmod_system_sdk);
+        fwl_result = FMOD_Studio_System_GetCoreSystem(fmod_studio_sdk, &fmod_system_sdk);
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
 
@@ -733,8 +739,11 @@ int fmod_initialization()
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
         cg_sdk_audio_radio_com1 = XPLMGetFMODChannelGroup(xplm_AudioRadioCom1);
-        fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_radio_com1, flywithlua_com1_channel_group, true, nullptr);
-        FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        if (cg_sdk_audio_radio_com1 != nullptr)
+        {
+            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_radio_com1, flywithlua_com1_channel_group, true, nullptr);
+            FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        }
 
 
         // Create a custom flywithlua interior channel
@@ -742,8 +751,11 @@ int fmod_initialization()
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
         cg_sdk_audio_interior = XPLMGetFMODChannelGroup(xplm_AudioInterior);
-        fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_interior, flywithlua_interior_channel_group, true, nullptr);
-        FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        if (cg_sdk_audio_interior != nullptr)
+        {
+            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_interior, flywithlua_interior_channel_group, true, nullptr);
+            FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        }
 
 
         // Create a custom flywithlua ui channel
@@ -751,8 +763,11 @@ int fmod_initialization()
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
         cg_sdk_audio_ui = XPLMGetFMODChannelGroup(xplm_AudioUI);
-        fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_ui, flywithlua_ui_channel_group, true, nullptr);
-        FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        if (cg_sdk_audio_ui != nullptr)
+        {
+            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_ui, flywithlua_ui_channel_group, true, nullptr);
+            FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        }
 
 
         // Create a custom flywithlua master channel
@@ -760,13 +775,25 @@ int fmod_initialization()
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
         cg_sdk_master = XPLMGetFMODChannelGroup(xplm_Master);
-        fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_master, flywithlua_master_channel_group, true, nullptr);
-        FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        if (cg_sdk_master != nullptr)
+        {
+            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_master, flywithlua_master_channel_group, true, nullptr);
+            FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
+        }
+
+        // Synchronously flush the newly created channel groups to the FMOD mixer
+        if (fmod_system_sdk != nullptr) {
+            FMOD_System_Update(fmod_system_sdk);
+        }
+        if (fmod_studio_sdk != nullptr) {
+            FMOD_Studio_System_Update(fmod_studio_sdk);
+        }
     }
     catch (exception const& e)
     {
         string fmod_error_msg = "FlyWithLua Error: " + string(e.what()) + "\n";
         XPLMDebugString(fmod_error_msg.c_str());
+        fmod_uninitialize();
         return 0; // The plugin is failing, so do not execute any further loop
     }
 
@@ -775,6 +802,11 @@ int fmod_initialization()
 
 int fmod_uninitialize()
 {
+    // Idempotency guard: if already uninitialized, return immediately
+    if (fmod_studio_sdk == nullptr && flywithlua_com1_channel_group == nullptr) {
+        return 0;
+    }
+
     char buf4[200];
     sprintf(buf4, "FlyWithLua Info: fmod_uninitialize() FmodSounds.size =  %d\n", int(FmodSounds.size()));
     XPLMDebugString(buf4);
@@ -783,24 +815,48 @@ int fmod_uninitialize()
         sprintf(buf4, "FlyWithLua Info: fmod_uninitialize() if (int(FmodSounds.size()) > 0) FmodSounds.size =  %d\n", int(FmodSounds.size()));
         XPLMDebugString(buf4);
         for (int i = 1; i <= int(FmodSounds.size()); ++i) {
-            FMOD_Sound_Release(fmod_sound_pointer[i]);
+            if (fmod_sound_pointer[i] != nullptr) {
+                FMOD_Sound_Release(fmod_sound_pointer[i]);
+                fmod_sound_pointer[i] = nullptr;
+            }
         }
+        FmodSounds.clear();
+        fmod_sound_index = 0;
+    }
+
+    // Stop active channels in custom channel groups before releasing to prevent
+    // asynchronous mixer thread dereferencing half-deallocated DSP graph nodes.
+    auto safe_release_cg = [](FMOD_CHANNELGROUP*& cg) {
+        if (cg != nullptr) {
+            FMOD_ChannelGroup_Stop(cg);
+            FMOD_ChannelGroup_Release(cg);
+            cg = nullptr;
+        }
+    };
+
+    safe_release_cg(flywithlua_com1_channel_group);
+    safe_release_cg(flywithlua_interior_channel_group);
+    safe_release_cg(flywithlua_ui_channel_group);
+    safe_release_cg(flywithlua_master_channel_group);
+
+    // Synchronously flush the FMOD command queue to ensure the background mixer
+    // thread processes the channel group detachments and releases before uninitialize returns.
+    if (fmod_system_sdk != nullptr) {
+        FMOD_System_Update(fmod_system_sdk);
+    }
+    if (fmod_studio_sdk != nullptr) {
+        FMOD_Studio_System_Update(fmod_studio_sdk);
     }
 
     fmod_studio_sdk = nullptr;
     fmod_system_sdk = nullptr;
-    flywithlua_com1_channel_group = nullptr;
-    flywithlua_interior_channel_group = nullptr;
-    flywithlua_ui_channel_group = nullptr;
-    flywithlua_master_channel_group = nullptr;
 
     cg_sdk_audio_radio_com1 = nullptr;
     cg_sdk_audio_interior = nullptr;
     cg_sdk_audio_ui = nullptr;
     cg_sdk_master = nullptr;
 
-    FmodSounds.clear();
-    fmod_sound_index = 0;
+    init = true;
 
     sprintf(buf4, "FlyWithLua Info: fmod_uninitialize()  Should be 0 now FmodSounds.size =  %d\n", int(FmodSounds.size()));
     XPLMDebugString(buf4);
@@ -821,39 +877,49 @@ int fmod_data_update()
         mute_ui_channel_group = false;
         master_channel_group_volume = 1.0;
         mute_master_channel_group = false;
+        init = false;
     }
 
-    if(flywithlua_com1_channel_group != nullptr)
+    try
     {
-        mute_com1_channel_group = flywithlua_com1_channel_group_mute.get();
-        com1_channel_group_volume = flywithlua_com1_channel_group_volume.get();
-        setCom1Mute(mute_com1_channel_group);
-        setCom1Volume(com1_channel_group_volume);
+        if(flywithlua_com1_channel_group != nullptr)
+        {
+            mute_com1_channel_group = flywithlua_com1_channel_group_mute.get();
+            com1_channel_group_volume = flywithlua_com1_channel_group_volume.get();
+            setCom1Mute(mute_com1_channel_group);
+            setCom1Volume(com1_channel_group_volume);
+        }
+
+        if(flywithlua_interior_channel_group != nullptr)
+        {
+            mute_interior_channel_group = flywithlua_interior_channel_group_mute.get();
+            interior_channel_group_volume = flywithlua_interior_channel_group_volume.get();
+            setInteriorMute(mute_interior_channel_group);
+            setInteriorVolume(interior_channel_group_volume);
+        }
+
+        if(flywithlua_ui_channel_group != nullptr)
+        {
+            mute_ui_channel_group = flywithlua_ui_channel_group_mute.get();
+            ui_channel_group_volume = flywithlua_ui_channel_group_volume.get();
+            setUiMute(mute_ui_channel_group);
+            setUiVolume(ui_channel_group_volume);
+        }
+
+        if(flywithlua_master_channel_group != nullptr)
+        {
+            mute_master_channel_group = flywithlua_master_channel_group_mute.get();
+            master_channel_group_volume = flywithlua_master_channel_group_volume.get();
+            setMasterMute(mute_master_channel_group);
+            setMasterVolume(master_channel_group_volume);
+        }
     }
-
-    if(flywithlua_interior_channel_group != nullptr)
+    catch (const std::exception& e)
     {
-        mute_interior_channel_group = flywithlua_interior_channel_group_mute.get();
-        interior_channel_group_volume = flywithlua_interior_channel_group_volume.get();
-        setInteriorMute(mute_interior_channel_group);
-        setInteriorVolume(interior_channel_group_volume);
-    }
-
-    if(flywithlua_ui_channel_group != nullptr)
-    {
-        mute_ui_channel_group = flywithlua_ui_channel_group_mute.get();
-        ui_channel_group_volume = flywithlua_ui_channel_group_volume.get();
-        setUiMute(mute_ui_channel_group);
-        setUiVolume(ui_channel_group_volume);
-    }
-
-
-    if(flywithlua_master_channel_group != nullptr)
-    {
-        mute_master_channel_group = flywithlua_master_channel_group_mute.get();
-        master_channel_group_volume = flywithlua_master_channel_group_volume.get();
-        setMasterMute(mute_master_channel_group);
-        setMasterVolume(master_channel_group_volume);
+        string fmod_error_msg = "FlyWithLua Error in fmod_data_update: " + string(e.what()) + "\n";
+        XPLMDebugString(fmod_error_msg.c_str());
+        fmod_uninitialize();
+        return 0;
     }
 
     return 0;
@@ -861,16 +927,18 @@ int fmod_data_update()
 
 
 void deinitFmodSupport() {
+    if (FmodSounds.empty()) {
+        return;
+    }
     // Trying to understand why I need two different
     // functions to de or un initalize fmod.
     char buf3[200];
     sprintf(buf3, "FlyWithLua Info:  deinitFmodSupport() FmodSounds.size =  %d\n", int(FmodSounds.size()));
     XPLMDebugString(buf3);
-    if (int(FmodSounds.size()) > 0) {
-        sprintf(buf3, "FlyWithLua Info: deinitFmodSupport() if (int(FmodSounds.size()) > 0) FmodSounds.size =  %d\n", int(FmodSounds.size()));
-        XPLMDebugString(buf3);
-        for (int i = 1; i <= int(FmodSounds.size()); ++i) {
+    for (int i = 1; i <= int(FmodSounds.size()); ++i) {
+        if (fmod_sound_pointer[i] != nullptr) {
             FMOD_Sound_Release(fmod_sound_pointer[i]);
+            fmod_sound_pointer[i] = nullptr;
         }
     }
 
@@ -878,7 +946,7 @@ void deinitFmodSupport() {
     fmod_sound_index = 0;
 
     sprintf(buf3, "FlyWithLua Info: deinitFmodSupport()  Should be 0 now FmodSounds.size =  %d\n", int(FmodSounds.size()));
-        XPLMDebugString(buf3);
+    XPLMDebugString(buf3);
 }
 
 } // end namespace fmodint

@@ -374,7 +374,7 @@ int LuaFloatingWindowGetVisible(lua_State *L) {
 }
 
 int LuaFloatingWindowSetVisible(lua_State *L) {
-    if (!lua_islightuserdata(L, 1) || !lua_isnumber(L, 2)) {
+    if (!lua_islightuserdata(L, 1) || (!lua_isnumber(L, 2) && !lua_isboolean(L, 2))) {
         flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to float_wnd_set_visible");
         FindAndQuarantine (L);
         flywithlua::LuaIsRunning = false;
@@ -383,8 +383,18 @@ int LuaFloatingWindowSetVisible(lua_State *L) {
 
     FloatingWindow *wnd = (FloatingWindow *) lua_touserdata(L, 1);
 
-    wnd->setIsCmdVisible(lua_tointeger(L, 2));
-    wnd->setVisible(lua_toboolean(L, 2) != 0 || lua_tointeger(L, 2) != 0);
+    bool visible = false;
+    int cmdVal = 0;
+    if (lua_isboolean(L, 2)) {
+        visible = (lua_toboolean(L, 2) != 0);
+        cmdVal = visible ? 1 : 0;
+    } else {
+        cmdVal = static_cast<int>(lua_tointeger(L, 2));
+        visible = (cmdVal != 0);
+    }
+
+    wnd->setIsCmdVisible(cmdVal);
+    wnd->setVisible(visible);
 
     return 0;
 }
