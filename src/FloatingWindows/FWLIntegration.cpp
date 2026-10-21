@@ -18,6 +18,7 @@
 #include "FlyWithLuaWindow.h"
 #include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
+#include "imgui/imgui_internal.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -144,90 +145,86 @@ int LuaSetFloatingWindowTitle(lua_State *L) {
 }
 
 
-// Not sure where the proper pplace for this is but this is where we can change the custom font to use
+// ImGui font management for FlyWithLua scripts.
+// Supports both named fonts (e.g. imgui.PushFont("Roboto-Regular-16") or imgui.PushFont("Roboto-Regular", 16))
+// and legacy 1-based indices (1..9) for 100% backward compatibility.
 int LuaImguiPushFont(lua_State *L) {
-    if (!lua_isnumber(L, 1)) {
-        flywithlua::logMsg(logToDevCon, "FlyWithLua Error: Wrong parameters passed to imgui_push_font");
-        FindAndQuarantine (L);
-        flywithlua::LuaIsRunning = false;
+    int num_args = lua_gettop(L);
+    if (num_args < 1) {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont called without arguments, using default font.");
+        ImFont* def = flywithlua::GetDefaultFont();
+        if (def != nullptr) {
+            ImGui::PushFont(def, def->LegacySize);
+        } else {
+            ImGui::PushFont(nullptr, 0.0f);
+        }
         return 0;
     }
-    // get the custom font number and convert to int
-    int font_number = static_cast<int>(lua_tointeger(L, 1));
-    // This is the only way I could get this to work ugly but works
-    // float custom_size;
 
+    ImFont* target_font = nullptr;
+    float font_size = 0.0f;
 
-    // ImGuiStyle& style = ImGui::GetStyle();
-
-    // AI created this but had a 7 instead of a 9 might try it later to see if I can get it to work
-    // I did try this but could not get it to work so went back to my way that works.
-#if 0
-    if (font_number >= 1 && font_number <= 9) {
-        ImFont* chosenFont = myFonts[font_number];
-        if (chosenFont != nullptr) {
-            ImGui::PushFont(chosenFont);
-        }
-    }
-#endif
-
-    // Wraping every ImGui::PushFont() with a != nullptr trying to find my CTD sometimes on windows closing.
-    // It sadly did not help so not sure where this issue might be when clicking on the red close button.
-    // It does not happen every time but when it does the GDB demp is exactly the same.
-
-    if (font_number == 1) {
-        if (customFont1 != nullptr) {
-            ImGui::PushFont(customFont1, customFont1->LegacySize);
-        }
-    }
-    else if (font_number == 2) {
-        if (customFont2 != nullptr) {
-            ImGui::PushFont(customFont2, customFont2->LegacySize);
-        }
-    }
-     else if (font_number == 3) {
-        if (customFont3 != nullptr) {
-            ImGui::PushFont(customFont3, customFont3->LegacySize);
-        }
-     }
-    else if (font_number == 4) {
-        if (customFont4 != nullptr) {
-            ImGui::PushFont(customFont4, customFont4->LegacySize);
-        }
-    }
-    else if (font_number == 5) {
-        if (customFont5 != nullptr) {
-            ImGui::PushFont(customFont5, customFont5->LegacySize);
-        }
-    }
-     else if (font_number == 6) {
-        if (customFont6 != nullptr) {
-            ImGui::PushFont(customFont6, customFont6->LegacySize);
-        }
-     }
-    else if (font_number == 7) {
-        if (customFont7 != nullptr) {
-            ImGui::PushFont(customFont7, customFont7->LegacySize);
-        }
-    }
-    else if (font_number == 8) {
-        if (customFont8 != nullptr) {
-            ImGui::PushFont(customFont8, customFont8->LegacySize);
-        }
-    }
-     else if (font_number == 9) {
-        if (customFont9 != nullptr) {
-            ImGui::PushFont(customFont9, customFont9->LegacySize);
-        }
-     }
-
-    else {
-         // Just don't think this is a good idea as you will not see the font
-         // flywithlua::logMsg(logToDevCon, "FlyWithLua: The wrong Custom font was selected");
+    if (num_args >= 2 && lua_isnumber(L, 2)) {
+        font_size = static_cast<float>(lua_tonumber(L, 2));
     }
 
+    int arg1_type = lua_type(L, 1);
+    if (arg1_type == LUA_TNUMBER) {
+        int font_number = static_cast<int>(lua_tointeger(L, 1));
+        target_font = flywithlua::GetFontByIndex(font_number);
+        if (target_font == nullptr) {
+            flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont: Invalid font index " + std::to_string(font_number) + ", falling back to default font.");
+            target_font = flywithlua::GetDefaultFont();
+        }
+    } else if (arg1_type == LUA_TSTRING) {
+        std::string font_name = lua_tostring(L, 1);
+        if (font_size > 0.0f) {
+            std::string compound_key = font_name + "-" + std::to_string(static_cast<int>(font_size));
+            target_font = flywithlua::GetFontByName(compound_key);
+        }
+        if (target_font == nullptr) {
+            target_font = flywithlua::GetFontByName(font_name);
+        }
+        if (target_font == nullptr) {
+            flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont: Font '" + font_name + "' not found, falling back to default font.");
+            target_font = flywithlua::GetDefaultFont();
+        }
+    } else {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PushFont expected font name (string) or index (number), falling back to default font.");
+        target_font = flywithlua::GetDefaultFont();
+    }
+
+    if (target_font != nullptr) {
+        if (font_size > 0.0f) {
+            ImGui::PushFont(target_font, font_size);
+        } else {
+            ImGui::PushFont(target_font, target_font->LegacySize);
+        }
+    } else {
+        ImGui::PushFont(nullptr, 0.0f);
+    }
 
     return 0;
+}
+
+int LuaImguiPopFont(lua_State *L) {
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    if (ctx != nullptr && ctx->FontStack.Size > 0) {
+        ImGui::PopFont();
+    } else {
+        flywithlua::logMsg(logToDevCon, "FlyWithLua Warning: imgui.PopFont called with empty font stack.");
+    }
+    return 0;
+}
+
+int LuaImguiGetFontList(lua_State *L) {
+    lua_newtable(L);
+    int idx = 1;
+    for (const auto& name : flywithlua::GetRegisteredFontNames()) {
+        lua_pushstring(L, name.c_str());
+        lua_rawseti(L, -2, idx++);
+    }
+    return 1;
 }
 
 
@@ -754,6 +751,7 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_create", LuaCreateFloatingWindow);
     lua_register(L, "float_wnd_set_title", LuaSetFloatingWindowTitle);
     lua_register(L, "imgui_push_font", LuaImguiPushFont);
+    lua_register(L, "imgui_pop_font", LuaImguiPopFont);
     lua_register(L, "float_wnd_set_position", LuaSetFloatingWindowPosition);
     lua_register(L, "float_wnd_get_xplm_handle", LuaGetXPLMWindowHandle);
     lua_register(L, "float_wnd_get_dimensions", LuaGetFloatingWindowDimensions);
@@ -771,6 +769,24 @@ void initFloatingWindowSupport() {
     lua_register(L, "float_wnd_set_gravity", LuaSetFloatingWindowGravity);
     lua_register(L, "float_wnd_set_geometry", LuaSetFloatingWindowGeometry);
     lua_register(L, "float_wnd_get_geometry", LuaGetFloatingWindowGeometry);
+
+    // Register modern font functions inside the imgui table namespace
+    lua_getglobal(L, "imgui");
+    if (lua_istable(L, -1)) {
+        lua_pushcfunction(L, LuaImguiPushFont);
+        lua_setfield(L, -2, "PushFont");
+        lua_pushcfunction(L, LuaImguiPushFont);
+        lua_setfield(L, -2, "push_font");
+        lua_pushcfunction(L, LuaImguiPopFont);
+        lua_setfield(L, -2, "PopFont");
+        lua_pushcfunction(L, LuaImguiPopFont);
+        lua_setfield(L, -2, "pop_font");
+        lua_pushcfunction(L, LuaImguiGetFontList);
+        lua_setfield(L, -2, "GetFontList");
+        lua_pushcfunction(L, LuaImguiGetFontList);
+        lua_setfield(L, -2, "get_font_list");
+    }
+    lua_pop(L, 1);
 
 	::sol::state_view lua(L);
     lua.set_function("float_wnd_set_imgui_builder", sol::overload(LuaSetCallbackByName<LuaSetImguiBuilder>,
