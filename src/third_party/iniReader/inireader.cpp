@@ -32,8 +32,9 @@ void parseIniFile(char *fileName) {
   {
     getline(infile, optionValue); // Saves the line in STRING.
 
-    // Is the option a comment
-    if (optionValue.substr(0, 1) == "#") {
+    // Is the option a comment or blank line
+    std::string trimmed = trim(optionValue);
+    if (trimmed.empty() || trimmed[0] == '#' || trimmed[0] == ';') {
       continue;
     }
 
@@ -48,6 +49,10 @@ void parseIniFile(char *fileName) {
 }
 
 void cleanupIniReader() { configMap.clear(); }
+
+const std::map<std::string, std::string>& getAllIniOptions() {
+  return configMap;
+}
 
 std::string getOptionToString(std::string key) {
   try {
@@ -81,30 +86,26 @@ void readOptionAsInt(std::string key, int *value) {
 }
 
 std::string parseOptionName(std::string value) {
-  size_t found;
+  size_t found = value.find('=');
 
-  found = value.find('=');
-
-  if (found > 100) {
+  if (found == std::string::npos) {
     return "";
   }
 
-  std::string key = value.substr(0, (found - 1));
+  std::string key = value.substr(0, found);
   key = trim(key);
 
   return key;
 }
 
 std::string parseOptionValue(std::string value) {
-  size_t found;
+  size_t found = value.find('=');
 
-  found = value.find('=');
-
-  if (found > 100) {
+  if (found == std::string::npos) {
     return "";
   }
 
-  std::string keyValue = value.substr((found + 1));
+  std::string keyValue = value.substr(found + 1);
   keyValue = trim(keyValue);
 
   return keyValue;

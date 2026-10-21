@@ -947,6 +947,7 @@ std::string imgui_custom_font3;
 // END added by Sparker
 
 void process_read_ini_file();
+bool ReadPrefFile();
 
 // The user will be able to handle the plugin with commands
 XPLMCommandRef MyReloadScriptsCommand = nullptr;
@@ -6773,6 +6774,17 @@ void ResetLuaEngine()
 
     // functions for fmod
     fmodint::RegisterFmodFunctionsToLua(FWLLua);
+
+    // Mid-flight font atlas rebuild on script reload (ABC pattern)
+    if (LuaResetCount > 0)
+    {
+        TeardownImGui();
+        ReadPrefFile();
+        if (!InitializeImGui())
+        {
+            logMsg(logToDevCon, "FlyWithLua Error: Unable to re-initialize the shared ImGui font atlas on reload.");
+        }
+    }
 
     // functions to operate on floating windows
     flwnd::initFloatingWindowSupport();
