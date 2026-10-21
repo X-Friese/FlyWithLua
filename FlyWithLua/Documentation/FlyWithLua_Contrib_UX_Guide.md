@@ -1,7 +1,11 @@
 # FlyWithLua Dear ImGui Contrib UX & Extensions Guide
 
-**FlyWithLua 2.8.18+ / ImgWindow v2.2.1+**  
+**FlyWithLua 2.8.18+ / 2.8.19 -- ImgWindow v2.2.1+ -- Dear ImGui 1.92.8**  
 *Comprehensive Reference for Markdown, TimedTooltip, and Modern Interactive Widgets*
+
+> **DRAFT: October 21, 2026**  
+> **Author:** Steven L. Goldberg (`slgoldberg@`) with help from Google Gemini  
+> **Target Release:** FlyWithLua 2.8.18+ / 2.8.19 (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.1 Panel Graphics)
 
 ---
 
@@ -34,8 +38,10 @@ The Markdown system automatically hooks into FlyWithLua's **Named Font Registry*
 | **Heading 2** (`##`) | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold / Underlined |
 | **Heading 3** (`###`) | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold |
 | **Bold** (`**bold**`) | `Roboto-Medium` | `Roboto-Regular`, Default | Medium / Semi-Bold weight |
-| **Italics** (`*italic*`) | `Roboto-Light-16` | `Roboto-Light`, Default | Light / Slanted weight |
+| **Italics** (`*italic*`) | `Roboto-Italic-16` | `Roboto-Italic`, `Roboto-Light` | True Italic / Slanted weight |
 | **Monospace / Code** (`code`) | `ProggyForever` | `ProggyClean`, Default | Monospace vector font |
+
+*(Note: True italic typography is powered by `Roboto-Italic.ttf`, bundled directly in `FlyWithLua/Custom_Fonts/`. If not present, the engine gracefully falls back to `Roboto-Light` or the default interface font).*
 
 ### Markdown Functions
 
@@ -145,8 +151,8 @@ Shows a stationary tooltip rendered with full Markdown and pill styling.
 imgui.Button("Pitot Heat##btn")
 imgui.TimedTooltip.MD.Text("### Pitot Tube Heating System\n\n" ..
                            "Status: <pill green>ON</pill>\n\n" ..
-                           "• Prevents ice accumulation in pitot static probes.\n" ..
-                           "• <color #f39c12>Caution: Ground operation limited to 5 minutes.</color>")
+                           "* Prevents ice accumulation in pitot static probes.\n" ..
+                           "* <color #f39c12>Caution: Ground operation limited to 5 minutes.</color>")
 ```
 
 #### Dwell & Dimension Controls
