@@ -238,7 +238,40 @@ imgui.ButtonLink("FlyWithLua Forum Support", "https://forums.x-plane.org")
 
 ---
 
-## 6. Universal C++ & Lua Alias Matrix
+## 6. Dynamic ImGui Mouse Cursors
+
+FlyWithLua now natively enables **dynamic software ImGui mouse cursors by default** inside floating windows:
+- **Interactive Hand (`ImGuiMouseCursor_Hand`):** Shows automatically when hovering over links, buttons, reset glyphs, and toggle switches.
+- **Text I-Beam (`ImGuiMouseCursor_TextInput`):** Appears when hovering over editable text inputs.
+- **Resize Cursors (`ImGuiMouseCursor_ResizeEW`, `ResizeNS`, etc.):** Seamlessly transition when dragging columns, tables, or frames.
+- **Edge Resize Passthrough:** As the mouse approaches the outer boundary of an in-sim window, ImGui automatically releases cursor control to X-Plane so native hardware resize handles function without hitching.
+
+### Disabling or Customizing Cursors
+
+If a user or script author prefers standard OS hardware cursor rendering, dynamic cursors can be toggled at multiple levels:
+
+1. **Global Preference (`fwl_prefs.ini`):**
+   ```ini
+   ; Set to 0 to disable dynamic ImGui cursors globally
+   ImguiMouseCursors = 0
+   ```
+2. **Per-Window Lua Control:**
+   ```lua
+   -- Disable custom cursors on this window:
+   float_wnd_set_imgui_cursor_handling(wnd, false)
+
+   -- Query cursor state:
+   local is_active = float_wnd_get_imgui_cursor_handling(wnd)
+   ```
+3. **ImGui Namespace Control:**
+   ```lua
+   imgui.SetCursorHandling(false) -- Disable globally
+   imgui.SetCursorHandling(wnd, false) -- Disable for specific window
+   ```
+
+---
+
+## 7. Universal C++ & Lua Alias Matrix
 
 FlyWithLua provides comprehensive alias coverage matching both standard Dear ImGui PascalCase conventions and C++ namespace aliases:
 
@@ -258,7 +291,7 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 
 ---
 
-## 7. Complete Interactive Script Recipe
+## 8. Complete Interactive Script Recipe
 
 Here is a minimal, complete script showing all extensions working together:
 
