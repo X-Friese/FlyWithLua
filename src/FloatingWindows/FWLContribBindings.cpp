@@ -121,11 +121,15 @@ void UpdateContribMarkdownFonts() {
     if (!bold) bold = flywithlua::GetFontByName("Roboto-Medium");
     if (!bold) bold = flywithlua::GetDefaultFont();
 
-    ImFont* italic = flywithlua::GetFontByName("Roboto-Light-16");
+    ImFont* italic = flywithlua::GetFontByName("Roboto-Italic-16");
+    if (!italic) italic = flywithlua::GetFontByName("Roboto-Italic");
+    if (!italic) italic = flywithlua::GetFontByName("Roboto-Light-16");
     if (!italic) italic = flywithlua::GetFontByName("Roboto-Light");
     if (!italic) italic = flywithlua::GetDefaultFont();
 
-    ImFont* mono = flywithlua::GetFontByName("ProggyForever");
+    ImFont* mono = flywithlua::GetFontByName("RobotoMono-Regular-16");
+    if (!mono) mono = flywithlua::GetFontByName("RobotoMono-Regular");
+    if (!mono) mono = flywithlua::GetFontByName("ProggyForever");
     if (!mono) mono = flywithlua::GetFontByName("ProggyClean");
     if (!mono) mono = flywithlua::GetDefaultFont();
 
