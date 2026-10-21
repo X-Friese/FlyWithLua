@@ -9,7 +9,7 @@ if not SUPPORTS_FLOATING_WINDOWS then
     return
 end
 
-local panel_wnd = float_wnd_create(580, 520, 1, true)
+local panel_wnd = float_wnd_create(580, 570, 1, true)
 float_wnd_set_position(panel_wnd, 120, 120)
 float_wnd_set_title(panel_wnd, "Avionics Contrib Console")
 float_wnd_set_imgui_builder(panel_wnd, "panel_on_build")
