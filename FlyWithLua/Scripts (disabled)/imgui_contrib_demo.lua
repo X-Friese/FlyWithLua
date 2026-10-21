@@ -10,7 +10,7 @@ if not SUPPORTS_FLOATING_WINDOWS then
     return
 end
 
-local contrib_demo_wnd = float_wnd_create(820, 700, 1, true)
+local contrib_demo_wnd = float_wnd_create(840, 700, 1, true)
 float_wnd_set_position(contrib_demo_wnd, 80, 80)
 float_wnd_set_title(contrib_demo_wnd, "FlyWithLua ImGui Contrib & UX Demo")
 float_wnd_set_imgui_builder(contrib_demo_wnd, "contrib_demo_on_build")
@@ -47,30 +47,44 @@ function contrib_demo_on_build(wnd, x, y)
         -- ====================================================================
         if imgui.BeginTabItem("Rich Markdown (MD)") then
             imgui.Spacing()
-            imgui.TextUnformatted("The Markdown extension transforms standard Markdown text into styled Dear ImGui elements:")
+            imgui.MD.Text("The Markdown extension transforms standard Markdown text into styled Dear ImGui elements:")
 
             if imgui.CollapsingHeader("Headings & Typography", 32) then -- 32 = ImGuiTreeNodeFlags_DefaultOpen
+                imgui.MD.Text("<code dark># Heading 1 (20px Roboto-Medium with full line beneath)</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("# Heading 1 (20px Roboto-Medium with full line beneath)")
-                imgui.MD.Text("  <code dark># Heading 1 (20px Roboto-Medium with full line beneath)</code>")
+                imgui.Unindent(40)
                 imgui.Spacing()
+
+                imgui.MD.Text("<code dark>## Heading 2 (18px Roboto-Medium with full line beneath)</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("## Heading 2 (18px Roboto-Medium with full line beneath)")
-                imgui.MD.Text("  <code dark>## Heading 2 (18px Roboto-Medium with full line beneath)</code>")
+                imgui.Unindent(40)
                 imgui.Spacing()
+
+                imgui.MD.Text("<code dark>### Heading 3 (16px Roboto-Medium)</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("### Heading 3 (16px Roboto-Medium)")
-                imgui.MD.Text("  <code dark>### Heading 3 (16px Roboto-Medium)</code>")
+                imgui.Unindent(40)
                 imgui.Spacing()
+
+                imgui.MD.Text("<code dark>*italic*, **bold**, ***bold italic***</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("Body paragraph with *italic text*, **bold text**, and ***bold italic text***.")
-                imgui.MD.Text("  <code dark>*italic*, **bold**, ***bold italic***</code>")
+                imgui.Unindent(40)
                 imgui.Spacing()
+
+                imgui.MD.Text("<code dark>`sim/cockpit2/engine/indicators/engine_speed_rpm`</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("Monospace inline code: `sim/cockpit2/engine/indicators/engine_speed_rpm`")
-                imgui.MD.Text("  <code dark>`sim/cockpit2/engine/indicators/engine_speed_rpm`</code>")
+                imgui.Unindent(40)
             end
 
             imgui.Spacing()
             if imgui.CollapsingHeader("Pills, Badges & Custom Colors", 32) then
                 imgui.MD.Text("Enhance telemetry and cockpit status displays using inline XML-style tags:")
                 imgui.Spacing()
-                imgui.TextUnformatted("Status Pills:")
+                imgui.MD.Text("Status Pills:")
                 imgui.MD.Text("  `<pill green>SYSTEMS NORMAL</pill>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<pill green>SYSTEMS NORMAL</pill>")
@@ -88,7 +102,7 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.MD.Text("<pill gray>OFFLINE</pill>")
 
                 imgui.Spacing()
-                imgui.TextUnformatted("Badges:")
+                imgui.MD.Text("Badges:")
                 imgui.MD.Text("  `<badge blue>V2.2.1</badge>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<badge blue>V2.2.1</badge>")
@@ -102,13 +116,13 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.MD.Text("<badge green>XP12.4.4+</badge>")
 
                 imgui.Spacing()
-                imgui.TextUnformatted("Keyboard shortcuts:")
+                imgui.MD.Text("Keyboard shortcuts:")
                 imgui.MD.Text("  `<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>`")
-                imgui.SameLine(360)
+                imgui.SameLine(395)
                 imgui.MD.Text("<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>")
 
                 imgui.Spacing()
-                imgui.TextUnformatted("Custom Hex Colors:")
+                imgui.MD.Text("Custom Hex Colors:")
                 imgui.MD.Text("  `<color #00bc8c>Emerald</color>`")
                 imgui.SameLine(360)
                 imgui.MD.Text("<color #00bc8c>Emerald</color>")
@@ -128,22 +142,28 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.MD.Text("* Pitot tube covers removed\n* Flight control surfaces free and clear\n* Fuel quantity verified\n* Transponder set to <pill blue>1200 / VFR</pill>")
 
                 imgui.Spacing()
-                imgui.TextUnformatted("Variadic string formatting (pass %s, %d, %f like string.format):")
+                imgui.MD.Text("Variadic string formatting (pass %s, %d, %f like string.format):")
+                imgui.MD.Text("<code dark>imgui.MD.Text(\"**Alt**: %d ft | **IAS**: %.1f kts\", 18500, 264.8)</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("Telemetry readout: **Alt**: %d ft | **IAS**: %.1f kts | **QNH**: %.2f inHg", 18500, 264.8, altimeter_setting)
-                imgui.MD.Text("  <code dark>imgui.MD.Text(\"**Alt**: %d ft | **IAS**: %.1f kts\", 18500, 264.8)</code>")
+                imgui.Unindent(40)
             end
 
             imgui.Spacing()
             if imgui.CollapsingHeader("Clickable Links & Markdown Buttons", 32) then
+                imgui.MD.Text("<code dark>{FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)</code>")
+                imgui.Indent(40)
                 imgui.MD.Text("Clickable URL Link: {FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)")
-                imgui.MD.Text("  <code dark>{FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)</code>")
                 imgui.MD.Text("*(Clicking the link above automatically opens your system default web browser!)*")
+                imgui.Unindent(40)
 
                 imgui.Spacing()
+                imgui.MD.Text("<code dark>imgui.Markdown.ButtonMD(\"Execute Check: Clicked **%d times**##mddemo\", tooltip)</code>")
+                imgui.Indent(40)
                 if imgui.Markdown.ButtonMD(string.format("Execute Check: Clicked **%d times**##mddemo", md_button_clicks), "Click to increment counter!") then
                     md_button_clicks = md_button_clicks + 1
                 end
-                imgui.MD.Text("  <code dark>imgui.Markdown.ButtonMD(\"Execute Check: Clicked **%d times**##mddemo\", tooltip)</code>")
+                imgui.Unindent(40)
             end
 
             imgui.EndTabItem()
