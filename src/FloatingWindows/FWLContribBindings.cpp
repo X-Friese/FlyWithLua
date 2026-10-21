@@ -82,6 +82,22 @@ static void DefaultMarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data) {
     }
 }
 
+// ----------------------------------------------------------------------------
+// Tooltip & Markdown Persistent State
+// ----------------------------------------------------------------------------
+
+static ImGui::TimedTooltip::TooltipConfig s_FWLTooltipConfig;
+static bool s_FWLTooltipConfigInitialized = false;
+
+static ImGui::TimedTooltip::TooltipConfig& GetFWLTooltipConfig() {
+    if (!s_FWLTooltipConfigInitialized) {
+        s_FWLTooltipConfig = ImGui::TimedTooltip::GetCurrentTooltipConfig();
+        s_FWLTooltipConfigInitialized = true;
+        ImGui::TimedTooltip::SetDefaultTooltipConfig(&s_FWLTooltipConfig);
+    }
+    return s_FWLTooltipConfig;
+}
+
 void UpdateContribMarkdownFonts() {
     static ImGui::MarkdownConfig s_FWLMarkdownConfig;
 
@@ -97,6 +113,10 @@ void UpdateContribMarkdownFonts() {
     if (!h3) h3 = flywithlua::GetFontByName("Roboto-Regular");
     if (!h3) h3 = flywithlua::GetDefaultFont();
 
+    ImFont* regular = flywithlua::GetFontByName("Roboto-Regular-16");
+    if (!regular) regular = flywithlua::GetFontByName("Roboto-Regular");
+    if (!regular) regular = flywithlua::GetDefaultFont();
+
     ImFont* bold = flywithlua::GetFontByName("Roboto-Medium-16");
     if (!bold) bold = flywithlua::GetFontByName("Roboto-Medium");
     if (!bold) bold = flywithlua::GetDefaultFont();
@@ -109,12 +129,13 @@ void UpdateContribMarkdownFonts() {
     if (!mono) mono = flywithlua::GetFontByName("ProggyClean");
     if (!mono) mono = flywithlua::GetDefaultFont();
 
-    s_FWLMarkdownConfig.h1Font     = h1;
-    s_FWLMarkdownConfig.h2Font     = h2;
-    s_FWLMarkdownConfig.h3Font     = h3;
-    s_FWLMarkdownConfig.boldFont   = bold;
-    s_FWLMarkdownConfig.italicFont = italic;
-    s_FWLMarkdownConfig.monoFont   = mono;
+    s_FWLMarkdownConfig.h1Font      = h1;
+    s_FWLMarkdownConfig.h2Font      = h2;
+    s_FWLMarkdownConfig.h3Font      = h3;
+    s_FWLMarkdownConfig.boldFont    = bold;
+    s_FWLMarkdownConfig.italicFont  = italic;
+    s_FWLMarkdownConfig.monoFont    = mono;
+    s_FWLMarkdownConfig.regularFont = regular;
 
     s_FWLMarkdownConfig.headingFormats[0] = { h1, true };
     s_FWLMarkdownConfig.headingFormats[1] = { h2, true };
@@ -124,6 +145,9 @@ void UpdateContribMarkdownFonts() {
     s_FWLMarkdownConfig.linkCallback = DefaultMarkdownLinkCallback;
 
     ImGui::SetDefaultMarkdownConfig(&s_FWLMarkdownConfig);
+
+    auto& tt_cfg = GetFWLTooltipConfig();
+    tt_cfg.font = regular;
 }
 
 // ----------------------------------------------------------------------------
@@ -197,33 +221,29 @@ static int LuaTimedTooltipTextMDUnformatted(lua_State* L) {
 
 static int LuaTimedTooltipSetDelay(lua_State* L) {
     int cycles = static_cast<int>(luaL_checkinteger(L, 1));
-    ImGui::TimedTooltip::Config cfg = ImGui::TimedTooltip::GetConfig();
+    auto& cfg = GetFWLTooltipConfig();
     cfg.hover_delay_cycles = cycles;
-    ImGui::TimedTooltip::SetDefaultTooltipConfig(&cfg);
     return 0;
 }
 
 static int LuaTimedTooltipSetMaxDisplay(lua_State* L) {
     int cycles = static_cast<int>(luaL_checkinteger(L, 1));
-    ImGui::TimedTooltip::Config cfg = ImGui::TimedTooltip::GetConfig();
+    auto& cfg = GetFWLTooltipConfig();
     cfg.max_display_cycles = cycles;
-    ImGui::TimedTooltip::SetDefaultTooltipConfig(&cfg);
     return 0;
 }
 
 static int LuaTimedTooltipSetMaxWidth(lua_State* L) {
     float w = static_cast<float>(luaL_checknumber(L, 1));
-    ImGui::TimedTooltip::Config cfg = ImGui::TimedTooltip::GetConfig();
+    auto& cfg = GetFWLTooltipConfig();
     cfg.max_wrap_width = w;
-    ImGui::TimedTooltip::SetDefaultTooltipConfig(&cfg);
     return 0;
 }
 
 static int LuaTimedTooltipSetMinWidth(lua_State* L) {
     float w = static_cast<float>(luaL_checknumber(L, 1));
-    ImGui::TimedTooltip::Config cfg = ImGui::TimedTooltip::GetConfig();
+    auto& cfg = GetFWLTooltipConfig();
     cfg.min_wrap_width = w;
-    ImGui::TimedTooltip::SetDefaultTooltipConfig(&cfg);
     return 0;
 }
 
@@ -430,6 +450,7 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaTimedTooltipTextMDUnformatted);   lua_setfield(L, -2, "TextMDUnformatted");
     lua_pushcfunction(L, LuaTimedTooltipTextMDUnformatted);   lua_setfield(L, -2, "TextUnformattedMD");
     lua_pushcfunction(L, LuaTimedTooltipSetDelay);            lua_setfield(L, -2, "SetDelay");
+    lua_pushcfunction(L, LuaTimedTooltipSetDelay);            lua_setfield(L, -2, "SetHoverDelay");
     lua_pushcfunction(L, LuaTimedTooltipSetMaxDisplay);       lua_setfield(L, -2, "SetMaxDisplay");
     lua_pushcfunction(L, LuaTimedTooltipSetMaxWidth);         lua_setfield(L, -2, "SetMaxWidth");
     lua_pushcfunction(L, LuaTimedTooltipSetMinWidth);         lua_setfield(L, -2, "SetMinWidth");
@@ -440,6 +461,7 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaTimedTooltipTextUnformatted);     lua_setfield(L, -2, "text_unformatted");
     lua_pushcfunction(L, LuaTimedTooltipTextMDUnformatted);   lua_setfield(L, -2, "text_md_unformatted");
     lua_pushcfunction(L, LuaTimedTooltipSetDelay);            lua_setfield(L, -2, "set_delay");
+    lua_pushcfunction(L, LuaTimedTooltipSetDelay);            lua_setfield(L, -2, "set_hover_delay");
     lua_pushcfunction(L, LuaTimedTooltipSetMaxDisplay);       lua_setfield(L, -2, "set_max_display");
     lua_pushcfunction(L, LuaTimedTooltipSetMaxWidth);         lua_setfield(L, -2, "set_max_width");
     lua_pushcfunction(L, LuaTimedTooltipSetMinWidth);         lua_setfield(L, -2, "set_min_width");
