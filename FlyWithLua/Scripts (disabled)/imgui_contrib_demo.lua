@@ -51,43 +51,75 @@ function contrib_demo_on_build(wnd, x, y)
 
             if imgui.CollapsingHeader("Headings & Typography", 32) then -- 32 = ImGuiTreeNodeFlags_DefaultOpen
                 imgui.MD.Text("# Heading 1 (20px Roboto-Medium with full line beneath)")
-                imgui.MD.Text("  <code gray># Heading 1 (20px Roboto-Medium with full line beneath)</code>")
+                imgui.MD.Text("  <code dark># Heading 1 (20px Roboto-Medium with full line beneath)</code>")
                 imgui.Spacing()
                 imgui.MD.Text("## Heading 2 (18px Roboto-Medium with full line beneath)")
-                imgui.MD.Text("  <code gray>## Heading 2 (18px Roboto-Medium with full line beneath)</code>")
+                imgui.MD.Text("  <code dark>## Heading 2 (18px Roboto-Medium with full line beneath)</code>")
                 imgui.Spacing()
                 imgui.MD.Text("### Heading 3 (16px Roboto-Medium)")
-                imgui.MD.Text("  <code gray>### Heading 3 (16px Roboto-Medium)</code>")
+                imgui.MD.Text("  <code dark>### Heading 3 (16px Roboto-Medium)</code>")
                 imgui.Spacing()
                 imgui.MD.Text("Body paragraph with *italic text*, **bold text**, and ***bold italic text***.")
-                imgui.MD.Text("  <code gray>*italic*, **bold**, ***bold italic***</code>")
+                imgui.MD.Text("  <code dark>*italic*, **bold**, ***bold italic***</code>")
                 imgui.Spacing()
                 imgui.MD.Text("Monospace inline code: `sim/cockpit2/engine/indicators/engine_speed_rpm`")
-                imgui.MD.Text("  <code gray>`sim/cockpit2/engine/indicators/engine_speed_rpm`</code>")
+                imgui.MD.Text("  <code dark>`sim/cockpit2/engine/indicators/engine_speed_rpm`</code>")
             end
 
             imgui.Spacing()
             if imgui.CollapsingHeader("Pills, Badges & Custom Colors", 32) then
                 imgui.MD.Text("Enhance telemetry and cockpit status displays using inline XML-style tags:")
                 imgui.Spacing()
-                imgui.MD.Text("Status Pills:")
-                imgui.MD.Text("  <code gray><pill green>SYSTEMS NORMAL</pill></code>   <pill green>SYSTEMS NORMAL</pill>")
-                imgui.MD.Text("  <code gray><pill warning>LOW FUEL</pill></code>   <pill warning>LOW FUEL</pill>")
-                imgui.MD.Text("  <code gray><pill error>ENGINE 2 FIRE</pill></code>   <pill error>ENGINE 2 FIRE</pill>")
-                imgui.MD.Text("  <code gray><pill gray>OFFLINE</pill></code>   <pill gray>OFFLINE</pill>")
+                imgui.TextUnformatted("Status Pills:")
+                imgui.MD.Text("  `<pill green>SYSTEMS NORMAL</pill>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<pill green>SYSTEMS NORMAL</pill>")
+
+                imgui.MD.Text("  `<pill warning>LOW FUEL</pill>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<pill warning>LOW FUEL</pill>")
+
+                imgui.MD.Text("  `<pill error>ENGINE 2 FIRE</pill>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<pill error>ENGINE 2 FIRE</pill>")
+
+                imgui.MD.Text("  `<pill gray>OFFLINE</pill>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<pill gray>OFFLINE</pill>")
+
                 imgui.Spacing()
-                imgui.MD.Text("Badges:")
-                imgui.MD.Text("  <code gray><badge blue>V2.2.1</badge></code>   <badge blue>V2.2.1</badge>")
-                imgui.MD.Text("  <code gray><badge purple>PRO</badge></code>   <badge purple>PRO</badge>")
-                imgui.MD.Text("  <code gray><badge green>XP12.4.4+</badge></code>   <badge green>XP12.4.4+</badge>")
+                imgui.TextUnformatted("Badges:")
+                imgui.MD.Text("  `<badge blue>V2.2.1</badge>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<badge blue>V2.2.1</badge>")
+
+                imgui.MD.Text("  `<badge purple>PRO</badge>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<badge purple>PRO</badge>")
+
+                imgui.MD.Text("  `<badge green>XP12.4.4+</badge>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<badge green>XP12.4.4+</badge>")
+
                 imgui.Spacing()
-                imgui.MD.Text("Keyboard shortcuts:")
-                imgui.MD.Text("  <code gray><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></code>   <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>")
+                imgui.TextUnformatted("Keyboard shortcuts:")
+                imgui.MD.Text("  `<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>")
+
                 imgui.Spacing()
-                imgui.MD.Text("Custom Hex Colors:")
-                imgui.MD.Text("  <code gray><color #00bc8c>Emerald</color></code>   <color #00bc8c>Emerald</color>")
-                imgui.MD.Text("  <code gray><color #3498db>Aviation Sky</color></code>   <color #3498db>Aviation Sky</color>")
-                imgui.MD.Text("  <code gray><color #e74c3c>Crimson Warning</color></code>   <color #e74c3c>Crimson Warning</color>")
+                imgui.TextUnformatted("Custom Hex Colors:")
+                imgui.MD.Text("  `<color #00bc8c>Emerald</color>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<color #00bc8c>Emerald</color>")
+
+                imgui.MD.Text("  `<color #3498db>Aviation Sky</color>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<color #3498db>Aviation Sky</color>")
+
+                imgui.MD.Text("  `<color #e74c3c>Crimson Warning</color>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<color #e74c3c>Crimson Warning</color>")
             end
 
             imgui.Spacing()
@@ -98,21 +130,20 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.Spacing()
                 imgui.TextUnformatted("Variadic string formatting (pass %s, %d, %f like string.format):")
                 imgui.MD.Text("Telemetry readout: **Alt**: %d ft | **IAS**: %.1f kts | **QNH**: %.2f inHg", 18500, 264.8, altimeter_setting)
-                imgui.MD.Text("  <code gray>imgui.MD.Text(\"**Alt**: %d ft | **IAS**: %.1f kts\", 18500, 264.8)</code>")
+                imgui.MD.Text("  <code dark>imgui.MD.Text(\"**Alt**: %d ft | **IAS**: %.1f kts\", 18500, 264.8)</code>")
             end
 
             imgui.Spacing()
             if imgui.CollapsingHeader("Clickable Links & Markdown Buttons", 32) then
-                imgui.MD.Text("Clickable URL Link: [FlyWithLua GitHub Project](https://github.com/sparker256/FlyWithLua)")
-                imgui.MD.Text("  <code gray>[FlyWithLua GitHub Project](https://github.com/sparker256/FlyWithLua)</code>")
+                imgui.MD.Text("Clickable URL Link: {FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)")
+                imgui.MD.Text("  <code dark>{FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)</code>")
                 imgui.MD.Text("*(Clicking the link above automatically opens your system default web browser!)*")
 
                 imgui.Spacing()
                 if imgui.Markdown.ButtonMD(string.format("Execute Check: Clicked **%d times**##mddemo", md_button_clicks), "Click to increment counter!") then
                     md_button_clicks = md_button_clicks + 1
                 end
-                imgui.SameLine()
-                imgui.MD.Text("<code gray>imgui.Markdown.ButtonMD(\"...Clicked **%d times**...\", tooltip)</code>")
+                imgui.MD.Text("  <code dark>imgui.Markdown.ButtonMD(\"Execute Check: Clicked **%d times**##mddemo\", tooltip)</code>")
             end
 
             imgui.EndTabItem()
@@ -136,7 +167,7 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Button("Hover over me (Plain TimedTooltip)##btn1", 320, 36)
             imgui.TimedTooltip.Text("This tooltip is locked in place and will not follow the cursor around!")
             imgui.SameLine()
-            imgui.MD.Text("<code gray>imgui.TimedTooltip.Text(\"...\")</code>")
+            imgui.MD.Text("<code dark>imgui.TimedTooltip.Text(\"...\")</code>")
 
             imgui.Spacing()
 
@@ -148,7 +179,7 @@ function contrib_demo_on_build(wnd, x, y)
                                        "* Vertical Mode: **VNAV PATH**\n\n" ..
                                        "<color #b71c1c>**CAUTION: Barometric transition at 18,000 ft.**</color>")
             imgui.SameLine()
-            imgui.MD.Text("<code gray>imgui.TimedTooltip.MD.Text(\"### Autopilot... <pill green>ARMED</pill>...\")</code>")
+            imgui.MD.Text("<code dark>imgui.TimedTooltip.MD.Text(...)</code>")
 
             imgui.Spacing()
 
@@ -156,7 +187,7 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Button("Hover over me (Variadic Formatted)##btn3", 320, 36)
             imgui.TimedTooltip.Text("Active Transponder: %04d | Mode: %s | Reply: %s", 7700, "ALT", "ENGAGED")
             imgui.SameLine()
-            imgui.MD.Text("<code gray>imgui.TimedTooltip.Text(\"Active Transponder: %04d...\", 7700, ...)</code>")
+            imgui.MD.Text("<code dark>imgui.TimedTooltip.Text(\"Active Transponder...\", 7700, ...)</code>")
 
             imgui.Spacing()
             imgui.Separator()
