@@ -7638,8 +7638,11 @@ PLUGIN_API int XPluginEnable(void)
     // Initialize OpenAL sound
     init_openal_sound();
 
-    // Re-initialize FMOD sound if FMOD Studio is already running in X-Plane (e.g. across plugin reload)
-    if (XPLMGetFMODStudio() != nullptr)
+    // Re-initialize FMOD sound if FMOD Studio is already running in X-Plane across plugin reload.
+    // Only re-initialize if the sim is already running mid-flight (XPLMGetCycleNumber() > 0 or LuaResetCount > 0).
+    // On cold boot (cycle == 0), the sound banks are not loaded yet; X-Plane will load them
+    // and send XPLM_MSG_FMOD_BANK_LOADED when the aircraft is ready.
+    if ((XPLMGetCycleNumber() > 0 || LuaResetCount > 0) && XPLMGetFMODStudio() != nullptr)
     {
         fmodint::fmod_initialization();
     }
