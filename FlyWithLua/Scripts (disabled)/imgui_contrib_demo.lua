@@ -192,14 +192,17 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Spacing()
 
             -- Demo 2: Rich Markdown tooltip (Moved 2nd per feedback: "Oh my god! It's colored text!")
-            imgui.Button("Hover over me (Rich Markdown Tooltip)##btn2", 320, 36)
-            imgui.TimedTooltip.MD.Text("### Autopilot Flight Director\n\n" ..
-                                       "Current status: <pill green>ARMED</pill>\n\n" ..
+            imgui.Button("Hover over me (Rich Markdown Tooltip)##btn2", 320, 42)
+            imgui.TimedTooltip.MD.Text("## Autopilot Flight Director\n" ..
+                                       "Current status: <pill green>ARMED</pill>\n" ..
                                        "* Lateral Mode: **LNAV (GPS)**\n" ..
                                        "* Vertical Mode: **VNAV PATH**\n\n" ..
                                        "<color #b71c1c>**CAUTION: Barometric transition at 18,000 ft.**</color>")
             imgui.SameLine()
-            imgui.MD.Text("<code dark>imgui.TimedTooltip.MD.Text(...)</code>")
+            imgui.BeginGroup()
+            imgui.MD.Text("<code dark>imgui.TimedTooltip.MD.Text(\"## Autopilot Flight Director\\n\" ..</code>")
+            imgui.MD.Text("<code dark>  \"Current status: <pill green>ARMED</pill>\\n* Lateral: **LNAV**...\")</code>")
+            imgui.EndGroup()
 
             imgui.Spacing()
 
@@ -226,7 +229,7 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Spacing()
             imgui.MD.Text("### Smooth Animated & Specialized Widgets")
 
-            -- ToggleButton
+            -- Row 1: Avionics Master & De-Ice System (Side-by-side)
             local toggle_changed, new_toggle = imgui.ToggleButton("Avionics Master Switch", avionics_master_state)
             if toggle_changed then
                 avionics_master_state = new_toggle
@@ -240,11 +243,9 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.MD.Text("<pill gray>OFFLINE</pill>")
             end
 
-            imgui.Spacing()
-            imgui.Separator()
-
-            -- ToggleButtons (Multi-state)
-            imgui.TextUnformatted("De-Ice System Mode:")
+            imgui.SameLine(420)
+            imgui.TextUnformatted("De-Ice System:")
+            imgui.SameLine()
             local seg_changed, new_seg = imgui.ToggleButtons("##DeIceSeg", deice_mode, "OFF", "AUTO")
             if seg_changed then
                 deice_mode = new_seg
@@ -254,25 +255,19 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Spacing()
             imgui.Separator()
 
-            -- SliderWithReset
+            -- Row 2: Sliders with Reset and Normalized Percentage
             local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
             if trim_changed then
                 throttle_trim = new_trim
             end
             imgui.TimedTooltip.Text("Click the reset button (↺) to snap trim back to neutral (0.00).")
 
-            imgui.Spacing()
-
-            -- PercentSlider
             local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
             if flaps_changed then
                 flaps_pct = new_flaps
             end
             imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
 
-            imgui.Spacing()
-
-            -- PercentSliderWithReset
             local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
             if hud_changed then
                 hud_brightness = new_hud
@@ -281,22 +276,21 @@ function contrib_demo_on_build(wnd, x, y)
 
             imgui.Spacing()
             imgui.Separator()
+
+            -- Row 3: Mouse Wheel Chasers (Side-by-side to eliminate vertical overflow)
             imgui.MD.Text("### Mouse Wheel Chasers")
             imgui.TextUnformatted("Hover your mouse cursor over the boxes below and scroll the mouse wheel:")
 
-            -- AdjustItemOnMouseWheel
-            imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), 320, 32)
+            imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), 360, 32)
             local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
             if freq_changed then
                 com1_freq = new_freq
             end
             imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
 
-            imgui.Spacing()
-
-            -- CycleItemOnMouseWheel
+            imgui.SameLine(400)
             local cur_view_name = camera_views[camera_view_idx] or "Unknown"
-            imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), 320, 32)
+            imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), 360, 32)
             local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
             if cam_changed then
                 camera_view_idx = new_cam
@@ -305,7 +299,9 @@ function contrib_demo_on_build(wnd, x, y)
 
             imgui.Spacing()
             imgui.Separator()
-            imgui.MD.Text("### ImGui Mouse Cursors")
+
+            -- Row 4: ImGui Mouse Cursors & Hyperlinks (Combined clean footer)
+            imgui.MD.Text("### ImGui Mouse Cursors & Hyperlinks")
             local cur_cursors = float_wnd_get_imgui_cursor_handling(wnd)
             local cursor_changed, new_cursor_state = imgui.ToggleButton("Dynamic ImGui Cursors", cur_cursors)
             if cursor_changed then
@@ -313,10 +309,7 @@ function contrib_demo_on_build(wnd, x, y)
             end
             imgui.TimedTooltip.Text("Toggles dynamic ImGui cursors (Hand over links/buttons, I-beam over text) vs native hardware mouse.")
 
-            imgui.Spacing()
-            imgui.Separator()
-            imgui.MD.Text("### Hyperlink Widgets")
-
+            imgui.SameLine(360)
             imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
             imgui.SameLine()
             imgui.TextUnformatted(" | ")
@@ -331,8 +324,8 @@ function contrib_demo_on_build(wnd, x, y)
         -- ====================================================================
         if imgui.BeginTabItem("C++ / Lua Aliases") then
             imgui.Spacing()
-            imgui.MD.Text("### Universal Syntax & PascalCase Parity\n" ..
-                          "FlyWithLua mirrors the C++ Dear ImGui naming conventions and provides complete alias parity so script authors can write whatever feels most natural:")
+            imgui.MD.Text("### Universal Syntax & PascalCase Parity")
+            imgui.MD.Text("FlyWithLua mirrors the C++ Dear ImGui naming conventions and provides complete\nalias parity so script authors can write whatever feels most natural:")
 
             imgui.Spacing()
             imgui.TextUnformatted("All of these equivalent forms work identically:")
