@@ -11,13 +11,13 @@ This guide explains both the **Modern Named Font Registry** (recommended for new
 
 | Feature | Legacy Slot System | Modern Named Font Registry |
 | :--- | :--- | :--- |
-| **Syntax** | `imgui_push_font(1..9)` | `imgui.PushFont("Roboto-Regular-16")` |
+| **Syntax** | <nobr>`imgui_push_font(1..9)`</nobr> | <nobr>`imgui.PushFont("Roboto-Regular-16")`</nobr> |
 | **Font Identification** | Arbitrary integer slot (1–9) | Human-readable string or alias |
 | **Adding New Fonts** | Replaces slots 1–9 via INI | Drop into folder or add `Font.<Alias>` in INI |
-| **Dynamic Sizing** | Fixed to 3 predefined INI sizes | Any size at runtime: `imgui.PushFont("Roboto-Regular", 24)` |
+| **Dynamic Sizing** | Fixed to 3 predefined INI sizes | Any size at runtime: <nobr>`imgui.PushFont("Roboto-Regular", 24)`</nobr> |
 | **Missing Font Handling** | Silently ignored (crashes on `PopFont`) | Warns & falls back to rescaled default font |
 | **Reloading Fonts** | Requires full sim or plugin reload | **Live mid-flight reload** via FlyWithLua menu |
-| **Pop Function** | `imgui.PopFont()` | `imgui.PopFont()`, `imgui.pop_font()`, or `imgui_pop_font()` |
+| **Pop Function** | <nobr>`imgui.PopFont()`</nobr> | <nobr>`imgui.PopFont()`</nobr>, <nobr>`imgui.pop_font()`</nobr>, or <nobr>`imgui_pop_font()`</nobr> |
 
 ---
 
