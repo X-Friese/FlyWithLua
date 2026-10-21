@@ -8,8 +8,8 @@ if not SUPPORTS_FLOATING_WINDOWS then
     return
 end
 
-named_font_demo_wnd = float_wnd_create(780, 580, 1, true)
-float_wnd_set_position(named_font_demo_wnd, 120, 120)
+named_font_demo_wnd = float_wnd_create(680, 560, 1, true)
+float_wnd_set_position(named_font_demo_wnd, 60, 100)
 float_wnd_set_title(named_font_demo_wnd, "Named Fonts Demo")
 float_wnd_set_imgui_builder(named_font_demo_wnd, "named_font_demo_on_build")
 float_wnd_set_onclose(named_font_demo_wnd, "named_font_demo_on_close")
