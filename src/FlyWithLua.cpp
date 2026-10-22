@@ -1085,6 +1085,7 @@ int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;
 int proggy_clean_default = 0;
 int use_custom_fonts = 0;
+int enable_script_subfolders = 1;
 
 clock_t speak_time;
 
@@ -6996,6 +6997,8 @@ static bool IsValidScriptFile(const std::string& filename)
 static std::vector<std::string> DiscoverScriptsToLoad(const std::string& scriptDir)
 {
     std::vector<std::string> scriptsToLoad;
+    std::vector<std::filesystem::directory_entry> subDirs;
+    std::vector<std::string> rootScriptStems;
     std::error_code ec;
 
     if (!std::filesystem::exists(scriptDir, ec) || !std::filesystem::is_directory(scriptDir, ec))
@@ -7003,17 +7006,17 @@ static std::vector<std::string> DiscoverScriptsToLoad(const std::string& scriptD
         return scriptsToLoad;
     }
 
-    auto iequals = [](const std::string& a, const std::string& b) {
-        if (a.length() != b.length()) return false;
-        for (size_t i = 0; i < a.length(); ++i) {
-            if (std::tolower(static_cast<unsigned char>(a[i])) !=
-                std::tolower(static_cast<unsigned char>(b[i])))
-                return false;
-        }
-        return true;
+    auto to_lower = [](std::string s) {
+        for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return s;
     };
 
-    // Iterate top-level entries in Scripts/
+    auto iequals = [&](const std::string& a, const std::string& b) {
+        if (a.length() != b.length()) return false;
+        return to_lower(a) == to_lower(b);
+    };
+
+    // 1. Iterate top-level entries in Scripts/ to collect root-level scripts
     for (const auto& entry : std::filesystem::directory_iterator(scriptDir, ec))
     {
         if (ec) break;
@@ -7027,81 +7030,136 @@ static std::vector<std::string> DiscoverScriptsToLoad(const std::string& scriptD
             if (IsValidScriptFile(entryName))
             {
                 scriptsToLoad.push_back(entryName);
+                rootScriptStems.push_back(to_lower(entry.path().stem().string()));
             }
         }
         else if (entry.is_directory(ec))
         {
-            // Level 2: Subdirectory below Scripts/
-            std::filesystem::path subDirPath = entry.path();
-            std::string subDirName = entryName;
+            subDirs.push_back(entry);
+        }
+    }
 
-            // Check if skunkcrafts_updater.cfg exists in this subfolder
-            bool hasSkunkcrafts = false;
-            for (const auto& subEntry : std::filesystem::directory_iterator(subDirPath, ec))
+    // If subfolder execution is disabled via preference, return root scripts only
+    if (!enable_script_subfolders)
+    {
+        std::sort(scriptsToLoad.begin(), scriptsToLoad.end());
+        return scriptsToLoad;
+    }
+
+    // 2. Scan eligible subdirectories
+    for (const auto& entry : subDirs)
+    {
+        std::filesystem::path subDirPath = entry.path();
+        std::string subDirName = entry.path().filename().string();
+
+        // Check if directory name ends with (disabled) or [disabled]
+        std::string lowerDirName = to_lower(subDirName);
+        if (lowerDirName.length() >= 10 &&
+            (lowerDirName.rfind("(disabled)") == lowerDirName.length() - 10 ||
+             lowerDirName.rfind("[disabled]") == lowerDirName.length() - 10))
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: Skipping disabled script subfolder: " + subDirName);
+            continue;
+        }
+
+        // Check for exclusion markers (.no_run, .norun, .disabled, no_run.txt) and skunkcrafts_updater.cfg
+        bool hasNoRun = false;
+        bool hasSkunkcrafts = false;
+
+        for (const auto& subEntry : std::filesystem::directory_iterator(subDirPath, ec))
+        {
+            if (ec) break;
+            if (subEntry.is_regular_file(ec))
             {
-                if (ec) break;
-                if (subEntry.is_regular_file(ec))
+                std::string fname = to_lower(subEntry.path().filename().string());
+                if (fname == ".no_run" || fname == ".norun" || fname == ".disabled" || fname == "no_run.txt")
                 {
-                    std::string fname = subEntry.path().filename().string();
-                    if (iequals(fname, "skunkcrafts_updater.cfg"))
-                    {
-                        hasSkunkcrafts = true;
-                        break;
-                    }
+                    hasNoRun = true;
+                    break;
+                }
+                if (fname == "skunkcrafts_updater.cfg")
+                {
+                    hasSkunkcrafts = true;
                 }
             }
+        }
 
-            if (hasSkunkcrafts)
+        if (hasNoRun)
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: Skipping script subfolder with exclusion marker: " + subDirName);
+            continue;
+        }
+
+        if (hasSkunkcrafts)
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: Detected Skunkcrafts Updater folder: " + subDirName);
+        }
+
+        // Subdirectory base name without trailing ".lua" (if present)
+        std::string subDirBase = subDirName;
+        if (subDirBase.length() > 4)
+        {
+            std::string subExt = subDirBase.substr(subDirBase.length() - 4);
+            if (iequals(subExt, ".lua"))
             {
-                logMsg(logToDevCon, "FlyWithLua Info: Detected Skunkcrafts Updater folder: " + subDirName);
+                subDirBase = subDirBase.substr(0, subDirBase.length() - 4);
             }
+        }
 
-            // Subdirectory base name without trailing ".lua" (if present)
-            std::string subDirBase = subDirName;
-            if (subDirBase.length() > 4)
+        // Scan scripts inside this subdirectory
+        for (const auto& subEntry : std::filesystem::directory_iterator(subDirPath, ec))
+        {
+            if (ec) break;
+            if (subEntry.is_regular_file(ec))
             {
-                std::string subExt = subDirBase.substr(subDirBase.length() - 4);
-                if (iequals(subExt, ".lua"))
+                std::string subFileName = subEntry.path().filename().string();
+                if (!IsValidScriptFile(subFileName))
+                    continue;
+
+                bool shouldLoad = false;
+                if (hasSkunkcrafts)
                 {
-                    subDirBase = subDirBase.substr(0, subDirBase.length() - 4);
+                    // (2) Skunkcrafts project: load all valid scripts in this directory
+                    shouldLoad = true;
                 }
-            }
-
-            // Scan scripts inside this subdirectory
-            for (const auto& subEntry : std::filesystem::directory_iterator(subDirPath, ec))
-            {
-                if (ec) break;
-                if (subEntry.is_regular_file(ec))
+                else
                 {
-                    std::string subFileName = subEntry.path().filename().string();
-                    if (!IsValidScriptFile(subFileName))
-                        continue;
+                    // (1) Base name matching rule:
+                    // Script name matches directory name with or without .lua extension
+                    std::string fileStem = subEntry.path().stem().string();
 
-                    bool shouldLoad = false;
-                    if (hasSkunkcrafts)
+                    if (iequals(fileStem, subDirName) ||
+                        iequals(subFileName, subDirName) ||
+                        iequals(fileStem, subDirBase))
                     {
-                        // (2) Skunkcrafts project: load all valid scripts in this directory
-                        shouldLoad = true;
-                    }
-                    else
-                    {
-                        // (1) Base name matching rule:
-                        // Script name matches directory name with or without .lua extension
-                        std::string fileStem = subEntry.path().stem().string();
+                        // Root Script Shadow Guard: do not run if a root script with the same name exists
+                        std::string lowerStem = to_lower(fileStem);
+                        bool rootAlreadyExists = false;
+                        for (const auto& rStem : rootScriptStems)
+                        {
+                            if (rStem == lowerStem)
+                            {
+                                rootAlreadyExists = true;
+                                break;
+                            }
+                        }
 
-                        if (iequals(fileStem, subDirName) ||
-                            iequals(subFileName, subDirName) ||
-                            iequals(fileStem, subDirBase))
+                        if (rootAlreadyExists)
+                        {
+                            logMsg(logToDevCon, "FlyWithLua Info: Skipping subfolder script \"" + subDirName + "/" + subFileName +
+                                                "\" because matching root script exists in Scripts/.");
+                        }
+                        else
                         {
                             shouldLoad = true;
                         }
                     }
+                }
 
-                    if (shouldLoad)
-                    {
-                        // Relative path from Scripts/, e.g. "my_pack/my_pack.lua"
-                        scriptsToLoad.push_back(subDirName + "/" + subFileName);
-                    }
+                if (shouldLoad)
+                {
+                    // Relative path from Scripts/, e.g. "my_pack/my_pack.lua"
+                    scriptsToLoad.push_back(subDirName + "/" + subFileName);
                 }
             }
         }
