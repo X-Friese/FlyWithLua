@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.18"
+#define PLUGIN_VERSION_NO "2.8.19"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
