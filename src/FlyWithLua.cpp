@@ -6888,6 +6888,11 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "PLUGIN_MAIN_DIRECTORY");
     lua_pushstring(FWLLua, scriptDir.c_str());
     lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+    std::string defaultScriptDir = scriptDir + dirSep;
+    lua_pushstring(FWLLua, defaultScriptDir.c_str());
+    lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, "");
+    lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
     lua_pushstring(FWLLua, internalsDir.c_str());
     lua_setglobal(FWLLua, "INTERNALS_DIRECTORY");
     lua_pushstring(FWLLua, modulesDir.c_str());
@@ -7316,6 +7321,22 @@ bool ReadAllScriptFiles()
     {
         const std::string& FileToLoad = scriptsToLoad[k];
 
+        // Set CURRENT_SCRIPT_DIRECTORY and SCRIPT_SUBDIRECTORY for this script
+        const char* dirSep = XPLMGetDirectorySeparator();
+        std::string curScriptDir = scriptDir + dirSep;
+        std::string scriptSubDir = "";
+        size_t lastSlash = FileToLoad.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            std::string subDirOnly = FileToLoad.substr(0, lastSlash);
+            scriptSubDir = subDirOnly + dirSep;
+            curScriptDir = scriptDir + dirSep + subDirOnly + dirSep;
+        }
+        lua_pushstring(FWLLua, curScriptDir.c_str());
+        lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
+        lua_pushstring(FWLLua, scriptSubDir.c_str());
+        lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
+
         // load the script file
         std::ostringstream oss_ScrPathAndName;
         oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
@@ -7400,6 +7421,13 @@ bool ReadAllScriptFiles()
             }
         }
     }
+
+    // Reset CURRENT_SCRIPT_DIRECTORY and SCRIPT_SUBDIRECTORY to defaults
+    const char* dirSep = XPLMGetDirectorySeparator();
+    lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
+    lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, "");
+    lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
 
     // get time after execution
     clock_t time_end = clock();
