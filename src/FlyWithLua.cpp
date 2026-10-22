@@ -6891,6 +6891,8 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
     std::string defaultScriptDir = scriptDir + dirSep;
     lua_pushstring(FWLLua, defaultScriptDir.c_str());
+    lua_setglobal(FWLLua, "ROOT_SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, defaultScriptDir.c_str());
     lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
     lua_pushstring(FWLLua, "");
     lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
