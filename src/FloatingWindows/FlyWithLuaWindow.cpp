@@ -22,7 +22,8 @@ FlyWithLuaWindow::FlyWithLuaWindow(int width, int height, int decoration) :
         GetDefaultFlyWithLuaGeometry(width, height),
         static_cast<XPLMWindowDecoration>(decoration),
         xplm_WindowLayerFloatingWindows,
-        false)
+        flywithlua::imgui_mouse_cursors != 0),
+    mUseImgCursors(flywithlua::imgui_mouse_cursors != 0)
 {
     SetWindowTitle("FlyWithLua");
     SetVisible(true);
@@ -48,7 +49,11 @@ void FlyWithLuaWindow::buildInterface() {
 ImGuiWindowFlags_ FlyWithLuaWindow::beforeBegin() {
     auto &io = ImGui::GetIO();
     io.ConfigDebugHighlightIdConflicts = (flywithlua::imgui_debug_popup == 1);
-    return static_cast<ImGuiWindowFlags_>(ImGuiWindowFlags_HorizontalScrollbar);
+    ImGuiWindowFlags_ flags = static_cast<ImGuiWindowFlags_>(ImGuiWindowFlags_HorizontalScrollbar);
+    if (!mAllowScrolling) {
+        flags = static_cast<ImGuiWindowFlags_>(flags | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    }
+    return flags;
 }
 
 void FlyWithLuaWindow::setBuildCallback(BuildCallback cb) {

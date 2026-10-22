@@ -43,6 +43,9 @@ void flywithlua::process_read_ini_file()
   // Do we want to enable imgui debug popup?
   readOptionAsInt("ImguiDebugPopup", &imgui_debug_popup);
 
+  // Do we want to enable dynamic ImGui mouse cursors inside windows?
+  readOptionAsInt("ImguiMouseCursors", &imgui_mouse_cursors);
+
   // Set font size1
   readOptionAsInt("ImguiFontSize1", &imgui_font_size1);
 

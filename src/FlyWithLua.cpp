@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.18"
+#define PLUGIN_VERSION_NO "2.8.19"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -947,6 +947,7 @@ std::string imgui_custom_font3;
 // END added by Sparker
 
 void process_read_ini_file();
+bool ReadPrefFile();
 
 // The user will be able to handle the plugin with commands
 XPLMCommandRef MyReloadScriptsCommand = nullptr;
@@ -1076,6 +1077,7 @@ int found_bad_function_script = 0;
 int developer_mode = 0;
 int verbose_logging_mode = 0;
 int imgui_debug_popup = 0;
+int imgui_mouse_cursors = 1;
 int imgui_font_size1 = 13;
 int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;
@@ -6774,6 +6776,17 @@ void ResetLuaEngine()
     // functions for fmod
     fmodint::RegisterFmodFunctionsToLua(FWLLua);
 
+    // Mid-flight font atlas rebuild on script reload (ABC pattern)
+    if (LuaResetCount > 0)
+    {
+        TeardownImGui();
+        ReadPrefFile();
+        if (!InitializeImGui())
+        {
+            logMsg(logToDevCon, "FlyWithLua Error: Unable to re-initialize the shared ImGui font atlas on reload.");
+        }
+    }
+
     // functions to operate on floating windows
     flwnd::initFloatingWindowSupport();
 
@@ -7418,9 +7431,7 @@ PLUGIN_API void XPluginStop(void)
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
-    // This does not work here and not sure why
-    // I think after this call fmod is not getting initalized.
-    // fmodint::fmod_uninitialize();
+    fmodint::fmod_uninitialize();
     fmodint::UnRegisterAccessor();
 
     // cleanup sound system
@@ -7487,9 +7498,7 @@ PLUGIN_API void XPluginDisable(void)
 
     // release memory for Fmod buffers
     fmodint::deinitFmodSupport();
-    // This does not work here and not sure why
-    // I think after this call fmod is not getting initalized.
-    // fmodint::fmod_uninitialize();
+    fmodint::fmod_uninitialize();
 
     // unsubscribe messages from/to XSquawkBox
     XPLMSendMessageToPlugin(XSBPluginId, XSB_CMD_UNSUBSCRIBE, (void*) XSB_TEXT);
@@ -7641,6 +7650,15 @@ PLUGIN_API int XPluginEnable(void)
 
     // Initialize OpenAL sound
     init_openal_sound();
+
+    // Re-initialize FMOD sound if FMOD Studio is already running in X-Plane across plugin reload.
+    // Only re-initialize if the sim is already running mid-flight (XPLMGetCycleNumber() > 0 or LuaResetCount > 0).
+    // On cold boot (cycle == 0), the sound banks are not loaded yet; X-Plane will load them
+    // and send XPLM_MSG_FMOD_BANK_LOADED when the aircraft is ready.
+    if ((XPLMGetCycleNumber() > 0 || LuaResetCount > 0) && XPLMGetFMODStudio() != nullptr)
+    {
+        fmodint::fmod_initialization();
+    }
 
     // Build the shared ImGui font atlas. The font sizes come from fwl_prefs.ini, which on a
     // cold start has not been read yet at this point (it is otherwise first read on

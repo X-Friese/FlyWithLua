@@ -10,7 +10,15 @@
 
 #include <algorithm>
 #include <fstream>
+#include <map>
 #include <string>
+
+/**
+ * Get all parsed configuration options from the INI file.
+ *
+ * @return const reference to map of key-value pairs
+ */
+const std::map<std::string, std::string>& getAllIniOptions();
 
 /**
  * Parse a configuration file

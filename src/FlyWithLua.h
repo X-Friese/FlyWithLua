@@ -56,6 +56,7 @@ extern void process_read_ini_file();
 extern int developer_mode;
 extern int verbose_logging_mode;
 extern int imgui_debug_popup;
+extern int imgui_mouse_cursors;
 extern int imgui_font_size1;
 extern int imgui_font_size2;
 extern int imgui_font_size3;
