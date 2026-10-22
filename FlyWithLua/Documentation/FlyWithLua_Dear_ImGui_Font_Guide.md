@@ -1,5 +1,13 @@
 # FlyWithLua Dear ImGui Font Guide
-### A Developer & User Guide to Scalable Fonts, Custom Typefaces, and the Named Font Registry
+
+**FlyWithLua 2.8.18+ / 2.8.19 -- ImgWindow v2.2.1+ -- Dear ImGui 1.92.8**  
+*A Developer & User Guide to Scalable Fonts, Custom Typefaces, and the Named Font Registry*
+
+> **October 21, 2026**  
+> **Authors:** William Good & Steven L. Goldberg (`@slgoldberg`), with help from Google Gemini  
+> **Target Release:** FlyWithLua 2.8.18+ / 2.8.19 (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.1 Panel Graphics)
+
+---
 
 FlyWithLua provides powerful support for **Dear ImGui** floating windows. Starting with FlyWithLua 2.8.18, script authors have access to high-resolution scalable TrueType (`.ttf`) and OpenType (`.otf`) fonts, a modern **Named Font Registry**, and live mid-flight font reloading.
 
@@ -208,27 +216,33 @@ If a script mistakenly calls `imgui.PopFont()` more times than `PushFont()`:
 
 You **do not need to restart X-Plane** or reload all simulator plugins when adding fonts or modifying configurations!
 
+### Why a Reload is Needed (The Shared Font Atlas)
+Dear ImGui renders text using a single, unified GPU texture known as the **Font Atlas**. In FlyWithLua, all floating windows share this single font atlas so that memory usage remains minimal and rendering stays ultra-fast. Because all available fonts and sizes are compiled into this shared atlas when FlyWithLua initializes, any time you drop a new font into `Custom_Fonts/` or change font sizes or aliases in `fwl_prefs.ini`, FlyWithLua needs to rebuild that shared atlas so your scripts can immediately use the new glyphs.
+
 ```mermaid
 flowchart TD
-    A["User drops new .ttf into Custom_Fonts/ or edits fwl_prefs.ini"] --> B["Click Plugins -> FlyWithLua -> 'Reload all Lua script files'"]
-    B --> C["TeardownImGui(): Closes floating windows & flushes old VRAM textures"]
-    C --> D["ImgWindow::sBlankoutUntilCycle: Holds off rendering for 4 cycles to settle"]
-    D --> E["ReadPrefFile(): Re-reads fwl_prefs.ini & custom Font.<Alias> mappings"]
-    E --> F["InitializeImGui(): Rebuilds shared ImgFontAtlas & Named Registry"]
-    F --> G["Scripts re-evaluate and re-open windows with new fonts!"]
+    A["Drop .ttf/.otf into Custom_Fonts/ or edit fwl_prefs.ini"] --> B["Select Plugins -> FlyWithLua -> 'Reload all Lua script files'"]
+    B --> C["FlyWithLua re-scans fonts & rebuilds the shared Font Atlas"]
+    C --> D["Scripts restart & floating windows re-open with new fonts active!"]
 ```
 
-### How to Trigger a Font Reload:
-Simply select:
-**Plugins &rarr; FlyWithLua &rarr; Reload all Lua script files**
+### The 4-Step Font Workflow
 
-Within a single flight-loop cycle:
-1. All open floating windows are closed.
-2. The shared font atlas is purged from VRAM via `ImgWindow::Shutdown()`.
-3. `ImgWindow::sBlankoutUntilCycle` holds off rendering for 4 cycles so texture memory cleanly settles.
-4. `fwl_prefs.ini` and the `Custom_Fonts/` folder are re-scanned.
-5. A fresh font atlas and registry are built.
-6. Your Lua scripts restart and display your newly configured fonts immediately!
+1. **Add Your Font File:**  
+   Copy any TrueType (`.ttf`) or OpenType (`.otf`) file into:
+   ```
+   Resources/plugins/FlyWithLua/Custom_Fonts/
+   ```
+2. **(Optional) Configure Aliases or Custom Sizes:**  
+   If you want a custom pixel size or a shorthand alias name, open `Resources/plugins/FlyWithLua/fwl_prefs.ini` and add your entry (e.g. `Font.HUD = MyFont.ttf, 28`). If you skip this, FlyWithLua automatically registers the font at standard sizes (`13`, `16`, `20`) using its filename stem.
+3. **Trigger the Live Reload:**  
+   In X-Plane's top menu bar, simply select:  
+   **Plugins &rarr; FlyWithLua &rarr; Reload all Lua script files**
+4. **Immediate Mid-Flight Refresh:**  
+   Within a single simulator frame, FlyWithLua closes any open floating windows, re-scans your font folders, rebuilds the shared font atlas, and re-executes your scripts. Your windows re-open with your new fonts immediately active!
+
+> [!TIP]
+> **Scripting Tip for Smooth Reloads:** Because reloading scripts closes and re-opens floating windows, having your script remember its open state or position ensures a seamless live-editing workflow while tweaking fonts mid-flight!
 
 ---
 
