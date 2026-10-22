@@ -964,7 +964,7 @@ void ResetLuaEngine();
 
 bool RunLuaString(const std::string& LuaCommandString);
 
-bool ReadScriptFile(const char* FileNameToRead);
+bool ReadScriptFile(const char* FileNameToRead, bool isSubfolder = false);
 bool ReadQtScriptFile(const char* QtFileNameToRead);
 
 bool RunLuaChunk(const char* ChunkName);
@@ -1086,6 +1086,7 @@ int imgui_font_size3 = 20;
 int proggy_clean_default = 0;
 int use_custom_fonts = 0;
 int enable_script_subfolders = 1;
+int subfolder_sets_script_directory = 1;
 
 clock_t speak_time;
 
@@ -6952,7 +6953,7 @@ bool ReadPrefFile()
   return true;
 }
 
-bool ReadScriptFile(const char* FileNameToRead)
+bool ReadScriptFile(const char* FileNameToRead, bool isSubfolder)
 {
     if (!LuaIsRunning)
     {
@@ -6962,7 +6963,30 @@ bool ReadScriptFile(const char* FileNameToRead)
     }
 
     CopyDataRefsToLua();
-    if (luaL_dofile(FWLLua, FileNameToRead))
+
+    int loadResult = 0;
+    if (isSubfolder && subfolder_sets_script_directory != 0)
+    {
+        std::ifstream file(FileNameToRead, std::ios::binary);
+        if (!file.is_open())
+        {
+            logMsg(logToDevCon, std::string("FlyWithLua Error: Can't open script file: ").append(FileNameToRead));
+            return false;
+        }
+        std::string buffer = "local SCRIPT_DIRECTORY = SCRIPT_DIRECTORY; local CURRENT_SCRIPT_DIRECTORY = CURRENT_SCRIPT_DIRECTORY; " +
+                             std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        std::string chunkName = std::string("@") + FileNameToRead;
+        if (luaL_loadbuffer(FWLLua, buffer.data(), buffer.size(), chunkName.c_str()) || lua_pcall(FWLLua, 0, LUA_MULTRET, 0))
+        {
+            loadResult = 1;
+        }
+    }
+    else
+    {
+        loadResult = luaL_dofile(FWLLua, FileNameToRead);
+    }
+
+    if (loadResult != 0)
     {
         logMsg(logToDevCon,
                std::string("FlyWithLua Error: CopyDataRefsToLua() failed, can't execute script file: ").append(FileNameToRead));
@@ -7325,9 +7349,11 @@ bool ReadAllScriptFiles()
         const char* dirSep = XPLMGetDirectorySeparator();
         std::string curScriptDir = scriptDir + dirSep;
         std::string scriptSubDir = "";
+        bool isSubfolder = false;
         size_t lastSlash = FileToLoad.find_last_of("/\\");
         if (lastSlash != std::string::npos)
         {
+            isSubfolder = true;
             std::string subDirOnly = FileToLoad.substr(0, lastSlash);
             scriptSubDir = subDirOnly + dirSep;
             curScriptDir = scriptDir + dirSep + subDirOnly + dirSep;
@@ -7337,6 +7363,19 @@ bool ReadAllScriptFiles()
         lua_pushstring(FWLLua, scriptSubDir.c_str());
         lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
 
+        if (subfolder_sets_script_directory != 0 && isSubfolder)
+        {
+            // Option A (default): Dynamically set SCRIPT_DIRECTORY to the script's subfolder
+            lua_pushstring(FWLLua, curScriptDir.c_str());
+            lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+        }
+        else
+        {
+            // Option B (or root script): SCRIPT_DIRECTORY points to root Scripts/
+            lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
+            lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+        }
+
         // load the script file
         std::ostringstream oss_ScrPathAndName;
         oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
@@ -7344,7 +7383,7 @@ bool ReadAllScriptFiles()
 
         logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
         // XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
-        if (ReadScriptFile(ScrPathAndName.c_str()))
+        if (ReadScriptFile(ScrPathAndName.c_str(), isSubfolder))
         {
             logMsg(logToDevCon,
                    ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
@@ -7422,12 +7461,14 @@ bool ReadAllScriptFiles()
         }
     }
 
-    // Reset CURRENT_SCRIPT_DIRECTORY and SCRIPT_SUBDIRECTORY to defaults
+    // Reset CURRENT_SCRIPT_DIRECTORY, SCRIPT_SUBDIRECTORY, and SCRIPT_DIRECTORY to defaults
     const char* dirSep = XPLMGetDirectorySeparator();
     lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
     lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
     lua_pushstring(FWLLua, "");
     lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
+    lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
+    lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
 
     // get time after execution
     clock_t time_end = clock();

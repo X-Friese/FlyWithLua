@@ -72,4 +72,7 @@ void flywithlua::process_read_ini_file()
 
   // Do we want to enable script subfolder discovery?
   readOptionAsInt("EnableScriptSubfolders", &enable_script_subfolders);
+
+  // Option A (1, default) vs Option B (0): Does subfolder script loading dynamically set SCRIPT_DIRECTORY?
+  readOptionAsInt("SubfolderSetsScriptDirectory", &subfolder_sets_script_directory);
 }

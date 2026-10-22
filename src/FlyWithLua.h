@@ -63,6 +63,7 @@ extern int imgui_font_size3;
 extern int proggy_clean_default;
 extern int use_custom_fonts;
 extern int enable_script_subfolders;
+extern int subfolder_sets_script_directory;
 extern std::string imgui_custom_font1;
 extern std::string imgui_custom_font2;
 extern std::string imgui_custom_font3;
