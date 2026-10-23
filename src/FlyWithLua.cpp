@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.19"
+#define PLUGIN_VERSION_NO "2.8.20"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -181,6 +181,9 @@
  *                    We have retained using OpenGL for previous versions.
  *  v2.8.18 [Added]   We now have Roboto-Light.ttf, Roboto-Regular.ttf and Roboto-Medium.ttf included with the package.
  *                    You can add three custon fonts by enabling UseCustomFonts and adding there names to the fwl_prefs.ini file.
+ *  v2.8.19 [Added]   Fix CTD due to FMOD on reload ImGui Font Registry redux: scaling, live reload,
+ *                    font guide Integrate ImgWindow v2 contrib extensions (Markdown, TimedTooltip, and Modern Widgets)
+ *  v2.8.20 [Added]   Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
