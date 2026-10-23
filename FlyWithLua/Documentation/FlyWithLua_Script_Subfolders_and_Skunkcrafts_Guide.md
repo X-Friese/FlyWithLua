@@ -1,10 +1,10 @@
 # FlyWithLua Script Subfolders & SkunkCrafts Updater Guide
 
-**FlyWithLua 2.8.19+ -- SkunkCrafts Updater v4.2.7+**  
+**FlyWithLua 2.8.20+ -- SkunkCrafts Updater v4.2.7+**  
 *Official Architecture Reference, User Guide, and Developer Best Practices*
 
 > **Date:** October 2026  
-> **Target Release:** FlyWithLua 2.8.19+ (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.2)  
+> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.2)  
 > **Audience:** End-Users, Aircraft Developers, and Lua Script Authors  
 
 ---
@@ -17,7 +17,9 @@ While this flat layout originally prevented companion or private helper files fr
 1. **Root Script Clutter:** Complex addons with multiple auxiliary `.lua` files, textures, sound effects, and configuration files flooded the top-level `Scripts/` directory.
 2. **SkunkCrafts Updater Collisions:** The **SkunkCrafts Updater** requires its tracking manifest, `skunkcrafts_updater.cfg`, to live in the same directory as the payload files it manages. In a flat `Scripts/` directory, only one single addon could ever use SkunkCrafts before file name collisions broke updating for all other addons.
 
-Starting with **SkunkCrafts Updater v4.2.7** and **FlyWithLua 2.8.19+**, FlyWithLua now natively supports **controlled 1-level script subfolders**. Developers can package their entire addon into a clean, self-contained subfolder that SkunkCrafts tracks, verifies, and updates in-place.
+Starting with **SkunkCrafts Updater v4.2.7** and **FlyWithLua 2.8.20+**, FlyWithLua now natively supports **controlled 1-level script subfolders**. Furthermore, SkunkCrafts Updater v4.2.7 no longer recognizes `.cfg` files placed at the top level of `Scripts/` -- preventing any single addon from monopolizing the root directory.
+
+Developers can now package their entire addon into a clean, self-contained subfolder that SkunkCrafts tracks, verifies, and updates in-place.
 
 ---
 
@@ -31,7 +33,8 @@ If you are an X-Plane pilot installing an addon or script designed for FlyWithLu
    ```text
    X-Plane 12/Resources/plugins/FlyWithLua/Scripts/<Addon_Folder_Name>/
    ```
-3. **Verify Contents:** Look inside the folder. It should contain either:
+3. **Flexible Folder Naming (No Redundant Nesting):** For SkunkCrafts-managed packages, the outer folder name does **not** need to match the script name. For instance, rather than creating awkward redundant paths like `Simple_Ground_Equipment_and_Services/Simple_Ground_Equipment_and_Services/`, you can use a clean, concise folder name like `SGES/`.
+4. **Verify Contents:** Look inside the folder. It should contain either:
    * A script whose name matches the folder (e.g., `Scripts/MyScript/MyScript.lua`), OR
    * A `skunkcrafts_updater.cfg` file alongside the addon's main `.lua` scripts.
 
@@ -45,10 +48,10 @@ X-Plane 12/
                 ├── classic_script.lua                     <-- Runs (Root script)
                 ├── another_root_mod.lua                   <-- Runs (Root script)
                 │
-                ├── Simple_Ground_Equipment_and_Services/  <-- Subfolder Addon
+                ├── SGES/                                  <-- Clean SkunkCrafts Subfolder
                 │   ├── skunkcrafts_updater.cfg            <-- SkunkCrafts marker
                 │   ├── Simple_Ground_Equipment_and_Services.lua <-- Runs (Entry point)
-                │   └── Simple_Ground_Equipment_and_Services/ <-- Nested assets/companion files
+                │   └── Simple_Ground_Equipment_and_Services/ <-- Nested companion files (Protected)
                 │       ├── Front_Line.lua
                 │       ├── Threat.lua
                 │       └── Sounds/
@@ -62,7 +65,7 @@ X-Plane 12/
 
 ## 3. Discovery Architecture & Loading Rules
 
-FlyWithLua uses modern C++17 filesystem discovery to inspect `Scripts/` and immediate 1-level subdirectories during startup or script reload. Discovery operates under three definitive rules:
+FlyWithLua inspects `Scripts/` and immediate 1-level subdirectories during startup or script reload. Discovery operates under three definitive rules:
 
 ### Rule 0: Classic Root Scripts (100% Backward Compatible)
 Any valid `.lua` file placed directly in `Scripts/` runs exactly as it always has. Existing scripts require zero modifications.
@@ -77,15 +80,15 @@ This allows standalone script developers to package private modules, images, and
 
 ### Rule 2: SkunkCrafts Updater Subfolder (Multi-Script Addon)
 If an immediate subfolder contains `skunkcrafts_updater.cfg` (case-insensitive):
-* **All valid `.lua` files located directly inside that subfolder are loaded as top-level entry points.**
+* **All valid `.lua` files located directly inside that 1-level subfolder are loaded as top-level entry points.**
 * Non-script files (`.cfg`, `.txt`, `.json`, `.ini`) are ignored by the loader.
-* **Nested Subdirectories Are Protected:** Files in nested directories (e.g., `Scripts/MyAddon/assets/lib.lua` or `Scripts/MyAddon/companion/extra.lua`) are **never** auto-loaded, ensuring private libraries remain private.
+* **Sub-subfolders Are Strictly Protected:** Files located in nested subdirectories (e.g., `Scripts/SGES/Simple_Ground_Equipment_and_Services/Front_Line.lua` or `Scripts/MyAddon/modules/extra.lua`) are **never** auto-loaded, ensuring companion and private libraries remain isolated.
 
 ---
 
-## 4. Defensive Safeguards
+## 4. Defensive Safeguards & Troubleshooting
 
-To prevent accidents, broken updates, and conflicts, FlyWithLua implements three defensive layers:
+To prevent accidents, broken updates, and conflicts, FlyWithLua implements several defensive layers:
 
 ### 1. Global INI Master Toggle
 In `Resources/plugins/FlyWithLua/fwl_prefs.ini`:
@@ -108,10 +111,12 @@ Additionally, any directory whose name ends with `(disabled)` or `[disabled]` is
 ### 3. Root Script Shadow Guard
 If a script already exists at the root level (e.g. `Scripts/steve-cool.lua`), FlyWithLua will **not** auto-load `Scripts/steve-cool/steve-cool.lua` under Rule 1. This prevents companion data/asset subfolders that share the root script's name from accidentally double-executing.
 
-### 4. Nested Quarantine Recovery
-If a script in a subfolder encounters a fatal syntax or runtime error during startup:
-* FlyWithLua creates the corresponding subfolder structure inside `Scripts (Quarantine)/` before moving the bad script.
-* When the script is fixed or returned from quarantine, it returns cleanly to its original subfolder.
+### 4. Quarantine Recovery & Troubleshooting
+If a script in a subfolder encounters a syntax error or crashes during startup:
+* FlyWithLua replicates the subfolder hierarchy inside `Scripts (Quarantine)/` before moving the offending script.
+* **First-Time Installation Check:** If an addon script is quarantined upon first install, always inspect `Log.txt` or `FlyWithLua_Debug.txt`. Because the script now resides 1 level deeper in the filesystem, legacy scripts that hardcode relative paths (e.g. `../../../../`) may fail to find external scenery or assets.
+* Point the script to the proper globals (`CURRENT_SCRIPT_DIRECTORY` for its own folder, or `ROOT_SCRIPT_DIRECTORY` for root `Scripts/`), or report the issue to the author for a permanent update.
+* When fixed or restored, FlyWithLua returns the script directly to its original subfolder.
 
 ---
 
@@ -123,8 +128,8 @@ FlyWithLua provides comprehensive globals to give script authors clean, reliable
 | :--- | :--- | :--- |
 | `SCRIPT_DIRECTORY` | String | **Dynamic by Default (Option A):** Points to the currently executing script's subfolder (with trailing slash) while loading. Automatically captured as a file-local upvalue so callbacks permanently retain their path. Restored to root `Scripts/` when startup finishes. |
 | `ROOT_SCRIPT_DIRECTORY` | String | **Constant Static Root:** Always points strictly to `Resources/plugins/FlyWithLua/Scripts/`. Use this whenever your script needs to verify or interact with other installed scripts or root resources. |
-| `CURRENT_SCRIPT_DIRECTORY`| String | **Explicit Script Folder:** Points to the directory containing the currently running script (e.g. `.../Scripts/MyAddon/` for subfolders, or `.../Scripts/` for root scripts). |
-| `SCRIPT_SUBDIRECTORY` | String | **Relative Subfolder Path:** Contains the relative folder name with trailing slash (e.g. `"MyAddon/"` for subfolder scripts, or `""` for root scripts). |
+| `CURRENT_SCRIPT_DIRECTORY`| String | **Explicit Script Folder:** Points to the directory containing the currently running script (e.g. `.../Scripts/SGES/` for subfolders, or `.../Scripts/` for root scripts). |
+| `SCRIPT_SUBDIRECTORY` | String | **Relative Subfolder Path:** Contains the relative folder name with trailing slash (e.g. `"SGES/"` for subfolder scripts, or `""` for root scripts). |
 | `SYSTEM_DIRECTORY` | String | **X-Plane Root:** Points to the main X-Plane installation directory (e.g. `.../X-Plane 12/`). |
 | `PLUGIN_MAIN_DIRECTORY` | String | **FlyWithLua Root:** Points to `.../Resources/plugins/FlyWithLua/`. |
 
@@ -146,7 +151,7 @@ local scenery_ini = io.open(SCRIPT_DIRECTORY .. "../../../../Custom Scenery/scen
 ```
 
 ### DO: Place Private Modules in a Nested Folder Under SkunkCrafts
-When your addon includes `skunkcrafts_updater.cfg`, Rule 2 causes FlyWithLua to run **all** `.lua` files in that subfolder.
+When your addon includes `skunkcrafts_updater.cfg`, Rule 2 causes FlyWithLua to run **all** `.lua` files in that immediate subfolder.
 * **Good Layout:**
   ```text
   Scripts/MyAircraftMod/
