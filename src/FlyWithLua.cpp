@@ -283,6 +283,8 @@
 #include <time.h>
 #include <wchar.h>
 #include <vector>
+#include <algorithm>
+#include <filesystem>
 #include <sol.hpp>
 #include "XSBComDefs.h"
 #include "FloatingWindows/FWLIntegration.h"
@@ -962,7 +964,7 @@ void ResetLuaEngine();
 
 bool RunLuaString(const std::string& LuaCommandString);
 
-bool ReadScriptFile(const char* FileNameToRead);
+bool ReadScriptFile(const char* FileNameToRead, bool isSubfolder = false);
 bool ReadQtScriptFile(const char* QtFileNameToRead);
 
 bool RunLuaChunk(const char* ChunkName);
@@ -1083,6 +1085,8 @@ int imgui_font_size2 = 16;
 int imgui_font_size3 = 20;
 int proggy_clean_default = 0;
 int use_custom_fonts = 0;
+int enable_script_subfolders = 1;
+int subfolder_sets_script_directory = 1;
 
 clock_t speak_time;
 
@@ -6885,6 +6889,13 @@ void ResetLuaEngine()
     lua_setglobal(FWLLua, "PLUGIN_MAIN_DIRECTORY");
     lua_pushstring(FWLLua, scriptDir.c_str());
     lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+    std::string defaultScriptDir = scriptDir + dirSep;
+    lua_pushstring(FWLLua, defaultScriptDir.c_str());
+    lua_setglobal(FWLLua, "ROOT_SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, defaultScriptDir.c_str());
+    lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, "");
+    lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
     lua_pushstring(FWLLua, internalsDir.c_str());
     lua_setglobal(FWLLua, "INTERNALS_DIRECTORY");
     lua_pushstring(FWLLua, modulesDir.c_str());
@@ -6944,7 +6955,7 @@ bool ReadPrefFile()
   return true;
 }
 
-bool ReadScriptFile(const char* FileNameToRead)
+bool ReadScriptFile(const char* FileNameToRead, bool isSubfolder)
 {
     if (!LuaIsRunning)
     {
@@ -6954,7 +6965,30 @@ bool ReadScriptFile(const char* FileNameToRead)
     }
 
     CopyDataRefsToLua();
-    if (luaL_dofile(FWLLua, FileNameToRead))
+
+    int loadResult = 0;
+    if (isSubfolder && subfolder_sets_script_directory != 0)
+    {
+        std::ifstream file(FileNameToRead, std::ios::binary);
+        if (!file.is_open())
+        {
+            logMsg(logToDevCon, std::string("FlyWithLua Error: Can't open script file: ").append(FileNameToRead));
+            return false;
+        }
+        std::string buffer = "local SCRIPT_DIRECTORY = SCRIPT_DIRECTORY; local CURRENT_SCRIPT_DIRECTORY = CURRENT_SCRIPT_DIRECTORY; " +
+                             std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        std::string chunkName = std::string("@") + FileNameToRead;
+        if (luaL_loadbuffer(FWLLua, buffer.data(), buffer.size(), chunkName.c_str()) || lua_pcall(FWLLua, 0, LUA_MULTRET, 0))
+        {
+            loadResult = 1;
+        }
+    }
+    else
+    {
+        loadResult = luaL_dofile(FWLLua, FileNameToRead);
+    }
+
+    if (loadResult != 0)
     {
         logMsg(logToDevCon,
                std::string("FlyWithLua Error: CopyDataRefsToLua() failed, can't execute script file: ").append(FileNameToRead));
@@ -6966,19 +7000,253 @@ bool ReadScriptFile(const char* FileNameToRead)
     return true;
 }
 
+static bool IsValidScriptFile(const std::string& filename)
+{
+    if (filename.empty() || filename[0] == '.')
+        return false;
+
+    auto has_ext = [&](const std::string& ext) {
+        if (filename.length() < ext.length())
+            return false;
+        std::string file_ext = filename.substr(filename.length() - ext.length());
+        for (char& c : file_ext) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return file_ext == ext;
+    };
+
+    if (has_ext(".lua") || has_ext(".fwl"))
+        return true;
+#if defined(__LP64__) || defined(_WIN64)
+    if (has_ext(".lua64"))
+        return true;
+#else
+    if (has_ext(".lua32"))
+        return true;
+#endif
+    return false;
+}
+
+static std::vector<std::string> DiscoverScriptsToLoad(const std::string& scriptDir)
+{
+    std::vector<std::string> scriptsToLoad;
+    std::vector<std::filesystem::directory_entry> subDirs;
+    std::vector<std::string> rootScriptStems;
+    std::error_code ec;
+
+    if (!std::filesystem::exists(scriptDir, ec) || !std::filesystem::is_directory(scriptDir, ec))
+    {
+        return scriptsToLoad;
+    }
+
+    auto to_lower = [](std::string s) {
+        for (char& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return s;
+    };
+
+    auto iequals = [&](const std::string& a, const std::string& b) {
+        if (a.length() != b.length()) return false;
+        return to_lower(a) == to_lower(b);
+    };
+
+    // 1. Iterate top-level entries in Scripts/ to collect root-level scripts
+    for (const auto& entry : std::filesystem::directory_iterator(scriptDir, ec))
+    {
+        if (ec) break;
+        std::string entryName = entry.path().filename().string();
+        if (entryName.empty() || entryName[0] == '.')
+            continue;
+
+        if (entry.is_regular_file(ec))
+        {
+            // Level 1: Normal scripts placed directly inside Scripts/
+            if (IsValidScriptFile(entryName))
+            {
+                scriptsToLoad.push_back(entryName);
+                rootScriptStems.push_back(to_lower(entry.path().stem().string()));
+            }
+        }
+        else if (entry.is_directory(ec))
+        {
+            subDirs.push_back(entry);
+        }
+    }
+
+    // If subfolder execution is disabled via preference, return root scripts only
+    if (!enable_script_subfolders)
+    {
+        std::sort(scriptsToLoad.begin(), scriptsToLoad.end());
+        return scriptsToLoad;
+    }
+
+    // 2. Scan eligible subdirectories
+    for (const auto& entry : subDirs)
+    {
+        std::filesystem::path subDirPath = entry.path();
+        std::string subDirName = entry.path().filename().string();
+
+        // Check if directory name ends with (disabled) or [disabled]
+        std::string lowerDirName = to_lower(subDirName);
+        if (lowerDirName.length() >= 10 &&
+            (lowerDirName.rfind("(disabled)") == lowerDirName.length() - 10 ||
+             lowerDirName.rfind("[disabled]") == lowerDirName.length() - 10))
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: Skipping disabled script subfolder: " + subDirName);
+            continue;
+        }
+
+        // Check for exclusion markers (.no_run, .norun, .disabled, no_run.txt) and skunkcrafts_updater.cfg
+        bool hasNoRun = false;
+        bool hasSkunkcrafts = false;
+
+        for (const auto& subEntry : std::filesystem::directory_iterator(subDirPath, ec))
+        {
+            if (ec) break;
+            if (subEntry.is_regular_file(ec))
+            {
+                std::string fname = to_lower(subEntry.path().filename().string());
+                if (fname == ".no_run" || fname == ".norun" || fname == ".disabled" || fname == "no_run.txt")
+                {
+                    hasNoRun = true;
+                    break;
+                }
+                if (fname == "skunkcrafts_updater.cfg")
+                {
+                    hasSkunkcrafts = true;
+                }
+            }
+        }
+
+        if (hasNoRun)
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: Skipping script subfolder with exclusion marker: " + subDirName);
+            continue;
+        }
+
+        if (hasSkunkcrafts)
+        {
+            logMsg(logToDevCon, "FlyWithLua Info: Detected Skunkcrafts Updater folder: " + subDirName);
+        }
+
+        // Subdirectory base name without trailing ".lua" (if present)
+        std::string subDirBase = subDirName;
+        if (subDirBase.length() > 4)
+        {
+            std::string subExt = subDirBase.substr(subDirBase.length() - 4);
+            if (iequals(subExt, ".lua"))
+            {
+                subDirBase = subDirBase.substr(0, subDirBase.length() - 4);
+            }
+        }
+
+        // Scan scripts inside this subdirectory
+        for (const auto& subEntry : std::filesystem::directory_iterator(subDirPath, ec))
+        {
+            if (ec) break;
+            if (subEntry.is_regular_file(ec))
+            {
+                std::string subFileName = subEntry.path().filename().string();
+                if (!IsValidScriptFile(subFileName))
+                    continue;
+
+                bool shouldLoad = false;
+                if (hasSkunkcrafts)
+                {
+                    // (2) Skunkcrafts project: load all valid scripts in this directory
+                    shouldLoad = true;
+                }
+                else
+                {
+                    // (1) Base name matching rule:
+                    // Script name matches directory name with or without .lua extension
+                    std::string fileStem = subEntry.path().stem().string();
+
+                    if (iequals(fileStem, subDirName) ||
+                        iequals(subFileName, subDirName) ||
+                        iequals(fileStem, subDirBase))
+                    {
+                        // Root Script Shadow Guard: do not run if a root script with the same name exists
+                        std::string lowerStem = to_lower(fileStem);
+                        bool rootAlreadyExists = false;
+                        for (const auto& rStem : rootScriptStems)
+                        {
+                            if (rStem == lowerStem)
+                            {
+                                rootAlreadyExists = true;
+                                break;
+                            }
+                        }
+
+                        if (rootAlreadyExists)
+                        {
+                            logMsg(logToDevCon, "FlyWithLua Info: Skipping subfolder script \"" + subDirName + "/" + subFileName +
+                                                "\" because matching root script exists in Scripts/.");
+                        }
+                        else
+                        {
+                            shouldLoad = true;
+                        }
+                    }
+                }
+
+                if (shouldLoad)
+                {
+                    // Relative path from Scripts/, e.g. "my_pack/my_pack.lua"
+                    scriptsToLoad.push_back(subDirName + "/" + subFileName);
+                }
+            }
+        }
+    }
+
+    std::sort(scriptsToLoad.begin(), scriptsToLoad.end());
+    return scriptsToLoad;
+}
+
+static std::vector<std::string> DiscoverQuarantinedScripts(const std::string& qDir)
+{
+    std::vector<std::string> qtFiles;
+    std::error_code ec;
+    if (!std::filesystem::exists(qDir, ec) || !std::filesystem::is_directory(qDir, ec))
+        return qtFiles;
+
+    for (const auto& entry : std::filesystem::directory_iterator(qDir, ec))
+    {
+        if (ec) break;
+        std::string fname = entry.path().filename().string();
+        if (fname.empty() || fname[0] == '.')
+            continue;
+
+        if (entry.is_regular_file(ec))
+        {
+            if (IsValidScriptFile(fname))
+                qtFiles.push_back(fname);
+        }
+        else if (entry.is_directory(ec))
+        {
+            std::string subDirName = fname;
+            for (const auto& subEntry : std::filesystem::directory_iterator(entry.path(), ec))
+            {
+                if (ec) break;
+                if (subEntry.is_regular_file(ec))
+                {
+                    std::string subFname = subEntry.path().filename().string();
+                    if (IsValidScriptFile(subFname))
+                        qtFiles.push_back(subDirName + "/" + subFname);
+                }
+            }
+        }
+    }
+    std::sort(qtFiles.begin(), qtFiles.end());
+    return qtFiles;
+}
+
 bool ReadAllScriptFiles()
 {
-    char FileToLoad[SHORTSRTING]      = "";
     char PlaneICAO[SHORTSRTING]       = "";
     char PlaneTailNumber[SHORTSRTING] = "";
     char PlaneDescrip[SHORTSRTING]    = "";
     char PlaneAuthor[SHORTSRTING]     = "";
     int  k;
-    char FilesInFolder[5000];
-    int NumberOfFiles; // modified by saar
-    int TotalNumberOfFiles; // modified by saar
-    char* FileIndex[250];
-    int result;
+    int  NumberOfFiles;
+    int  result;
 
     // get starting time
     clock_t time_start = clock();
@@ -7035,141 +7303,8 @@ bool ReadAllScriptFiles()
         return false;
     }
 
-    if (XPLMGetDirectoryContents(scriptDir.c_str(), 0, FilesInFolder, sizeof(FilesInFolder), FileIndex, 250,
-                                 reinterpret_cast<int *>(&TotalNumberOfFiles), reinterpret_cast<int *>(&NumberOfFiles)))
-    {
-        logMsg(logToDevCon, "FlyWithLua Info: Searching for Lua script files");
-
-        // are enough files in the folder to read them out?
-        if (NumberOfFiles == 0)
-        {
-            // nothing to load, let's start Lua without reading files
-            logMsg(logToDevCon,
-                   "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts/ does not exist or it is empty.");
-            logMsg(logToDevCon, "FlyWithLua Info: Nothing to load at all, starting without reading files.");
-            CrashReportDisplayed = false;
-            if (bad_script_count > 0)
-            {
-                if (developer_mode == 0)
-                {
-                    XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
-                }
-                bad_script_count = 0;
-                speak_time = clock();
-                std::ostringstream oss_speak_time;
-                oss_speak_time << "FlyWithLua Info: speak_time " << speak_time;
-                logMsg(logToDevCon, oss_speak_time.str());
-            }
-            return true;
-        }
-
-        logMsg(logToDevCon, "FlyWithLua Info: Sorting Lua script files");
-        // sorting the files
-        qsort(FileIndex, static_cast<size_t>(NumberOfFiles), sizeof(char*), compare_filenames);
-
-        // reading out the files into a string step by step
-        for (k = 0; k < NumberOfFiles; k++)
-        {
-            strncpy(FileToLoad, FileIndex[k], sizeof(FileToLoad));
-            if ((FileToLoad[0] != '.') and
-                ((strstr(FileToLoad, ".fwl") != nullptr and strlen(strstr(FileToLoad, ".fwl")) == 4)
-                 or (strstr(FileToLoad, ".FWL") != nullptr and strlen(strstr(FileToLoad, ".FWL")) == 4)
-                 #if defined(__LP64__) || defined(_WIN64)
-                 or (strstr(FileToLoad, ".lua64") != nullptr and strlen(strstr(FileToLoad, ".lua64")) == 6)
-                 or (strstr(FileToLoad, ".Lua64") != nullptr and strlen(strstr(FileToLoad, ".Lua64")) == 6)
-                 or (strstr(FileToLoad, ".LUA64") != nullptr and strlen(strstr(FileToLoad, ".LUA64")) == 6)
-                 #else
-                 or (strstr(FileToLoad, ".lua32") != NULL and strlen(strstr(FileToLoad, ".lua32")) == 6)
-                                            or (strstr(FileToLoad, ".Lua32") != NULL and strlen(strstr(FileToLoad, ".Lua32")) == 6)
-                                            or (strstr(FileToLoad, ".LUA32") != NULL and strlen(strstr(FileToLoad, ".LUA32")) == 6)
-                 #endif
-                 or (strstr(FileToLoad, ".lua") != nullptr and strlen(strstr(FileToLoad, ".lua")) == 4)
-                 or (strstr(FileToLoad, ".Lua") != nullptr and strlen(strstr(FileToLoad, ".Lua")) == 4)
-                 or (strstr(FileToLoad, ".LUA") != nullptr and strlen(strstr(FileToLoad, ".LUA")) == 4)))
-            {
-                // load the script file
-                std::ostringstream oss_ScrPathAndName;
-                oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
-                auto ScrPathAndName = oss_ScrPathAndName.str();
-
-                logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
-                // XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
-                if (ReadScriptFile(ScrPathAndName.c_str()))
-                {
-                    logMsg(logToDevCon,
-                           ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
-                } else
-                {
-                    logMsg(logToDevCon, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
-                    if (developer_mode == 1)
-                    {
-                        LuaIsRunning = false;
-                        break;
-                    }
-                    if (developer_mode == 0)
-                    {
-                        // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        std::ostringstream oss_QuaPathAndName;
-                        oss_QuaPathAndName << quarantineDir << FileToLoad;
-                        auto QuaPathAndName = oss_QuaPathAndName.str();
-                        result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
-                        if (result == 0)
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: 1st Moved Bad Script to " + QuaPathAndName));
-                            bad_script_count = bad_script_count + 1;
-                        }
-                        else
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
-                            LuaIsRunning = false;
-                            // Added this break to prevent CTD from flooding the Log.txt file.
-                            break;
-                        }
-                        LuaIsRunning = false;
-                        return ReadAllScriptFiles();
-                    }
-                }
-
-                // is Lua still running, or are there any problems?
-                if (!LuaIsRunning)
-                {
-                    logMsg(logToDevCon,
-                           ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
-                    if (developer_mode == 1)
-                    {
-                        return false;
-                    }
-                    if (developer_mode == 0)
-                    {
-                        // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
-                        std::ostringstream oss_QuaPathAndName;
-                        oss_QuaPathAndName << quarantineDir << FileToLoad;
-                        auto QuaPathAndName = oss_QuaPathAndName.str();
-                        result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
-                        if (result == 0)
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: 2nd Moved Bad Script to " + QuaPathAndName));
-                            bad_script_count = bad_script_count + 1;
-                        }
-                        else
-                        {
-                            logMsg(logToDevCon,
-                                   ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
-                            LuaIsRunning = false;
-                            // Added this break to prevent CTD from flooding the Log.txt file.
-                            break;
-                        }
-                        ReadAllScriptFiles();
-                        return false;
-                    }
-                }
-            }
-        }
-
-    } else
+    std::error_code ec_dir;
+    if (!std::filesystem::exists(scriptDir, ec_dir) || !std::filesystem::is_directory(scriptDir, ec_dir))
     {
         logMsg(logToDevCon, "FlyWithLua Error: Can't read out the subfolder Resources/plugins/FlyWithLua/Scripts.");
         logMsg(logToDevCon,
@@ -7177,6 +7312,165 @@ bool ReadAllScriptFiles()
         LuaIsRunning = false;
         return false;
     }
+
+    logMsg(logToDevCon, "FlyWithLua Info: Searching for Lua script files");
+    std::vector<std::string> scriptsToLoad = DiscoverScriptsToLoad(scriptDir);
+    NumberOfFiles = static_cast<int>(scriptsToLoad.size());
+
+    // are enough files in the folder to read them out?
+    if (NumberOfFiles == 0)
+    {
+        // nothing to load, let's start Lua without reading files
+        logMsg(logToDevCon,
+               "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts/ does not exist or it is empty.");
+        logMsg(logToDevCon, "FlyWithLua Info: Nothing to load at all, starting without reading files.");
+        CrashReportDisplayed = false;
+        if (bad_script_count > 0)
+        {
+            if (developer_mode == 0)
+            {
+                XPLMSpeakString("found bad lua scripts that have been quarantined look in Log dot text file for more information");
+            }
+            bad_script_count = 0;
+            speak_time = clock();
+            std::ostringstream oss_speak_time;
+            oss_speak_time << "FlyWithLua Info: speak_time " << speak_time;
+            logMsg(logToDevCon, oss_speak_time.str());
+        }
+        return true;
+    }
+
+    logMsg(logToDevCon, "FlyWithLua Info: Sorting Lua script files");
+
+    // reading out the files into a string step by step
+    for (k = 0; k < NumberOfFiles; k++)
+    {
+        const std::string& FileToLoad = scriptsToLoad[k];
+
+        // Set CURRENT_SCRIPT_DIRECTORY and SCRIPT_SUBDIRECTORY for this script
+        const char* dirSep = XPLMGetDirectorySeparator();
+        std::string curScriptDir = scriptDir + dirSep;
+        std::string scriptSubDir = "";
+        bool isSubfolder = false;
+        size_t lastSlash = FileToLoad.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+        {
+            isSubfolder = true;
+            std::string subDirOnly = FileToLoad.substr(0, lastSlash);
+            scriptSubDir = subDirOnly + dirSep;
+            curScriptDir = scriptDir + dirSep + subDirOnly + dirSep;
+        }
+        lua_pushstring(FWLLua, curScriptDir.c_str());
+        lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
+        lua_pushstring(FWLLua, scriptSubDir.c_str());
+        lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
+
+        if (subfolder_sets_script_directory != 0 && isSubfolder)
+        {
+            // Option A (default): Dynamically set SCRIPT_DIRECTORY to the script's subfolder
+            lua_pushstring(FWLLua, curScriptDir.c_str());
+            lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+        }
+        else
+        {
+            // Option B (or root script): SCRIPT_DIRECTORY points to root Scripts/
+            lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
+            lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
+        }
+
+        // load the script file
+        std::ostringstream oss_ScrPathAndName;
+        oss_ScrPathAndName << scriptDir << "/" << FileToLoad;
+        auto ScrPathAndName = oss_ScrPathAndName.str();
+
+        logMsg(logToDevCon, ("FlyWithLua Info: Start loading script file " + ScrPathAndName));
+        // XPLMCheckMenuItemState(FlyWithLuaMenuId, DevModeCheckedPosition, &DevMode);
+        if (ReadScriptFile(ScrPathAndName.c_str(), isSubfolder))
+        {
+            logMsg(logToDevCon,
+                   ("FlyWithLua Info: Finished loading script file " + ScrPathAndName));
+        } else
+        {
+            logMsg(logToDevCon, ("FlyWithLua Error: Unable to load script file " + ScrPathAndName));
+            if (developer_mode == 1)
+            {
+                LuaIsRunning = false;
+                break;
+            }
+            if (developer_mode == 0)
+            {
+                // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
+                std::ostringstream oss_QuaPathAndName;
+                oss_QuaPathAndName << quarantineDir << FileToLoad;
+                auto QuaPathAndName = oss_QuaPathAndName.str();
+                std::error_code ec_q;
+                std::filesystem::create_directories(std::filesystem::path(QuaPathAndName).parent_path(), ec_q);
+                result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
+                if (result == 0)
+                {
+                    logMsg(logToDevCon,
+                           ("FlyWithLua Info: 1st Moved Bad Script to " + QuaPathAndName));
+                    bad_script_count = bad_script_count + 1;
+                }
+                else
+                {
+                    logMsg(logToDevCon,
+                           ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
+                    LuaIsRunning = false;
+                    // Added this break to prevent CTD from flooding the Log.txt file.
+                    break;
+                }
+                LuaIsRunning = false;
+                return ReadAllScriptFiles();
+            }
+        }
+
+        // is Lua still running, or are there any problems?
+        if (!LuaIsRunning)
+        {
+            logMsg(logToDevCon,
+                   ("FlyWithLua Error: The error seems to be inside of script file " + ScrPathAndName));
+            if (developer_mode == 1)
+            {
+                return false;
+            }
+            if (developer_mode == 0)
+            {
+                // Need to move bad script to "Scripts (Quarantine)") and then run ReadAllScriptFiles().
+                std::ostringstream oss_QuaPathAndName;
+                oss_QuaPathAndName << quarantineDir << FileToLoad;
+                auto QuaPathAndName = oss_QuaPathAndName.str();
+                std::error_code ec_q;
+                std::filesystem::create_directories(std::filesystem::path(QuaPathAndName).parent_path(), ec_q);
+                result = rename(ScrPathAndName.c_str(), QuaPathAndName.c_str());
+                if (result == 0)
+                {
+                    logMsg(logToDevCon,
+                           ("FlyWithLua Info: 2nd Moved Bad Script to " + QuaPathAndName));
+                    bad_script_count = bad_script_count + 1;
+                }
+                else
+                {
+                    logMsg(logToDevCon,
+                           ("FlyWithLua Info: Could not move bad script to " + QuaPathAndName));
+                    LuaIsRunning = false;
+                    // Added this break to prevent CTD from flooding the Log.txt file.
+                    break;
+                }
+                ReadAllScriptFiles();
+                return false;
+            }
+        }
+    }
+
+    // Reset CURRENT_SCRIPT_DIRECTORY, SCRIPT_SUBDIRECTORY, and SCRIPT_DIRECTORY to defaults
+    const char* dirSep = XPLMGetDirectorySeparator();
+    lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
+    lua_setglobal(FWLLua, "CURRENT_SCRIPT_DIRECTORY");
+    lua_pushstring(FWLLua, "");
+    lua_setglobal(FWLLua, "SCRIPT_SUBDIRECTORY");
+    lua_pushstring(FWLLua, (scriptDir + dirSep).c_str());
+    lua_setglobal(FWLLua, "SCRIPT_DIRECTORY");
 
     // get time after execution
     clock_t time_end = clock();
@@ -7236,86 +7530,62 @@ bool ReadAllScriptFiles()
 
 bool ReadAllQuarantinedScriptFiles()
 {
-    char QtFileToLoad[SHORTSRTING]      = "";
-    int  Qt_k;
-    char QtFilesInFolder[5000];
-    int NumberOfQtFiles; // modified by saar
-    int TotalNumberOfQtFiles; // modified by saar
-    char* QtFileIndex[250];
+    logMsg(logToDevCon, "FlyWithLua Info: Searching for Lua quarantined script files");
+    std::vector<std::string> qtFiles = DiscoverQuarantinedScripts(quarantineDir);
+    int NumberOfQtFiles = static_cast<int>(qtFiles.size());
     int Qt_result;
 
-    if (XPLMGetDirectoryContents(quarantineDir.c_str(), 0, QtFilesInFolder, sizeof(QtFilesInFolder), QtFileIndex, 250,
-                                 reinterpret_cast<int *>(&TotalNumberOfQtFiles), reinterpret_cast<int *>(&NumberOfQtFiles)))
+    // are enough files in the folder to read them out?
+    if (NumberOfQtFiles == 0)
     {
-        logMsg(logToDevCon, "FlyWithLua Info: Searching for Lua quarantined script files");
+        // nothing to load, let's start Lua without reading files
+        logMsg(logToDevCon,
+               "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts (Quarantine)/ does not exist or it is empty.");
+        return true;
+    }
 
-        // are enough files in the folder to read them out?
-        if (NumberOfQtFiles == 1)
+    if ((NumberOfQtFiles >= 1) && (speak_second_warning == 1))
+    {
+        if (developer_mode == 0)
         {
-            // nothing to load, let's start Lua without reading files
+            XPLMSpeakString("\n\n\n\nPlease check your quarantined scripts folder");
+        }
+        speak_second_warning = 0;
+        return true;
+    }
+
+    logMsg(logToDevCon, "FlyWithLua Info: Sorting Lua quarantined script files");
+
+    // reading out the files into a string step by step
+    for (int Qt_k = 0; Qt_k < NumberOfQtFiles; Qt_k++)
+    {
+        const std::string& QtFileToLoad = qtFiles[Qt_k];
+
+        // load the quarantined script file
+        std::ostringstream oss_QtPathAndName;
+        oss_QtPathAndName << quarantineDir << QtFileToLoad;
+        auto QtPathAndName = oss_QtPathAndName.str();
+
+        // Need to move quarantined script from "Scripts (Quarantine)" to "Scripts"
+        // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
+        std::ostringstream oss_OkPathAndName;
+        oss_OkPathAndName << scriptDir << "/" << QtFileToLoad;
+        auto OkPathAndName = oss_OkPathAndName.str();
+
+        std::error_code ec;
+        std::filesystem::create_directories(std::filesystem::path(OkPathAndName).parent_path(), ec);
+
+        Qt_result = rename(QtPathAndName.c_str(), OkPathAndName.c_str());
+        if (Qt_result == 0)
+        {
             logMsg(logToDevCon,
-                   "FlyWithLua Info: The folder /Resources/plugins/FlyWithLua/Scripts (Quarantine)/ does not exist or it is empty.");
-
-            return true;
+                   ("FlyWithLua Info: Returning Quarantine Script " + OkPathAndName));
+            std::filesystem::remove(std::filesystem::path(QtPathAndName).parent_path(), ec);
         }
-
-        if ((NumberOfQtFiles > 1) && (speak_second_warning == 1))
+        else
         {
-            if (developer_mode == 0)
-            {
-                XPLMSpeakString("\n\n\n\nPlease check your quarantined scripts folder");
-            }
-            speak_second_warning = 0;
-            return true;
-        }
-
-        logMsg(logToDevCon, "FlyWithLua Info: Sorting Lua quarantined script files");
-        // sorting the files
-        qsort(QtFileIndex, static_cast<size_t>(NumberOfQtFiles), sizeof(char*), compare_filenames);
-
-        // reading out the files into a string step by step
-        for (Qt_k = 0; Qt_k < NumberOfQtFiles; Qt_k++)
-        {
-            strncpy(QtFileToLoad, QtFileIndex[Qt_k], sizeof(QtFileToLoad));
-            if ((QtFileToLoad[0] != '.') and
-                ((strstr(QtFileToLoad, ".fwl") != nullptr and strlen(strstr(QtFileToLoad, ".fwl")) == 4)
-                 or (strstr(QtFileToLoad, ".FWL") != nullptr and strlen(strstr(QtFileToLoad, ".FWL")) == 4)
-                 #if defined(__LP64__) || defined(_WIN64)
-                 or (strstr(QtFileToLoad, ".lua64") != nullptr and strlen(strstr(QtFileToLoad, ".lua64")) == 6)
-                 or (strstr(QtFileToLoad, ".Lua64") != nullptr and strlen(strstr(QtFileToLoad, ".Lua64")) == 6)
-                 or (strstr(QtFileToLoad, ".LUA64") != nullptr and strlen(strstr(QtFileToLoad, ".LUA64")) == 6)
-                 #else
-                 or (strstr(QtFileToLoad, ".lua32") != NULL and strlen(strstr(QtFileToLoad, ".lua32")) == 6)
-                                            or (strstr(QtFileToLoad, ".Lua32") != NULL and strlen(strstr(QtFileToLoad, ".Lua32")) == 6)
-                                            or (strstr(QtFileToLoad, ".LUA32") != NULL and strlen(strstr(QtFileToLoad, ".LUA32")) == 6)
-                 #endif
-                 or (strstr(QtFileToLoad, ".lua") != nullptr and strlen(strstr(QtFileToLoad, ".lua")) == 4)
-                 or (strstr(QtFileToLoad, ".Lua") != nullptr and strlen(strstr(QtFileToLoad, ".Lua")) == 4)
-                 or (strstr(QtFileToLoad, ".LUA") != nullptr and strlen(strstr(QtFileToLoad, ".LUA")) == 4)))
-            {
-                // load the quarantined script file
-                std::ostringstream oss_QtPathAndName;
-                oss_QtPathAndName << quarantineDir << QtFileToLoad;
-                auto QtPathAndName = oss_QtPathAndName.str();
-
-                // Need to move quarantined script from "Scripts (Quarantine)" to "Scripts"
-                // After all quarantined scripts have been moved and some delay run ReadAllScriptFiles().
-                std::ostringstream oss_OkPathAndName;
-                oss_OkPathAndName << scriptDir << "/" << QtFileToLoad;
-                auto OkPathAndName = oss_OkPathAndName.str();
-
-                Qt_result = rename(QtPathAndName.c_str(), OkPathAndName.c_str());
-                if (Qt_result == 0)
-                {
-                    logMsg(logToDevCon,
-                           ("FlyWithLua Info: Returning Quarantine Script " + OkPathAndName));
-                }
-                else
-                {
-                    logMsg(logToDevCon,
-                           ("FlyWithLua Info: Could Not Return Quarantine Script " + OkPathAndName));
-                }
-            }
+            logMsg(logToDevCon,
+                   ("FlyWithLua Info: Could Not Return Quarantine Script " + OkPathAndName));
         }
     }
 

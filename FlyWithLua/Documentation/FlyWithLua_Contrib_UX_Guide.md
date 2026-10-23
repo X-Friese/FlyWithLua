@@ -4,7 +4,7 @@
 *Comprehensive Reference for Markdown, TimedTooltip, and Modern Interactive Widgets*
 
 > **DRAFT: October 21, 2026**  
-> **Author:** Steven L. Goldberg (`slgoldberg@`) with help from Google Gemini  
+> **Author:** Steven L. Goldberg (`@slgoldberg`) with help from Google Gemini  
 > **Target Release:** FlyWithLua 2.8.18+ / 2.8.19 (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.1 Panel Graphics)
 
 ---
