@@ -160,17 +160,28 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.MD.Text([[
 ```lua
 -- Autopilot vertical speed calculation
-local target_vvi = (target_alt - current_alt) * 0.1
-if target_vvi > 2000 then target_vvi = 2000 end
-set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
+if is_autopilot_engaged then
+    local delta_alt = target_alt - current_alt
+    local target_vvi = math.min(2000, delta_alt * 0.1)
+    set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
+end
 ```
 ]])
                 imgui.Spacing()
                 imgui.MD.Text([[
 ```cpp
-// Procedural activity spinners & radial timers in C++
-ImGui::Spinner("FMS Processing", 14.0f, 3.0f, ImColor(30, 144, 255));
-ImGui::RadialTimer("Fuel Burn Dial", 0.65f, 16.0f, 3.5f, ImColor(50, 205, 50));
+    // 1. Procedural Activity Spinner
+    if (is_fms_computing) {
+        ImGui::Spinner("FMS Processing", 14.0f, 3.0f, ImColor(30, 144, 255));
+        ImGui::SameLine();
+        ImGui::TextDisabled("Calculating RNAV approach path...");
+    }
+
+    // 2. Continuous Radial Fuel Sweep
+    for (int tank = 0; tank < num_tanks; ++tank) {
+        float fuel_frac = fuel_remaining[tank] / tank_capacity[tank];
+        ImGui::RadialTimer("Fuel Level", fuel_frac, 16.0f, 3.5f, ImColor(50, 205, 50));
+    }
 ```
 ]])
             end
