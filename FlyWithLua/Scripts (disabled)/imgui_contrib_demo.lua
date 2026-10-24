@@ -1,16 +1,16 @@
 -- ImGui Contrib Extensions & Modern Widgets Demo for FlyWithLua
 -- Demonstrates:
---   1. ImGui::Markdown:: (Rich text, headers, emphasis, pills, badges, links)
+--   1. ImGui::Markdown:: (Rich text, headers, emphasis, pills, badges, links, fenced code blocks)
 --   2. ImGui::TimedTooltip:: (Stationary, non-jittering, reading-adaptive tooltips)
---   3. Modern Contrib Widgets (ToggleButton, ToggleButtons, Sliders with Reset, Mouse Wheel Chasers, Links)
---   4. Universal PascalCase & C++ Alias Hierarchy (MD, Markdown, TimedTooltip)
+--   3. Modern Contrib Widgets (ToggleButton, ToggleButtons, Sliders with Reset, Mouse Wheel Chasers, Spinners, Dials, Links)
+--   4. Universal PascalCase & C++ Alias Hierarchy (MD, Markdown, TimedTooltip, Spinners)
 
 if not SUPPORTS_FLOATING_WINDOWS then
     logMsg("imgui not supported by your FlyWithLua version")
     return
 end
 
-local contrib_demo_wnd = float_wnd_create(840, 700, 1, true)
+local contrib_demo_wnd = float_wnd_create(860, 740, 1, true)
 float_wnd_set_position(contrib_demo_wnd, 80, 80)
 float_wnd_set_title(contrib_demo_wnd, "FlyWithLua ImGui Contrib & UX Demo")
 float_wnd_set_imgui_builder(contrib_demo_wnd, "contrib_demo_on_build")
@@ -30,6 +30,10 @@ local altimeter_setting     = 29.92
 local camera_view_idx       = 1
 local camera_views          = { "Cockpit 3D", "Chase Plane", "Tower View", "Fly-By Camera", "Free Cam" }
 local md_button_clicks      = 0
+local demo_spinner_speed    = 1.0
+local demo_timer_val        = 0.65
+local demo_countdown_cur    = 42.0
+local demo_countdown_max    = 60.0
 
 function contrib_demo_on_build(wnd, x, y)
     -- Ambient proportional typography for clean baseline alignment across widgets & text
@@ -147,6 +151,28 @@ function contrib_demo_on_build(wnd, x, y)
                 imgui.Indent(40)
                 imgui.MD.Text("Telemetry readout: **Alt**: %d ft | **IAS**: %.1f kts | **QNH**: %.2f inHg", 18500, 264.8, altimeter_setting)
                 imgui.Unindent(40)
+            end
+
+            imgui.Spacing()
+            if imgui.CollapsingHeader("Multi-Line Fenced Code Blocks (CommonMark)", 32) then
+                imgui.MD.Text("Multi-line code snippets render in shaded charcoal containers with automatic language chips:")
+                imgui.Spacing()
+                imgui.MD.Text([[
+```lua
+-- Autopilot vertical speed calculation
+local target_vvi = (target_alt - current_alt) * 0.1
+if target_vvi > 2000 then target_vvi = 2000 end
+set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
+```
+]])
+                imgui.Spacing()
+                imgui.MD.Text([[
+```cpp
+// Procedural activity spinners & radial timers in C++
+ImGui::Spinner("FMS Processing", 14.0f, 3.0f, ImColor(30, 144, 255));
+ImGui::RadialTimer("Fuel Burn Dial", 0.65f, 16.0f, 3.5f, ImColor(50, 205, 50));
+```
+]])
             end
 
             imgui.Spacing()
@@ -305,7 +331,44 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Spacing()
             imgui.Separator()
 
-            -- Row 4: ImGui Mouse Cursors & Hyperlinks (Combined clean footer)
+            -- Row 4: Procedural Activity Spinners & Countdown Dials
+            imgui.MD.Text("### Procedural Activity Spinners & Countdown Dials")
+            imgui.MD.Text("Vector antialiased paths via ImDrawList -- no textures, no font dependencies, smooth organic easing:")
+            imgui.Spacing()
+
+            -- Spinner 1: Custom size, thickness, color table, and speed
+            imgui.Spinner("FMS Navdata Ingestion (1.2x Speed)", 14, 3, {0.2, 0.7, 1.0, 1.0}, demo_spinner_speed)
+            imgui.TimedTooltip.Text("Organic sinusoidal expanding/contracting arc animated automatically by ImGui::GetTime().")
+
+            imgui.SameLine(400)
+            -- Spinner 2: Compact default theme
+            imgui.Spinner("Background Telemetry Sync", 10, 2.0)
+            imgui.TimedTooltip.Text("Compact spinner using default theme color and 1.0x animation speed.")
+
+            imgui.Spacing()
+
+            -- Radial Timer Dial: Sweeps progress clockwise from 12 o'clock
+            imgui.RadialTimer(string.format("Fuel Burn Cycle (%.0f%%)", demo_timer_val * 100), demo_timer_val, 16, 3.5, {0.2, 0.85, 0.3, 1.0})
+            imgui.TimedTooltip.Text("Radial progress dial: sweeps from 12 o'clock clockwise based on fractional progress (0.0 .. 1.0).")
+
+            imgui.SameLine(400)
+            local timer_changed, new_timer = imgui.PercentSlider("Dial Progress##tslider", demo_timer_val)
+            if timer_changed then demo_timer_val = new_timer end
+
+            imgui.Spacing()
+
+            -- Countdown Timer Helper: Seconds elapsed/remaining
+            imgui.CountdownTimer(string.format("Approach Timer (%.1fs / %.0fs)", demo_countdown_cur, demo_countdown_max), demo_countdown_cur, demo_countdown_max, 16, 3.5, {1.0, 0.65, 0.0, 1.0})
+            imgui.TimedTooltip.Text("Countdown timer: accepts remaining seconds and max seconds, sweeping down smoothly.")
+
+            imgui.SameLine(400)
+            local cd_changed, new_cd = imgui.SliderWithReset("Seconds##cdslider", demo_countdown_cur, 0.0, demo_countdown_max, 42.0)
+            if cd_changed then demo_countdown_cur = new_cd end
+
+            imgui.Spacing()
+            imgui.Separator()
+
+            -- Row 5: ImGui Mouse Cursors & Hyperlinks (Combined clean footer)
             imgui.MD.Text("### ImGui Mouse Cursors & Hyperlinks")
             local cur_cursors = float_wnd_get_imgui_cursor_handling(wnd)
             local cursor_changed, new_cursor_state = imgui.ToggleButton("Dynamic ImGui Cursors", cur_cursors)
@@ -370,6 +433,19 @@ function contrib_demo_on_build(wnd, x, y)
             imgui.Bullet()
             imgui.MD.Text("`<code dark>TimedTooltip.MD.Text(...)</code>` -- Global TimedTooltip Markdown")
             TimedTooltip.MD.Text("<pill blue>Active</pill> via **TimedTooltip.MD.Text()**")
+
+            imgui.Spacing()
+            imgui.Separator()
+            imgui.TextUnformatted("Procedural Spinner & Timer aliases:")
+
+            imgui.Bullet()
+            imgui.MD.Text("`imgui.Spinner(label, [r, thick, col, spd])` / `imgui.spinner`")
+
+            imgui.Bullet()
+            imgui.MD.Text("`imgui.RadialTimer(label, frac, [r, thick, col, bg_col, cw])` / `imgui.radial_timer`")
+
+            imgui.Bullet()
+            imgui.MD.Text("`imgui.CountdownTimer(label, cur_sec, max_sec, ...)` / `imgui.countdown_timer`")
 
             imgui.EndTabItem()
         end

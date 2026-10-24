@@ -114,7 +114,19 @@ Colors arbitrary text spans using standard 6-digit hex color codes.
 imgui.MD.Text("Target speed: <color #00bc8c>250 knots</color> below <color #f39c12>10,000 ft</color>.")
 ```
 
-### 5. Clickable Hyperlinks
+### 5. Multi-Line Fenced Code Blocks (```lang)
+Standard CommonMark triple backticks (or tildes `~~~`) render multi-line code blocks in shaded charcoal containers with rounded corners and an automatic language indicator chip in the upper corner:
+
+````markdown
+```lua
+-- Autopilot vertical speed calculation
+local target_vvi = (target_alt - current_alt) * 0.1
+if target_vvi > 2000 then target_vvi = 2000 end
+set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
+```
+````
+
+### 6. Clickable Hyperlinks
 Standard Markdown link syntax `[Label](URL)` is supported. When clicked, FlyWithLua automatically invokes the native operating system browser (via `open` on macOS, `ShellExecute` on Windows, or `xdg-open` on Linux).
 
 ```lua
@@ -242,6 +254,40 @@ imgui.TextLink("Check METAR Weather Reports", "https://aviationweather.gov/metar
 imgui.ButtonLink("FlyWithLua Forum Support", "https://forums.x-plane.org")
 ```
 
+### `imgui.Spinner(label, [radius], [thickness], [color], [speed])`
+Renders an organic, sinusoidal expanding-and-contracting activity arc for loading or asynchronous tasks. Procedurally rendered via `ImDrawList` antialiased paths with zero textures and zero font dependencies.
+- **`label`**: Unique ID or optional text label rendered beside the spinner.
+- **`radius`**: Outer radius in pixels (defaults to `0.55 * GetFontSize()`).
+- **`thickness`**: Arc stroke width (defaults to `radius * 0.22`, min 2px).
+- **`color`**: RGBA color table `{r, g, b, [a]}` or 32-bit packed color integer (defaults to theme checkmark / button active).
+- **`speed`**: Animation speed multiplier (defaults to `1.0`).
+
+```lua
+-- Standard themed spinner
+imgui.Spinner("Loading Flight Plan...")
+
+-- Custom styled aviation-blue spinner at 1.2x speed
+imgui.Spinner("FMS Ingestion##fms", 16, 3.0, {0.2, 0.7, 1.0, 1.0}, 1.2)
+```
+
+### `imgui.RadialTimer(label, fraction, [radius], [thickness], [color], [bg_color], [clockwise])`
+Renders a circular countdown dial representing progress or elapsed time (`0.0 .. 1.0`).
+- Sweeps from the 12 o'clock position (`-90°`).
+- Supports custom arc color and background ring track color.
+- **`clockwise`**: `true` for clockwise sweep (default), `false` for counter-clockwise.
+
+```lua
+-- 65% complete fuel burn cycle dial
+imgui.RadialTimer("Fuel Burn Dial", 0.65, 18, 3.5, {0.2, 0.85, 0.3, 1.0})
+```
+
+### `imgui.CountdownTimer(label, current_sec, max_sec, [radius], [thickness], [color], [bg_color], [clockwise])`
+Convenience helper wrapping `RadialTimer` with remaining seconds and total max seconds.
+```lua
+-- 42 seconds remaining of a 60 second approach timer
+imgui.CountdownTimer("Approach Timer (42s / 60s)", 42.0, 60.0, 20, 4.0, {1.0, 0.65, 0.0, 1.0})
+```
+
 ---
 
 ## 6. Dynamic ImGui Mouse Cursors
@@ -294,6 +340,9 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Percent Slider** | `imgui.PercentSlider` | `imgui.percent_slider` | -- | -- |
 | **Mouse Wheel Adjust** | `imgui.AdjustItemOnMouseWheel` | `imgui.adjust_item_on_mouse_wheel` | -- | -- |
 | **Mouse Wheel Cycle** | `imgui.CycleItemOnMouseWheel` | `imgui.cycle_item_on_mouse_wheel` | -- | -- |
+| **Activity Spinner** | `imgui.Spinner` | `imgui.spinner` | -- | -- |
+| **Radial Timer Dial** | `imgui.RadialTimer` | `imgui.radial_timer` | -- | -- |
+| **Countdown Timer** | `imgui.CountdownTimer` | `imgui.countdown_timer` | -- | -- |
 
 ---
 

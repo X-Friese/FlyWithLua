@@ -371,6 +371,61 @@ static int LuaTextLink(lua_State* L) {
     return 1;
 }
 
+// Helper to parse ImU32 color from Lua (supports integer, table {r, g, b, [a]}, or nil/0)
+static ImU32 ParseLuaColor(lua_State* L, int idx) {
+    if (lua_gettop(L) < idx || lua_isnil(L, idx)) return 0;
+    if (lua_isnumber(L, idx)) {
+        return (ImU32)lua_tonumber(L, idx);
+    }
+    if (lua_istable(L, idx)) {
+        float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+        lua_rawgeti(L, idx, 1); if (lua_isnumber(L, -1)) r = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        lua_rawgeti(L, idx, 2); if (lua_isnumber(L, -1)) g = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        lua_rawgeti(L, idx, 3); if (lua_isnumber(L, -1)) b = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        lua_rawgeti(L, idx, 4); if (lua_isnumber(L, -1)) a = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        return ImGui::ColorConvertFloat4ToU32(ImVec4(r, g, b, a));
+    }
+    return 0;
+}
+
+static int LuaSpinner(lua_State* L) {
+    const char* label = luaL_checkstring(L, 1);
+    float radius      = (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) ? (float)lua_tonumber(L, 2) : 0.0f;
+    float thickness   = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : -1.0f;
+    ImU32 color       = ParseLuaColor(L, 4);
+    float speed       = (lua_gettop(L) >= 5 && !lua_isnil(L, 5)) ? (float)lua_tonumber(L, 5) : 1.0f;
+    bool res = ImGui::Spinner(label, radius, thickness, color, speed);
+    lua_pushboolean(L, res);
+    return 1;
+}
+
+static int LuaRadialTimer(lua_State* L) {
+    const char* label       = luaL_checkstring(L, 1);
+    float frac              = (float)luaL_checknumber(L, 2);
+    float radius            = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : 0.0f;
+    float thickness         = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : -1.0f;
+    ImU32 color             = ParseLuaColor(L, 5);
+    ImU32 bg_color          = ParseLuaColor(L, 6);
+    bool clockwise          = (lua_gettop(L) >= 7 && !lua_isnil(L, 7)) ? (lua_toboolean(L, 7) != 0) : true;
+    bool res = ImGui::RadialTimer(label, frac, radius, thickness, color, bg_color, clockwise);
+    lua_pushboolean(L, res);
+    return 1;
+}
+
+static int LuaCountdownTimer(lua_State* L) {
+    const char* label       = luaL_checkstring(L, 1);
+    float current_sec       = (float)luaL_checknumber(L, 2);
+    float max_sec           = (float)luaL_checknumber(L, 3);
+    float radius            = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : 0.0f;
+    float thickness         = (lua_gettop(L) >= 5 && !lua_isnil(L, 5)) ? (float)lua_tonumber(L, 5) : -1.0f;
+    ImU32 color             = ParseLuaColor(L, 6);
+    ImU32 bg_color          = ParseLuaColor(L, 7);
+    bool clockwise          = (lua_gettop(L) >= 8 && !lua_isnil(L, 8)) ? (lua_toboolean(L, 8) != 0) : true;
+    bool res = ImGui::CountdownTimer(label, current_sec, max_sec, radius, thickness, color, bg_color, clockwise);
+    lua_pushboolean(L, res);
+    return 1;
+}
+
 static int LuaGetMouseWheel(lua_State* L) {
     bool consume = (lua_gettop(L) >= 1) ? (lua_toboolean(L, 1) != 0) : true;
     float delta = ImGui::GetMouseWheel(consume);
@@ -540,6 +595,13 @@ void InitContribSupport(lua_State* L) {
 
     lua_pushcfunction(L, LuaResetButton);               lua_setfield(L, -2, "ResetButton");
     lua_pushcfunction(L, LuaResetButton);               lua_setfield(L, -2, "reset_button");
+
+    lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "Spinner");
+    lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "spinner");
+    lua_pushcfunction(L, LuaRadialTimer);               lua_setfield(L, -2, "RadialTimer");
+    lua_pushcfunction(L, LuaRadialTimer);               lua_setfield(L, -2, "radial_timer");
+    lua_pushcfunction(L, LuaCountdownTimer);            lua_setfield(L, -2, "CountdownTimer");
+    lua_pushcfunction(L, LuaCountdownTimer);            lua_setfield(L, -2, "countdown_timer");
 
     lua_pushcfunction(L, LuaButtonLink);                lua_setfield(L, -2, "ButtonLink");
     lua_pushcfunction(L, LuaButtonLink);                lua_setfield(L, -2, "button_link");
