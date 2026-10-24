@@ -34,8 +34,21 @@ local demo_spinner_speed    = 1.0
 local demo_timer_val        = 0.65
 local demo_countdown_cur    = 42.0
 local demo_countdown_max    = 60.0
+local demo_countdown_running = true
+local last_timer_tick       = os.clock()
 
 function contrib_demo_on_build(wnd, x, y)
+    -- Update live real-time countdown timer tick
+    local now = os.clock()
+    local dt = now - (last_timer_tick or now)
+    last_timer_tick = now
+    if dt > 0 and dt < 0.5 and demo_countdown_running then
+        demo_countdown_cur = demo_countdown_cur - dt
+        if demo_countdown_cur <= 0 then
+            demo_countdown_cur = demo_countdown_max
+        end
+    end
+
     -- Ambient proportional typography for clean baseline alignment across widgets & text
     imgui.PushFont("Roboto-Regular-16")
 

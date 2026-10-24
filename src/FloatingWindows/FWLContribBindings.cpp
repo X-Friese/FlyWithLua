@@ -324,7 +324,7 @@ static int LuaSliderWithReset(lua_State* L) {
     float v_min   = static_cast<float>(luaL_checknumber(L, 3));
     float v_max   = static_cast<float>(luaL_checknumber(L, 4));
     float def_val = static_cast<float>(luaL_checknumber(L, 5));
-    bool changed = ImGui::SliderWithReset(label, &val, v_min, v_max, def_val);
+    bool changed = ImGui::SliderWithReset(label, &val, def_val, v_min, v_max);
     lua_pushboolean(L, changed);
     lua_pushnumber(L, val);
     return 2;
