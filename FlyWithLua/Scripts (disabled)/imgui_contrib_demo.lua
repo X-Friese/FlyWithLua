@@ -184,6 +184,20 @@ end
     }
 ```
 ]])
+                imgui.Spacing()
+                imgui.MD.Text([[
+````markdown
+### Embedded Checklist & Flight Telemetry
+* System Status: <pill green>SYSTEMS READY</pill>
+* Baro Altimeter: **29.92 inHg** | Transition: <color #f39c12>18,000 ft</color>
+
+```lua
+-- Inner nested Lua snippet inside Markdown container
+local qnh = get("sim/cockpit2/gauges/actuators/barometer_setting_in_hg")
+if qnh < 29.92 then set_altimeter_std() end
+```
+````
+]])
             end
 
             imgui.Spacing()
