@@ -352,8 +352,8 @@ ImGui::RadialTimer("Fuel Burn Dial", 0.65f, 16.0f, 3.5f, ImColor(50, 205, 50));
             imgui.TimedTooltip.Text("Radial progress dial: sweeps from 12 o'clock clockwise based on fractional progress (0.0 .. 1.0).")
 
             imgui.SameLine(400)
-            imgui.SetNextItemWidth(360)
-            local timer_changed, new_timer = imgui.PercentSlider("Dial Progress##tslider", demo_timer_val)
+            imgui.SetNextItemWidth(-1)
+            local timer_changed, new_timer = imgui.PercentSlider("##tslider", demo_timer_val)
             if timer_changed then demo_timer_val = new_timer end
 
             imgui.Spacing()
@@ -363,8 +363,8 @@ ImGui::RadialTimer("Fuel Burn Dial", 0.65f, 16.0f, 3.5f, ImColor(50, 205, 50));
             imgui.TimedTooltip.Text("Countdown timer: accepts remaining seconds and max seconds, sweeping down smoothly.")
 
             imgui.SameLine(400)
-            imgui.SetNextItemWidth(360)
-            local cd_changed, new_cd = imgui.SliderWithReset("Seconds##cdslider", demo_countdown_cur, 0.0, demo_countdown_max, 42.0)
+            imgui.SetNextItemWidth(-1)
+            local cd_changed, new_cd = imgui.SliderWithReset("##cdslider", demo_countdown_cur, 0.0, demo_countdown_max, 42.0)
             if cd_changed then demo_countdown_cur = new_cd end
 
             imgui.Spacing()
