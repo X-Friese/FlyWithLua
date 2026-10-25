@@ -83,14 +83,101 @@ local last_preview_scroll_y = 0
 local sync_scroll_ratio     = 0.0
 
 -- ----------------------------------------------------------------------------
--- File Persistence (Save & Load)
+-- File Persistence (Save & Load in Scripts/MarkdownEditor/)
 -- ----------------------------------------------------------------------------
-local function get_save_path()
-    local path = "FlyWithLua/cockpit_notes.md"
-    if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
-        path = CURRENT_SCRIPT_DIRECTORY .. "/cockpit_notes.md"
+local function ensure_directory(dir)
+    local ok, lfs = pcall(require, "lfs_ffi")
+    if ok and lfs and lfs.mkdir then
+        pcall(lfs.mkdir, dir)
     end
-    return path
+    if SYSTEM == "IBM" or package.config:sub(1,1) == "\\" then
+        os.execute('mkdir "' .. dir:gsub("/", "\\") .. '" 2>nul')
+    else
+        os.execute('mkdir -p "' .. dir .. '" 2>/dev/null')
+    end
+end
+
+local function get_notes_dir()
+    local base_dir = "FlyWithLua"
+    if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
+        base_dir = CURRENT_SCRIPT_DIRECTORY
+    end
+    if base_dir:match("[/\\]MarkdownEditor$") then
+        return base_dir
+    end
+    return base_dir .. "/MarkdownEditor"
+end
+
+local function get_legacy_save_path()
+    local base_dir = "FlyWithLua"
+    if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
+        base_dir = CURRENT_SCRIPT_DIRECTORY
+    end
+    return base_dir .. "/cockpit_notes.md"
+end
+
+local current_note_file = "cockpit_notes.md"
+local show_new_file_modal = false
+local new_file_name_input = ""
+
+local function get_note_path(filename)
+    filename = filename or current_note_file
+    if not filename:match("%.md$") then
+        filename = filename .. ".md"
+    end
+    return get_notes_dir() .. "/" .. filename
+end
+
+local function list_note_files()
+    local dir = get_notes_dir()
+    ensure_directory(dir)
+    local files_map = {}
+    local files = {}
+
+    -- 1. Try lfs_ffi
+    local ok, lfs = pcall(require, "lfs_ffi")
+    if ok and lfs and lfs.dir then
+        local iter_ok, iter = pcall(lfs.dir, dir)
+        if iter_ok and iter then
+            for entry in iter do
+                if entry and entry:match("%.md$") and not entry:match("^%.") then
+                    if not files_map[entry] then
+                        files_map[entry] = true
+                        table.insert(files, entry)
+                    end
+                end
+            end
+        end
+    end
+
+    -- 2. Fallback to command line if lfs yielded nothing
+    if #files == 0 and io.popen then
+        local cmd = (SYSTEM == "IBM" or package.config:sub(1,1) == "\\")
+            and ('dir /b "' .. dir:gsub("/", "\\") .. '\\*.md" 2>nul')
+            or ('ls -1 "' .. dir .. '" 2>/dev/null')
+        local p = io.popen(cmd)
+        if p then
+            for line in p:lines() do
+                line = line:gsub("%s+$", "")
+                if line:match("%.md$") and not line:match("^%.") then
+                    if not files_map[line] then
+                        files_map[line] = true
+                        table.insert(files, line)
+                    end
+                end
+            end
+            p:close()
+        end
+    end
+
+    -- Always ensure current_note_file is included
+    if not files_map[current_note_file] then
+        table.insert(files, current_note_file)
+        files_map[current_note_file] = true
+    end
+
+    table.sort(files)
+    return files
 end
 
 -- Default scratchpad template loaded if no saved notes exist on disk
@@ -116,12 +203,31 @@ local alt = get("sim/flightmodel/position/elevation")
 
 -- Load saved notes on startup if available, otherwise fall back to template
 local function load_initial_document()
-    local path = get_save_path()
+    local path = get_note_path("cockpit_notes.md")
     local f = io.open(path, "r")
     if f then
         local content = f:read("*a")
         f:close()
         if content and #content > 0 then
+            current_note_file = "cockpit_notes.md"
+            return content
+        end
+    end
+    -- Check legacy location in Scripts/
+    local leg_path = get_legacy_save_path()
+    f = io.open(leg_path, "r")
+    if f then
+        local content = f:read("*a")
+        f:close()
+        if content and #content > 0 then
+            -- Auto-migrate to MarkdownEditor directory
+            ensure_directory(get_notes_dir())
+            local fw = io.open(path, "w")
+            if fw then
+                fw:write(content)
+                fw:close()
+            end
+            current_note_file = "cockpit_notes.md"
             return content
         end
     end
@@ -327,13 +433,20 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     cached_sel_end   = -1
 end
 
-local function save_document()
-    local path = get_save_path()
+local function save_document(filename)
+    filename = filename or current_note_file
+    if not filename:match("%.md$") then
+        filename = filename .. ".md"
+    end
+    current_note_file = filename
+    local dir = get_notes_dir()
+    ensure_directory(dir)
+    local path = get_note_path(filename)
     local f, err = io.open(path, "w")
     if f then
         f:write(editor_text)
         f:close()
-        save_status_msg = "Saved: cockpit_notes.md"
+        save_status_msg = "Saved: " .. filename
         save_status_path = path
         save_status_time = os.time()
     else
@@ -343,21 +456,44 @@ local function save_document()
     end
 end
 
-local function load_document()
-    local path = get_save_path()
+local function load_document(filename)
+    filename = filename or current_note_file
+    if not filename:match("%.md$") then
+        filename = filename .. ".md"
+    end
+    local path = get_note_path(filename)
     local f, err = io.open(path, "r")
+    if not f and filename == "cockpit_notes.md" then
+        -- Check legacy path
+        local leg_path = get_legacy_save_path()
+        f = io.open(leg_path, "r")
+    end
     if f then
         editor_text = f:read("*a")
         f:close()
+        current_note_file = filename
         editor_epoch = editor_epoch + 1
         just_formatted = true
-        save_status_msg = "Loaded: cockpit_notes.md"
+        save_status_msg = "Loaded: " .. filename
         save_status_path = path
         save_status_time = os.time()
     else
-        save_status_msg = "No Saved Notes Found"
+        save_status_msg = "File not found: " .. filename
         save_status_path = path
         save_status_time = os.time()
+    end
+end
+
+-- Helper to dismiss and reset the stationary TimedTooltip low-watermark timer
+local function clear_active_tooltip()
+    if imgui.TimedTooltip and imgui.TimedTooltip.ClearActiveTooltip then
+        imgui.TimedTooltip.ClearActiveTooltip()
+    elseif imgui.TimedTooltip and imgui.TimedTooltip.clear then
+        imgui.TimedTooltip.clear()
+    elseif TimedTooltip and TimedTooltip.clear then
+        TimedTooltip.clear()
+    elseif imgui.ClearActiveTooltip then
+        imgui.ClearActiveTooltip()
     end
 end
 
@@ -565,13 +701,11 @@ local function md_editor_render_content()
             content_zoom = new_pt / 16.0
             zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
             last_zoom_change_time = os.clock()
-            if imgui.ClearActiveTooltip then
-                imgui.ClearActiveTooltip()
-            end
+            clear_active_tooltip()
         end
     end
     local now = os.clock()
-    local zoom_adjusting = (now - last_zoom_change_time < 1.5) or (imgui.IsItemActive and imgui.IsItemActive())
+    local zoom_adjusting = (now - last_zoom_change_time < 0.6) or (imgui.IsItemActive and imgui.IsItemActive())
     if not zoom_adjusting then
         show_tooltip(string.format("**Zoom Out** (-1 pt)\n\nDecrease canvas font size to %d px.\n\n*Hold down to step smoothly*", math.max(8, math.floor(content_zoom * 16.0 + 0.5) - 1)))
     end
@@ -588,9 +722,7 @@ local function md_editor_render_content()
         content_zoom = target_pt / 16.0
         zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
         last_zoom_change_time = os.clock()
-        if imgui.ClearActiveTooltip then
-            imgui.ClearActiveTooltip()
-        end
+        clear_active_tooltip()
     end
     if imgui.IsItemHovered() then
         -- Query and consume mouse wheel delta immediately so no residual ticks leak
@@ -606,17 +738,13 @@ local function md_editor_render_content()
             content_zoom = new_pt / 16.0
             zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
             last_zoom_change_time = os.clock()
-            if imgui.ClearActiveTooltip then
-                imgui.ClearActiveTooltip()
-            end
+            clear_active_tooltip()
         end
     end
     now = os.clock()
-    zoom_adjusting = is_scrolling_zoom or (now - last_zoom_change_time < 1.5) or (imgui.IsItemActive and imgui.IsItemActive())
+    zoom_adjusting = is_scrolling_zoom or (now - last_zoom_change_time < 0.6) or (imgui.IsItemActive and imgui.IsItemActive())
     if zoom_adjusting then
-        if imgui.ClearActiveTooltip then
-            imgui.ClearActiveTooltip()
-        end
+        clear_active_tooltip()
     else
         show_tooltip(string.format("**Content Canvas Zoom:** `%d%%` (`%d px`)\n\n* **Steppers & Wheel:** Step by 1 exact font pixel\n* **100%% Baseline:** 16 px\n* **Reset (↺):** Toggle 100%% and prior zoom", zoom_pct, math.floor(content_zoom * 16.0 + 0.5)))
     end
@@ -645,13 +773,11 @@ local function md_editor_render_content()
             content_zoom = new_pt / 16.0
             zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
             last_zoom_change_time = os.clock()
-            if imgui.ClearActiveTooltip then
-                imgui.ClearActiveTooltip()
-            end
+            clear_active_tooltip()
         end
     end
     now = os.clock()
-    zoom_adjusting = (now - last_zoom_change_time < 1.5) or (imgui.IsItemActive and imgui.IsItemActive())
+    zoom_adjusting = (now - last_zoom_change_time < 0.6) or (imgui.IsItemActive and imgui.IsItemActive())
     if not zoom_adjusting then
         show_tooltip(string.format("**Zoom In** (+1 pt)\n\nIncrease canvas font size to %d px.\n\n*Hold down to step smoothly*", math.min(32, math.floor(content_zoom * 16.0 + 0.5) + 1)))
     end
@@ -678,9 +804,7 @@ local function md_editor_render_content()
             content_zoom = zoom_pct / 100.0
         end
         last_zoom_change_time = os.clock()
-        if imgui.ClearActiveTooltip then
-            imgui.ClearActiveTooltip()
-        end
+        clear_active_tooltip()
     end
     if zoom_pct ~= 100 then
         show_tooltip("**Reset Zoom (100%)**\n\nReset canvas font scale back to 100% baseline.")
@@ -690,34 +814,95 @@ local function md_editor_render_content()
         show_tooltip("**Zoom Baseline (100%)**\n\nCanvas font scale is at 100% baseline.")
     end
 
-    -- Persistence Buttons (Right)
-    local right_start = avail_w - 335
+    -- Persistence & Note File Selector (Right)
+    local right_start = avail_w - 380
     local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 0
     if right_start > cur_x + 10 then
         imgui.SameLine(right_start)
     else
         imgui.SameLine()
     end
-    if toolbar_button("Save Notes", "**Save Notes**\n\nPersist buffer to `cockpit_notes.md` on disk.") then
+
+    imgui.TextUnformatted("Note:")
+    imgui.SameLine(0, 4)
+    if imgui.SetNextItemWidth then
+        imgui.SetNextItemWidth(150)
+    end
+    if imgui.BeginCombo("##active_note_file", current_note_file, 0) then
+        local note_files = list_note_files()
+        for _, nfile in ipairs(note_files) do
+            local is_selected = (nfile == current_note_file)
+            if imgui.Selectable(nfile, is_selected) then
+                if nfile ~= current_note_file then
+                    load_document(nfile)
+                end
+            end
+            if is_selected and imgui.SetItemDefaultFocus then
+                imgui.SetItemDefaultFocus()
+            end
+        end
+        imgui.Separator()
+        if imgui.Selectable("+ New Note...", false) then
+            show_new_file_modal = true
+            new_file_name_input = ""
+        end
+        imgui.EndCombo()
+    end
+    show_tooltip("**Active Note File**\n\n* Select any `.md` file in `Scripts/MarkdownEditor/`\n* Files dropped into folder in Finder appear automatically\n* Click `+ New Note...` to create a new file")
+
+    imgui.SameLine(0, 4)
+    if toolbar_button("Save", string.format("**Save Note**\n\nPersist buffer to `Scripts/MarkdownEditor/%s` on disk.", current_note_file)) then
         save_document()
     end
 
-    imgui.SameLine()
-    if toolbar_button("Load Notes", "**Load Notes**\n\nReload saved notes from `cockpit_notes.md`.") then
-        load_document()
+    imgui.SameLine(0, 4)
+    if toolbar_button("+ New", "**Create New Note**\n\nCreate a new named Markdown file in `Scripts/MarkdownEditor/`.") then
+        show_new_file_modal = true
+        new_file_name_input = ""
     end
 
-    imgui.SameLine()
+    imgui.SameLine(0, 4)
     if toolbar_button("Clear", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
         editor_text = ""
         editor_epoch = editor_epoch + 1
         just_formatted = true
     end
 
-    imgui.SameLine()
+    imgui.SameLine(0, 4)
     local copy_fn = imgui.CopyBufferButton or imgui.CopyButton
     if copy_fn then
         copy_fn("##copy_buf", editor_text)
+    end
+
+    -- Optional inline bar to name and create a new note
+    if show_new_file_modal then
+        imgui.Separator()
+        imgui.TextUnformatted("New Note Name:")
+        imgui.SameLine()
+        if imgui.SetNextItemWidth then imgui.SetNextItemWidth(180) end
+        local text_changed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64)
+        if text_changed and new_val then
+            new_file_name_input = new_val
+        end
+        imgui.SameLine()
+        imgui.TextDisabled(".md")
+        imgui.SameLine()
+        if imgui.Button("Create##new_note_ok") then
+            local clean_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", ""):gsub("[^%w_%-]", "_")
+            if #clean_name > 0 then
+                clean_name = clean_name .. ".md"
+                current_note_file = clean_name
+                editor_text = "# " .. new_file_name_input .. "\n\n"
+                editor_epoch = editor_epoch + 1
+                just_formatted = true
+                save_document(clean_name)
+                show_new_file_modal = false
+            end
+        end
+        imgui.SameLine()
+        if imgui.Button("Cancel##new_note_cancel") then
+            show_new_file_modal = false
+        end
     end
 
     imgui.Separator()
