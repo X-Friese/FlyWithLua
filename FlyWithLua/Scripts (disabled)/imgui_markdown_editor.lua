@@ -75,7 +75,25 @@ local last_zoom_change_time = 0 -- Timestamp of last zoom adjustment for tooltip
 local dec_repeat_count = 0   -- Counter to throttle repeat speed on [-] (1/4 rate)
 local inc_repeat_count = 0   -- Counter to throttle repeat speed on [+] (1/4 rate)
 
--- Default scratchpad template loaded on initial start
+-- Synchronized Scrolling State (Split View)
+local sync_scroll           = true   -- Proportional scroll sync in Split mode
+local last_active_scroller  = nil    -- "editor" or "preview"
+local last_editor_scroll_y  = 0
+local last_preview_scroll_y = 0
+local sync_scroll_ratio     = 0.0
+
+-- ----------------------------------------------------------------------------
+-- File Persistence (Save & Load)
+-- ----------------------------------------------------------------------------
+local function get_save_path()
+    local path = "FlyWithLua/cockpit_notes.md"
+    if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
+        path = CURRENT_SCRIPT_DIRECTORY .. "/cockpit_notes.md"
+    end
+    return path
+end
+
+-- Default scratchpad template loaded if no saved notes exist on disk
 local initial_doc = [[# Cockpit Notes & Scratchpad
 Welcome to your in-cockpit **FlyWithLua Markdown Editor**!
 
@@ -96,7 +114,21 @@ local alt = get("sim/flightmodel/position/elevation")
 <pill blue>TIP</pill> Use the **Mode** buttons above to switch between pure Editor, Split View, and full-screen Preview.
 ]]
 
-local editor_text = initial_doc
+-- Load saved notes on startup if available, otherwise fall back to template
+local function load_initial_document()
+    local path = get_save_path()
+    local f = io.open(path, "r")
+    if f then
+        local content = f:read("*a")
+        f:close()
+        if content and #content > 0 then
+            return content
+        end
+    end
+    return initial_doc
+end
+
+local editor_text = load_initial_document()
 local MAX_TEXT_BYTES = 65536
 
 -- ----------------------------------------------------------------------------
@@ -293,17 +325,6 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     has_active_selection = false
     cached_sel_start = -1
     cached_sel_end   = -1
-end
-
--- ----------------------------------------------------------------------------
--- File Persistence (Save & Load)
--- ----------------------------------------------------------------------------
-local function get_save_path()
-    local path = "FlyWithLua/cockpit_notes.md"
-    if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
-        path = CURRENT_SCRIPT_DIRECTORY .. "/cockpit_notes.md"
-    end
-    return path
 end
 
 local function save_document()
@@ -505,6 +526,14 @@ local function md_editor_render_content()
     imgui.SameLine()
     if render_mode_button("  Preview  ", view_mode == "Preview", "**Preview Mode** (Reader Only)\n\nClean reading view displaying formatted Markdown typography, badges, and checklists.") then
         view_mode = "Preview"
+    end
+
+    if view_mode == "Split" then
+        imgui.SameLine(0, 10)
+        local sync_label = sync_scroll and " [x] Sync Scroll " or " [ ] Sync Scroll "
+        if render_mode_button(sync_label, sync_scroll, "**Synchronized Scrolling** (Proportional)\n\nLock side-by-side scrolling together so raw editor and live preview scroll in proportional lock-step.") then
+            sync_scroll = not sync_scroll
+        end
     end
 
     -- Content Zoom Controls in Header Chrome (Unscaled baseline 1.0x)
@@ -787,12 +816,32 @@ local function md_editor_render_content()
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
 
+            -- Synchronized scrolling: apply target scroll if user scrolled preview
+            if sync_scroll and last_active_scroller == "preview" then
+                local max_scroll = imgui.GetScrollMaxY()
+                if max_scroll and max_scroll > 0 then
+                    imgui.SetScrollY(sync_scroll_ratio * max_scroll)
+                end
+            end
+
             local editor_font = "RobotoMono-Regular"
             local editor_font_size = 16.0 * content_zoom
             if imgui.PushFont then
                 imgui.PushFont(editor_font, editor_font_size)
             end
-            local changed, new_text = imgui.InputTextMultiline("##editor_split_" .. editor_epoch, editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
+
+            -- Estimate content height so InputTextMultiline expands inside SplitEditorChild
+            local _, text_line_count = string.gsub(editor_text, "\n", "")
+            local estimated_line_h = editor_font_size * 1.25
+            local estimated_h = (text_line_count + 6) * estimated_line_h
+            if imgui.CalcTextSize then
+                local tw, th = imgui.CalcTextSize(editor_text, nil, false, col_w - 24)
+                if th and th > 0 then estimated_h = math.max(estimated_h, th + 40) end
+            end
+            local min_h = avail_h - 40
+            local input_h = math.max(min_h, estimated_h)
+
+            local changed, new_text = imgui.InputTextMultiline("##editor_split_" .. editor_epoch, editor_text, MAX_TEXT_BYTES, -1, input_h, editor_input_flags)
             if imgui.PopFont then
                 imgui.PopFont()
             end
@@ -802,6 +851,18 @@ local function md_editor_render_content()
             elseif changed and new_text then
                 editor_text = new_text
             end
+
+            -- Track editor scroll position for sync
+            local cur_editor_scroll = imgui.GetScrollY()
+            local cur_editor_max = imgui.GetScrollMaxY()
+            if sync_scroll and cur_editor_max and cur_editor_max > 0 then
+                if math.abs(cur_editor_scroll - last_editor_scroll_y) > 0.5 then
+                    last_active_scroller = "editor"
+                    sync_scroll_ratio = cur_editor_scroll / cur_editor_max
+                end
+            end
+            last_editor_scroll_y = cur_editor_scroll
+
             imgui.EndChild()
         end
 
@@ -810,10 +871,31 @@ local function md_editor_render_content()
         -- Right Pane: Live Rendered Preview (with Soft-Wrapping enabled)
         if imgui.BeginChild("SplitPreviewChild", col_w, 0, 1) then
             imgui.TextDisabled("LIVE RENDERED PREVIEW:")
+
+            -- Synchronized scrolling: apply target scroll if user scrolled editor
+            if sync_scroll and last_active_scroller == "editor" then
+                local max_scroll = imgui.GetScrollMaxY()
+                if max_scroll and max_scroll > 0 then
+                    imgui.SetScrollY(sync_scroll_ratio * max_scroll)
+                end
+            end
+
             if imgui.SetWindowFontScale then
                 imgui.SetWindowFontScale(content_zoom)
             end
             imgui.MD.TextWrapped(format_tasks(editor_text))
+
+            -- Track preview scroll position for sync
+            local cur_preview_scroll = imgui.GetScrollY()
+            local cur_preview_max = imgui.GetScrollMaxY()
+            if sync_scroll and cur_preview_max and cur_preview_max > 0 then
+                if math.abs(cur_preview_scroll - last_preview_scroll_y) > 0.5 then
+                    last_active_scroller = "preview"
+                    sync_scroll_ratio = cur_preview_scroll / cur_preview_max
+                end
+            end
+            last_preview_scroll_y = cur_preview_scroll
+
             imgui.EndChild()
         end
     end
@@ -836,8 +918,7 @@ function md_editor_on_build(wnd, x, y)
 end
 
 function md_editor_on_close(wnd)
-    -- Autosave on close for user convenience
-    save_document()
+    -- Do not overwrite notes on window close; saves must be explicit via 'Save Notes'
 end
 
 -- ----------------------------------------------------------------------------
@@ -850,7 +931,7 @@ end
 
 local wnd_w = 980
 local wnd_h = 470
-local wnd_x = math.max(30, math.floor((screen_w - wnd_w) * 0.10))
+local wnd_x = math.max(30, math.floor((screen_w - wnd_w) * 0.10) + 200)
 local wnd_y = math.max(40, math.floor((screen_h - wnd_h) * 0.15))
 
 -- Create ImGui floating window (4th arg MUST be true for withImgui)
