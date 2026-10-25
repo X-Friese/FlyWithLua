@@ -482,10 +482,10 @@ local function md_editor_render_content()
 
     -- Zoom Out Stepper [-]
     if imgui.Button(" - ##zoom_dec") then
-        zoom_pct = math.max(70, zoom_pct - 5)
+        zoom_pct = math.max(70, zoom_pct - 2)
         content_zoom = zoom_pct / 100.0
     end
-    show_tooltip("**Zoom Out** (-5%)\n\nDecrease canvas font scale in 5% increments.")
+    show_tooltip("**Zoom Out** (-2%)\n\nDecrease canvas font scale in 2% increments.")
 
     imgui.SameLine(0, 4)
 
@@ -493,26 +493,26 @@ local function md_editor_render_content()
     if imgui.SetNextItemWidth then imgui.SetNextItemWidth(90) end
     local slider_changed, new_zoom = imgui.SliderInt("##zoom_slider", zoom_pct, 70, 150, "%d%%")
     if slider_changed and new_zoom then
-        zoom_pct = math.floor(new_zoom / 5.0 + 0.5) * 5
+        zoom_pct = math.floor(new_zoom / 2.0 + 0.5) * 2
         content_zoom = zoom_pct / 100.0
     end
     if imgui.AdjustItemOnMouseWheel then
-        local w_ch, w_val = imgui.AdjustItemOnMouseWheel(zoom_pct, 70, 150, 5)
+        local w_ch, w_val = imgui.AdjustItemOnMouseWheel(zoom_pct, 70, 150, 2)
         if w_ch and w_val then
-            zoom_pct = math.floor(w_val / 5.0 + 0.5) * 5
+            zoom_pct = math.floor(w_val / 2.0 + 0.5) * 2
             content_zoom = zoom_pct / 100.0
         end
     end
-    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%`\n\n* **Drag slider** or **spin mouse wheel** in 5%% steps\n* Steppers: `[-]` and `[+]` for fine control\n* Reset: `↺` toggles baseline (100%%) and prior zoom", zoom_pct))
+    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%`\n\n* **Drag slider** or **spin mouse wheel** in 2%% steps\n* Steppers: `[-]` and `[+]` for fine control\n* Reset: `↺` toggles baseline (100%%) and prior zoom", zoom_pct))
 
     imgui.SameLine(0, 4)
 
     -- Zoom In Stepper [+]
     if imgui.Button(" + ##zoom_inc") then
-        zoom_pct = math.min(150, zoom_pct + 5)
+        zoom_pct = math.min(150, zoom_pct + 2)
         content_zoom = zoom_pct / 100.0
     end
-    show_tooltip("**Zoom In** (+5%)\n\nIncrease canvas font scale in 5% increments.")
+    show_tooltip("**Zoom In** (+2%)\n\nIncrease canvas font scale in 2% increments.")
 
     imgui.SameLine(0, 4)
 
