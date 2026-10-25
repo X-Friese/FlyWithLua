@@ -145,6 +145,7 @@ local cached_sel_start = -1
 local cached_sel_end   = -1
 local cached_cur_pos   = -1
 local just_formatted   = false
+local editor_epoch     = 0
 
 local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     suffix = suffix or ""
@@ -302,6 +303,8 @@ local function load_document()
     if f then
         editor_text = f:read("*a")
         f:close()
+        editor_epoch = editor_epoch + 1
+        just_formatted = true
         save_status_msg = "Loaded: cockpit_notes.md"
         save_status_path = path
         save_status_time = os.time()
@@ -561,6 +564,8 @@ local function md_editor_render_content()
     imgui.SameLine()
     if toolbar_button("Clear", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
         editor_text = ""
+        editor_epoch = editor_epoch + 1
+        just_formatted = true
     end
 
     imgui.SameLine()
@@ -610,6 +615,8 @@ local function md_editor_render_content()
             for name, content in pairs(templates) do
                 if imgui.Selectable(name, false) then
                     editor_text = content
+                    editor_epoch = editor_epoch + 1
+                    just_formatted = true
                 end
             end
             imgui.EndCombo()
@@ -632,7 +639,7 @@ local function md_editor_render_content()
             if imgui.PushFont then
                 imgui.PushFont(editor_font, editor_font_size)
             end
-            local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
+            local changed, new_text = imgui.InputTextMultiline("##editor_full_" .. editor_epoch, editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
             if imgui.PopFont then
                 imgui.PopFont()
             end
@@ -668,7 +675,7 @@ local function md_editor_render_content()
             if imgui.PushFont then
                 imgui.PushFont(editor_font, editor_font_size)
             end
-            local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
+            local changed, new_text = imgui.InputTextMultiline("##editor_split_" .. editor_epoch, editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
             if imgui.PopFont then
                 imgui.PopFont()
             end
