@@ -288,6 +288,70 @@ Convenience helper wrapping `RadialTimer` with remaining seconds and total max s
 imgui.CountdownTimer("Approach Timer (42s / 60s)", 42.0, 60.0, 20, 4.0, {1.0, 0.65, 0.0, 1.0})
 ```
 
+### `clicked = imgui.ResetButton(str_id, [is_modified], [draw_frame])`
+A standalone DPI-scaled vector undo/reset button (`↺`) matching standard ImgWindow widget sizing.
+- **`is_modified`**: `true` renders the glyph in standard white/active styling. `false` (baseline) renders it dimmed/disabled.
+- **`draw_frame`**: Whether to draw a button bounding frame or leave it flat/transparent.
+```lua
+local reset_clicked = imgui.ResetButton("##reset_zoom", current_zoom ~= 100, false)
+if reset_clicked then
+    current_zoom = 100
+end
+```
+
+### `clicked, is_copied = imgui.CopyButton(str_id, text_to_copy)`
+Renders a 1-click clipboard copy button with automatic transient visual feedback (changing label to `Copied!` in green for 1.5 seconds) and built-in `TimedTooltip` integration.
+- Also aliased as `imgui.CopyBufferButton`.
+```lua
+imgui.CopyButton("##copy_notes", editor_text)
+```
+
+### `clicked, is_copied = imgui.CopyLastItemButton(str_id, [prefix], [suffix])`
+A non-intrusive chaser copy button that attaches to the preceding widget on the same line (such as an `InputText` or label) and copies its content with optional prefix and suffix formatting.
+- Also aliased as `imgui.CopyTextFieldButton`.
+```lua
+imgui.InputText("##airport_code", icao_buf, 8)
+imgui.SameLine()
+imgui.CopyLastItemButton("##copy_icao")
+```
+
+### `start_idx, end_idx, cur_pos = imgui.GetInputTextSelection()`
+Inspects the active Dear ImGui text input or multiline buffer.
+- Returns 0-based character indices `[start_idx, end_idx)` and current cursor position `cur_pos`.
+- Returns `-1, -1, -1` when no input text item is active or no selection is made.
+
+### `imgui.SetInputTextSelection(start_idx, end_idx)`
+Programmatically sets or restores the active selection range in the active text input box and automatically reactivates the input widget so keyboard focus is retained.
+```lua
+-- Wrap selected text in bold asterisks
+local s, e = imgui.GetInputTextSelection()
+if s >= 0 and e > s then
+    editor_text = editor_text:sub(1, s) .. "**" .. editor_text:sub(s + 1, e) .. "**" .. editor_text:sub(e + 1)
+    imgui.SetInputTextSelection(s + 2, e + 2)
+end
+```
+
+### `delta = imgui.GetMouseWheel([consume])` and `imgui.GetMouseWheelEither([consume])`
+Low-level mouse wheel query primitives.
+- `imgui.GetMouseWheel(consume)`: Returns vertical scroll wheel clicks.
+- `imgui.GetMouseWheelEither(consume)`: Returns vertical scroll clicks, falling back to horizontal scroll clicks (ideal for Mac trackpads and horizontal mice).
+- When `consume` is `true`, immediately consumes the event by zeroing `io.MouseWheel` so underlying parent windows do not scroll inadvertently.
+
+### Standalone Procedural Badges, Pills & Keycaps
+While badges and pills are frequently used inline inside Markdown strings, FlyWithLua also exposes them as standalone procedural widgets:
+- `imgui.Badge(text, [variant])` -- Subtle categorization chip.
+- `imgui.Pill(text, [variant])` -- Solid-colored rounded pill.
+- `imgui.Kbd(text)` -- Framed keyboard keycap.
+
+Variants: `"default"`, `"primary"`, `"success"` (`"green"`), `"warning"` (`"yellow"`), `"danger"` (`"red"`), `"info"` (`"blue"`).
+```lua
+imgui.Badge("METAR OK", "success")
+imgui.SameLine()
+imgui.Pill("AUTOPILOT ENGAGED", "primary")
+imgui.SameLine()
+imgui.Kbd("Ctrl+Shift+P")
+```
+
 ---
 
 ## 6. Dynamic ImGui Mouse Cursors
@@ -331,18 +395,31 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | :--- | :--- | :--- | :--- | :--- |
 | **Markdown Text** | `imgui.Markdown.Text` | `imgui.MD.Text` | `Markdown.Text` / `MD.Text` | `imgui.TextMD` |
 | **Markdown Wrapped** | `imgui.Markdown.TextWrapped` | `imgui.MD.TextWrapped` | `Markdown.TextWrapped` | `imgui.TextWrappedMD` |
-| **Markdown Direct** | `imgui.Markdown.TextUnformatted` | `imgui.MD.TextUnformatted` | `Markdown.TextUnformatted` | -- |
+| **Markdown Direct** | `imgui.Markdown.TextUnformatted` | `imgui.MD.TextUnformatted` | `Markdown.TextUnformatted` | `imgui.TextUnformattedMD` |
 | **Markdown Button** | `imgui.Markdown.ButtonMD` | `imgui.MD.ButtonMD` | `Markdown.ButtonMD` | `imgui.ButtonMD` |
-| **TimedTooltip Plain** | `imgui.TimedTooltip.Text` | -- | `TimedTooltip.Text` | -- |
+| **TimedTooltip Plain** | `imgui.TimedTooltip.Text` | `imgui.TimedTooltip.text` | `TimedTooltip.Text` | -- |
 | **TimedTooltip MD** | `imgui.TimedTooltip.MD.Text` | `imgui.TimedTooltip.TextMD` | `TimedTooltip.MD.Text` | `TimedTooltip.TextMD` |
 | **Toggle Button** | `imgui.ToggleButton` | `imgui.toggle_button` | -- | -- |
-| **Slider With Reset** | `imgui.SliderWithReset` | `imgui.slider_with_reset` | -- | -- |
-| **Percent Slider** | `imgui.PercentSlider` | `imgui.percent_slider` | -- | -- |
+| **Segmented Toggles** | `imgui.ToggleButtons` | `imgui.toggle_buttons` | -- | -- |
+| **Slider With Reset** | `imgui.SliderWithReset` | `imgui.slider_with_reset` | -- | `imgui.ResettableSlider` |
+| **Percent Slider** | `imgui.PercentSlider` | `imgui.percent_slider` | -- | `imgui.SliderPercent` |
+| **Percent Slider w/ Reset** | `imgui.PercentSliderWithReset` | `imgui.percent_slider_with_reset` | -- | `imgui.ResettablePercentSlider` |
+| **Reset / Undo Button** | `imgui.ResetButton` | `imgui.reset_button` | -- | -- |
 | **Mouse Wheel Adjust** | `imgui.AdjustItemOnMouseWheel` | `imgui.adjust_item_on_mouse_wheel` | -- | -- |
 | **Mouse Wheel Cycle** | `imgui.CycleItemOnMouseWheel` | `imgui.cycle_item_on_mouse_wheel` | -- | -- |
-| **Activity Spinner** | `imgui.Spinner` | `imgui.spinner` | -- | -- |
-| **Radial Timer Dial** | `imgui.RadialTimer` | `imgui.radial_timer` | -- | -- |
-| **Countdown Timer** | `imgui.CountdownTimer` | `imgui.countdown_timer` | -- | -- |
+| **Core Mouse Wheel** | `imgui.GetMouseWheel` | `imgui.get_mouse_wheel` | -- | `imgui.GetMouseWheelEither` |
+| **Activity Spinner** | `imgui.Spinner` | `imgui.spinner` | -- | `imgui.ActivitySpinner` |
+| **Radial Timer Dial** | `imgui.RadialTimer` | `imgui.radial_timer` | -- | `imgui.ProgressDial` |
+| **Countdown Timer** | `imgui.CountdownTimer` | `imgui.countdown_timer` | -- | `imgui.CountdownDial` |
+| **Copy Button** | `imgui.CopyButton` | `imgui.copy_button` | -- | `imgui.CopyBufferButton` |
+| **Copy Last Item** | `imgui.CopyLastItemButton` | `imgui.copy_last_item_button` | -- | `imgui.CopyTextFieldButton` |
+| **Selection Inspect** | `imgui.GetInputTextSelection` | `imgui.get_input_text_selection` | -- | -- |
+| **Selection Set** | `imgui.SetInputTextSelection` | `imgui.set_input_text_selection` | -- | -- |
+| **Badge Widget** | `imgui.Badge` | `imgui.badge` | -- | `imgui.Tag` |
+| **Pill Widget** | `imgui.Pill` | `imgui.pill` | -- | -- |
+| **Keycap Widget** | `imgui.Kbd` | `imgui.kbd` | -- | `imgui.Key` / `imgui.Keycap` |
+| **Hyperlinks** | `imgui.ButtonLink` | `imgui.button_link` | -- | `imgui.TextLink` |
+| **Mouse Cursor State** | `imgui.SetCursorHandling` | `imgui.set_cursor_handling` | -- | `imgui.EnableMouseCursors` |
 
 ---
 
@@ -386,3 +463,27 @@ function build_avionics_wnd(wnd, x, y)
     imgui.TextLink("FlyWithLua Online Documentation", "https://github.com/sparker256/FlyWithLua")
 end
 ```
+
+---
+
+## 9. Bundled Demonstration Scripts
+
+FlyWithLua includes two complete, production-grade example scripts in `FlyWithLua/Scripts (disabled)/`:
+
+### 1. `imgui_contrib_demo.lua` (Visual Feature Showcase)
+A comprehensive interactive sandbox window demonstrating:
+- Headings, soft-wrapping, bold, italic, and strikethrough typography.
+- Nested multi-line code blocks with syntax highlighting, copy buttons, and CommonMark indent conformance.
+- Tactile widgets: animated toggles, segmented toggles, resettable sliders, and percent sliders.
+- Procedural spinners, sweep dials, and countdown timers.
+- Interactive TimedTooltips with rich embedded Markdown.
+
+### 2. `imgui_markdown_editor.lua` (In-Cockpit Notes & Scratchpad)
+A full-featured, professional in-cockpit notes and briefing pad featuring:
+- **Three Workflow Modes:** Fullscreen **Write**, side-by-side **Split**, and distraction-free flight **Preview**.
+- **Tactile Canvas Font Zoom:** Range from 50% to 200% with exact 1-point quantum steppers, mouse wheel adjust, and 1-click A/B toggle back to 100% baseline.
+- **Dedicated Multi-Note Storage:** Automatic file persistence in `FlyWithLua/Scripts/MarkdownEditor/` with active note file selection, manual Finder file discovery, and instant new note creation.
+- **Flight Operations Checklists:** Rapid task insertion and formatting using verify-and-execute `- [ ]` syntax.
+- **Aviation Quick Templates:** Pre-configured templates for ATIS copy pads, IFR CRAFT clearances, pre-flight checklists, and flight diversion briefings.
+- **About Dialog:** Live Markdown-rendered documentation and credits.
+
