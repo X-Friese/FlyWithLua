@@ -627,15 +627,13 @@ local function md_editor_render_content()
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
 
-            if imgui.SetWindowFontScale then
-                imgui.SetWindowFontScale(content_zoom)
-            end
-            local mono_font = (imgui.GetFontByName and (imgui.GetFontByName("RobotoMono-Regular-16") or imgui.GetFontByName("RobotoMono-Regular"))) and "RobotoMono-Regular-16" or nil
-            if mono_font and imgui.PushFont then
-                imgui.PushFont(mono_font)
+            local editor_font = (imgui.GetFontByName and (imgui.GetFontByName("RobotoMono-Regular-16") or imgui.GetFontByName("RobotoMono-Regular"))) and "RobotoMono-Regular" or "Roboto-Regular"
+            local editor_font_size = 16.0 * content_zoom
+            if imgui.PushFont then
+                imgui.PushFont(editor_font, editor_font_size)
             end
             local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
-            if mono_font and imgui.PopFont then
+            if imgui.PopFont then
                 imgui.PopFont()
             end
 
@@ -665,15 +663,13 @@ local function md_editor_render_content()
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
 
-            if imgui.SetWindowFontScale then
-                imgui.SetWindowFontScale(content_zoom)
-            end
-            local mono_font = (imgui.GetFontByName and (imgui.GetFontByName("RobotoMono-Regular-16") or imgui.GetFontByName("RobotoMono-Regular"))) and "RobotoMono-Regular-16" or nil
-            if mono_font and imgui.PushFont then
-                imgui.PushFont(mono_font)
+            local editor_font = (imgui.GetFontByName and (imgui.GetFontByName("RobotoMono-Regular-16") or imgui.GetFontByName("RobotoMono-Regular"))) and "RobotoMono-Regular" or "Roboto-Regular"
+            local editor_font_size = 16.0 * content_zoom
+            if imgui.PushFont then
+                imgui.PushFont(editor_font, editor_font_size)
             end
             local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
-            if mono_font and imgui.PopFont then
+            if imgui.PopFont then
                 imgui.PopFont()
             end
 
