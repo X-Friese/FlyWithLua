@@ -39,9 +39,9 @@ The Markdown system automatically hooks into FlyWithLua's **Named Font Registry*
 | **Heading 3** (`###`) | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold |
 | **Bold** (`**bold**`) | `Roboto-Medium` | `Roboto-Regular`, Default | Medium / Semi-Bold weight |
 | **Italics** (`*italic*`) | `Roboto-Italic-16` | `Roboto-Italic`, `Roboto-Light` | True Italic / Slanted weight |
-| **Monospace / Code** (`code`) | `ProggyForever` | `ProggyClean`, Default | Monospace vector font |
+| **Monospace / Code** (`code`) | `RobotoMono-Regular-16` | `RobotoMono-Regular`, `ProggyForever` | Scalable Monospace font |
 
-*(Note: True italic typography is powered by `Roboto-Italic.ttf`, bundled directly in `FlyWithLua/Custom_Fonts/`. If not present, the engine gracefully falls back to `Roboto-Light` or the default interface font).*
+*(Note: True italic and scalable monospace typographies are powered by `Roboto-Italic.ttf` and `RobotoMono-Regular.ttf`, bundled directly in `FlyWithLua/Custom_Fonts/`. If not present, the engine gracefully falls back to `Roboto-Light` or `ProggyForever`).*
 
 ### Markdown Functions
 

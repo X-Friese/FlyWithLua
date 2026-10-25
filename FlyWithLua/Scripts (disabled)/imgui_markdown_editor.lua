@@ -627,12 +627,15 @@ local function md_editor_render_content()
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
 
-            local editor_font_size = math.max(10, math.floor(16.0 * content_zoom + 0.5))
-            if imgui.PushFont then
-                imgui.PushFont("Roboto-Regular", editor_font_size)
+            if imgui.SetWindowFontScale then
+                imgui.SetWindowFontScale(content_zoom)
+            end
+            local mono_font = (imgui.GetFontByName and (imgui.GetFontByName("RobotoMono-Regular-16") or imgui.GetFontByName("RobotoMono-Regular"))) and "RobotoMono-Regular-16" or nil
+            if mono_font and imgui.PushFont then
+                imgui.PushFont(mono_font)
             end
             local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
-            if imgui.PopFont then
+            if mono_font and imgui.PopFont then
                 imgui.PopFont()
             end
 
@@ -662,12 +665,15 @@ local function md_editor_render_content()
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
 
-            local editor_font_size = math.max(10, math.floor(16.0 * content_zoom + 0.5))
-            if imgui.PushFont then
-                imgui.PushFont("Roboto-Regular", editor_font_size)
+            if imgui.SetWindowFontScale then
+                imgui.SetWindowFontScale(content_zoom)
+            end
+            local mono_font = (imgui.GetFontByName and (imgui.GetFontByName("RobotoMono-Regular-16") or imgui.GetFontByName("RobotoMono-Regular"))) and "RobotoMono-Regular-16" or nil
+            if mono_font and imgui.PushFont then
+                imgui.PushFont(mono_font)
             end
             local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
-            if imgui.PopFont then
+            if mono_font and imgui.PopFont then
                 imgui.PopFont()
             end
 
