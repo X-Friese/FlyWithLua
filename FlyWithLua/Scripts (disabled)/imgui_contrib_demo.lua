@@ -141,9 +141,79 @@ function contrib_demo_on_build(wnd, x, y)
             end
 
             imgui.Spacing()
+            if imgui.CollapsingHeader("Strikethrough, Underline & Escaping", 32) then
+                imgui.MD.Text("Strikethrough & Deletion Syntax:")
+                imgui.MD.Text("  `~~GFM strikethrough~~`")
+                imgui.SameLine(360)
+                imgui.MD.Text("~~GFM strikethrough~~")
+
+                imgui.MD.Text("  `$$ABC legacy strike$$`")
+                imgui.SameLine(360)
+                imgui.MD.Text("$$ABC legacy strike$$")
+
+                imgui.MD.Text("  `<s>HTML strike</s>` / `<del>deletion</del>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<s>HTML strike</s> / <del>deletion</del>")
+
+                imgui.MD.Text("  `<s red>Colored strikethrough</s>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<s red>Colored strikethrough</s>")
+
+                imgui.Spacing()
+                imgui.MD.Text("Underline & Insertion Syntax:")
+                imgui.MD.Text("  `++CriticMarkup underline++`")
+                imgui.SameLine(360)
+                imgui.MD.Text("++CriticMarkup underline++")
+
+                imgui.MD.Text("  `<u>HTML underline</u>` / `<ins>insertion</ins>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<u>HTML underline</u> / <ins>insertion</ins>")
+
+                imgui.MD.Text("  `<u #f39c12>Warning yellow underline</u>`")
+                imgui.SameLine(360)
+                imgui.MD.Text("<u #f39c12>Warning yellow underline</u>")
+
+                imgui.Spacing()
+                imgui.MD.Text("Punctuation Escaping (render formatting tokens literally):")
+                imgui.TextUnformatted("  \\*not italic\\*")
+                imgui.SameLine(360)
+                imgui.MD.Text("\\*not italic\\*")
+
+                imgui.TextUnformatted("  \\[brackets\\]")
+                imgui.SameLine(360)
+                imgui.MD.Text("\\[brackets\\]")
+
+                imgui.TextUnformatted("  \\$100")
+                imgui.SameLine(360)
+                imgui.MD.Text("\\$100")
+
+                imgui.TextUnformatted("  \\# not heading")
+                imgui.SameLine(360)
+                imgui.MD.Text("\\# not heading")
+
+                imgui.Spacing()
+                imgui.MD.Text("Code Spans & Backdropped Code Badges:")
+                imgui.TextUnformatted("  `inline monospace`")
+                imgui.SameLine(360)
+                imgui.MD.Text("`inline monospace`")
+
+                imgui.TextUnformatted("  <code>code badge</code>")
+                imgui.SameLine(360)
+                imgui.MD.Text("<code>code badge</code>")
+
+                imgui.TextUnformatted("  <mono>mono badge</mono>")
+                imgui.SameLine(360)
+                imgui.MD.Text("<mono>mono badge</mono>")
+            end
+
+            imgui.Spacing()
             if imgui.CollapsingHeader("Lists, Tables & Variadic Formatting", 32) then
-                imgui.MD.Text("Pre-flight Checklist:")
+                imgui.MD.Text("Pre-flight Checklist (Unordered):")
                 imgui.MD.Text("* Pitot tube covers removed\n* Flight control surfaces free and clear\n* Fuel quantity verified\n* Transponder set to <pill blue>1200 / VFR</pill>")
+
+                imgui.Spacing()
+                imgui.MD.Text("Engine Start Procedure (Ordered with Hanging Indents):")
+                imgui.MD.Text("1. Parking brake: SET\n2. Beacon light: ON\n3. Starter switch: ENGAGE\n4. Engine ITT & oil pressure: MONITOR")
 
                 imgui.Spacing()
                 imgui.MD.Text("Variadic string formatting (pass %s, %d, %f like string.format):")
@@ -198,6 +268,29 @@ if qnh < 29.92 then set_altimeter_std() end
 ```
 ````
 ]])
+                -- Optional untyped / unsupported code blocks (commented out per user request):
+                -- imgui.Spacing()
+                -- imgui.MD.Text([=[
+                -- ```
+                -- -- Untyped code block (no language tag after backticks)
+                -- raw_telemetry_packet = {
+                --     latitude = 37.6188,
+                --     longitude = -122.3750,
+                --     heading_deg = 280.5
+                -- }
+                -- ```
+                -- ]=])
+                -- imgui.Spacing()
+                -- imgui.MD.Text([=[
+                -- ```javascript
+                -- // Unsupported language tag ("javascript")
+                -- function calculateApproachDescent(distanceNm, currentAltitudeFt, targetAltitudeFt) {
+                --     const altitudeLoss = currentAltitudeFt - targetAltitudeFt;
+                --     const descentRateFpm = (altitudeLoss / distanceNm) * 3.5;
+                --     return Math.min(2500, Math.round(descentRateFpm));
+                -- }
+                -- ```
+                -- ]=])
             end
 
             imgui.Spacing()
@@ -277,11 +370,11 @@ if qnh < 29.92 then set_altimeter_std() end
         end
 
         -- ====================================================================
-        -- TAB 3: Modern Contrib Widgets
+        -- TAB 3: Tactile Controls & Sliders (Guaranteed Zero-Scroll)
         -- ====================================================================
-        if imgui.BeginTabItem("Modern Widgets") then
+        if imgui.BeginTabItem("Tactile Controls") then
             imgui.Spacing()
-            imgui.MD.Text("### Smooth Animated & Specialized Widgets")
+            imgui.MD.Text("### Smooth Animated & Mouse-Wheel Adjusted Controls")
             imgui.MD.Text("*(Tip: Mouse-wheel directly over switches flips states; clicking toggles via either the buttons or labels)*")
             imgui.Spacing()
 
@@ -333,7 +426,7 @@ if qnh < 29.92 then set_altimeter_std() end
             imgui.Spacing()
             imgui.Separator()
 
-            -- Row 3: Mouse Wheel Chasers (Side-by-side to eliminate vertical overflow)
+            -- Row 3: Mouse Wheel Chasers (Side-by-side)
             imgui.MD.Text("### Mouse Wheel Chasers")
             imgui.TextUnformatted("Hover your mouse cursor over the boxes below and scroll the mouse wheel:")
 
@@ -356,21 +449,9 @@ if qnh < 29.92 then set_altimeter_std() end
             imgui.Spacing()
             imgui.Separator()
 
-            -- Row 4: Procedural Activity Spinners & Countdown Dials
-            imgui.MD.Text("### Procedural Activity Spinners & Countdown Dials")
-            imgui.MD.Text("Vector antialiased paths via ImDrawList -- no textures, no font dependencies, smooth organic easing:")
-            imgui.MD.Text("<color #8899aa>*(Drag the sliders on the right or scroll the mouse wheel to adjust dial angles interactively)*</color>")
-            imgui.Spacing()
-
-            -- Spinner 1: Custom size, thickness, color table, and speed
-            imgui.Spinner("FMS Navdata Ingestion (1.2x Speed)", 14, 3, {0.2, 0.7, 1.0, 1.0}, demo_spinner_speed)
-            imgui.TimedTooltip.Text("Organic sinusoidal expanding/contracting arc animated automatically by ImGui::GetTime().")
-
-            imgui.SameLine(400)
-            -- Spinner 2: Compact default theme
-            imgui.Spinner("Background Telemetry Sync", 10, 2.0)
-            imgui.TimedTooltip.Text("Compact spinner using default theme color and 1.0x animation speed.")
-
+            -- Row 4: Procedural Sweeping Dials (Adjustable via Sliders)
+            imgui.MD.Text("### Sweeping Progress & Countdown Dials")
+            imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or scroll mouse wheel:")
             imgui.Spacing()
 
             -- Radial Timer Dial: Sweeps progress clockwise from 12 o'clock
@@ -393,11 +474,71 @@ if qnh < 29.92 then set_altimeter_std() end
             local cd_changed, new_cd = imgui.SliderWithReset("##cdslider", demo_countdown_cur, 0.0, demo_countdown_max, 42.0)
             if cd_changed then demo_countdown_cur = new_cd end
 
+            imgui.EndTabItem()
+        end
+
+        -- ====================================================================
+        -- TAB 4: Badges, Spinners & Links
+        -- ====================================================================
+        if imgui.BeginTabItem("Badges, Spinners & Links") then
+            imgui.Spacing()
+            imgui.MD.Text("### Standalone First-Class Widgets (No Markdown Parsing)")
+            imgui.MD.Text("Call directly in pure ImGui panels without Markdown string wrapping:")
+            imgui.Spacing()
+
+            imgui.TextUnformatted("Status Badges & Tags:")
+            imgui.SameLine()
+            imgui.Badge("ONLINE", "success")
+            imgui.SameLine()
+            imgui.Badge("EXPIRING", "warning")
+            imgui.SameLine()
+            imgui.Tag("FAULT", "danger")
+
+            imgui.Spacing()
+            imgui.TextUnformatted("Pills & Dual Colors:")
+            imgui.SameLine()
+            imgui.Pill("v2.2.2", "primary")
+            imgui.SameLine()
+            imgui.Pill("CUSTOM DUAL", {0.9, 0.7, 0.1, 1.0}, {0.0, 0.0, 0.0, 1.0})
+
+            imgui.Spacing()
+            imgui.TextUnformatted("3D Tactile Keycaps:")
+            imgui.SameLine()
+            imgui.Kbd("Ctrl+Shift+P")
+            imgui.SameLine()
+            imgui.Key("Enter")
+            imgui.SameLine()
+            imgui.KeyCap("Esc")
+
             imgui.Spacing()
             imgui.Separator()
 
-            -- Row 5: ImGui Mouse Cursors & Hyperlinks (Combined clean footer)
-            imgui.MD.Text("### ImGui Mouse Cursors & Hyperlinks")
+            -- Procedural Activity Spinners
+            imgui.MD.Text("### Procedural Activity Spinners")
+            imgui.MD.Text("Vector antialiased paths via ImDrawList -- zero textures, zero fonts, sinusoidal organic easing:")
+            imgui.Spacing()
+
+            imgui.Spinner("FMS Navdata Ingestion (1.2x Speed)", 14, 3, {0.2, 0.7, 1.0, 1.0}, demo_spinner_speed)
+            imgui.TimedTooltip.Text("Organic sinusoidal expanding/contracting arc animated automatically by ImGui::GetTime().")
+
+            imgui.SameLine(400)
+            imgui.Spinner("Background Telemetry Sync", 10, 2.0)
+            imgui.TimedTooltip.Text("Compact spinner using default theme color and 1.0x animation speed.")
+
+            imgui.Spacing()
+            imgui.TextUnformatted("Spinner Aliases:")
+            imgui.SameLine()
+            imgui.ActivitySpinner("ActivitySpinner##alias", 10, 2.0)
+            imgui.SameLine()
+            imgui.ProgressDial("ProgressDial##alias", 0.75, 12, 2.5)
+            imgui.SameLine()
+            imgui.CountdownDial("CountdownDial##alias", 15.0, 60.0, 12, 2.5)
+
+            imgui.Spacing()
+            imgui.Separator()
+
+            -- Dynamic ImGui Mouse Cursors & Hyperlinks
+            imgui.MD.Text("### Dynamic ImGui Mouse Cursors & Hyperlinks")
             local cur_cursors = float_wnd_get_imgui_cursor_handling(wnd)
             local cursor_changed, new_cursor_state = imgui.ToggleButton("Dynamic ImGui Cursors", cur_cursors)
             if cursor_changed then
@@ -405,18 +546,22 @@ if qnh < 29.92 then set_altimeter_std() end
             end
             imgui.TimedTooltip.Text("Toggles dynamic ImGui cursors (Hand over links/buttons, I-beam over text) vs native hardware mouse.")
 
-            imgui.SameLine(360)
+            imgui.Spacing()
+            imgui.TextUnformatted("Hyperlinks & Affordances:")
+            imgui.SameLine()
             imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
             imgui.SameLine()
             imgui.TextUnformatted(" | ")
             imgui.SameLine()
-            imgui.ButtonLink("FlyWithLua Issues & Discussions", "https://github.com/sparker256/FlyWithLua/issues")
+            imgui.ButtonLink("FlyWithLua Issues", "https://github.com/sparker256/FlyWithLua/issues")
+            imgui.SameLine()
+            imgui.SmallButtonLink("SmallButtonLink Demo", "https://github.com/sparker256/FlyWithLua")
 
             imgui.EndTabItem()
         end
 
         -- ====================================================================
-        -- TAB 4: Universal C++ & Lua Alias Matrix
+        -- TAB 5: Universal C++ & Lua Alias Matrix
         -- ====================================================================
         if imgui.BeginTabItem("C++ / Lua Aliases") then
             imgui.Spacing()
@@ -467,13 +612,26 @@ if qnh < 29.92 then set_altimeter_std() end
             imgui.TextUnformatted("Procedural Spinner & Timer aliases:")
 
             imgui.Bullet()
-            imgui.MD.Text("`imgui.Spinner(label, [r, thick, col, spd])` / `imgui.spinner`")
+            imgui.MD.Text("`imgui.Spinner(...)` <-> `imgui.ActivitySpinner(...)` / `imgui.spinner`")
 
             imgui.Bullet()
-            imgui.MD.Text("`imgui.RadialTimer(label, frac, [r, thick, col, bg_col, cw])` / `imgui.radial_timer`")
+            imgui.MD.Text("`imgui.RadialTimer(...)` <-> `imgui.ProgressDial(...)` / `imgui.radial_timer`")
 
             imgui.Bullet()
-            imgui.MD.Text("`imgui.CountdownTimer(label, cur_sec, max_sec, ...)` / `imgui.countdown_timer`")
+            imgui.MD.Text("`imgui.CountdownTimer(...)` <-> `imgui.CountdownDial(...)` / `imgui.countdown_timer`")
+
+            imgui.Spacing()
+            imgui.Separator()
+            imgui.TextUnformatted("First-Class Badge, Pill & Keycap aliases:")
+
+            imgui.Bullet()
+            imgui.MD.Text("`imgui.Badge(text, variant)` <-> `imgui.Tag(...)` / `imgui.badge`")
+
+            imgui.Bullet()
+            imgui.MD.Text("`imgui.Pill(text, variant)` / `imgui.pill`")
+
+            imgui.Bullet()
+            imgui.MD.Text("`imgui.Kbd(key)` <-> `imgui.Key(key)` <-> `imgui.KeyCap(key)` / `imgui.kbd`")
 
             imgui.EndTabItem()
         end
