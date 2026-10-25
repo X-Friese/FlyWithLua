@@ -32,6 +32,7 @@ local ImGuiInputTextFlags_WordWrap = 16777216
 local editor_wnd = nil
 local view_mode  = "Split"  -- "Write", "Split", "Preview"
 local save_status_msg = ""
+local save_status_path = ""
 local save_status_time = 0
 
 -- Default scratchpad template loaded on initial start
@@ -124,6 +125,10 @@ local pitch_deg   = get("sim/flightmodel/position/theta")
 -- ----------------------------------------------------------------------------
 -- Smart Selection Wrapping & Formatting Helpers
 -- ----------------------------------------------------------------------------
+local cached_sel_start = -1
+local cached_sel_end   = -1
+local cached_cur_pos   = -1
+
 local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     suffix = suffix or ""
     default_text = default_text or ""
@@ -131,6 +136,13 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     local sel_start, sel_end, cur_pos = -1, -1, -1
     if imgui.GetInputTextSelection then
         sel_start, sel_end, cur_pos = imgui.GetInputTextSelection()
+    end
+
+    -- Fall back to cached selection if focus was just blurred by clicking the button
+    if (sel_start < 0 or sel_end <= sel_start) and cached_sel_start >= 0 and cached_sel_end > cached_sel_start then
+        sel_start = cached_sel_start
+        sel_end   = cached_sel_end
+        cur_pos   = cached_cur_pos
     end
     
     if sel_start >= 0 and sel_end > sel_start and sel_end <= #editor_text then
@@ -214,10 +226,12 @@ local function save_document()
     if f then
         f:write(editor_text)
         f:close()
-        save_status_msg = "Saved to " .. path
+        save_status_msg = "Saved: cockpit_notes.md"
+        save_status_path = path
         save_status_time = os.time()
     else
-        save_status_msg = "Error saving: " .. tostring(err)
+        save_status_msg = "Error Saving Notes"
+        save_status_path = tostring(err)
         save_status_time = os.time()
     end
 end
@@ -228,10 +242,12 @@ local function load_document()
     if f then
         editor_text = f:read("*a")
         f:close()
-        save_status_msg = "Loaded from " .. path
+        save_status_msg = "Loaded: cockpit_notes.md"
+        save_status_path = path
         save_status_time = os.time()
     else
-        save_status_msg = "No file found at " .. path
+        save_status_msg = "No Saved Notes Found"
+        save_status_path = path
         save_status_time = os.time()
     end
 end
@@ -260,11 +276,46 @@ local function md_editor_render_content()
         avail_w = 900
     end
 
-    -- ------------------------------------------------------------------------
-    -- TOP BAR: Mode Selector & Action Buttons
-    -- ------------------------------------------------------------------------
-    imgui.MD.Text("# Cockpit Markdown Scratchpad")
+    -- Continuously track active selection while editing
+    if imgui.GetInputTextSelection then
+        local s, e, c = imgui.GetInputTextSelection()
+        if s >= 0 and e > s then
+            cached_sel_start = s
+            cached_sel_end   = e
+            cached_cur_pos   = c
+        end
+    end
 
+    -- ------------------------------------------------------------------------
+    -- TOP BAR: Title & Transient Status Notification (above buttons)
+    -- ------------------------------------------------------------------------
+    if imgui.PushFont then imgui.PushFont("Roboto-Medium-20") end
+    imgui.TextUnformatted("Cockpit Markdown Scratchpad")
+    if imgui.PopFont then imgui.PopFont() end
+
+    -- Status notification aligned above the persistence buttons on the right
+    if os.time() - save_status_time < 3 and #save_status_msg > 0 then
+        local msg_w = 200
+        if imgui.CalcTextSize then
+            local tw = imgui.CalcTextSize(save_status_msg)
+            msg_w = tw + 24
+        end
+        local badge_x = math.max(300, avail_w - msg_w)
+        imgui.SameLine(badge_x)
+        if imgui.Badge then
+            local variant = save_status_msg:match("^Error") and "danger" or "success"
+            imgui.Badge(save_status_msg, variant)
+        else
+            imgui.TextColored(0.2, 0.8, 0.2, 1.0, save_status_msg)
+        end
+        if imgui.IsItemHovered() and #save_status_path > 0 then
+            imgui.SetTooltip(save_status_path)
+        end
+    end
+
+    imgui.Separator()
+
+    -- Mode Selectors (Left)
     if render_mode_button("  Write  ", view_mode == "Write", "Editor-only view: maximum horizontal and vertical space for typing.") then
         view_mode = "Write"
     end
@@ -279,7 +330,7 @@ local function md_editor_render_content()
         view_mode = "Preview"
     end
 
-    -- Persistence Buttons on the Right
+    -- Persistence Buttons (Right)
     local right_start = avail_w - 260
     local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 0
     if right_start > cur_x + 10 then
@@ -303,12 +354,6 @@ local function md_editor_render_content()
         editor_text = ""
     end
     if imgui.IsItemHovered() then imgui.SetTooltip("Clear entire editor buffer") end
-
-    -- Display transient save/load notification
-    if os.time() - save_status_time < 3 and #save_status_msg > 0 then
-        imgui.SameLine()
-        imgui.Badge(save_status_msg, "success")
-    end
 
     imgui.Separator()
 
