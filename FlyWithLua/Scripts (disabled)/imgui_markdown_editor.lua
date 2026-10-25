@@ -425,41 +425,6 @@ local function md_editor_render_content()
         end
     end
 
-    -- ------------------------------------------------------------------------
-    -- In-Window Keyboard Shortcuts for Content Zoom (1% Steps)
-    -- Active when the window or any child frame is focused
-    -- ------------------------------------------------------------------------
-    local window_focused = true
-    if imgui.IsWindowFocused then
-        -- ImGuiFocusedFlags_RootAndChildWindows = 3
-        window_focused = imgui.IsWindowFocused(3)
-    end
-
-    if window_focused and imgui.IsKeyDown and imgui.IsKeyPressed then
-        -- Check Cmd (macOS) or Ctrl (Win/Linux)
-        local is_cmd_or_ctrl = imgui.IsKeyDown(4096) or imgui.IsKeyDown(32768)
-            or imgui.IsKeyDown(527) or imgui.IsKeyDown(531)
-            or imgui.IsKeyDown(530) or imgui.IsKeyDown(534)
-
-        if is_cmd_or_ctrl then
-            -- Zoom In: Equal/Plus (= / +) -> ImGuiKey_Equal = 602, ImGuiKey_KeypadAdd = 626, ImGuiKey_KeypadEqual = 628
-            if imgui.IsKeyPressed(602, true) or imgui.IsKeyPressed(626, true) or imgui.IsKeyPressed(628, true) then
-                zoom_pct = math.min(150, zoom_pct + 1)
-                content_zoom = zoom_pct / 100.0
-            -- Zoom Out: Minus (-) -> ImGuiKey_Minus = 598, ImGuiKey_KeypadSubtract = 625
-            elseif imgui.IsKeyPressed(598, true) or imgui.IsKeyPressed(625, true) then
-                zoom_pct = math.max(70, zoom_pct - 1)
-                content_zoom = zoom_pct / 100.0
-            -- Reset Zoom: Zero (0) -> ImGuiKey_0 = 536, ImGuiKey_Keypad0 = 612
-            elseif imgui.IsKeyPressed(536, false) or imgui.IsKeyPressed(612, false) then
-                if zoom_pct ~= 100 then
-                    last_zoom_pct = zoom_pct
-                    zoom_pct = 100
-                    content_zoom = 1.0
-                end
-            end
-        end
-    end
 
     -- ------------------------------------------------------------------------
     -- TOP BAR: Title & Transient Status Notification (above buttons)
@@ -517,7 +482,7 @@ local function md_editor_render_content()
         zoom_pct = math.max(70, zoom_pct - 1)
         content_zoom = zoom_pct / 100.0
     end
-    show_tooltip("**Zoom Out** (-1%)\n\nDecrease canvas font scale.\n* Shortcut: <kbd>Cmd/Ctrl + -</kbd>")
+    show_tooltip("**Zoom Out** (-1%)\n\nDecrease canvas font scale in 1% steps.")
 
     imgui.SameLine(0, 4)
 
@@ -535,7 +500,7 @@ local function md_editor_render_content()
             content_zoom = zoom_pct / 100.0
         end
     end
-    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%`\n\n* Drag slider or **spin mouse wheel** in 1%% steps\n* Zoom in: <kbd>Cmd/Ctrl + =</kbd>\n* Zoom out: <kbd>Cmd/Ctrl + -</kbd>\n* Reset: <kbd>Cmd/Ctrl + 0</kbd>", zoom_pct))
+    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%`\n\n* **Drag slider** or **spin mouse wheel** in 1%% steps\n* Steppers: `[-]` and `[+]` for fine control\n* Reset: `↺` toggles baseline (100%%) and prior zoom", zoom_pct))
 
     imgui.SameLine(0, 4)
 
@@ -544,7 +509,7 @@ local function md_editor_render_content()
         zoom_pct = math.min(150, zoom_pct + 1)
         content_zoom = zoom_pct / 100.0
     end
-    show_tooltip("**Zoom In** (+1%)\n\nIncrease canvas font scale.\n* Shortcut: <kbd>Cmd/Ctrl + =</kbd>")
+    show_tooltip("**Zoom In** (+1%)\n\nIncrease canvas font scale in 1% steps.")
 
     imgui.SameLine(0, 4)
 
@@ -569,11 +534,11 @@ local function md_editor_render_content()
         end
     end
     if zoom_pct ~= 100 then
-        show_tooltip("**Reset Zoom (100%)**\n\nReset canvas font scale back to baseline.\n* Shortcut: <kbd>Cmd/Ctrl + 0</kbd>")
+        show_tooltip("**Reset Zoom (100%)**\n\nReset canvas font scale back to 100% baseline.")
     elseif last_zoom_pct then
-        show_tooltip(string.format("**Restore Zoom (%d%%)**\n\n1-click A/B toggle back to prior zoom level.\n* Shortcut: <kbd>Cmd/Ctrl + 0</kbd>", last_zoom_pct))
+        show_tooltip(string.format("**Restore Zoom (%d%%)**\n\n1-click A/B toggle back to prior %d%% zoom.", last_zoom_pct, last_zoom_pct))
     else
-        show_tooltip("**Zoom Baseline (100%)**\n\nCanvas font scale is at 1.0x baseline.")
+        show_tooltip("**Zoom Baseline (100%)**\n\nCanvas font scale is at 100% baseline.")
     end
 
     -- Persistence Buttons (Right)
