@@ -71,6 +71,9 @@ local save_status_time = 0
 local zoom_pct       = 100   -- Integer percentage: 50 to 200
 local content_zoom   = 1.0   -- Multiplier: 0.50 to 2.00
 local last_zoom_pct  = nil   -- Memory for 1-click A/B toggle on reset button
+local last_zoom_change_time = 0 -- Timestamp of last zoom adjustment for tooltip suppression
+local dec_repeat_count = 0   -- Counter to halve repeat speed on [-]
+local inc_repeat_count = 0   -- Counter to halve repeat speed on [+]
 
 -- Default scratchpad template loaded on initial start
 local initial_doc = [[# Cockpit Notes & Scratchpad
@@ -80,9 +83,9 @@ Welcome to your in-cockpit **FlyWithLua Markdown Editor**!
 * **Avionics Badges:** <badge green>ENG 1 NORMAL</badge> <badge yellow>FUEL PUMP AUTO</badge> <badge red>FIRE TEST</badge>
 * **Keycaps & Shortcuts:** Press <kbd>Alt+F4</kbd> or <kbd>Ctrl+Shift+P</kbd>
 * **Checklists:**
-  - [x] Pre-flight briefing complete
-  - [x] Altimeter set to standard: `29.92 inHg`
-  - [ ] Clearance copied and read back
+  - `[x]` Pre-flight briefing complete
+  - `[x]` Altimeter set to standard: `29.92 inHg`
+  - `[ ]` Clearance copied and read back
 
 ```lua
 -- Quick Cockpit Dataref Inspection
@@ -118,20 +121,20 @@ local templates = {
 * **T - Transponder (Squawk):** <kbd>4217</kbd>
 
 ---
-- [ ] Readback verified and accepted by ATC
-- [ ] Squawk set in Transponder
-- [ ] Initial altitude armed on MCP
+- `[ ]` Readback verified and accepted by ATC
+- `[ ]` Squawk set in Transponder
+- `[ ]` Initial altitude armed on MCP
 ]],
 
     ["Pre-Flight Checklist"] = [[# Cockpit Pre-Flight Checklist
-- [ ] Weather & NOTAM briefing reviewed
-- [ ] Fuel onboard verified: `14,200 lbs`
-- [ ] Weight & Balance computed (CG within envelope)
-- [ ] FMS flight plan & waypoints cross-checked
-- [ ] Altimeters cross-checked & set: `29.92`
-- [ ] V-Speeds calculated: `V1: 138`, `VR: 144`, `V2: 151`
-- [ ] Transponder: <pill green>ALT / 1200</pill>
-- [ ] Thrust reversers checked: <badge green>ARMED</badge>
+- `[ ]` Weather & NOTAM briefing reviewed
+- `[ ]` Fuel onboard verified: `14,200 lbs`
+- `[ ]` Weight & Balance computed (CG within envelope)
+- `[ ]` FMS flight plan & waypoints cross-checked
+- `[ ]` Altimeters cross-checked & set: `29.92`
+- `[ ]` V-Speeds calculated: `V1: 138`, `VR: 144`, `V2: 151`
+- `[ ]` Transponder: <pill green>ALT / 1200</pill>
+- `[ ]` Thrust reversers checked: <badge green>ARMED</badge>
 ]],
 
     ["Diversion Briefing"] = [[# Diversion Briefing
@@ -422,6 +425,15 @@ local function render_copy_button(btn_id, text_to_copy)
     return clicked
 end
 
+-- Helper to format checklist tasks with monospace code spans so [ ] and [x] match in width
+local function format_tasks(text)
+    if not text or not text:find("%[") then return text end
+    return (text:gsub("(\n%s*[%-*]%s+)%[%s*%]", "%1`[ ]`")
+                :gsub("(\n%s*[%-*]%s+)%[[xX]%]", "%1`[x]`")
+                :gsub("^(%s*[%-*]%s+)%[%s*%]", "%1`[ ]`")
+                :gsub("^(%s*[%-*]%s+)%[[xX]%]", "%1`[x]`"))
+end
+
 -- ----------------------------------------------------------------------------
 -- Internal Render Routine (Protected by pcall)
 -- ----------------------------------------------------------------------------
@@ -507,16 +519,32 @@ local function md_editor_render_content()
     local dec_clicked = imgui.Button(" - ##zoom_dec")
     pop_button_repeat()
     if dec_clicked then
-        local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
-        local new_pt = math.max(8, cur_pt - 1)
-        content_zoom = new_pt / 16.0
-        zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
-        if imgui.ClearActiveTooltip then
-            imgui.ClearActiveTooltip()
+        local is_initial = (imgui.IsItemActivated and imgui.IsItemActivated()) or (imgui.IsMouseClicked and imgui.IsMouseClicked(0))
+        local allow_step = false
+        if is_initial then
+            dec_repeat_count = 0
+            allow_step = true
+        else
+            dec_repeat_count = dec_repeat_count + 1
+            if (dec_repeat_count % 2) == 0 then
+                allow_step = true
+            end
+        end
+        if allow_step then
+            local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
+            local new_pt = math.max(8, cur_pt - 1)
+            content_zoom = new_pt / 16.0
+            zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+            last_zoom_change_time = os.clock()
+            if imgui.ClearActiveTooltip then
+                imgui.ClearActiveTooltip()
+            end
         end
     end
-    if not (imgui.IsItemActive and imgui.IsItemActive()) then
-        show_tooltip(string.format("**Zoom Out** (-1 pt)\n\nDecrease canvas font size to %d px.\n\n*Hold down to repeat*", math.max(8, math.floor(content_zoom * 16.0 + 0.5) - 1)))
+    local now = os.clock()
+    local zoom_adjusting = (now - last_zoom_change_time < 1.5) or (imgui.IsItemActive and imgui.IsItemActive())
+    if not zoom_adjusting then
+        show_tooltip(string.format("**Zoom Out** (-1 pt)\n\nDecrease canvas font size to %d px.\n\n*Hold down to step smoothly*", math.max(8, math.floor(content_zoom * 16.0 + 0.5) - 1)))
     end
 
     imgui.SameLine(0, 4)
@@ -530,6 +558,7 @@ local function md_editor_render_content()
         target_pt = math.max(8, math.min(32, target_pt))
         content_zoom = target_pt / 16.0
         zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+        last_zoom_change_time = os.clock()
         if imgui.ClearActiveTooltip then
             imgui.ClearActiveTooltip()
         end
@@ -547,12 +576,19 @@ local function md_editor_render_content()
             local new_pt = math.max(8, math.min(32, cur_pt + step))
             content_zoom = new_pt / 16.0
             zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+            last_zoom_change_time = os.clock()
             if imgui.ClearActiveTooltip then
                 imgui.ClearActiveTooltip()
             end
         end
     end
-    if not is_scrolling_zoom and not (imgui.IsItemActive and imgui.IsItemActive()) then
+    now = os.clock()
+    zoom_adjusting = is_scrolling_zoom or (now - last_zoom_change_time < 1.5) or (imgui.IsItemActive and imgui.IsItemActive())
+    if zoom_adjusting then
+        if imgui.ClearActiveTooltip then
+            imgui.ClearActiveTooltip()
+        end
+    else
         show_tooltip(string.format("**Content Canvas Zoom:** `%d%%` (`%d px`)\n\n* **Steppers & Wheel:** Step by 1 exact font pixel\n* **100%% Baseline:** 16 px\n* **Reset (↺):** Toggle 100%% and prior zoom", zoom_pct, math.floor(content_zoom * 16.0 + 0.5)))
     end
 
@@ -563,16 +599,32 @@ local function md_editor_render_content()
     local inc_clicked = imgui.Button(" + ##zoom_inc")
     pop_button_repeat()
     if inc_clicked then
-        local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
-        local new_pt = math.min(32, cur_pt + 1)
-        content_zoom = new_pt / 16.0
-        zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
-        if imgui.ClearActiveTooltip then
-            imgui.ClearActiveTooltip()
+        local is_initial = (imgui.IsItemActivated and imgui.IsItemActivated()) or (imgui.IsMouseClicked and imgui.IsMouseClicked(0))
+        local allow_step = false
+        if is_initial then
+            inc_repeat_count = 0
+            allow_step = true
+        else
+            inc_repeat_count = inc_repeat_count + 1
+            if (inc_repeat_count % 2) == 0 then
+                allow_step = true
+            end
+        end
+        if allow_step then
+            local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
+            local new_pt = math.min(32, cur_pt + 1)
+            content_zoom = new_pt / 16.0
+            zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+            last_zoom_change_time = os.clock()
+            if imgui.ClearActiveTooltip then
+                imgui.ClearActiveTooltip()
+            end
         end
     end
-    if not (imgui.IsItemActive and imgui.IsItemActive()) then
-        show_tooltip(string.format("**Zoom In** (+1 pt)\n\nIncrease canvas font size to %d px.\n\n*Hold down to repeat*", math.min(32, math.floor(content_zoom * 16.0 + 0.5) + 1)))
+    now = os.clock()
+    zoom_adjusting = (now - last_zoom_change_time < 1.5) or (imgui.IsItemActive and imgui.IsItemActive())
+    if not zoom_adjusting then
+        show_tooltip(string.format("**Zoom In** (+1 pt)\n\nIncrease canvas font size to %d px.\n\n*Hold down to step smoothly*", math.min(32, math.floor(content_zoom * 16.0 + 0.5) + 1)))
     end
 
     imgui.SameLine(0, 4)
@@ -595,6 +647,10 @@ local function md_editor_render_content()
             zoom_pct = last_zoom_pct
             last_zoom_pct = tmp
             content_zoom = zoom_pct / 100.0
+        end
+        last_zoom_change_time = os.clock()
+        if imgui.ClearActiveTooltip then
+            imgui.ClearActiveTooltip()
         end
     end
     if zoom_pct ~= 100 then
@@ -655,7 +711,7 @@ local function md_editor_render_content()
         imgui.SameLine()
         if toolbar_button("* List", "**Bullet List Item**\n\nPrepend `* ` bullet to current line or selection.") then wrap_or_insert("* ", "", "Item description", true) end
         imgui.SameLine()
-        if toolbar_button("[ ] Task", "**Checklist Task Item**\n\nPrepend `- [ ] ` interactive checklist item.") then wrap_or_insert("- [ ] ", "", "Checklist task to verify", true) end
+        if toolbar_button("[ ] Task", "**Checklist Task Item**\n\nPrepend `- `[ ]` ` interactive checklist item.") then wrap_or_insert("- `[ ]` ", "", "Checklist task to verify", true) end
         imgui.SameLine()
         if toolbar_button("<badge>", "**Avionics Badge**\n\nWrap selection in `<badge green|yellow|red>...</badge>` for instrument annunciators.") then wrap_or_insert("<badge green>", "</badge>", "NORMAL") end
         imgui.SameLine()
@@ -719,7 +775,7 @@ local function md_editor_render_content()
             if imgui.SetWindowFontScale then
                 imgui.SetWindowFontScale(content_zoom)
             end
-            imgui.MD.TextWrapped(editor_text)
+            imgui.MD.TextWrapped(format_tasks(editor_text))
             imgui.EndChild()
         end
 
@@ -757,7 +813,7 @@ local function md_editor_render_content()
             if imgui.SetWindowFontScale then
                 imgui.SetWindowFontScale(content_zoom)
             end
-            imgui.MD.TextWrapped(editor_text)
+            imgui.MD.TextWrapped(format_tasks(editor_text))
             imgui.EndChild()
         end
     end
@@ -793,9 +849,9 @@ if XPLMGetScreenSize then
 end
 
 local wnd_w = 980
-local wnd_h = 720
+local wnd_h = 470
 local wnd_x = math.floor((screen_w - wnd_w) * 0.5)
-local wnd_y = math.floor((screen_h - wnd_h) * 0.5)
+local wnd_y = math.max(40, math.floor((screen_h - wnd_h) * 0.5) - 80)
 
 -- Create ImGui floating window (4th arg MUST be true for withImgui)
 editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
