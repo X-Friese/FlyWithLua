@@ -36,6 +36,28 @@ if imgui.constant and imgui.constant.InputTextFlags then
 end
 local editor_input_flags = ImGuiInputTextFlags_WordWrap + ImGuiInputTextFlags_AllowTabInput
 
+-- Button Repeat Flag (ImGuiItemFlags_ButtonRepeat = 1 << 3 = 8)
+local ImGuiItemFlags_ButtonRepeat = 8
+if imgui.constant and imgui.constant.ItemFlags and imgui.constant.ItemFlags.ButtonRepeat then
+    ImGuiItemFlags_ButtonRepeat = imgui.constant.ItemFlags.ButtonRepeat
+end
+
+local function push_button_repeat(repeat_enabled)
+    if imgui.PushButtonRepeat then
+        imgui.PushButtonRepeat(repeat_enabled)
+    elseif imgui.PushItemFlag then
+        imgui.PushItemFlag(ImGuiItemFlags_ButtonRepeat, repeat_enabled)
+    end
+end
+
+local function pop_button_repeat()
+    if imgui.PopButtonRepeat then
+        imgui.PopButtonRepeat()
+    elseif imgui.PopItemFlag then
+        imgui.PopItemFlag()
+    end
+end
+
 -- ----------------------------------------------------------------------------
 -- State & Buffers
 -- ----------------------------------------------------------------------------
@@ -45,9 +67,9 @@ local save_status_msg = ""
 local save_status_path = ""
 local save_status_time = 0
 
--- Content Canvas Zoom State (1% quantum increments, range 70% to 150%)
-local zoom_pct       = 100   -- Integer percentage: 70 to 150
-local content_zoom   = 1.0   -- Multiplier: 0.70 to 1.50
+-- Content Canvas Zoom State (1 pt quantum increments, range 50% to 200%)
+local zoom_pct       = 100   -- Integer percentage: 50 to 200
+local content_zoom   = 1.0   -- Multiplier: 0.50 to 2.00
 local last_zoom_pct  = nil   -- Memory for 1-click A/B toggle on reset button
 
 -- Default scratchpad template loaded on initial start
@@ -481,46 +503,77 @@ local function md_editor_render_content()
     imgui.SameLine(0, 8)
 
     -- Zoom Out Stepper [-] (Steps by 1 exact font pixel: 16px -> 15px -> 14px...)
-    if imgui.Button(" - ##zoom_dec") then
+    push_button_repeat(true)
+    local dec_clicked = imgui.Button(" - ##zoom_dec")
+    pop_button_repeat()
+    if dec_clicked then
         local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
-        local new_pt = math.max(10, cur_pt - 1)
+        local new_pt = math.max(8, cur_pt - 1)
         content_zoom = new_pt / 16.0
         zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+        if imgui.ClearActiveTooltip then
+            imgui.ClearActiveTooltip()
+        end
     end
-    show_tooltip(string.format("**Zoom Out** (-1 pt)\n\nDecrease canvas font size to %d px.", math.max(10, math.floor(content_zoom * 16.0 + 0.5) - 1)))
+    if not (imgui.IsItemActive and imgui.IsItemActive()) then
+        show_tooltip(string.format("**Zoom Out** (-1 pt)\n\nDecrease canvas font size to %d px.\n\n*Hold down to repeat*", math.max(8, math.floor(content_zoom * 16.0 + 0.5) - 1)))
+    end
 
     imgui.SameLine(0, 4)
 
     -- Zoom Slider (with mouse-wheel adjust snapping to exact font pixels)
     if imgui.SetNextItemWidth then imgui.SetNextItemWidth(90) end
-    local slider_changed, new_zoom = imgui.SliderInt("##zoom_slider", zoom_pct, 63, 150, "%d%%")
+    local slider_changed, new_zoom = imgui.SliderInt("##zoom_slider", zoom_pct, 50, 200, "%d%%")
+    local is_scrolling_zoom = false
     if slider_changed and new_zoom then
         local target_pt = math.floor((new_zoom / 100.0) * 16.0 + 0.5)
-        target_pt = math.max(10, math.min(24, target_pt))
+        target_pt = math.max(8, math.min(32, target_pt))
         content_zoom = target_pt / 16.0
         zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
-    end
-    if imgui.AdjustItemOnMouseWheel then
-        local w_ch, w_val = imgui.AdjustItemOnMouseWheel(zoom_pct, 63, 150, 6)
-        if w_ch and w_val then
-            local target_pt = math.floor((w_val / 100.0) * 16.0 + 0.5)
-            target_pt = math.max(10, math.min(24, target_pt))
-            content_zoom = target_pt / 16.0
-            zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+        if imgui.ClearActiveTooltip then
+            imgui.ClearActiveTooltip()
         end
     end
-    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%` (`%d px`)\n\n* **Steppers & Wheel:** Step by 1 exact font pixel\n* **100%% Baseline:** 16 px\n* **Reset (↺):** Toggle 100%% and prior zoom", zoom_pct, math.floor(content_zoom * 16.0 + 0.5)))
+    if imgui.IsItemHovered() then
+        -- Query and consume mouse wheel delta immediately so no residual ticks leak
+        local wheel = (imgui.GetMouseWheel and imgui.GetMouseWheel(true)) or 0
+        if wheel == 0 and imgui.GetMouseWheelEither then
+            wheel = imgui.GetMouseWheelEither(true)
+        end
+        if wheel ~= 0 then
+            is_scrolling_zoom = true
+            local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
+            local step = (wheel > 0) and 1 or -1
+            local new_pt = math.max(8, math.min(32, cur_pt + step))
+            content_zoom = new_pt / 16.0
+            zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+            if imgui.ClearActiveTooltip then
+                imgui.ClearActiveTooltip()
+            end
+        end
+    end
+    if not is_scrolling_zoom and not (imgui.IsItemActive and imgui.IsItemActive()) then
+        show_tooltip(string.format("**Content Canvas Zoom:** `%d%%` (`%d px`)\n\n* **Steppers & Wheel:** Step by 1 exact font pixel\n* **100%% Baseline:** 16 px\n* **Reset (↺):** Toggle 100%% and prior zoom", zoom_pct, math.floor(content_zoom * 16.0 + 0.5)))
+    end
 
     imgui.SameLine(0, 4)
 
     -- Zoom In Stepper [+] (Steps by 1 exact font pixel: 16px -> 17px -> 18px...)
-    if imgui.Button(" + ##zoom_inc") then
+    push_button_repeat(true)
+    local inc_clicked = imgui.Button(" + ##zoom_inc")
+    pop_button_repeat()
+    if inc_clicked then
         local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
-        local new_pt = math.min(24, cur_pt + 1)
+        local new_pt = math.min(32, cur_pt + 1)
         content_zoom = new_pt / 16.0
         zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
+        if imgui.ClearActiveTooltip then
+            imgui.ClearActiveTooltip()
+        end
     end
-    show_tooltip(string.format("**Zoom In** (+1 pt)\n\nIncrease canvas font size to %d px.", math.min(24, math.floor(content_zoom * 16.0 + 0.5) + 1)))
+    if not (imgui.IsItemActive and imgui.IsItemActive()) then
+        show_tooltip(string.format("**Zoom In** (+1 pt)\n\nIncrease canvas font size to %d px.\n\n*Hold down to repeat*", math.min(32, math.floor(content_zoom * 16.0 + 0.5) + 1)))
+    end
 
     imgui.SameLine(0, 4)
 
