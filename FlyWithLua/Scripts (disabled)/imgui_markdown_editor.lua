@@ -339,6 +339,37 @@ local function toolbar_button(label, tooltip)
     return false
 end
 
+-- 1-Click Copy Buffer Button with 1.5s "Copied!" feedback and TimedTooltip
+local last_copied_time = 0
+local function render_copy_button(btn_id, text_to_copy)
+    local now = os.clock()
+    local is_copied = (now - last_copied_time < 1.5)
+    local label = is_copied and "Copied!" or "Copy"
+
+    if is_copied then
+        imgui.PushStyleColor(ImGuiCol_Button, 0.15, 0.55, 0.25, 1.0)
+    end
+    local clicked = imgui.Button(label .. "##" .. btn_id)
+    if is_copied then
+        imgui.PopStyleColor()
+    end
+
+    if clicked then
+        if imgui.SetClipboardText then
+            imgui.SetClipboardText(text_to_copy)
+        end
+        last_copied_time = now
+    end
+
+    if is_copied then
+        show_tooltip("**Copied to Clipboard!**\n\nEntire Markdown source buffer copied.")
+    else
+        show_tooltip("**Copy Buffer**\n\nCopy the entire raw Markdown source text to the OS clipboard.")
+    end
+
+    return clicked
+end
+
 -- ----------------------------------------------------------------------------
 -- Internal Render Routine (Protected by pcall)
 -- ----------------------------------------------------------------------------
@@ -587,6 +618,16 @@ local function md_editor_render_content()
     if view_mode == "Write" then
         -- 1. Fullscreen Editor
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
+            imgui.TextDisabled("RAW MARKDOWN SOURCE:")
+            local btn_w = 60
+            local target_x = avail_w - btn_w - 24
+            if target_x > 200 then
+                imgui.SameLine(target_x)
+            else
+                imgui.SameLine()
+            end
+            render_copy_button("full_copy", editor_text)
+
             if imgui.SetWindowFontScale then
                 imgui.SetWindowFontScale(content_zoom)
             end
@@ -616,6 +657,15 @@ local function md_editor_render_content()
         -- Left Pane: Editor (with Word-Wrap enabled)
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
+            local btn_w = 60
+            local target_x = col_w - btn_w - 24
+            if target_x > 180 then
+                imgui.SameLine(target_x)
+            else
+                imgui.SameLine()
+            end
+            render_copy_button("split_copy", editor_text)
+
             if imgui.SetWindowFontScale then
                 imgui.SetWindowFontScale(content_zoom)
             end
