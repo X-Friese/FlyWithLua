@@ -194,6 +194,34 @@ local alt = get("sim/flightmodel/position/elevation")
 <pill blue>TIP</pill> Use the **Mode** buttons above to switch between pure Editor, Split View, and full-screen Preview.
 ]]
 
+-- Rich Markdown content for the "About" dialog
+local about_markdown_text = [[# Cockpit Markdown Notes & Scratchpad
+<badge green>v1.0</badge> <pill blue>FlyWithLua Next-Gen</pill>
+
+An interactive in-cockpit Markdown scratchpad and flight notes system for X-Plane 12 flight operations.
+
+---
+
+### Key Capabilities
+* **Live Markdown Typography:** Headers (`#`, `##`), **bold**, *italic*, <u>underline</u>, ~~strikethrough~~, bulleted lists, and formatted code blocks with syntax styling.
+* **Avionics Badges & Annunciators:** Instrument callouts and status indicators using `<badge green|yellow|red>` and `<pill blue|green|default>`.
+* **Cockpit Checklists & Tasks:** Prepend `- [ ]` or click `[ ] Task` to format verify-and-execute flight crew checklists with inline monospace boxes.
+* **Tactile Canvas Zoom:** Dynamic font scaling from **50% to 200%** with 1-point quantum steppers, mouse-wheel adjust, and 1-click A/B toggle back to 100% baseline.
+* **Dedicated Multi-Note Storage:** Automatic file persistence in `FlyWithLua/Scripts/MarkdownEditor/` with active note file selection, manual Finder file discovery, and instant new note creation.
+* **Three Workflow Modes:**
+  - **Write:** High-efficiency source editor.
+  - **Split:** Live side-by-side editing with instant soft-wrapped Markdown preview.
+  - **Preview:** Distraction-free, reading-only clipboard for flight ops.
+
+---
+
+### Credits & Technologies
+* **FlyWithLua:** Enhanced Lua scripting engine for X-Plane.
+* **Dear ImGui:** Bloat-free immediate-mode GUI by Omar Cornut.
+* **imgui_markdown:** Markdown rendering extension by Juliette Foucaut, enhanced with Roger2 and ImgWindow extensions.
+* **ImgWindow:** Modern Floating Window integration by Steven L. Goldberg.
+]]
+
 -- Load saved notes on startup if available, otherwise fall back to template
 local function load_initial_document()
     local path = get_note_path("cockpit_notes.md")
@@ -620,6 +648,20 @@ local function md_editor_render_content()
     imgui.TextUnformatted("Cockpit Markdown Scratchpad")
     if imgui.PopFont then imgui.PopFont() end
 
+    imgui.SameLine(0, 10)
+    local about_clicked = false
+    if imgui.SmallButton then
+        about_clicked = imgui.SmallButton("About")
+    else
+        about_clicked = imgui.Button("About")
+    end
+    if about_clicked then
+        if imgui.OpenPopup then
+            imgui.OpenPopup("About Cockpit Markdown Scratchpad")
+        end
+    end
+    show_tooltip("**About Cockpit Markdown Scratchpad**\n\nView features, version, and library credits.")
+
     -- Status notification aligned above the persistence buttons on the right
     if os.time() - save_status_time < 3 and #save_status_msg > 0 then
         local msg_w = 200
@@ -627,7 +669,7 @@ local function md_editor_render_content()
             local tw = imgui.CalcTextSize(save_status_msg)
             msg_w = tw + 24
         end
-        local badge_x = math.max(300, avail_w - msg_w)
+        local badge_x = math.max(380, avail_w - msg_w)
         imgui.SameLine(badge_x)
         if imgui.Badge then
             local variant = save_status_msg:match("^Error") and "danger" or "success"
@@ -1017,6 +1059,24 @@ local function md_editor_render_content()
 
             imgui.EndChild()
         end
+    end
+
+    -- ------------------------------------------------------------------------
+    -- ABOUT MODAL POPUP
+    -- ------------------------------------------------------------------------
+    if imgui.SetNextWindowSize then
+        imgui.SetNextWindowSize(560, 480, 2) -- ImGuiCond_FirstUseEver
+    end
+    if imgui.BeginPopupModal and imgui.BeginPopupModal("About Cockpit Markdown Scratchpad") then
+        if imgui.BeginChild("AboutScrollArea", 0, -38, 1) then
+            imgui.MD.TextWrapped(about_markdown_text)
+            imgui.EndChild()
+        end
+        imgui.Separator()
+        if imgui.Button("  Close  ", 100, 0) then
+            imgui.CloseCurrentPopup()
+        end
+        imgui.EndPopup()
     end
 end
 
