@@ -72,8 +72,8 @@ local zoom_pct       = 100   -- Integer percentage: 50 to 200
 local content_zoom   = 1.0   -- Multiplier: 0.50 to 2.00
 local last_zoom_pct  = nil   -- Memory for 1-click A/B toggle on reset button
 local last_zoom_change_time = 0 -- Timestamp of last zoom adjustment for tooltip suppression
-local dec_repeat_count = 0   -- Counter to halve repeat speed on [-]
-local inc_repeat_count = 0   -- Counter to halve repeat speed on [+]
+local dec_repeat_count = 0   -- Counter to throttle repeat speed on [-] (1/4 rate)
+local inc_repeat_count = 0   -- Counter to throttle repeat speed on [+] (1/4 rate)
 
 -- Default scratchpad template loaded on initial start
 local initial_doc = [[# Cockpit Notes & Scratchpad
@@ -526,7 +526,7 @@ local function md_editor_render_content()
             allow_step = true
         else
             dec_repeat_count = dec_repeat_count + 1
-            if (dec_repeat_count % 2) == 0 then
+            if (dec_repeat_count % 4) == 0 then
                 allow_step = true
             end
         end
@@ -606,7 +606,7 @@ local function md_editor_render_content()
             allow_step = true
         else
             inc_repeat_count = inc_repeat_count + 1
-            if (inc_repeat_count % 2) == 0 then
+            if (inc_repeat_count % 4) == 0 then
                 allow_step = true
             end
         end
@@ -850,8 +850,8 @@ end
 
 local wnd_w = 980
 local wnd_h = 470
-local wnd_x = math.floor((screen_w - wnd_w) * 0.5)
-local wnd_y = math.max(40, math.floor((screen_h - wnd_h) * 0.5) - 80)
+local wnd_x = math.max(30, math.floor((screen_w - wnd_w) * 0.10))
+local wnd_y = math.max(40, math.floor((screen_h - wnd_h) * 0.15))
 
 -- Create ImGui floating window (4th arg MUST be true for withImgui)
 editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
