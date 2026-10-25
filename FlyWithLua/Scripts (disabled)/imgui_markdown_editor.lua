@@ -140,6 +140,7 @@ local pitch_deg   = get("sim/flightmodel/position/theta")
 -- ----------------------------------------------------------------------------
 -- Smart Selection Wrapping & Formatting Helpers
 -- ----------------------------------------------------------------------------
+local has_active_selection = false
 local cached_sel_start = -1
 local cached_sel_end   = -1
 local cached_cur_pos   = -1
@@ -148,20 +149,23 @@ local just_formatted   = false
 local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     suffix = suffix or ""
     default_text = default_text or ""
-    
+
     local sel_start, sel_end, cur_pos = -1, -1, -1
     if imgui.GetInputTextSelection then
         sel_start, sel_end, cur_pos = imgui.GetInputTextSelection()
     end
 
-    -- Fall back to cached selection if focus was just blurred by clicking the button
-    if (sel_start < 0 or sel_end <= sel_start) and cached_sel_start >= 0 and cached_sel_end > cached_sel_start then
+    -- If the text input is active with a real selection, use it directly
+    local is_selected = (sel_start >= 0 and sel_end > sel_start)
+    if not is_selected and has_active_selection and cached_sel_start >= 0 and cached_sel_end > cached_sel_start then
+        -- Button click just blurred the text box during the current interaction
         sel_start = cached_sel_start
         sel_end   = cached_sel_end
         cur_pos   = cached_cur_pos
+        is_selected = true
     end
-    
-    if sel_start >= 0 and sel_end > sel_start and sel_end <= #editor_text then
+
+    if is_selected and sel_end <= #editor_text then
         if is_line_prefix then
             -- Prepend prefix to the start of the line containing sel_start
             local line_start = 1
@@ -177,8 +181,6 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
                 local new_start = sel_start + #prefix
                 local new_end   = sel_end + #prefix
                 imgui.SetInputTextSelection(new_start, new_end)
-                cached_sel_start = new_start
-                cached_sel_end   = new_end
             end
         else
             -- Wrap the exact selection in-place:
@@ -203,48 +205,68 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
                 local new_start = sel_start + #lead_ws + #prefix
                 local new_end   = new_start + #core_text
                 imgui.SetInputTextSelection(new_start, new_end)
-                cached_sel_start = new_start
-                cached_sel_end   = new_end
-            end
-        end
-    elseif cur_pos >= 0 and cur_pos <= #editor_text then
-        if is_line_prefix then
-            -- Find beginning of current line and insert prefix
-            local line_start = 1
-            local prev_nl = editor_text:sub(1, cur_pos):reverse():find("\n")
-            if prev_nl then
-                line_start = cur_pos - prev_nl + 2
-            end
-            local before = editor_text:sub(1, line_start - 1)
-            local after  = editor_text:sub(line_start)
-            editor_text = before .. prefix .. after
-            just_formatted = true
-            if imgui.SetInputTextSelection then
-                imgui.SetInputTextSelection(cur_pos + #prefix, cur_pos + #prefix)
-            end
-        else
-            -- Insert snippet at cursor position
-            local before = editor_text:sub(1, cur_pos)
-            local after  = editor_text:sub(cur_pos + 1)
-            local snippet = prefix .. default_text .. suffix
-            editor_text = before .. snippet .. after
-            just_formatted = true
-            if imgui.SetInputTextSelection then
-                local new_cursor = cur_pos + #prefix + #default_text
-                imgui.SetInputTextSelection(new_cursor, new_cursor)
             end
         end
     else
-        -- Fallback if no cursor/selection: append cleanly to end
-        if is_line_prefix then
-            if #editor_text > 0 and not editor_text:match("\n$") then
-                editor_text = editor_text .. "\n"
+        -- NO active selection: This is a pure INSERT with placeholder text selected!
+        local ins_pos = cur_pos
+        if ins_pos < 0 or ins_pos > #editor_text then
+            if cached_cur_pos >= 0 and cached_cur_pos <= #editor_text then
+                ins_pos = cached_cur_pos
+            else
+                ins_pos = #editor_text
             end
-            editor_text = editor_text .. prefix .. default_text .. "\n"
+        end
+
+        if is_line_prefix then
+            -- Find start of line at ins_pos
+            local line_start = 1
+            local prev_nl = editor_text:sub(1, ins_pos):reverse():find("\n")
+            if prev_nl then
+                line_start = ins_pos - prev_nl + 2
+            end
+            -- Check if this line is essentially empty
+            local next_nl = editor_text:find("\n", line_start) or (#editor_text + 1)
+            local line_content = editor_text:sub(line_start, next_nl - 1)
+            if #line_content:gsub("%s", "") == 0 then
+                -- Empty line: insert prefix + default_text, with default_text selected
+                local before = editor_text:sub(1, line_start - 1)
+                local after  = editor_text:sub(next_nl)
+                editor_text = before .. prefix .. default_text .. after
+                just_formatted = true
+                if imgui.SetInputTextSelection then
+                    local sel_s = #before + #prefix
+                    local sel_e = sel_s + #default_text
+                    imgui.SetInputTextSelection(sel_s, sel_e)
+                end
+            else
+                -- Line has existing text: prepend prefix to the line
+                local before = editor_text:sub(1, line_start - 1)
+                local after  = editor_text:sub(line_start)
+                editor_text = before .. prefix .. after
+                just_formatted = true
+                if imgui.SetInputTextSelection then
+                    imgui.SetInputTextSelection(ins_pos + #prefix, ins_pos + #prefix)
+                end
+            end
         else
-            editor_text = editor_text .. prefix .. default_text .. suffix
+            -- Inline insert: insert prefix .. default_text .. suffix, with default_text selected!
+            local before = editor_text:sub(1, ins_pos)
+            local after  = editor_text:sub(ins_pos + 1)
+            editor_text = before .. prefix .. default_text .. suffix .. after
+            just_formatted = true
+            if imgui.SetInputTextSelection then
+                local sel_s = ins_pos + #prefix
+                local sel_e = sel_s + #default_text
+                imgui.SetInputTextSelection(sel_s, sel_e)
+            end
         end
     end
+
+    -- Always clear cached selection state after an action so subsequent clicks never re-wrap
+    has_active_selection = false
+    cached_sel_start = -1
+    cached_sel_end   = -1
 end
 
 -- ----------------------------------------------------------------------------
@@ -342,6 +364,11 @@ end
 -- 1-Click Copy Buffer Button with 1.5s "Copied!" feedback and TimedTooltip
 local last_copied_time = 0
 local function render_copy_button(btn_id, text_to_copy)
+    if imgui.CopyButton then
+        local clicked, is_copied = imgui.CopyButton("##" .. btn_id, text_to_copy)
+        return clicked
+    end
+
     local now = os.clock()
     local is_copied = (now - last_copied_time < 1.5)
     local label = is_copied and "Copied!" or "Copy"

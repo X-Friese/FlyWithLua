@@ -423,6 +423,35 @@ static int LuaInputTextSetSelection(lua_State* L) {
     return 0;
 }
 
+static int LuaCopyButton(lua_State* L) {
+    const char* str_id = luaL_checkstring(L, 1);
+    const char* text_to_copy = luaL_checkstring(L, 2);
+    float duration = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : 1.5f;
+    float size_x = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : 0.0f;
+    float size_y = (lua_gettop(L) >= 5 && !lua_isnil(L, 5)) ? (float)lua_tonumber(L, 5) : 0.0f;
+
+    bool is_copied = false;
+    bool clicked = ImGui::CopyButtonEx(str_id, text_to_copy, duration, ImVec2(size_x, size_y), &is_copied);
+
+    lua_pushboolean(L, clicked);
+    lua_pushboolean(L, is_copied);
+    return 2;
+}
+
+static int LuaCopyLastItemButton(lua_State* L) {
+    const char* str_id = luaL_checkstring(L, 1);
+    float duration = (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) ? (float)lua_tonumber(L, 2) : 1.5f;
+    float size_x = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : 0.0f;
+    float size_y = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : 0.0f;
+
+    bool is_copied = false;
+    bool clicked = ImGui::CopyLastItemButtonEx(str_id, duration, ImVec2(size_x, size_y), &is_copied);
+
+    lua_pushboolean(L, clicked);
+    lua_pushboolean(L, is_copied);
+    return 2;
+}
+
 // Helper to parse ImU32 color from Lua (supports integer, table {r, g, b, [a]}, or nil/0)
 static ImU32 ParseLuaColor(lua_State* L, int idx) {
     if (lua_gettop(L) < idx || lua_isnil(L, idx)) return 0;
@@ -766,6 +795,12 @@ void InitContribSupport(lua_State* L) {
     lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Warning);      lua_setfield(L, -2, "ImGuiBadgeVariant_Warning");
     lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Danger);       lua_setfield(L, -2, "ImGuiBadgeVariant_Danger");
     lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Info);         lua_setfield(L, -2, "ImGuiBadgeVariant_Info");
+
+    // 8. Universal Standalone & Chaser Copy Buttons
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "CopyButton");
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "copy_button");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "CopyLastItemButton");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "copy_last_item_button");
 
     lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "SetCursorHandling");
     lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "set_cursor_handling");
