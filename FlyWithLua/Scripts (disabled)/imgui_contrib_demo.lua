@@ -10,8 +10,18 @@ if not SUPPORTS_FLOATING_WINDOWS then
     return
 end
 
-local contrib_demo_wnd = float_wnd_create(860, 740, 1, true)
-float_wnd_set_position(contrib_demo_wnd, 80, 80)
+local screen_w, screen_h = 1920, 1080
+if XPLMGetScreenSize then
+    screen_w, screen_h = XPLMGetScreenSize()
+end
+
+local demo_w = 840
+local demo_h = 600
+local demo_x = 80
+local demo_y = math.max(30, math.floor((screen_h - demo_h) * 0.15))
+
+local contrib_demo_wnd = float_wnd_create(demo_w, demo_h, 1, true)
+float_wnd_set_position(contrib_demo_wnd, demo_x, demo_y)
 float_wnd_set_title(contrib_demo_wnd, "FlyWithLua ImGui Contrib & UX Demo")
 float_wnd_set_imgui_builder(contrib_demo_wnd, "contrib_demo_on_build")
 float_wnd_set_onclose(contrib_demo_wnd, "contrib_demo_on_close")
