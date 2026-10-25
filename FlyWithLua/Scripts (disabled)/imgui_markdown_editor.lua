@@ -577,7 +577,7 @@ local function md_editor_render_content()
     end
 
     -- Persistence Buttons (Right)
-    local right_start = avail_w - 260
+    local right_start = avail_w - 335
     local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 0
     if right_start > cur_x + 10 then
         imgui.SameLine(right_start)
@@ -596,6 +596,11 @@ local function md_editor_render_content()
     imgui.SameLine()
     if toolbar_button("Clear", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
         editor_text = ""
+    end
+
+    imgui.SameLine()
+    if imgui.CopyButton then
+        imgui.CopyButton("##copy_buf", editor_text)
     end
 
     imgui.Separator()
