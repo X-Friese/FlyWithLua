@@ -23,6 +23,9 @@ elseif imgui.constant and imgui.constant.Col and imgui.constant.Col.Button then
     ImGuiCol_Button = imgui.constant.Col.Button
 end
 
+-- ImGuiInputTextFlags_WordWrap = 1 << 24
+local ImGuiInputTextFlags_WordWrap = 16777216
+
 -- ----------------------------------------------------------------------------
 -- State & Buffers
 -- ----------------------------------------------------------------------------
@@ -49,8 +52,7 @@ local tas = get("sim/flightmodel/position/true_airspeed")
 local alt = get("sim/flightmodel/position/elevation")
 ```
 
-> [!NOTE]
-> Use the **Mode** buttons above to switch between pure Editor, Split View, and full-screen Preview.
+<pill blue>TIP</pill> Use the **Mode** buttons above to switch between pure Editor, Split View, and full-screen Preview.
 ]]
 
 local editor_text = initial_doc
@@ -60,23 +62,19 @@ local MAX_TEXT_BYTES = 65536
 -- Aviation Templates
 -- ----------------------------------------------------------------------------
 local templates = {
-    ["ATIS Copy"] = [[# ATIS Departure / Arrival Copy
-* **Airport:** `KLAX (Los Angeles Intl)`
-* **Information:** <badge blue>Bravo</badge>
-* **Time (UTC):** `1950Z`
-* **Wind:** `250° @ 11kt`
-* **Visibility:** `10 SM`
-* **Sky:** `SCT 025, BKN 200`
-* **Temp / Dew:** `21°C / 14°C`
-* **Altimeter:** `29.98 inHg` (1015 hPa)
-* **Active Runways:** `24L / 24R / 25L / 25R`
-* **Approach in Use:** `ILS Rwy 25L, RNAV (RNP) Rwy 24R`
-* **NOTAMs / Remarks:** Caution bird activity vicinity runway 25L.
+    ["ATIS Copy Pad"] = [[# ATIS Information [ALPHA]
+* **Airport:** `KORD (Chicago O'Hare)` | **Time:** `1851Z`
+* **Wind:** `280° @ 12kt G18kt` | **Visibility:** `10 SM`
+* **Sky Condition:** `FEW 045, SCT 250`
+* **Temp / Dew Point:** `18°C / 08°C`
+* **Altimeter:** `30.12 inHg`
+* **Landing / Departing:** `Runway 28C, 28R`
+* **NOTAMs:** Taxiway Bravo closed between B4 and B6
 ]],
 
-    ["IFR Clearance (CRAFT)"] = [[# IFR Clearance Copy (C-R-A-F-T)
-* **C - Clearance Limit:** `KORD (Chicago O'Hare)`
-* **R - Route:** `MERIT4 BLZ J584 OBK DIRECT`
+    ["IFR Clearance (CRAFT)"] = [[# IFR Clearance Briefing
+* **C - Clearance Limit:** `Cleared to KMSP via JOT2 departure`
+* **R - Route:** `JOT VORD V100 BAE DLL ALTRN`
 * **A - Initial Altitude:** `Maintain 5,000 ft, expect FL330 in 10 minutes`
 * **F - Departure Frequency:** `120.40 MHz`
 * **T - Transponder (Squawk):** <kbd>4217</kbd>
@@ -124,17 +122,79 @@ local pitch_deg   = get("sim/flightmodel/position/theta")
 }
 
 -- ----------------------------------------------------------------------------
--- Helper Functions: Formatting Quick Inserts
+-- Smart Selection Wrapping & Formatting Helpers
 -- ----------------------------------------------------------------------------
-local function insert_text(snippet)
-    editor_text = editor_text .. snippet
-end
-
-local function insert_block(snippet)
-    if #editor_text > 0 and not editor_text:match("\n$") then
-        editor_text = editor_text .. "\n"
+local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
+    suffix = suffix or ""
+    default_text = default_text or ""
+    
+    local sel_start, sel_end, cur_pos = -1, -1, -1
+    if imgui.GetInputTextSelection then
+        sel_start, sel_end, cur_pos = imgui.GetInputTextSelection()
     end
-    editor_text = editor_text .. snippet .. "\n"
+    
+    if sel_start >= 0 and sel_end > sel_start and sel_end <= #editor_text then
+        if is_line_prefix then
+            -- Prepend prefix to the start of the line containing sel_start
+            local line_start = 1
+            local prev_nl = editor_text:sub(1, sel_start):reverse():find("\n")
+            if prev_nl then
+                line_start = sel_start - prev_nl + 2
+            end
+            local before = editor_text:sub(1, line_start - 1)
+            local after  = editor_text:sub(line_start)
+            editor_text = before .. prefix .. after
+            if imgui.SetInputTextSelection then
+                imgui.SetInputTextSelection(sel_start + #prefix, sel_end + #prefix)
+            end
+        else
+            -- Wrap the exact selection in-place:
+            local before = editor_text:sub(1, sel_start)
+            local selected = editor_text:sub(sel_start + 1, sel_end)
+            local after = editor_text:sub(sel_end + 1)
+            editor_text = before .. prefix .. selected .. suffix .. after
+            if imgui.SetInputTextSelection then
+                local new_start = sel_start + #prefix
+                local new_end   = new_start + #selected
+                imgui.SetInputTextSelection(new_start, new_end)
+            end
+        end
+    elseif cur_pos >= 0 and cur_pos <= #editor_text then
+        if is_line_prefix then
+            -- Find beginning of current line and insert prefix
+            local line_start = 1
+            local prev_nl = editor_text:sub(1, cur_pos):reverse():find("\n")
+            if prev_nl then
+                line_start = cur_pos - prev_nl + 2
+            end
+            local before = editor_text:sub(1, line_start - 1)
+            local after  = editor_text:sub(line_start)
+            editor_text = before .. prefix .. after
+            if imgui.SetInputTextSelection then
+                imgui.SetInputTextSelection(cur_pos + #prefix, cur_pos + #prefix)
+            end
+        else
+            -- Insert snippet at cursor position
+            local before = editor_text:sub(1, cur_pos)
+            local after  = editor_text:sub(cur_pos + 1)
+            local snippet = prefix .. default_text .. suffix
+            editor_text = before .. snippet .. after
+            if imgui.SetInputTextSelection then
+                local new_cursor = cur_pos + #prefix + #default_text
+                imgui.SetInputTextSelection(new_cursor, new_cursor)
+            end
+        end
+    else
+        -- Fallback if no cursor/selection: append cleanly to end
+        if is_line_prefix then
+            if #editor_text > 0 and not editor_text:match("\n$") then
+                editor_text = editor_text .. "\n"
+            end
+            editor_text = editor_text .. prefix .. default_text .. "\n"
+        else
+            editor_text = editor_text .. prefix .. default_text .. suffix
+        end
+    end
 end
 
 -- ----------------------------------------------------------------------------
@@ -250,52 +310,52 @@ local function md_editor_render_content()
     -- TOOLBAR: Quick Format Buttons & Template Drawer (Visible in Write & Split)
     -- ------------------------------------------------------------------------
     if view_mode ~= "Preview" then
-        if imgui.Button("H1") then insert_block("# New Heading 1") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert Heading 1 (# ...)") end
+        if imgui.Button("H1") then wrap_or_insert("# ", "", "Heading 1", true) end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Prepend Heading 1 (# ...)") end
 
         imgui.SameLine()
-        if imgui.Button("H2") then insert_block("## New Heading 2") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert Heading 2 (## ...)") end
+        if imgui.Button("H2") then wrap_or_insert("## ", "", "Heading 2", true) end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Prepend Heading 2 (## ...)") end
 
         imgui.SameLine()
-        if imgui.Button(" B ") then insert_text("**bold text** ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert **bold** markup") end
+        if imgui.Button(" B ") then wrap_or_insert("**", "**", "bold text") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in **bold**") end
 
         imgui.SameLine()
-        if imgui.Button(" I ") then insert_text("*italic text* ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert *italic* markup") end
+        if imgui.Button(" I ") then wrap_or_insert("*", "*", "italic text") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in *italic*") end
 
         imgui.SameLine()
-        if imgui.Button(" U ") then insert_text("<u>underlined text</u> ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert <u>underline</u> markup") end
+        if imgui.Button(" U ") then wrap_or_insert("<u>", "</u>", "underlined text") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in <u>underline</u>") end
 
         imgui.SameLine()
-        if imgui.Button(" S ") then insert_text("~~strikethrough~~ ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert ~~strikethrough~~ markup") end
+        if imgui.Button(" S ") then wrap_or_insert("~~", "~~", "strikethrough") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in ~~strikethrough~~") end
 
         imgui.SameLine()
-        if imgui.Button("• List") then insert_block("* Item description") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert unordered bullet item (* ...)") end
+        if imgui.Button("* List") then wrap_or_insert("* ", "", "Item description", true) end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Convert line or insert bullet list (* ...)") end
 
         imgui.SameLine()
-        if imgui.Button("✓ Task") then insert_block("- [ ] Checklist item to verify") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert interactive checklist task (- [ ] ...)") end
+        if imgui.Button("[ ] Task") then wrap_or_insert("- [ ] ", "", "Checklist task to verify", true) end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Convert line or insert checklist task (- [ ] ...)") end
 
         imgui.SameLine()
-        if imgui.Button("<badge>") then insert_text("<badge green>NORMAL</badge> ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert status badge (<badge green|yellow|red>...</badge>)") end
+        if imgui.Button("<badge>") then wrap_or_insert("<badge green>", "</badge>", "NORMAL") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in <badge green|yellow|red>...</badge>") end
 
         imgui.SameLine()
-        if imgui.Button("<pill>") then insert_text("<pill blue>ACTIVE</pill> ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert pill chip (<pill blue|green|default>...</pill>)") end
+        if imgui.Button("<pill>") then wrap_or_insert("<pill blue>", "</pill>", "ACTIVE") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in <pill blue|green|default>...</pill>") end
 
         imgui.SameLine()
-        if imgui.Button("<kbd>") then insert_text("<kbd>Alt+F4</kbd> ") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert keycap tag (<kbd>Key</kbd>)") end
+        if imgui.Button("<kbd>") then wrap_or_insert("<kbd>", "</kbd>", "Key") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in keycap <kbd>Key</kbd>") end
 
         imgui.SameLine()
-        if imgui.Button("```Code") then insert_block("```lua\n-- code block\n```") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Insert syntax-highlighted code block") end
+        if imgui.Button("Code") then wrap_or_insert("```lua\n", "\n```", "-- code block\n") end
+        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in fenced code block") end
 
         -- Templates Dropdown
         imgui.SameLine()
@@ -319,8 +379,8 @@ local function md_editor_render_content()
     -- ------------------------------------------------------------------------
     if view_mode == "Write" then
         -- 1. Fullscreen Editor
-        if imgui.BeginChild("FullEditorChild", avail_w, 0, 1) then
-            local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1)
+        if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
+            local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, ImGuiInputTextFlags_WordWrap)
             if changed and new_text then
                 editor_text = new_text
             end
@@ -329,8 +389,8 @@ local function md_editor_render_content()
 
     elseif view_mode == "Preview" then
         -- 2. Fullscreen Live Rendered Preview
-        if imgui.BeginChild("FullPreviewChild", avail_w, 0, 1) then
-            imgui.MD.Text(editor_text)
+        if imgui.BeginChild("FullPreviewChild", 0, 0, 1) then
+            imgui.MD.TextWrapped(editor_text)
             imgui.EndChild()
         end
 
@@ -338,10 +398,10 @@ local function md_editor_render_content()
         -- 3. Side-by-Side Dual Pane
         local col_w = math.floor((avail_w - 16) * 0.5)
 
-        -- Left Pane: Editor
+        -- Left Pane: Editor (with Word-Wrap enabled)
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
-            local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1)
+            local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, ImGuiInputTextFlags_WordWrap)
             if changed and new_text then
                 editor_text = new_text
             end
@@ -350,10 +410,10 @@ local function md_editor_render_content()
 
         imgui.SameLine(0, 16)
 
-        -- Right Pane: Live Rendered Preview
+        -- Right Pane: Live Rendered Preview (with Soft-Wrapping enabled)
         if imgui.BeginChild("SplitPreviewChild", col_w, 0, 1) then
             imgui.TextDisabled("LIVE RENDERED PREVIEW:")
-            imgui.MD.Text(editor_text)
+            imgui.MD.TextWrapped(editor_text)
             imgui.EndChild()
         end
     end
@@ -390,7 +450,9 @@ local wnd_h = 720
 local wnd_x = math.floor((screen_w - wnd_w) * 0.5)
 local wnd_y = math.floor((screen_h - wnd_h) * 0.5)
 
-editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
+-- Note: 4th arg is allow_scrolling = false. Outer window has no scrollbar;
+-- inner child panes handle their own vertical scrolling.
+editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, false)
 float_wnd_set_position(editor_wnd, wnd_x, wnd_y)
 float_wnd_set_title(editor_wnd, "Cockpit Markdown Notes & Scratchpad")
 float_wnd_set_imgui_builder(editor_wnd, "md_editor_on_build")

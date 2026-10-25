@@ -391,6 +391,36 @@ static int LuaAttachItemCursor(lua_State* L) {
     return 0;
 }
 
+static int LuaInputTextGetSelection(lua_State* L) {
+    ImGuiContext* g = ImGui::GetCurrentContext();
+    if (g && g->InputTextState.ID != 0 && g->InputTextState.Stb) {
+        int s = g->InputTextState.GetSelectionStart();
+        int e = g->InputTextState.GetSelectionEnd();
+        if (s > e) std::swap(s, e);
+        int cur = g->InputTextState.GetCursorPos();
+        lua_pushinteger(L, s);
+        lua_pushinteger(L, e);
+        lua_pushinteger(L, cur);
+        return 3;
+    }
+    lua_pushinteger(L, -1);
+    lua_pushinteger(L, -1);
+    lua_pushinteger(L, -1);
+    return 3;
+}
+
+static int LuaInputTextSetSelection(lua_State* L) {
+    ImGuiContext* g = ImGui::GetCurrentContext();
+    int s = static_cast<int>(luaL_checkinteger(L, 1));
+    int e = static_cast<int>(luaL_checkinteger(L, 2));
+    if (g && g->InputTextState.ID != 0 && g->InputTextState.Stb) {
+        g->InputTextState.ReloadSelectionStart = s;
+        g->InputTextState.ReloadSelectionEnd = e;
+        g->InputTextState.WantReloadUserBuf = true;
+    }
+    return 0;
+}
+
 // Helper to parse ImU32 color from Lua (supports integer, table {r, g, b, [a]}, or nil/0)
 static ImU32 ParseLuaColor(lua_State* L, int idx) {
     if (lua_gettop(L) < idx || lua_isnil(L, idx)) return 0;
@@ -700,6 +730,10 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaTextLink);                  lua_setfield(L, -2, "text_link");
     lua_pushcfunction(L, LuaAttachItemCursor);          lua_setfield(L, -2, "AttachItemCursor");
     lua_pushcfunction(L, LuaAttachItemCursor);          lua_setfield(L, -2, "attach_item_cursor");
+    lua_pushcfunction(L, LuaInputTextGetSelection);     lua_setfield(L, -2, "GetInputTextSelection");
+    lua_pushcfunction(L, LuaInputTextGetSelection);     lua_setfield(L, -2, "get_input_text_selection");
+    lua_pushcfunction(L, LuaInputTextSetSelection);     lua_setfield(L, -2, "SetInputTextSelection");
+    lua_pushcfunction(L, LuaInputTextSetSelection);     lua_setfield(L, -2, "set_input_text_selection");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "GetMouseWheel");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "get_mouse_wheel");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "GetMouseWheelEither");
