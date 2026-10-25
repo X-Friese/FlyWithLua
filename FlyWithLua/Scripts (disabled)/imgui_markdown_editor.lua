@@ -409,10 +409,19 @@ local function md_editor_render_content()
     -- Continuously track active selection while editing
     if imgui.GetInputTextSelection then
         local s, e, c = imgui.GetInputTextSelection()
-        if s >= 0 and e > s then
-            cached_sel_start = s
-            cached_sel_end   = e
-            cached_cur_pos   = c
+        if s >= 0 then
+            if e > s then
+                has_active_selection = true
+                cached_sel_start = s
+                cached_sel_end   = e
+            else
+                has_active_selection = false
+                cached_sel_start = -1
+                cached_sel_end   = -1
+            end
+            if c >= 0 then
+                cached_cur_pos = c
+            end
         end
     end
 
@@ -646,19 +655,16 @@ local function md_editor_render_content()
         -- 1. Fullscreen Editor
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
-            local btn_w = 60
-            local target_x = avail_w - btn_w - 24
-            if target_x > 200 then
-                imgui.SameLine(target_x)
-            else
-                imgui.SameLine()
-            end
-            render_copy_button("full_copy", editor_text)
 
-            if imgui.SetWindowFontScale then
-                imgui.SetWindowFontScale(content_zoom)
+            local editor_font_size = math.max(10, math.floor(16.0 * content_zoom + 0.5))
+            if imgui.PushFont then
+                imgui.PushFont("Roboto-Regular", editor_font_size)
             end
             local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
+            if imgui.PopFont then
+                imgui.PopFont()
+            end
+
             if just_formatted then
                 just_formatted = false
             elseif changed and new_text then
@@ -684,19 +690,16 @@ local function md_editor_render_content()
         -- Left Pane: Editor (with Word-Wrap enabled)
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
-            local btn_w = 60
-            local target_x = col_w - btn_w - 24
-            if target_x > 180 then
-                imgui.SameLine(target_x)
-            else
-                imgui.SameLine()
-            end
-            render_copy_button("split_copy", editor_text)
 
-            if imgui.SetWindowFontScale then
-                imgui.SetWindowFontScale(content_zoom)
+            local editor_font_size = math.max(10, math.floor(16.0 * content_zoom + 0.5))
+            if imgui.PushFont then
+                imgui.PushFont("Roboto-Regular", editor_font_size)
             end
             local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
+            if imgui.PopFont then
+                imgui.PopFont()
+            end
+
             if just_formatted then
                 just_formatted = false
             elseif changed and new_text then
