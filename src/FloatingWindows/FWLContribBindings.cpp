@@ -413,12 +413,15 @@ static int LuaInputTextSetSelection(lua_State* L) {
     ImGuiContext* g = ImGui::GetCurrentContext();
     int s = static_cast<int>(luaL_checkinteger(L, 1));
     int e = static_cast<int>(luaL_checkinteger(L, 2));
-    if (g && g->InputTextState.ID != 0 && g->InputTextState.Stb) {
-        g->InputTextState.ReloadSelectionStart = s;
-        g->InputTextState.ReloadSelectionEnd = e;
-        g->InputTextState.WantReloadUserBuf = true;
-        g->InputTextReactivateId = g->InputTextState.ID;
-        g->InputTextDeactivatedState.ID = 0;
+    if (g) {
+        ImGuiID target_id = (g->InputTextState.ID != 0) ? g->InputTextState.ID : g->InputTextDeactivatedState.ID;
+        if (target_id != 0) {
+            g->InputTextState.ReloadSelectionStart = s;
+            g->InputTextState.ReloadSelectionEnd = e;
+            g->InputTextState.WantReloadUserBuf = true;
+            g->InputTextReactivateId = target_id;
+            g->InputTextDeactivatedState.ID = 0;
+        }
     }
     return 0;
 }
@@ -799,8 +802,12 @@ void InitContribSupport(lua_State* L) {
     // 8. Universal Standalone & Chaser Copy Buttons
     lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "CopyButton");
     lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "copy_button");
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "CopyBufferButton");
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "copy_buffer_button");
     lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "CopyLastItemButton");
     lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "copy_last_item_button");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "CopyTextFieldButton");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "copy_text_field_button");
 
     lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "SetCursorHandling");
     lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "set_cursor_handling");
