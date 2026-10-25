@@ -23,8 +23,18 @@ elseif imgui.constant and imgui.constant.Col and imgui.constant.Col.Button then
     ImGuiCol_Button = imgui.constant.Col.Button
 end
 
--- ImGuiInputTextFlags_WordWrap = 1 << 24
+-- ImGuiInputTextFlags (WordWrap = 1 << 24, AllowTabInput = 1 << 5)
 local ImGuiInputTextFlags_WordWrap = 16777216
+local ImGuiInputTextFlags_AllowTabInput = 32
+if imgui.constant and imgui.constant.InputTextFlags then
+    if imgui.constant.InputTextFlags.AllowTabInput then
+        ImGuiInputTextFlags_AllowTabInput = imgui.constant.InputTextFlags.AllowTabInput
+    end
+    if imgui.constant.InputTextFlags.WordWrap then
+        ImGuiInputTextFlags_WordWrap = imgui.constant.InputTextFlags.WordWrap
+    end
+end
+local editor_input_flags = ImGuiInputTextFlags_WordWrap + ImGuiInputTextFlags_AllowTabInput
 
 -- ----------------------------------------------------------------------------
 -- State & Buffers
@@ -434,7 +444,7 @@ local function md_editor_render_content()
     if view_mode == "Write" then
         -- 1. Fullscreen Editor
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
-            local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, ImGuiInputTextFlags_WordWrap)
+            local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
             if changed and new_text then
                 editor_text = new_text
             end
@@ -455,7 +465,7 @@ local function md_editor_render_content()
         -- Left Pane: Editor (with Word-Wrap enabled)
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
-            local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, ImGuiInputTextFlags_WordWrap)
+            local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
             if changed and new_text then
                 editor_text = new_text
             end
