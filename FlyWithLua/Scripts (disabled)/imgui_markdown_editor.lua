@@ -45,6 +45,11 @@ local save_status_msg = ""
 local save_status_path = ""
 local save_status_time = 0
 
+-- Content Canvas Zoom State (1% quantum increments, range 70% to 150%)
+local zoom_pct       = 100   -- Integer percentage: 70 to 150
+local content_zoom   = 1.0   -- Multiplier: 0.70 to 1.50
+local last_zoom_pct  = nil   -- Memory for 1-click A/B toggle on reset button
+
 -- Default scratchpad template loaded on initial start
 local initial_doc = [[# Cockpit Notes & Scratchpad
 Welcome to your in-cockpit **FlyWithLua Markdown Editor**!
@@ -344,6 +349,42 @@ local function md_editor_render_content()
     end
 
     -- ------------------------------------------------------------------------
+    -- In-Window Keyboard Shortcuts for Content Zoom (1% Steps)
+    -- Active when the window or any child frame is focused
+    -- ------------------------------------------------------------------------
+    local window_focused = true
+    if imgui.IsWindowFocused then
+        -- ImGuiFocusedFlags_RootAndChildWindows = 3
+        window_focused = imgui.IsWindowFocused(3)
+    end
+
+    if window_focused and imgui.IsKeyDown and imgui.IsKeyPressed then
+        -- Check Cmd (macOS) or Ctrl (Win/Linux)
+        local is_cmd_or_ctrl = imgui.IsKeyDown(4096) or imgui.IsKeyDown(32768)
+            or imgui.IsKeyDown(527) or imgui.IsKeyDown(531)
+            or imgui.IsKeyDown(530) or imgui.IsKeyDown(534)
+
+        if is_cmd_or_ctrl then
+            -- Zoom In: Equal/Plus (= / +) -> ImGuiKey_Equal = 602, ImGuiKey_KeypadAdd = 621, ImGuiKey_KeypadEqual = 623
+            if imgui.IsKeyPressed(602, true) or imgui.IsKeyPressed(621, true) or imgui.IsKeyPressed(623, true) then
+                zoom_pct = math.min(150, zoom_pct + 1)
+                content_zoom = zoom_pct / 100.0
+            -- Zoom Out: Minus (-) -> ImGuiKey_Minus = 598, ImGuiKey_KeypadSubtract = 620
+            elseif imgui.IsKeyPressed(598, true) or imgui.IsKeyPressed(620, true) then
+                zoom_pct = math.max(70, zoom_pct - 1)
+                content_zoom = zoom_pct / 100.0
+            -- Reset Zoom: Zero (0) -> ImGuiKey_0 = 536, ImGuiKey_Keypad0 = 612
+            elseif imgui.IsKeyPressed(536, false) or imgui.IsKeyPressed(612, false) then
+                if zoom_pct ~= 100 then
+                    last_zoom_pct = zoom_pct
+                    zoom_pct = 100
+                    content_zoom = 1.0
+                end
+            end
+        end
+    end
+
+    -- ------------------------------------------------------------------------
     -- TOP BAR: Title & Transient Status Notification (above buttons)
     -- ------------------------------------------------------------------------
     if imgui.PushFont then imgui.PushFont("Roboto-Medium-20") end
@@ -385,6 +426,81 @@ local function md_editor_render_content()
     imgui.SameLine()
     if render_mode_button("  Preview  ", view_mode == "Preview", "Clean reading view: rendered Markdown document only.") then
         view_mode = "Preview"
+    end
+
+    -- Content Zoom Controls in Header Chrome (Unscaled baseline 1.0x)
+    imgui.SameLine(0, 14)
+    imgui.TextUnformatted("|")
+    imgui.SameLine(0, 14)
+    imgui.TextUnformatted("Zoom:")
+    imgui.SameLine(0, 8)
+
+    -- Zoom Out Stepper [-]
+    if imgui.Button(" - ##zoom_dec") then
+        zoom_pct = math.max(70, zoom_pct - 1)
+        content_zoom = zoom_pct / 100.0
+    end
+    if imgui.IsItemHovered() then imgui.SetTooltip("Zoom out 1% (Cmd/Ctrl + -)") end
+
+    imgui.SameLine(0, 4)
+
+    -- Zoom Slider (with mouse-wheel adjust)
+    if imgui.SetNextItemWidth then imgui.SetNextItemWidth(90) end
+    local slider_changed, new_zoom = imgui.SliderInt("##zoom_slider", zoom_pct, 70, 150, "%d%%")
+    if slider_changed and new_zoom then
+        zoom_pct = new_zoom
+        content_zoom = zoom_pct / 100.0
+    end
+    if imgui.AdjustItemOnMouseWheel then
+        local w_ch, w_val = imgui.AdjustItemOnMouseWheel(zoom_pct, 70, 150, 1)
+        if w_ch and w_val then
+            zoom_pct = math.floor(w_val + 0.5)
+            content_zoom = zoom_pct / 100.0
+        end
+    end
+    if imgui.IsItemHovered() then
+        imgui.SetTooltip(string.format("Content Zoom: %d%%\n* Drag or spin mouse wheel (1%% steps)\n* Cmd/Ctrl + = / - to zoom\n* Cmd/Ctrl + 0 to reset", zoom_pct))
+    end
+
+    imgui.SameLine(0, 4)
+
+    -- Zoom In Stepper [+]
+    if imgui.Button(" + ##zoom_inc") then
+        zoom_pct = math.min(150, zoom_pct + 1)
+        content_zoom = zoom_pct / 100.0
+    end
+    if imgui.IsItemHovered() then imgui.SetTooltip("Zoom in 1% (Cmd/Ctrl + =)") end
+
+    imgui.SameLine(0, 4)
+
+    -- Resettable Button with A/B Toggle Memory (↺)
+    local is_modified = (zoom_pct ~= 100)
+    local reset_clicked = false
+    if imgui.ResetButton then
+        reset_clicked = imgui.ResetButton("##reset_zoom", is_modified, false)
+    else
+        reset_clicked = imgui.Button("100%##reset_zoom")
+    end
+    if reset_clicked then
+        if zoom_pct ~= 100 then
+            last_zoom_pct = zoom_pct
+            zoom_pct = 100
+            content_zoom = 1.0
+        elseif last_zoom_pct then
+            local tmp = zoom_pct
+            zoom_pct = last_zoom_pct
+            last_zoom_pct = tmp
+            content_zoom = zoom_pct / 100.0
+        end
+    end
+    if imgui.IsItemHovered() then
+        if zoom_pct ~= 100 then
+            imgui.SetTooltip("Reset zoom to 100% (Cmd/Ctrl + 0)")
+        elseif last_zoom_pct then
+            imgui.SetTooltip("Restore previous zoom to " .. last_zoom_pct .. "% (Cmd/Ctrl + 0)")
+        else
+            imgui.SetTooltip("Zoom baseline is 100%")
+        end
     end
 
     -- Persistence Buttons (Right)
@@ -465,6 +581,9 @@ local function md_editor_render_content()
     if view_mode == "Write" then
         -- 1. Fullscreen Editor
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
+            if imgui.SetWindowFontScale then
+                imgui.SetWindowFontScale(content_zoom)
+            end
             local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
             if just_formatted then
                 just_formatted = false
@@ -477,6 +596,9 @@ local function md_editor_render_content()
     elseif view_mode == "Preview" then
         -- 2. Fullscreen Live Rendered Preview
         if imgui.BeginChild("FullPreviewChild", 0, 0, 1) then
+            if imgui.SetWindowFontScale then
+                imgui.SetWindowFontScale(content_zoom)
+            end
             imgui.MD.TextWrapped(editor_text)
             imgui.EndChild()
         end
@@ -488,6 +610,9 @@ local function md_editor_render_content()
         -- Left Pane: Editor (with Word-Wrap enabled)
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
+            if imgui.SetWindowFontScale then
+                imgui.SetWindowFontScale(content_zoom)
+            end
             local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
             if just_formatted then
                 just_formatted = false
@@ -502,6 +627,9 @@ local function md_editor_render_content()
         -- Right Pane: Live Rendered Preview (with Soft-Wrapping enabled)
         if imgui.BeginChild("SplitPreviewChild", col_w, 0, 1) then
             imgui.TextDisabled("LIVE RENDERED PREVIEW:")
+            if imgui.SetWindowFontScale then
+                imgui.SetWindowFontScale(content_zoom)
+            end
             imgui.MD.TextWrapped(editor_text)
             imgui.EndChild()
         end
@@ -512,6 +640,9 @@ end
 -- UI Builder Callback (Wrapped in pcall to guarantee Push/Pop font pairing)
 -- ----------------------------------------------------------------------------
 function md_editor_on_build(wnd, x, y)
+    if imgui.SetWindowFontScale then
+        imgui.SetWindowFontScale(1.0)
+    end
     imgui.PushFont("Roboto-Regular-16")
     local ok, err = pcall(md_editor_render_content)
     imgui.PopFont()
