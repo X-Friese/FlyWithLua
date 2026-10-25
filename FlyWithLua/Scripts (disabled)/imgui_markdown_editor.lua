@@ -480,39 +480,47 @@ local function md_editor_render_content()
     imgui.TextUnformatted("Zoom:")
     imgui.SameLine(0, 8)
 
-    -- Zoom Out Stepper [-]
+    -- Zoom Out Stepper [-] (Steps by 1 exact font pixel: 16px -> 15px -> 14px...)
     if imgui.Button(" - ##zoom_dec") then
-        zoom_pct = math.max(70, zoom_pct - 2)
-        content_zoom = zoom_pct / 100.0
+        local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
+        local new_pt = math.max(10, cur_pt - 1)
+        content_zoom = new_pt / 16.0
+        zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
     end
-    show_tooltip("**Zoom Out** (-2%)\n\nDecrease canvas font scale in 2% increments.")
+    show_tooltip(string.format("**Zoom Out** (-1 pt)\n\nDecrease canvas font size to %d px.", math.max(10, math.floor(content_zoom * 16.0 + 0.5) - 1)))
 
     imgui.SameLine(0, 4)
 
-    -- Zoom Slider (with mouse-wheel adjust)
+    -- Zoom Slider (with mouse-wheel adjust snapping to exact font pixels)
     if imgui.SetNextItemWidth then imgui.SetNextItemWidth(90) end
-    local slider_changed, new_zoom = imgui.SliderInt("##zoom_slider", zoom_pct, 70, 150, "%d%%")
+    local slider_changed, new_zoom = imgui.SliderInt("##zoom_slider", zoom_pct, 63, 150, "%d%%")
     if slider_changed and new_zoom then
-        zoom_pct = math.floor(new_zoom / 2.0 + 0.5) * 2
-        content_zoom = zoom_pct / 100.0
+        local target_pt = math.floor((new_zoom / 100.0) * 16.0 + 0.5)
+        target_pt = math.max(10, math.min(24, target_pt))
+        content_zoom = target_pt / 16.0
+        zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
     end
     if imgui.AdjustItemOnMouseWheel then
-        local w_ch, w_val = imgui.AdjustItemOnMouseWheel(zoom_pct, 70, 150, 2)
+        local w_ch, w_val = imgui.AdjustItemOnMouseWheel(zoom_pct, 63, 150, 6)
         if w_ch and w_val then
-            zoom_pct = math.floor(w_val / 2.0 + 0.5) * 2
-            content_zoom = zoom_pct / 100.0
+            local target_pt = math.floor((w_val / 100.0) * 16.0 + 0.5)
+            target_pt = math.max(10, math.min(24, target_pt))
+            content_zoom = target_pt / 16.0
+            zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
         end
     end
-    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%`\n\n* **Drag slider** or **spin mouse wheel** in 2%% steps\n* Steppers: `[-]` and `[+]` for fine control\n* Reset: `↺` toggles baseline (100%%) and prior zoom", zoom_pct))
+    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%` (`%d px`)\n\n* **Steppers & Wheel:** Step by 1 exact font pixel\n* **100%% Baseline:** 16 px\n* **Reset (↺):** Toggle 100%% and prior zoom", zoom_pct, math.floor(content_zoom * 16.0 + 0.5)))
 
     imgui.SameLine(0, 4)
 
-    -- Zoom In Stepper [+]
+    -- Zoom In Stepper [+] (Steps by 1 exact font pixel: 16px -> 17px -> 18px...)
     if imgui.Button(" + ##zoom_inc") then
-        zoom_pct = math.min(150, zoom_pct + 2)
-        content_zoom = zoom_pct / 100.0
+        local cur_pt = math.floor(content_zoom * 16.0 + 0.5)
+        local new_pt = math.min(24, cur_pt + 1)
+        content_zoom = new_pt / 16.0
+        zoom_pct = math.floor(content_zoom * 100.0 + 0.5)
     end
-    show_tooltip("**Zoom In** (+2%)\n\nIncrease canvas font scale in 2% increments.")
+    show_tooltip(string.format("**Zoom In** (+1 pt)\n\nIncrease canvas font size to %d px.", math.min(24, math.floor(content_zoom * 16.0 + 0.5) + 1)))
 
     imgui.SameLine(0, 4)
 
