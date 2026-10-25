@@ -442,12 +442,12 @@ local function md_editor_render_content()
             or imgui.IsKeyDown(530) or imgui.IsKeyDown(534)
 
         if is_cmd_or_ctrl then
-            -- Zoom In: Equal/Plus (= / +) -> ImGuiKey_Equal = 602, ImGuiKey_KeypadAdd = 621, ImGuiKey_KeypadEqual = 623
-            if imgui.IsKeyPressed(602, true) or imgui.IsKeyPressed(621, true) or imgui.IsKeyPressed(623, true) then
+            -- Zoom In: Equal/Plus (= / +) -> ImGuiKey_Equal = 602, ImGuiKey_KeypadAdd = 626, ImGuiKey_KeypadEqual = 628
+            if imgui.IsKeyPressed(602, true) or imgui.IsKeyPressed(626, true) or imgui.IsKeyPressed(628, true) then
                 zoom_pct = math.min(150, zoom_pct + 1)
                 content_zoom = zoom_pct / 100.0
-            -- Zoom Out: Minus (-) -> ImGuiKey_Minus = 598, ImGuiKey_KeypadSubtract = 620
-            elseif imgui.IsKeyPressed(598, true) or imgui.IsKeyPressed(620, true) then
+            -- Zoom Out: Minus (-) -> ImGuiKey_Minus = 598, ImGuiKey_KeypadSubtract = 625
+            elseif imgui.IsKeyPressed(598, true) or imgui.IsKeyPressed(625, true) then
                 zoom_pct = math.max(70, zoom_pct - 1)
                 content_zoom = zoom_pct / 100.0
             -- Reset Zoom: Zero (0) -> ImGuiKey_0 = 536, ImGuiKey_Keypad0 = 612
@@ -599,8 +599,9 @@ local function md_editor_render_content()
     end
 
     imgui.SameLine()
-    if imgui.CopyButton then
-        imgui.CopyButton("##copy_buf", editor_text)
+    local copy_fn = imgui.CopyBufferButton or imgui.CopyButton
+    if copy_fn then
+        copy_fn("##copy_buf", editor_text)
     end
 
     imgui.Separator()
