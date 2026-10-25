@@ -418,6 +418,7 @@ static int LuaInputTextSetSelection(lua_State* L) {
         g->InputTextState.ReloadSelectionEnd = e;
         g->InputTextState.WantReloadUserBuf = true;
         g->InputTextReactivateId = g->InputTextState.ID;
+        g->InputTextDeactivatedState.ID = 0;
     }
     return 0;
 }

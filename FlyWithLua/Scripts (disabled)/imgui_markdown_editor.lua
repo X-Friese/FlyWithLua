@@ -138,6 +138,7 @@ local pitch_deg   = get("sim/flightmodel/position/theta")
 local cached_sel_start = -1
 local cached_sel_end   = -1
 local cached_cur_pos   = -1
+local just_formatted   = false
 
 local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     suffix = suffix or ""
@@ -166,6 +167,7 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
             local before = editor_text:sub(1, line_start - 1)
             local after  = editor_text:sub(line_start)
             editor_text = before .. prefix .. after
+            just_formatted = true
             if imgui.SetInputTextSelection then
                 imgui.SetInputTextSelection(sel_start + #prefix, sel_end + #prefix)
             end
@@ -175,6 +177,7 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
             local selected = editor_text:sub(sel_start + 1, sel_end)
             local after = editor_text:sub(sel_end + 1)
             editor_text = before .. prefix .. selected .. suffix .. after
+            just_formatted = true
             if imgui.SetInputTextSelection then
                 local new_start = sel_start + #prefix
                 local new_end   = new_start + #selected
@@ -192,6 +195,7 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
             local before = editor_text:sub(1, line_start - 1)
             local after  = editor_text:sub(line_start)
             editor_text = before .. prefix .. after
+            just_formatted = true
             if imgui.SetInputTextSelection then
                 imgui.SetInputTextSelection(cur_pos + #prefix, cur_pos + #prefix)
             end
@@ -201,6 +205,7 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
             local after  = editor_text:sub(cur_pos + 1)
             local snippet = prefix .. default_text .. suffix
             editor_text = before .. snippet .. after
+            just_formatted = true
             if imgui.SetInputTextSelection then
                 local new_cursor = cur_pos + #prefix + #default_text
                 imgui.SetInputTextSelection(new_cursor, new_cursor)
@@ -445,7 +450,9 @@ local function md_editor_render_content()
         -- 1. Fullscreen Editor
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
             local changed, new_text = imgui.InputTextMultiline("##editor_full", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
-            if changed and new_text then
+            if just_formatted then
+                just_formatted = false
+            elseif changed and new_text then
                 editor_text = new_text
             end
             imgui.EndChild()
@@ -466,7 +473,9 @@ local function md_editor_render_content()
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
             local changed, new_text = imgui.InputTextMultiline("##editor_split", editor_text, MAX_TEXT_BYTES, -1, -1, editor_input_flags)
-            if changed and new_text then
+            if just_formatted then
+                just_formatted = false
+            elseif changed and new_text then
                 editor_text = new_text
             end
             imgui.EndChild()
