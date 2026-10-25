@@ -9124,7 +9124,7 @@ void ImGui::UpdateCurrentFontSize(float restore_font_size_after_scaling)
 
         // Window scale (mostly obsolete now)
         if (window != NULL)
-            final_size *= window->FontWindowScale;
+            final_size *= window->FontWindowScale * window->FontWindowScaleParents;
 
         // Legacy scale factors
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
