@@ -169,7 +169,11 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
             editor_text = before .. prefix .. after
             just_formatted = true
             if imgui.SetInputTextSelection then
-                imgui.SetInputTextSelection(sel_start + #prefix, sel_end + #prefix)
+                local new_start = sel_start + #prefix
+                local new_end   = sel_end + #prefix
+                imgui.SetInputTextSelection(new_start, new_end)
+                cached_sel_start = new_start
+                cached_sel_end   = new_end
             end
         else
             -- Wrap the exact selection in-place:
@@ -182,6 +186,8 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
                 local new_start = sel_start + #prefix
                 local new_end   = new_start + #selected
                 imgui.SetInputTextSelection(new_start, new_end)
+                cached_sel_start = new_start
+                cached_sel_end   = new_end
             end
         end
     elseif cur_pos >= 0 and cur_pos <= #editor_text then
@@ -282,6 +288,30 @@ local function render_mode_button(label, is_active, tooltip)
     return clicked
 end
 
+-- 1-Click Toolbar Button: triggers on first click even when multiline text input is active
+local last_toolbar_click_time = 0
+local function toolbar_button(label, tooltip)
+    local now = os.clock()
+    local clicked = imgui.Button(label)
+    -- If multiline input is active, Button() eats click on first press; detect hover+click directly
+    if not clicked and imgui.IsItemHovered and imgui.IsMouseClicked then
+        if imgui.IsItemHovered(128) and imgui.IsMouseClicked(0) then
+            clicked = true
+        end
+    end
+    if clicked then
+        if now - last_toolbar_click_time < 0.25 then
+            return false
+        end
+        last_toolbar_click_time = now
+        return true
+    end
+    if imgui.IsItemHovered() and tooltip then
+        imgui.SetTooltip(tooltip)
+    end
+    return false
+end
+
 -- ----------------------------------------------------------------------------
 -- Internal Render Routine (Protected by pcall)
 -- ----------------------------------------------------------------------------
@@ -353,22 +383,19 @@ local function md_editor_render_content()
     else
         imgui.SameLine()
     end
-    if imgui.Button("Save Notes") then
+    if toolbar_button("Save Notes", "Save current text to cockpit_notes.md") then
         save_document()
     end
-    if imgui.IsItemHovered() then imgui.SetTooltip("Save current text to cockpit_notes.md") end
 
     imgui.SameLine()
-    if imgui.Button("Load Notes") then
+    if toolbar_button("Load Notes", "Reload cockpit_notes.md from disk") then
         load_document()
     end
-    if imgui.IsItemHovered() then imgui.SetTooltip("Reload cockpit_notes.md from disk") end
 
     imgui.SameLine()
-    if imgui.Button("Clear") then
+    if toolbar_button("Clear", "Clear entire editor buffer") then
         editor_text = ""
     end
-    if imgui.IsItemHovered() then imgui.SetTooltip("Clear entire editor buffer") end
 
     imgui.Separator()
 
@@ -376,52 +403,29 @@ local function md_editor_render_content()
     -- TOOLBAR: Quick Format Buttons & Template Drawer (Visible in Write & Split)
     -- ------------------------------------------------------------------------
     if view_mode ~= "Preview" then
-        if imgui.Button("H1") then wrap_or_insert("# ", "", "Heading 1", true) end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Prepend Heading 1 (# ...)") end
-
+        if toolbar_button("H1", "Prepend Heading 1 (# ...)") then wrap_or_insert("# ", "", "Heading 1", true) end
         imgui.SameLine()
-        if imgui.Button("H2") then wrap_or_insert("## ", "", "Heading 2", true) end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Prepend Heading 2 (## ...)") end
-
+        if toolbar_button("H2", "Prepend Heading 2 (## ...)") then wrap_or_insert("## ", "", "Heading 2", true) end
         imgui.SameLine()
-        if imgui.Button(" B ") then wrap_or_insert("**", "**", "bold text") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in **bold**") end
-
+        if toolbar_button(" B ", "Wrap selection in **bold**") then wrap_or_insert("**", "**", "bold text") end
         imgui.SameLine()
-        if imgui.Button(" I ") then wrap_or_insert("*", "*", "italic text") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in *italic*") end
-
+        if toolbar_button(" I ", "Wrap selection in *italic*") then wrap_or_insert("*", "*", "italic text") end
         imgui.SameLine()
-        if imgui.Button(" U ") then wrap_or_insert("<u>", "</u>", "underlined text") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in <u>underline</u>") end
-
+        if toolbar_button(" U ", "Wrap selection in <u>underline</u>") then wrap_or_insert("<u>", "</u>", "underlined text") end
         imgui.SameLine()
-        if imgui.Button(" S ") then wrap_or_insert("~~", "~~", "strikethrough") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in ~~strikethrough~~") end
-
+        if toolbar_button(" S ", "Wrap selection in ~~strikethrough~~") then wrap_or_insert("~~", "~~", "strikethrough") end
         imgui.SameLine()
-        if imgui.Button("* List") then wrap_or_insert("* ", "", "Item description", true) end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Convert line or insert bullet list (* ...)") end
-
+        if toolbar_button("* List", "Convert line or insert bullet list (* ...)") then wrap_or_insert("* ", "", "Item description", true) end
         imgui.SameLine()
-        if imgui.Button("[ ] Task") then wrap_or_insert("- [ ] ", "", "Checklist task to verify", true) end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Convert line or insert checklist task (- [ ] ...)") end
-
+        if toolbar_button("[ ] Task", "Convert line or insert checklist task (- [ ] ...)") then wrap_or_insert("- [ ] ", "", "Checklist task to verify", true) end
         imgui.SameLine()
-        if imgui.Button("<badge>") then wrap_or_insert("<badge green>", "</badge>", "NORMAL") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in <badge green|yellow|red>...</badge>") end
-
+        if toolbar_button("<badge>", "Wrap selection in <badge green|yellow|red>...</badge>") then wrap_or_insert("<badge green>", "</badge>", "NORMAL") end
         imgui.SameLine()
-        if imgui.Button("<pill>") then wrap_or_insert("<pill blue>", "</pill>", "ACTIVE") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in <pill blue|green|default>...</pill>") end
-
+        if toolbar_button("<pill>", "Wrap selection in <pill blue|green|default>...</pill>") then wrap_or_insert("<pill blue>", "</pill>", "ACTIVE") end
         imgui.SameLine()
-        if imgui.Button("<kbd>") then wrap_or_insert("<kbd>", "</kbd>", "Key") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in keycap <kbd>Key</kbd>") end
-
+        if toolbar_button("<kbd>", "Wrap selection in keycap <kbd>Key</kbd>") then wrap_or_insert("<kbd>", "</kbd>", "Key") end
         imgui.SameLine()
-        if imgui.Button("Code") then wrap_or_insert("```lua\n", "\n```", "-- code block\n") end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Wrap selection in fenced code block") end
+        if toolbar_button("Code", "Wrap selection in fenced code block") then wrap_or_insert("```lua\n", "\n```", "-- code block\n") end
 
         -- Templates Dropdown
         imgui.SameLine()
