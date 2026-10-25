@@ -180,11 +180,23 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
             local before = editor_text:sub(1, sel_start)
             local selected = editor_text:sub(sel_start + 1, sel_end)
             local after = editor_text:sub(sel_end + 1)
-            editor_text = before .. prefix .. selected .. suffix .. after
+
+            -- Trim leading and trailing whitespace/newlines so tags only wrap the word/text itself
+            local lead_ws = selected:match("^%s*") or ""
+            local trail_ws = selected:match("%s*$") or ""
+            local core_text = selected
+            if #lead_ws + #trail_ws < #selected then
+                core_text = selected:sub(#lead_ws + 1, #selected - #trail_ws)
+            else
+                lead_ws = ""
+                trail_ws = ""
+            end
+
+            editor_text = before .. lead_ws .. prefix .. core_text .. suffix .. trail_ws .. after
             just_formatted = true
             if imgui.SetInputTextSelection then
-                local new_start = sel_start + #prefix
-                local new_end   = new_start + #selected
+                local new_start = sel_start + #lead_ws + #prefix
+                local new_end   = new_start + #core_text
                 imgui.SetInputTextSelection(new_start, new_end)
                 cached_sel_start = new_start
                 cached_sel_end   = new_end
