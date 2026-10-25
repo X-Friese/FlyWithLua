@@ -280,7 +280,13 @@ local function md_editor_render_content()
     end
 
     -- Persistence Buttons on the Right
-    imgui.SameLine(math.max(10, avail_w - 280))
+    local right_start = avail_w - 260
+    local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 0
+    if right_start > cur_x + 10 then
+        imgui.SameLine(right_start)
+    else
+        imgui.SameLine()
+    end
     if imgui.Button("Save Notes") then
         save_document()
     end
@@ -361,6 +367,9 @@ local function md_editor_render_content()
         imgui.SameLine()
         imgui.TextUnformatted("|")
         imgui.SameLine()
+        if imgui.SetNextItemWidth then
+            imgui.SetNextItemWidth(175)
+        end
         if imgui.BeginCombo("##templates", "Aviation Templates...", 0) then
             for name, content in pairs(templates) do
                 if imgui.Selectable(name, false) then
@@ -450,10 +459,15 @@ local wnd_h = 720
 local wnd_x = math.floor((screen_w - wnd_w) * 0.5)
 local wnd_y = math.floor((screen_h - wnd_h) * 0.5)
 
--- Note: 4th arg is allow_scrolling = false. Outer window has no scrollbar;
--- inner child panes handle their own vertical scrolling.
-editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, false)
+-- Create ImGui floating window (4th arg MUST be true for withImgui)
+editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
 float_wnd_set_position(editor_wnd, wnd_x, wnd_y)
 float_wnd_set_title(editor_wnd, "Cockpit Markdown Notes & Scratchpad")
 float_wnd_set_imgui_builder(editor_wnd, "md_editor_on_build")
 float_wnd_set_onclose(editor_wnd, "md_editor_on_close")
+
+-- Explicitly disable outer window scrollbars and mouse-wheel scrolling so the
+-- window never overflows horizontally. Inner child panes handle vertical scrolling.
+if float_wnd_set_scrolling then
+    float_wnd_set_scrolling(editor_wnd, false)
+end
