@@ -290,6 +290,16 @@ local function load_document()
     end
 end
 
+-- Helper function to render modern Markdown TimedTooltips (or fallback to SetTooltip)
+local function show_tooltip(md_text)
+    if not md_text or #md_text == 0 then return end
+    if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
+        imgui.TimedTooltip.TextMD(md_text)
+    elseif imgui.IsItemHovered and imgui.IsItemHovered() and imgui.SetTooltip then
+        imgui.SetTooltip(md_text)
+    end
+end
+
 -- Helper for active mode buttons with blue accent styling
 local function render_mode_button(label, is_active, tooltip)
     if is_active then
@@ -299,8 +309,8 @@ local function render_mode_button(label, is_active, tooltip)
     if is_active then
         imgui.PopStyleColor()
     end
-    if imgui.IsItemHovered() and tooltip then
-        imgui.SetTooltip(tooltip)
+    if tooltip then
+        show_tooltip(tooltip)
     end
     return clicked
 end
@@ -323,8 +333,8 @@ local function toolbar_button(label, tooltip)
         last_toolbar_click_time = now
         return true
     end
-    if imgui.IsItemHovered() and tooltip then
-        imgui.SetTooltip(tooltip)
+    if tooltip then
+        show_tooltip(tooltip)
     end
     return false
 end
@@ -406,25 +416,25 @@ local function md_editor_render_content()
         else
             imgui.TextColored(0.2, 0.8, 0.2, 1.0, save_status_msg)
         end
-        if imgui.IsItemHovered() and #save_status_path > 0 then
-            imgui.SetTooltip(save_status_path)
+        if #save_status_path > 0 then
+            show_tooltip("**File Path:**\n`" .. save_status_path .. "`")
         end
     end
 
     imgui.Separator()
 
     -- Mode Selectors (Left)
-    if render_mode_button("  Write  ", view_mode == "Write", "Editor-only view: maximum horizontal and vertical space for typing.") then
+    if render_mode_button("  Write  ", view_mode == "Write", "**Write Mode** (Editor Only)\n\nMaximum horizontal and vertical space for drafting notes.") then
         view_mode = "Write"
     end
 
     imgui.SameLine()
-    if render_mode_button("  Split View  ", view_mode == "Split", "Side-by-side view: editor on left, real-time live preview on right.") then
+    if render_mode_button("  Split View  ", view_mode == "Split", "**Split View** (Side-by-Side)\n\nLive side-by-side editing on the left with instant Markdown preview on the right.") then
         view_mode = "Split"
     end
 
     imgui.SameLine()
-    if render_mode_button("  Preview  ", view_mode == "Preview", "Clean reading view: rendered Markdown document only.") then
+    if render_mode_button("  Preview  ", view_mode == "Preview", "**Preview Mode** (Reader Only)\n\nClean reading view displaying formatted Markdown typography, badges, and checklists.") then
         view_mode = "Preview"
     end
 
@@ -440,7 +450,7 @@ local function md_editor_render_content()
         zoom_pct = math.max(70, zoom_pct - 1)
         content_zoom = zoom_pct / 100.0
     end
-    if imgui.IsItemHovered() then imgui.SetTooltip("Zoom out 1% (Cmd/Ctrl + -)") end
+    show_tooltip("**Zoom Out** (-1%)\n\nDecrease canvas font scale.\n* Shortcut: <kbd>Cmd/Ctrl + -</kbd>")
 
     imgui.SameLine(0, 4)
 
@@ -458,9 +468,7 @@ local function md_editor_render_content()
             content_zoom = zoom_pct / 100.0
         end
     end
-    if imgui.IsItemHovered() then
-        imgui.SetTooltip(string.format("Content Zoom: %d%%\n* Drag or spin mouse wheel (1%% steps)\n* Cmd/Ctrl + = / - to zoom\n* Cmd/Ctrl + 0 to reset", zoom_pct))
-    end
+    show_tooltip(string.format("**Content Canvas Zoom:** `%d%%`\n\n* Drag slider or **spin mouse wheel** in 1%% steps\n* Zoom in: <kbd>Cmd/Ctrl + =</kbd>\n* Zoom out: <kbd>Cmd/Ctrl + -</kbd>\n* Reset: <kbd>Cmd/Ctrl + 0</kbd>", zoom_pct))
 
     imgui.SameLine(0, 4)
 
@@ -469,7 +477,7 @@ local function md_editor_render_content()
         zoom_pct = math.min(150, zoom_pct + 1)
         content_zoom = zoom_pct / 100.0
     end
-    if imgui.IsItemHovered() then imgui.SetTooltip("Zoom in 1% (Cmd/Ctrl + =)") end
+    show_tooltip("**Zoom In** (+1%)\n\nIncrease canvas font scale.\n* Shortcut: <kbd>Cmd/Ctrl + =</kbd>")
 
     imgui.SameLine(0, 4)
 
@@ -493,14 +501,12 @@ local function md_editor_render_content()
             content_zoom = zoom_pct / 100.0
         end
     end
-    if imgui.IsItemHovered() then
-        if zoom_pct ~= 100 then
-            imgui.SetTooltip("Reset zoom to 100% (Cmd/Ctrl + 0)")
-        elseif last_zoom_pct then
-            imgui.SetTooltip("Restore previous zoom to " .. last_zoom_pct .. "% (Cmd/Ctrl + 0)")
-        else
-            imgui.SetTooltip("Zoom baseline is 100%")
-        end
+    if zoom_pct ~= 100 then
+        show_tooltip("**Reset Zoom (100%)**\n\nReset canvas font scale back to baseline.\n* Shortcut: <kbd>Cmd/Ctrl + 0</kbd>")
+    elseif last_zoom_pct then
+        show_tooltip(string.format("**Restore Zoom (%d%%)**\n\n1-click A/B toggle back to prior zoom level.\n* Shortcut: <kbd>Cmd/Ctrl + 0</kbd>", last_zoom_pct))
+    else
+        show_tooltip("**Zoom Baseline (100%)**\n\nCanvas font scale is at 1.0x baseline.")
     end
 
     -- Persistence Buttons (Right)
@@ -511,17 +517,17 @@ local function md_editor_render_content()
     else
         imgui.SameLine()
     end
-    if toolbar_button("Save Notes", "Save current text to cockpit_notes.md") then
+    if toolbar_button("Save Notes", "**Save Notes**\n\nPersist buffer to `cockpit_notes.md` on disk.") then
         save_document()
     end
 
     imgui.SameLine()
-    if toolbar_button("Load Notes", "Reload cockpit_notes.md from disk") then
+    if toolbar_button("Load Notes", "**Load Notes**\n\nReload saved notes from `cockpit_notes.md`.") then
         load_document()
     end
 
     imgui.SameLine()
-    if toolbar_button("Clear", "Clear entire editor buffer") then
+    if toolbar_button("Clear", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
         editor_text = ""
     end
 
@@ -531,29 +537,29 @@ local function md_editor_render_content()
     -- TOOLBAR: Quick Format Buttons & Template Drawer (Visible in Write & Split)
     -- ------------------------------------------------------------------------
     if view_mode ~= "Preview" then
-        if toolbar_button("H1", "Prepend Heading 1 (# ...)") then wrap_or_insert("# ", "", "Heading 1", true) end
+        if toolbar_button("H1", "**Heading 1**\n\nPrepend `# ` to the current line.") then wrap_or_insert("# ", "", "Heading 1", true) end
         imgui.SameLine()
-        if toolbar_button("H2", "Prepend Heading 2 (## ...)") then wrap_or_insert("## ", "", "Heading 2", true) end
+        if toolbar_button("H2", "**Heading 2**\n\nPrepend `## ` to the current line.") then wrap_or_insert("## ", "", "Heading 2", true) end
         imgui.SameLine()
-        if toolbar_button(" B ", "Wrap selection in **bold**") then wrap_or_insert("**", "**", "bold text") end
+        if toolbar_button(" B ", "**Bold Text**\n\nWrap selected text in `**bold**` asterisks.") then wrap_or_insert("**", "**", "bold text") end
         imgui.SameLine()
-        if toolbar_button(" I ", "Wrap selection in *italic*") then wrap_or_insert("*", "*", "italic text") end
+        if toolbar_button(" I ", "**Italic Text**\n\nWrap selected text in `*italic*` asterisks.") then wrap_or_insert("*", "*", "italic text") end
         imgui.SameLine()
-        if toolbar_button(" U ", "Wrap selection in <u>underline</u>") then wrap_or_insert("<u>", "</u>", "underlined text") end
+        if toolbar_button(" U ", "**Underline**\n\nWrap selected text in `<u>underline</u>` tags.") then wrap_or_insert("<u>", "</u>", "underlined text") end
         imgui.SameLine()
-        if toolbar_button(" S ", "Wrap selection in ~~strikethrough~~") then wrap_or_insert("~~", "~~", "strikethrough") end
+        if toolbar_button(" S ", "**Strikethrough**\n\nWrap selected text in `~~strikethrough~~` tildes.") then wrap_or_insert("~~", "~~", "strikethrough") end
         imgui.SameLine()
-        if toolbar_button("* List", "Convert line or insert bullet list (* ...)") then wrap_or_insert("* ", "", "Item description", true) end
+        if toolbar_button("* List", "**Bullet List Item**\n\nPrepend `* ` bullet to current line or selection.") then wrap_or_insert("* ", "", "Item description", true) end
         imgui.SameLine()
-        if toolbar_button("[ ] Task", "Convert line or insert checklist task (- [ ] ...)") then wrap_or_insert("- [ ] ", "", "Checklist task to verify", true) end
+        if toolbar_button("[ ] Task", "**Checklist Task Item**\n\nPrepend `- [ ] ` interactive checklist item.") then wrap_or_insert("- [ ] ", "", "Checklist task to verify", true) end
         imgui.SameLine()
-        if toolbar_button("<badge>", "Wrap selection in <badge green|yellow|red>...</badge>") then wrap_or_insert("<badge green>", "</badge>", "NORMAL") end
+        if toolbar_button("<badge>", "**Avionics Badge**\n\nWrap selection in `<badge green|yellow|red>...</badge>` for instrument annunciators.") then wrap_or_insert("<badge green>", "</badge>", "NORMAL") end
         imgui.SameLine()
-        if toolbar_button("<pill>", "Wrap selection in <pill blue|green|default>...</pill>") then wrap_or_insert("<pill blue>", "</pill>", "ACTIVE") end
+        if toolbar_button("<pill>", "**Avionics Pill**\n\nWrap selection in `<pill blue|green|default>...</pill>` for system mode callouts.") then wrap_or_insert("<pill blue>", "</pill>", "ACTIVE") end
         imgui.SameLine()
-        if toolbar_button("<kbd>", "Wrap selection in keycap <kbd>Key</kbd>") then wrap_or_insert("<kbd>", "</kbd>", "Key") end
+        if toolbar_button("<kbd>", "**Keyboard Keycap**\n\nWrap selection in physical keycap `<kbd>Key</kbd>`.") then wrap_or_insert("<kbd>", "</kbd>", "Key") end
         imgui.SameLine()
-        if toolbar_button("Code", "Wrap selection in fenced code block") then wrap_or_insert("```lua\n", "\n```", "-- code block\n") end
+        if toolbar_button("Code", "**Lua Code Block**\n\nWrap selection in fenced ```lua block with live preview.") then wrap_or_insert("```lua\n", "\n```", "-- code block\n") end
 
         -- Templates Dropdown
         imgui.SameLine()
@@ -570,7 +576,7 @@ local function md_editor_render_content()
             end
             imgui.EndCombo()
         end
-        if imgui.IsItemHovered() then imgui.SetTooltip("Load pre-formatted cockpit templates (ATIS, CRAFT clearance, checklists)") end
+        show_tooltip("**Aviation Templates**\n\nLoad pre-formatted cockpit checklists and scratchpads:\n* **ATIS Copy Pad**\n* **IFR Clearance (CRAFT)**\n* **Pre-Flight Checklist**\n* **Diversion Briefing**\n* **FlyWithLua Scratchpad**")
 
         imgui.Separator()
     end
