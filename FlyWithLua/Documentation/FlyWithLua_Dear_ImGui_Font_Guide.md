@@ -1,11 +1,11 @@
 # FlyWithLua Dear ImGui Font Guide
 
-**FlyWithLua 2.8.18+ / 2.8.19 -- ImgWindow v2.2.1+ -- Dear ImGui 1.92.8**  
+**FlyWithLua 2.8.20+ -- ImgWindow v2.3.0+ -- Dear ImGui 1.92.8**  
 *A Developer & User Guide to Scalable Fonts, Custom Typefaces, and the Named Font Registry*
 
-> **October 21, 2026**  
+> **October 25, 2026**  
 > **Authors:** William Good & Steven L. Goldberg (`@slgoldberg`), with help from Google Gemini  
-> **Target Release:** FlyWithLua 2.8.18+ / 2.8.19 (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.1 Panel Graphics)
+> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImgWindow v2.3.0)
 
 ---
 
@@ -62,11 +62,20 @@ FlyWithLua includes high-quality TrueType fonts pre-baked into the shared font a
 | `"Roboto-Light"` | Light / Clean | `13px`, `16px`, `20px` (e.g. `"Roboto-Light-13"`) |
 | `"Roboto-Regular"` | Standard Regular | `13px`, `16px`, `20px` (e.g. `"Roboto-Regular-16"`) |
 | `"Roboto-Medium"` | Semi-Bold / Header | `13px`, `16px`, `20px` (e.g. `"Roboto-Medium-20"`) |
+| `"Roboto-Italic"` | Italic / Emphasis | `13px`, `16px`, `20px` (e.g. `"Roboto-Italic-16"`) |
+| `"RobotoMono-Regular"` | Monospace / Code | `13px`, `16px`, `20px` (e.g. `"RobotoMono-Regular-16"`) |
 | `"ProggyClean"` | Pixel Bitmap Font | `13px` fixed (Classic ImGui embedded font) |
 | `"ProggyForever"` | Scalable Vector Font | Scalable default font |
 | `"default"` | Active Default Font | Points to the primary default font |
 
-*If you request a base name without a size (e.g. `imgui.PushFont("Roboto-Regular")`), FlyWithLua automatically uses the primary size (`ImguiFontSize1`, default 13px).*
+*If you request a base name without a size (e.g. `imgui.PushFont("Roboto-Regular")` or `imgui.PushFont("RobotoMono-Regular")`), FlyWithLua automatically uses the primary size (`ImguiFontSize1`, default 13px).*
+
+#### 2.2.1 Markdown Typography Font Wiring (`imgui.MD`)
+When using the Markdown rendering engine (`imgui.MD`), FlyWithLua automatically connects text styles to the appropriate bundled TrueType fonts:
+- **Headings (`#`, `##`, `###`):** Rendered with `Roboto-Medium` (scaled by heading level).
+- **Body Text:** Rendered with `Roboto-Regular`.
+- **Italic Text (`*italic*`):** Rendered with `Roboto-Italic`.
+- **Inline Code (`code`) & Fenced Code Blocks (` ``` `):** Rendered with `RobotoMono-Regular`. If `RobotoMono-Regular` is not present, it gracefully falls back to `ProggyForever`.
 
 ---
 

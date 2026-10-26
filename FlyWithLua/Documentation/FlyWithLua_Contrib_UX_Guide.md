@@ -1,11 +1,11 @@
 # FlyWithLua Dear ImGui Contrib UX & Extensions Guide
 
-**FlyWithLua 2.8.18+ / 2.8.19 -- ImgWindow v2.2.1+ -- Dear ImGui 1.92.8**  
+**FlyWithLua 2.8.20+ -- ImgWindow v2.3.0+ -- Dear ImGui 1.92.8**  
 *Comprehensive Reference for Markdown, TimedTooltip, and Modern Interactive Widgets*
 
-> **DRAFT: October 21, 2026**  
+> **October 25, 2026**  
 > **Author:** Steven L. Goldberg (`@slgoldberg`) with help from Google Gemini  
-> **Target Release:** FlyWithLua 2.8.18+ / 2.8.19 (Built against Dear ImGui 1.92.8 & ImgWindow v2.2.1 Panel Graphics)
+> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImgWindow v2.3.0)
 
 ---
 
