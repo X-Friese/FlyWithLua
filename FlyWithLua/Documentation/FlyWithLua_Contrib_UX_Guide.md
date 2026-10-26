@@ -468,7 +468,7 @@ end
 
 ## 9. Bundled Demonstration Scripts
 
-FlyWithLua includes two complete, production-grade example scripts in `FlyWithLua/Scripts (disabled)/`:
+FlyWithLua includes complete, production-grade example scripts in `FlyWithLua/Scripts (disabled)/` *(to run either script in X-Plane, simply copy or move it from `Scripts (disabled)/` into your active `Scripts/` folder)*:
 
 ### 1. `imgui_contrib_demo.lua` (Visual Feature Showcase)
 A comprehensive interactive sandbox window demonstrating:
