@@ -59,13 +59,13 @@ FlyWithLua includes high-quality TrueType fonts pre-baked into the shared font a
 
 | Font Name / Alias | Style | Default Baked Sizes |
 | :--- | :--- | :--- |
-| `"Roboto-Light"` | Light / Clean | `13px`, `16px`, `20px` (e.g. `"Roboto-Light-13"`) |
-| `"Roboto-Regular"` | Standard Regular | `13px`, `16px`, `20px` (e.g. `"Roboto-Regular-16"`) |
-| `"Roboto-Medium"` | Semi-Bold / Header | `13px`, `16px`, `20px` (e.g. `"Roboto-Medium-20"`) |
-| `"Roboto-Italic"` | Italic / Emphasis | `13px`, `16px`, `20px` (e.g. `"Roboto-Italic-16"`) |
-| `"RobotoMono-Regular"` | Monospace / Code | `13px`, `16px`, `20px` (e.g. `"RobotoMono-Regular-16"`) |
-| `"ProggyClean"` | Pixel Bitmap Font | `13px` fixed (Classic ImGui embedded font) |
-| `"ProggyForever"` | Scalable Vector Font | Scalable default font |
+| `"Roboto-Light"` | Light / Clean (Proportional) | `13px`, `16px`, `20px` (e.g. `"Roboto-Light-13"`) |
+| `"Roboto-Regular"` | Standard Regular (Proportional) | `13px`, `16px`, `20px` (e.g. `"Roboto-Regular-16"`) |
+| `"Roboto-Medium"` | Semi-Bold / Header (Proportional) | `13px`, `16px`, `20px` (e.g. `"Roboto-Medium-20"`) |
+| `"Roboto-Italic"` | Italic / Emphasis (Proportional) | `13px`, `16px`, `20px` (e.g. `"Roboto-Italic-16"`) |
+| `"RobotoMono-Regular"` | Code / Monospace | `13px`, `16px`, `20px` (e.g. `"RobotoMono-Regular-16"`) |
+| `"ProggyClean"` | Bitmap Monospace | `13px` fixed (Classic ImGui embedded font) |
+| `"ProggyForever"` | Scalable Vector Monospace | Scalable default font |
 | `"default"` | Active Default Font | Points to the primary default font |
 
 *If you request a base name without a size (e.g. `imgui.PushFont("Roboto-Regular")` or `imgui.PushFont("RobotoMono-Regular")`), FlyWithLua automatically uses the primary size (`ImguiFontSize1`, default 13px).*
