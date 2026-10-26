@@ -127,7 +127,7 @@ set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
 ````
 
 ### 6. Clickable Hyperlinks
-Standard Markdown link syntax `[Label](URL)` is supported. When clicked, FlyWithLua automatically invokes the native operating system browser (via `open` on macOS, `ShellExecute` on Windows, or `xdg-open` on Linux).
+Standard Markdown link syntax `[Label](URL)` (as well as `{Label}(URL)`) is supported. When clicked, FlyWithLua automatically invokes the native operating system browser (via `open` on macOS, `ShellExecute` on Windows, or `xdg-open` on Linux).
 
 ```lua
 imgui.MD.Text("For aircraft manuals, see the [FlyWithLua Docs](https://github.com/sparker256/FlyWithLua).")
