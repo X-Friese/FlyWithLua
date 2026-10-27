@@ -224,9 +224,7 @@ local focus_new_note_input = false
 
 local function get_note_path(filename)
     filename = filename or current_note_file
-    if not filename:match("%.md$") then
-        filename = filename .. ".md"
-    end
+    filename = filename:gsub("%.[mM][dD]$", "") .. ".md"
     local sep = is_windows and "\\" or "/"
     return get_notes_dir() .. sep .. filename
 end
@@ -550,9 +548,7 @@ end
 
 local function save_document(filename)
     filename = filename or current_note_file
-    if not filename:match("%.md$") then
-        filename = filename .. ".md"
-    end
+    filename = filename:gsub("%.[mM][dD]$", "") .. ".md"
     current_note_file = filename
     local dir = get_notes_dir()
     ensure_directory(dir)
@@ -574,9 +570,7 @@ end
 
 local function load_document(filename)
     filename = filename or current_note_file
-    if not filename:match("%.md$") then
-        filename = filename .. ".md"
-    end
+    filename = filename:gsub("%.[mM][dD]$", "") .. ".md"
     local path = get_note_path(filename)
     local f, err = io.open(path, "r")
     if not f and filename == "cockpit_notes.md" then
@@ -1017,15 +1011,20 @@ local function md_editor_render_content()
         imgui.SameLine(0, 6)
         local create_clicked = imgui.Button("Create##new_note_ok")
         if (create_clicked or enter_pressed) then
-            local clean_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", ""):gsub("[^%w_%-]", "_")
+            local raw_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", "")
+            raw_name = raw_name:gsub("%.[mM][dD]$", "")
+            local clean_name = raw_name:gsub("[^%w_%-]", "_")
             if #clean_name > 0 then
-                clean_name = clean_name .. ".md"
-                current_note_file = clean_name
-                editor_text = "# " .. new_file_name_input .. "\n\n"
+                local file_name = clean_name .. ".md"
+                current_note_file = file_name
+                editor_text = "# " .. raw_name .. "\n\n"
                 editor_epoch = editor_epoch + 1
                 just_formatted = true
-                save_document(clean_name)
+                save_status_msg = "New Note: " .. file_name .. " (unsaved buffer)"
+                save_status_path = ""
+                save_status_time = os.time()
                 show_new_file_modal = false
+                list_note_files(true)
             end
         end
         imgui.SameLine(0, 4)
