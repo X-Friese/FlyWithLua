@@ -121,7 +121,16 @@ local function get_note_path(filename)
     return get_notes_dir() .. "/" .. filename
 end
 
-local function list_note_files()
+local cached_note_files = {}
+local last_files_scan_time = 0
+
+local function list_note_files(force)
+    local now = os.clock()
+    if not force and #cached_note_files > 0 and (now - last_files_scan_time < 1.5) then
+        return cached_note_files
+    end
+    last_files_scan_time = now
+
     local dir = get_notes_dir()
     ensure_directory(dir)
     local files_map = {}
@@ -130,9 +139,8 @@ local function list_note_files()
     -- 1. Try lfs_ffi
     local ok, lfs = pcall(require, "lfs_ffi")
     if ok and lfs and lfs.dir then
-        local iter_ok, iter = pcall(lfs.dir, dir)
-        if iter_ok and iter then
-            for entry in iter do
+        pcall(function()
+            for entry in lfs.dir(dir) do
                 if entry and entry:match("%.md$") and not entry:match("^%.") then
                     if not files_map[entry] then
                         files_map[entry] = true
@@ -140,7 +148,7 @@ local function list_note_files()
                     end
                 end
             end
-        end
+        end)
     end
 
     -- 2. Fallback to command line if lfs yielded nothing
@@ -148,29 +156,32 @@ local function list_note_files()
         local cmd = (SYSTEM == "IBM" or package.config:sub(1,1) == "\\")
             and ('dir /b "' .. dir:gsub("/", "\\") .. '\\*.md" 2>nul')
             or ('ls -1 "' .. dir .. '" 2>/dev/null')
-        local p = io.popen(cmd)
-        if p then
-            for line in p:lines() do
-                line = line:gsub("%s+$", "")
-                if line:match("%.md$") and not line:match("^%.") then
-                    if not files_map[line] then
-                        files_map[line] = true
-                        table.insert(files, line)
+        local popen_ok, p = pcall(io.popen, cmd)
+        if popen_ok and p then
+            pcall(function()
+                for line in p:lines() do
+                    line = line:gsub("%s+$", "")
+                    if line:match("%.md$") and not line:match("^%.") then
+                        if not files_map[line] then
+                            files_map[line] = true
+                            table.insert(files, line)
+                        end
                     end
                 end
-            end
-            p:close()
+                p:close()
+            end)
         end
     end
 
     -- Always ensure current_note_file is included
-    if not files_map[current_note_file] then
+    if current_note_file and not files_map[current_note_file] then
         table.insert(files, current_note_file)
         files_map[current_note_file] = true
     end
 
     table.sort(files)
-    return files
+    cached_note_files = files
+    return cached_note_files
 end
 
 -- Default scratchpad template loaded if no saved notes exist on disk
@@ -470,6 +481,7 @@ local function save_document(filename)
         save_status_msg = "Saved: " .. filename
         save_status_path = path
         save_status_time = os.time()
+        list_note_files(true)
     else
         save_status_msg = "Error Saving Notes"
         save_status_path = tostring(err)
@@ -498,6 +510,7 @@ local function load_document(filename)
         save_status_msg = "Loaded: " .. filename
         save_status_path = path
         save_status_time = os.time()
+        list_note_files(true)
     else
         save_status_msg = "File not found: " .. filename
         save_status_path = path
@@ -842,7 +855,7 @@ local function md_editor_render_content()
     end
 
     -- Persistence & Note File Selector (Right)
-    local right_start = avail_w - 380
+    local right_start = avail_w - 280
     local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 0
     if right_start > cur_x + 10 then
         imgui.SameLine(right_start)
@@ -853,27 +866,32 @@ local function md_editor_render_content()
     imgui.TextUnformatted("Note:")
     imgui.SameLine(0, 4)
     if imgui.SetNextItemWidth then
-        imgui.SetNextItemWidth(150)
+        imgui.SetNextItemWidth(140)
     end
     if imgui.BeginCombo("##active_note_file", current_note_file, 0) then
-        local note_files = list_note_files()
-        for _, nfile in ipairs(note_files) do
-            local is_selected = (nfile == current_note_file)
-            if imgui.Selectable(nfile, is_selected) then
-                if nfile ~= current_note_file then
-                    load_document(nfile)
+        local ok, err = pcall(function()
+            local note_files = list_note_files()
+            for _, nfile in ipairs(note_files) do
+                local is_selected = (nfile == current_note_file)
+                if imgui.Selectable(nfile, is_selected) then
+                    if nfile ~= current_note_file then
+                        load_document(nfile)
+                    end
+                end
+                if is_selected and imgui.SetItemDefaultFocus then
+                    imgui.SetItemDefaultFocus()
                 end
             end
-            if is_selected and imgui.SetItemDefaultFocus then
-                imgui.SetItemDefaultFocus()
+            imgui.Separator()
+            if imgui.Selectable("+ New Note...", false) then
+                show_new_file_modal = true
+                new_file_name_input = ""
             end
-        end
-        imgui.Separator()
-        if imgui.Selectable("+ New Note...", false) then
-            show_new_file_modal = true
-            new_file_name_input = ""
-        end
+        end)
         imgui.EndCombo()
+        if not ok then
+            print("[FlyWithLua MarkdownEditor] Error in Note Combo: " .. tostring(err))
+        end
     end
     show_tooltip("**Active Note File**\n\n* Select any `.md` file in `Scripts/MarkdownEditor/`\n* Files dropped into folder in Finder appear automatically\n* Click `+ New Note...` to create a new file")
 
@@ -886,19 +904,6 @@ local function md_editor_render_content()
     if toolbar_button("+ New", "**Create New Note**\n\nCreate a new named Markdown file in `Scripts/MarkdownEditor/`.") then
         show_new_file_modal = true
         new_file_name_input = ""
-    end
-
-    imgui.SameLine(0, 4)
-    if toolbar_button("Clear", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
-        editor_text = ""
-        editor_epoch = editor_epoch + 1
-        just_formatted = true
-    end
-
-    imgui.SameLine(0, 4)
-    local copy_fn = imgui.CopyBufferButton or imgui.CopyButton
-    if copy_fn then
-        copy_fn("##copy_buf", editor_text)
     end
 
     -- Optional inline bar to name and create a new note
@@ -970,14 +975,19 @@ local function md_editor_render_content()
             imgui.SetNextItemWidth(175)
         end
         if imgui.BeginCombo("##templates", "Aviation Templates...", 0) then
-            for name, content in pairs(templates) do
-                if imgui.Selectable(name, false) then
-                    editor_text = content
-                    editor_epoch = editor_epoch + 1
-                    just_formatted = true
+            local ok, err = pcall(function()
+                for name, content in pairs(templates) do
+                    if imgui.Selectable(name, false) then
+                        editor_text = content
+                        editor_epoch = editor_epoch + 1
+                        just_formatted = true
+                    end
                 end
-            end
+            end)
             imgui.EndCombo()
+            if not ok then
+                print("[FlyWithLua MarkdownEditor] Error in Templates Combo: " .. tostring(err))
+            end
         end
         show_tooltip("**Aviation Templates**\n\nLoad pre-formatted cockpit checklists and scratchpads:\n* **ATIS Copy Pad**\n* **IFR Clearance (CRAFT)**\n* **Pre-Flight Checklist**\n* **Diversion Briefing**\n* **FlyWithLua Scratchpad**")
 
@@ -991,6 +1001,25 @@ local function md_editor_render_content()
         -- 1. Fullscreen Editor
         if imgui.BeginChild("FullEditorChild", 0, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
+
+            local win_w = (imgui.GetWindowWidth and imgui.GetWindowWidth()) or avail_w
+            local copy_fn = imgui.CopyBufferButton or imgui.CopyButton
+            local right_target = win_w - (copy_fn and 135 or 65)
+            local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 160
+            if right_target > cur_x + 10 then
+                imgui.SameLine(right_target)
+            else
+                imgui.SameLine()
+            end
+            if toolbar_button("Clear##full", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
+                editor_text = ""
+                editor_epoch = editor_epoch + 1
+                just_formatted = true
+            end
+            if copy_fn then
+                imgui.SameLine(0, 4)
+                copy_fn("##copy_buf_full", editor_text)
+            end
 
             local editor_font = "RobotoMono-Regular"
             local editor_font_size = 16.0 * content_zoom
@@ -1013,6 +1042,22 @@ local function md_editor_render_content()
     elseif view_mode == "Preview" then
         -- 2. Fullscreen Live Rendered Preview
         if imgui.BeginChild("FullPreviewChild", 0, 0, 1) then
+            imgui.TextDisabled("RENDERED MARKDOWN PREVIEW:")
+
+            local win_w = (imgui.GetWindowWidth and imgui.GetWindowWidth()) or avail_w
+            local copy_fn = imgui.CopyBufferButton or imgui.CopyButton
+            if copy_fn then
+                -- Reserve extra clearance (108 px) for the vertical scrollbar track
+                local right_target = win_w - 108
+                local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 180
+                if right_target > cur_x + 10 then
+                    imgui.SameLine(right_target)
+                else
+                    imgui.SameLine()
+                end
+                copy_fn("##copy_buf_preview", editor_text)
+            end
+
             if imgui.SetWindowFontScale then
                 imgui.SetWindowFontScale(content_zoom)
             end
@@ -1027,6 +1072,25 @@ local function md_editor_render_content()
         -- Left Pane: Editor (with Word-Wrap enabled)
         if imgui.BeginChild("SplitEditorChild", col_w, 0, 1) then
             imgui.TextDisabled("RAW MARKDOWN SOURCE:")
+
+            local win_w = (imgui.GetWindowWidth and imgui.GetWindowWidth()) or col_w
+            local copy_fn = imgui.CopyBufferButton or imgui.CopyButton
+            local right_target = win_w - (copy_fn and 135 or 65)
+            local cur_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 160
+            if right_target > cur_x + 10 then
+                imgui.SameLine(right_target)
+            else
+                imgui.SameLine()
+            end
+            if toolbar_button("Clear##split", "**Clear Buffer**\n\nEmpty the entire editor scratchpad.") then
+                editor_text = ""
+                editor_epoch = editor_epoch + 1
+                just_formatted = true
+            end
+            if copy_fn then
+                imgui.SameLine(0, 4)
+                copy_fn("##copy_buf_split", editor_text)
+            end
 
             local editor_font = "RobotoMono-Regular"
             local editor_font_size = 16.0 * content_zoom
