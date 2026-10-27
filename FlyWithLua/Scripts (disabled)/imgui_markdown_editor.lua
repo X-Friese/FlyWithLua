@@ -152,6 +152,7 @@ end
 
 local function scan_notes_posix(dir)
     local files = {}
+    local files_map = {}
     local ok, lfs = pcall(require, "lfs_ffi")
     if ok and lfs then
         if lfs.mkdir then
@@ -161,11 +162,33 @@ local function scan_notes_posix(dir)
             pcall(function()
                 for entry in lfs.dir(dir) do
                     if entry and entry:match("%.md$") and not entry:match("^%.") then
-                        table.insert(files, entry)
+                        if not files_map[entry] then
+                            files_map[entry] = true
+                            table.insert(files, entry)
+                        end
                     end
                 end
             end)
         end
+    end
+
+    -- Fallback to ls on POSIX (macOS & Linux) where popen is standard and safe
+    if #files == 0 and io.popen then
+        pcall(function()
+            local p = io.popen('ls -1 "' .. dir .. '" 2>/dev/null')
+            if p then
+                for line in p:lines() do
+                    line = line:gsub("%s+$", "")
+                    if line:match("%.md$") and not line:match("^%.") then
+                        if not files_map[line] then
+                            files_map[line] = true
+                            table.insert(files, line)
+                        end
+                    end
+                end
+                p:close()
+            end
+        end)
     end
     return files
 end
@@ -254,7 +277,11 @@ local function list_note_files(force)
         end
     end
 
-    -- Always ensure current_note_file is included
+    -- Always ensure cockpit_notes.md and current_note_file are included
+    if not files_map["cockpit_notes.md"] then
+        table.insert(files, "cockpit_notes.md")
+        files_map["cockpit_notes.md"] = true
+    end
     if current_note_file and not files_map[current_note_file] then
         table.insert(files, current_note_file)
         files_map[current_note_file] = true
