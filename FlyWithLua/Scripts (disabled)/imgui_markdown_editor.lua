@@ -83,11 +83,6 @@ local function ensure_directory(dir)
     if ok and lfs and lfs.mkdir then
         pcall(lfs.mkdir, dir)
     end
-    if SYSTEM == "IBM" or package.config:sub(1,1) == "\\" then
-        os.execute('mkdir "' .. dir:gsub("/", "\\") .. '" 2>nul')
-    else
-        os.execute('mkdir -p "' .. dir .. '" 2>/dev/null')
-    end
 end
 
 local function get_notes_dir()
@@ -119,69 +114,6 @@ local function get_note_path(filename)
         filename = filename .. ".md"
     end
     return get_notes_dir() .. "/" .. filename
-end
-
-local cached_note_files = {}
-local last_files_scan_time = 0
-
-local function list_note_files(force)
-    local now = os.clock()
-    if not force and #cached_note_files > 0 and (now - last_files_scan_time < 1.5) then
-        return cached_note_files
-    end
-    last_files_scan_time = now
-
-    local dir = get_notes_dir()
-    ensure_directory(dir)
-    local files_map = {}
-    local files = {}
-
-    -- 1. Try lfs_ffi
-    local ok, lfs = pcall(require, "lfs_ffi")
-    if ok and lfs and lfs.dir then
-        pcall(function()
-            for entry in lfs.dir(dir) do
-                if entry and entry:match("%.md$") and not entry:match("^%.") then
-                    if not files_map[entry] then
-                        files_map[entry] = true
-                        table.insert(files, entry)
-                    end
-                end
-            end
-        end)
-    end
-
-    -- 2. Fallback to command line if lfs yielded nothing
-    if #files == 0 and io.popen then
-        local cmd = (SYSTEM == "IBM" or package.config:sub(1,1) == "\\")
-            and ('dir /b "' .. dir:gsub("/", "\\") .. '\\*.md" 2>nul')
-            or ('ls -1 "' .. dir .. '" 2>/dev/null')
-        local popen_ok, p = pcall(io.popen, cmd)
-        if popen_ok and p then
-            pcall(function()
-                for line in p:lines() do
-                    line = line:gsub("%s+$", "")
-                    if line:match("%.md$") and not line:match("^%.") then
-                        if not files_map[line] then
-                            files_map[line] = true
-                            table.insert(files, line)
-                        end
-                    end
-                end
-                p:close()
-            end)
-        end
-    end
-
-    -- Always ensure current_note_file is included
-    if current_note_file and not files_map[current_note_file] then
-        table.insert(files, current_note_file)
-        files_map[current_note_file] = true
-    end
-
-    table.sort(files)
-    cached_note_files = files
-    return cached_note_files
 end
 
 -- Default scratchpad template loaded if no saved notes exist on disk
@@ -481,7 +413,6 @@ local function save_document(filename)
         save_status_msg = "Saved: " .. filename
         save_status_path = path
         save_status_time = os.time()
-        list_note_files(true)
     else
         save_status_msg = "Error Saving Notes"
         save_status_path = tostring(err)
@@ -510,7 +441,6 @@ local function load_document(filename)
         save_status_msg = "Loaded: " .. filename
         save_status_path = path
         save_status_time = os.time()
-        list_note_files(true)
     else
         save_status_msg = "File not found: " .. filename
         save_status_path = path
@@ -869,31 +799,12 @@ local function md_editor_render_content()
         imgui.SetNextItemWidth(140)
     end
     if imgui.BeginCombo("##active_note_file", current_note_file, 0) then
-        local ok, err = pcall(function()
-            local note_files = list_note_files()
-            for _, nfile in ipairs(note_files) do
-                local is_selected = (nfile == current_note_file)
-                if imgui.Selectable(nfile, is_selected) then
-                    if nfile ~= current_note_file then
-                        load_document(nfile)
-                    end
-                end
-                if is_selected and imgui.SetItemDefaultFocus then
-                    imgui.SetItemDefaultFocus()
-                end
-            end
-            imgui.Separator()
-            if imgui.Selectable("+ New Note...", false) then
-                show_new_file_modal = true
-                new_file_name_input = ""
-            end
-        end)
+        imgui.Selectable(current_note_file, true)
+        imgui.Separator()
+        imgui.TextDisabled("Multi-Note Switching Coming Soon...")
         imgui.EndCombo()
-        if not ok then
-            print("[FlyWithLua MarkdownEditor] Error in Note Combo: " .. tostring(err))
-        end
     end
-    show_tooltip("**Active Note File**\n\n* Select any `.md` file in `Scripts/MarkdownEditor/`\n* Files dropped into folder in Finder appear automatically\n* Click `+ New Note...` to create a new file")
+    show_tooltip(string.format("**Active Note File**\n\nActive note buffer: `Scripts/MarkdownEditor/%s`\n\n*Multi-note file switching coming in next release.*", current_note_file))
 
     imgui.SameLine(0, 4)
     if toolbar_button("Save", string.format("**Save Note**\n\nPersist buffer to `Scripts/MarkdownEditor/%s` on disk.", current_note_file)) then
@@ -901,40 +812,10 @@ local function md_editor_render_content()
     end
 
     imgui.SameLine(0, 4)
-    if toolbar_button("+ New", "**Create New Note**\n\nCreate a new named Markdown file in `Scripts/MarkdownEditor/`.") then
-        show_new_file_modal = true
-        new_file_name_input = ""
-    end
-
-    -- Optional inline bar to name and create a new note
-    if show_new_file_modal then
-        imgui.Separator()
-        imgui.TextUnformatted("New Note Name:")
-        imgui.SameLine()
-        if imgui.SetNextItemWidth then imgui.SetNextItemWidth(180) end
-        local text_changed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64)
-        if text_changed and new_val then
-            new_file_name_input = new_val
-        end
-        imgui.SameLine()
-        imgui.TextDisabled(".md")
-        imgui.SameLine()
-        if imgui.Button("Create##new_note_ok") then
-            local clean_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", ""):gsub("[^%w_%-]", "_")
-            if #clean_name > 0 then
-                clean_name = clean_name .. ".md"
-                current_note_file = clean_name
-                editor_text = "# " .. new_file_name_input .. "\n\n"
-                editor_epoch = editor_epoch + 1
-                just_formatted = true
-                save_document(clean_name)
-                show_new_file_modal = false
-            end
-        end
-        imgui.SameLine()
-        if imgui.Button("Cancel##new_note_cancel") then
-            show_new_file_modal = false
-        end
+    if toolbar_button("+ New", "**Create New Note**\n\nMulti-note creation coming in the next update.") then
+        save_status_msg = "Multi-note support coming soon!"
+        save_status_path = ""
+        save_status_time = os.time()
     end
 
     imgui.Separator()
