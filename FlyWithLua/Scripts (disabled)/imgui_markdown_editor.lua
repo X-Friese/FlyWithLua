@@ -23,15 +23,19 @@ elseif imgui.constant and imgui.constant.Col and imgui.constant.Col.Button then
     ImGuiCol_Button = imgui.constant.Col.Button
 end
 
--- ImGuiInputTextFlags (WordWrap = 1 << 24, AllowTabInput = 1 << 5)
+-- ImGuiInputTextFlags (WordWrap = 1 << 24, AllowTabInput = 1 << 5, EnterReturnsTrue = 1 << 6)
 local ImGuiInputTextFlags_WordWrap = 16777216
 local ImGuiInputTextFlags_AllowTabInput = 32
+local ImGuiInputTextFlags_EnterReturnsTrue = 64
 if imgui.constant and imgui.constant.InputTextFlags then
     if imgui.constant.InputTextFlags.AllowTabInput then
         ImGuiInputTextFlags_AllowTabInput = imgui.constant.InputTextFlags.AllowTabInput
     end
     if imgui.constant.InputTextFlags.WordWrap then
         ImGuiInputTextFlags_WordWrap = imgui.constant.InputTextFlags.WordWrap
+    end
+    if imgui.constant.InputTextFlags.EnterReturnsTrue then
+        ImGuiInputTextFlags_EnterReturnsTrue = imgui.constant.InputTextFlags.EnterReturnsTrue
     end
 end
 local editor_input_flags = ImGuiInputTextFlags_WordWrap + ImGuiInputTextFlags_AllowTabInput
@@ -1004,7 +1008,7 @@ local function md_editor_render_content()
             end
             focus_new_note_input = false
         end
-        local enter_pressed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64, 32)
+        local enter_pressed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64, ImGuiInputTextFlags_EnterReturnsTrue)
         if new_val then
             new_file_name_input = new_val
         end
