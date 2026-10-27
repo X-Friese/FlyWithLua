@@ -1047,11 +1047,9 @@ local function md_editor_render_content()
                 editor_text = "# " .. raw_name .. "\n\n"
                 editor_epoch = editor_epoch + 1
                 just_formatted = true
-                save_status_msg = "New Note: " .. file_name .. " (unsaved buffer)"
-                save_status_path = ""
-                save_status_time = os.time()
+                save_document(file_name)
+                save_status_msg = "Created note: " .. file_name
                 show_new_file_modal = false
-                list_note_files(true)
             end
         end
         imgui.SameLine(0, 4)
