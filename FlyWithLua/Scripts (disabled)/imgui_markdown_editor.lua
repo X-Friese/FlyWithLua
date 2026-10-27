@@ -78,30 +78,139 @@ local inc_repeat_count = 0   -- Counter to throttle repeat speed on [+] (1/4 rat
 -- ----------------------------------------------------------------------------
 -- File Persistence (Save & Load in Scripts/MarkdownEditor/)
 -- ----------------------------------------------------------------------------
-local function ensure_directory(dir)
+local is_windows = (SYSTEM == "IBM") or (package.config:sub(1,1) == "\\")
+
+-- Windows-specific pure Win32 kernel32 FFI file enumeration (Zero Shell / No cmd.exe / No Deadlock)
+local ffi_ok, ffi = pcall(require, "ffi")
+if is_windows and ffi_ok and ffi then
+    pcall(ffi.cdef, [[
+        typedef struct _WIN32_FIND_DATAA {
+            uint32_t dwFileAttributes;
+            uint32_t ftCreationTime_dwLowDateTime;
+            uint32_t ftCreationTime_dwHighDateTime;
+            uint32_t ftLastAccessTime_dwLowDateTime;
+            uint32_t ftLastAccessTime_dwHighDateTime;
+            uint32_t ftLastWriteTime_dwLowDateTime;
+            uint32_t ftLastWriteTime_dwHighDateTime;
+            uint32_t nFileSizeHigh;
+            uint32_t nFileSizeLow;
+            uint32_t dwReserved0;
+            uint32_t dwReserved1;
+            char     cFileName[260];
+            char     cAlternateFileName[14];
+        } WIN32_FIND_DATAA;
+
+        void* FindFirstFileA(const char* lpFileName, WIN32_FIND_DATAA* lpFindFileData);
+        int   FindNextFileA(void* hFindFile, WIN32_FIND_DATAA* lpFindFileData);
+        int   FindClose(void* hFindFile);
+        int   CreateDirectoryA(const char* lpPathName, void* lpSecurityAttributes);
+    ]])
+end
+
+local function get_kernel32()
+    if not (ffi_ok and ffi) then return nil end
+    local ok, k32 = pcall(function() return ffi.load("kernel32") end)
+    if ok and k32 then return k32 end
+    return ffi.C
+end
+
+local function scan_notes_windows(dir)
+    local files = {}
+    if not (ffi_ok and ffi) then return files end
+    pcall(function()
+        local k32 = get_kernel32()
+        if not k32 then return end
+        
+        -- Ensure directory exists via kernel32 CreateDirectoryA (zero shell)
+        k32.CreateDirectoryA(dir, nil)
+
+        local find_data = ffi.new("WIN32_FIND_DATAA")
+        local pattern = dir .. "\\*.md"
+        local handle = k32.FindFirstFileA(pattern, find_data)
+        if handle ~= nil then
+            local int_h = tonumber(ffi.cast("intptr_t", handle))
+            if int_h and int_h ~= -1 and int_h ~= 0 then
+                while true do
+                    local fname = ffi.string(find_data.cFileName)
+                    if fname and #fname > 0 and fname:match("%.md$") and not fname:match("^%.") then
+                        table.insert(files, fname)
+                    end
+                    if k32.FindNextFileA(handle, find_data) == 0 then
+                        break
+                    end
+                end
+                k32.FindClose(handle)
+            end
+        end
+    end)
+    return files
+end
+
+local function scan_notes_posix(dir)
+    local files = {}
     local ok, lfs = pcall(require, "lfs_ffi")
-    if ok and lfs and lfs.mkdir then
-        pcall(lfs.mkdir, dir)
+    if ok and lfs then
+        if lfs.mkdir then
+            pcall(lfs.mkdir, dir)
+        end
+        if lfs.dir then
+            pcall(function()
+                for entry in lfs.dir(dir) do
+                    if entry and entry:match("%.md$") and not entry:match("^%.") then
+                        table.insert(files, entry)
+                    end
+                end
+            end)
+        end
+    end
+    return files
+end
+
+local function ensure_directory(dir)
+    if is_windows then
+        if ffi_ok and ffi then
+            pcall(function()
+                local k32 = get_kernel32()
+                if k32 then k32.CreateDirectoryA(dir, nil) end
+            end)
+        end
+    else
+        local ok, lfs = pcall(require, "lfs_ffi")
+        if ok and lfs and lfs.mkdir then
+            pcall(lfs.mkdir, dir)
+        end
     end
 end
 
 local function get_notes_dir()
+    local sep = is_windows and "\\" or "/"
     local base_dir = "FlyWithLua"
     if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
-        base_dir = CURRENT_SCRIPT_DIRECTORY
+        base_dir = CURRENT_SCRIPT_DIRECTORY:gsub("[/\\]+$", "")
+    end
+    if is_windows then
+        base_dir = base_dir:gsub("/", "\\")
+    else
+        base_dir = base_dir:gsub("\\", "/")
     end
     if base_dir:match("[/\\]MarkdownEditor$") then
         return base_dir
     end
-    return base_dir .. "/MarkdownEditor"
+    return base_dir .. sep .. "MarkdownEditor"
 end
 
 local function get_legacy_save_path()
+    local sep = is_windows and "\\" or "/"
     local base_dir = "FlyWithLua"
     if CURRENT_SCRIPT_DIRECTORY and #CURRENT_SCRIPT_DIRECTORY > 0 then
-        base_dir = CURRENT_SCRIPT_DIRECTORY
+        base_dir = CURRENT_SCRIPT_DIRECTORY:gsub("[/\\]+$", "")
     end
-    return base_dir .. "/cockpit_notes.md"
+    if is_windows then
+        base_dir = base_dir:gsub("/", "\\")
+    else
+        base_dir = base_dir:gsub("\\", "/")
+    end
+    return base_dir .. sep .. "cockpit_notes.md"
 end
 
 local current_note_file = "cockpit_notes.md"
@@ -113,7 +222,44 @@ local function get_note_path(filename)
     if not filename:match("%.md$") then
         filename = filename .. ".md"
     end
-    return get_notes_dir() .. "/" .. filename
+    local sep = is_windows and "\\" or "/"
+    return get_notes_dir() .. sep .. filename
+end
+
+local cached_note_files = {}
+local last_files_scan_time = 0
+
+local function list_note_files(force)
+    local now = os.clock()
+    if not force and #cached_note_files > 0 and (now - last_files_scan_time < 1.5) then
+        return cached_note_files
+    end
+    last_files_scan_time = now
+
+    local dir = get_notes_dir()
+    ensure_directory(dir)
+    local raw_files = is_windows and scan_notes_windows(dir) or scan_notes_posix(dir)
+
+    local files_map = {}
+    local files = {}
+    if raw_files then
+        for _, f in ipairs(raw_files) do
+            if not files_map[f] then
+                files_map[f] = true
+                table.insert(files, f)
+            end
+        end
+    end
+
+    -- Always ensure current_note_file is included
+    if current_note_file and not files_map[current_note_file] then
+        table.insert(files, current_note_file)
+        files_map[current_note_file] = true
+    end
+
+    table.sort(files)
+    cached_note_files = files
+    return cached_note_files
 end
 
 -- Default scratchpad template loaded if no saved notes exist on disk
@@ -413,6 +559,7 @@ local function save_document(filename)
         save_status_msg = "Saved: " .. filename
         save_status_path = path
         save_status_time = os.time()
+        list_note_files(true)
     else
         save_status_msg = "Error Saving Notes"
         save_status_path = tostring(err)
@@ -441,6 +588,7 @@ local function load_document(filename)
         save_status_msg = "Loaded: " .. filename
         save_status_path = path
         save_status_time = os.time()
+        list_note_files(true)
     else
         save_status_msg = "File not found: " .. filename
         save_status_path = path
@@ -799,23 +947,72 @@ local function md_editor_render_content()
         imgui.SetNextItemWidth(140)
     end
     if imgui.BeginCombo("##active_note_file", current_note_file, 0) then
-        imgui.Selectable(current_note_file, true)
-        imgui.Separator()
-        imgui.TextDisabled("Multi-Note Switching Coming Soon...")
+        local ok, err = pcall(function()
+            local note_files = list_note_files()
+            for _, nfile in ipairs(note_files) do
+                local is_selected = (nfile == current_note_file)
+                if imgui.Selectable(nfile, is_selected) then
+                    if nfile ~= current_note_file then
+                        load_document(nfile)
+                    end
+                end
+                if is_selected and imgui.SetItemDefaultFocus then
+                    imgui.SetItemDefaultFocus()
+                end
+            end
+            imgui.Separator()
+            if imgui.Selectable("+ New Note...", false) then
+                show_new_file_modal = true
+                new_file_name_input = ""
+            end
+        end)
         imgui.EndCombo()
+        if not ok then
+            print("[FlyWithLua MarkdownEditor] Error in Note Combo: " .. tostring(err))
+        end
     end
-    show_tooltip(string.format("**Active Note File**\n\nActive note buffer: `Scripts/MarkdownEditor/%s`\n\n*Multi-note file switching coming in next release.*", current_note_file))
+    show_tooltip("**Active Note File**\n\n* Select any `.md` file in `Scripts/MarkdownEditor/`\n* Files dropped into folder in Finder/Explorer appear automatically\n* Click `+ New Note...` to create a new file")
 
     imgui.SameLine(0, 4)
     if toolbar_button("Save", string.format("**Save Note**\n\nPersist buffer to `Scripts/MarkdownEditor/%s` on disk.", current_note_file)) then
-        save_document()
+        save_document(current_note_file)
     end
 
     imgui.SameLine(0, 4)
-    if toolbar_button("+ New", "**Create New Note**\n\nMulti-note creation coming in the next update.") then
-        save_status_msg = "Multi-note support coming soon!"
-        save_status_path = ""
-        save_status_time = os.time()
+    if toolbar_button("+ New", "**Create New Note**\n\nCreate a new named Markdown file in `Scripts/MarkdownEditor/`.") then
+        show_new_file_modal = true
+        new_file_name_input = ""
+    end
+
+    -- Optional inline bar to name and create a new note
+    if show_new_file_modal then
+        imgui.Separator()
+        imgui.TextUnformatted("New Note Name:")
+        imgui.SameLine()
+        if imgui.SetNextItemWidth then imgui.SetNextItemWidth(180) end
+        local text_changed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64)
+        if text_changed and new_val then
+            new_file_name_input = new_val
+        end
+        imgui.SameLine()
+        imgui.TextDisabled(".md")
+        imgui.SameLine()
+        if imgui.Button("Create##new_note_ok") then
+            local clean_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", ""):gsub("[^%w_%-]", "_")
+            if #clean_name > 0 then
+                clean_name = clean_name .. ".md"
+                current_note_file = clean_name
+                editor_text = "# " .. new_file_name_input .. "\n\n"
+                editor_epoch = editor_epoch + 1
+                just_formatted = true
+                save_document(clean_name)
+                show_new_file_modal = false
+            end
+        end
+        imgui.SameLine()
+        if imgui.Button("Cancel##new_note_cancel") then
+            show_new_file_modal = false
+        end
     end
 
     imgui.Separator()
