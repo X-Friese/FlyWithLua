@@ -1310,3 +1310,8 @@ float_wnd_set_onclose(editor_wnd, "md_editor_on_close")
 if float_wnd_set_scrolling then
     float_wnd_set_scrolling(editor_wnd, false)
 end
+
+-- Prevent resizing the window smaller than the minimum toolbar and pane bounds (540x260)
+if float_wnd_set_resizing_limits then
+    float_wnd_set_resizing_limits(editor_wnd, 540, 260, 10000, 10000)
+end
