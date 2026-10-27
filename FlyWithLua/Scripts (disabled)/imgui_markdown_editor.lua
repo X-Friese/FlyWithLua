@@ -216,6 +216,7 @@ end
 local current_note_file = "cockpit_notes.md"
 local show_new_file_modal = false
 local new_file_name_input = ""
+local focus_new_note_input = false
 
 local function get_note_path(filename)
     filename = filename or current_note_file
@@ -964,6 +965,7 @@ local function md_editor_render_content()
             if imgui.Selectable("+ New Note...", false) then
                 show_new_file_modal = true
                 new_file_name_input = ""
+                focus_new_note_input = true
             end
         end)
         imgui.EndCombo()
@@ -982,6 +984,7 @@ local function md_editor_render_content()
     if toolbar_button("+ New", "**Create New Note**\n\nCreate a new named Markdown file in `Scripts/MarkdownEditor/`.") then
         show_new_file_modal = true
         new_file_name_input = ""
+        focus_new_note_input = true
     end
 
     -- Optional inline bar to name and create a new note (aligned to right under Note selector)
@@ -995,14 +998,21 @@ local function md_editor_render_content()
         imgui.TextUnformatted("New Note:")
         imgui.SameLine(0, 4)
         if imgui.SetNextItemWidth then imgui.SetNextItemWidth(130) end
-        local text_changed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64)
-        if text_changed and new_val then
+        if focus_new_note_input then
+            if imgui.SetKeyboardFocusHere then
+                imgui.SetKeyboardFocusHere(0)
+            end
+            focus_new_note_input = false
+        end
+        local enter_pressed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64, 32)
+        if new_val then
             new_file_name_input = new_val
         end
         imgui.SameLine(0, 4)
         imgui.TextDisabled(".md")
         imgui.SameLine(0, 6)
-        if imgui.Button("Create##new_note_ok") then
+        local create_clicked = imgui.Button("Create##new_note_ok")
+        if (create_clicked or enter_pressed) then
             local clean_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", ""):gsub("[^%w_%-]", "_")
             if #clean_name > 0 then
                 clean_name = clean_name .. ".md"
