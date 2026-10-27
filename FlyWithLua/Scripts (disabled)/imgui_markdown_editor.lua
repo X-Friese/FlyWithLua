@@ -984,19 +984,24 @@ local function md_editor_render_content()
         new_file_name_input = ""
     end
 
-    -- Optional inline bar to name and create a new note
+    -- Optional inline bar to name and create a new note (aligned to right under Note selector)
     if show_new_file_modal then
         imgui.Separator()
-        imgui.TextUnformatted("New Note Name:")
-        imgui.SameLine()
-        if imgui.SetNextItemWidth then imgui.SetNextItemWidth(180) end
+        local modal_w = 350
+        local modal_start = avail_w - modal_w
+        if modal_start > 0 and imgui.SetCursorPosX then
+            imgui.SetCursorPosX(modal_start)
+        end
+        imgui.TextUnformatted("New Note:")
+        imgui.SameLine(0, 4)
+        if imgui.SetNextItemWidth then imgui.SetNextItemWidth(130) end
         local text_changed, new_val = imgui.InputText("##new_note_input", new_file_name_input, 64)
         if text_changed and new_val then
             new_file_name_input = new_val
         end
-        imgui.SameLine()
+        imgui.SameLine(0, 4)
         imgui.TextDisabled(".md")
-        imgui.SameLine()
+        imgui.SameLine(0, 6)
         if imgui.Button("Create##new_note_ok") then
             local clean_name = new_file_name_input:gsub("^%s+", ""):gsub("%s+$", ""):gsub("[^%w_%-]", "_")
             if #clean_name > 0 then
@@ -1009,7 +1014,7 @@ local function md_editor_render_content()
                 show_new_file_modal = false
             end
         end
-        imgui.SameLine()
+        imgui.SameLine(0, 4)
         if imgui.Button("Cancel##new_note_cancel") then
             show_new_file_modal = false
         end
