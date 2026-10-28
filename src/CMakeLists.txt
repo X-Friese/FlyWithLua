@@ -93,7 +93,7 @@ if (CREATECOMPLETEEDITION)
 endif ()
 
 if (APPLE)
-    add_definitions(-DGL_SILENCE_DEPRECATION)
+    add_definitions(-DGL_SILENCE_DEPRECATION -DIMGUI_ENABLE_OSX_DEFAULT_CLIPBOARD_FUNCTIONS)
 endif ()
 
 # Force-enable exception support. This is most likely redundant, although for C
@@ -233,7 +233,8 @@ endif ()
 if (APPLE)
     find_library(CORE_FOUNDATION_LIBRARY CoreFoundation)
     find_library(IOKIT_LIBRARY IOKit)
-    target_link_libraries(FlyWithLua ${IOKIT_LIBRARY} ${CORE_FOUNDATION_LIBRARY})
+    find_library(APPLICATION_SERVICES_LIBRARY ApplicationServices)
+    target_link_libraries(FlyWithLua ${IOKIT_LIBRARY} ${CORE_FOUNDATION_LIBRARY} ${APPLICATION_SERVICES_LIBRARY})
 endif ()
 
 if (WIN32)
