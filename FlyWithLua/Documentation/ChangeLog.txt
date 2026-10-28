@@ -108,4 +108,6 @@ v2.8.17 imgui now uses panel graphics if using X-Plane 12.4.4+ thanks to slgoldb
 
 v2.8.18 We now have Roboto-Light.ttf, Roboto-Regular.ttf and Roboto-Medium.ttf included with the package. You can add three custon fonts by enabling UseCustomFonts and adding there names to the fwl_prefs.ini file.
 
-v2.8.19 Fix CTD due to FMOD on reload ImGui Font Registry redux: scaling, live reload, font guide Integrate ImgWindow v2 contrib extensions (Markdown, TimedTooltip, and Modern Widgets) 
+v2.8.19 Fix CTD due to FMOD on reload ImGui Font Registry redux: scaling, live reload, font guide Integrate ImgWindow v2 contrib extensions (Markdown, TimedTooltip, and Modern Widgets)
+
+v2.8.20 Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
