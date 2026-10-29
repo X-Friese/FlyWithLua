@@ -3,6 +3,7 @@
 -- Fixed slider Id issue
 -- Added custom font
 -- V 1.22 (Refactored to completely resolve VR exit CTD via dynamic window allocation)
+-- V 1.23 (Refactored to change macro to a toggle like the command is to improve VR stability)
 
 if not SUPPORTS_FLOATING_WINDOWS then
     logMsg("imgui not supported by your FlyWithLua version")
@@ -32,21 +33,24 @@ local ixss_window_visible = false
 -------------------------------------Build Your GUI Here----------------------------------------
 
 local function ixss_on_build(wnd, x, y)
+    imgui.PushStyleColor(imgui.constant.Col.WindowBg, 0xCC101112)
     imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF0000FF)
     
     -- Custom Red Button
-    if imgui.Button("##my_ixss_colored_button", 15, 15) then
-        -- Indirectly calls the global hide to completely unregister contexts safely
-        ixss_hide_wnd()
+    if ixss_wnd and imgui.Button("##my_ixss_colored_button", 15, 15) then
+        toggle_ixss_window()
         imgui.PopStyleColor()
+		imgui.PopStyleColor()
         return
     end 
     imgui.PopStyleColor()
+	imgui_push_font(8)
     
-    imgui.SameLine()
-    imgui.TextUnformatted("This button hides this window")
-
-    imgui_push_font(8)
+	if ixss_wnd then
+		imgui.SameLine()
+		imgui.TextUnformatted("This button toggles window")
+	end
+    
     imgui.SetNextItemWidth(-1)
     local changed, newVal = imgui.SliderFloat("##mv", master_volume, 0, 1, "Master Volume Value: %.2f")
     if changed then master_volume = newVal end
@@ -80,6 +84,8 @@ local function ixss_on_build(wnd, x, y)
     if changed then ui_volume = newVal end
 
     imgui.PopFont()
+	
+	imgui.PopStyleColor()
 
     if rep_wind_exists then
         imgui.SetNextItemWidth(-1)
@@ -109,7 +115,7 @@ local ixss_was_vr_enabled = false
 -- Dynamic Helper to instantiate window contexts cleanly
 local function create_ixss_window_context()
     ixss_wnd = float_wnd_create(275, 250, 1, true)
-    float_wnd_set_title(ixss_wnd, "Imgui Sound Settings v1.22")
+    float_wnd_set_title(ixss_wnd, "Imgui Sound Settings v1.23")
     float_wnd_set_imgui_builder(ixss_wnd, "ixss_on_build")
     float_wnd_set_onclose(ixss_wnd, "ixss_on_native_close")
 end
@@ -175,5 +181,6 @@ _G["toggle_ixss_window"] = toggle_ixss_window
 _G["monitor_vr_state"] = monitor_vr_state
 
 ------------------------------------------------------------------------------------------------
-add_macro("Imgui Sound Settings: show/hide", "ixss_show_wnd()", "ixss_hide_wnd()", "deactivate")
+-- add_macro("Imgui Sound Settings: show/hide", "ixss_show_wnd()", "ixss_hide_wnd()", "deactivate")
+add_macro("Toggle Imgui Sound Settings", "toggle_ixss_window()")
 create_command("fwl_imgui/sound_settings/show_toggle", "open/close Imgui Sound Settings Window", "toggle_ixss_window()", "", "")
