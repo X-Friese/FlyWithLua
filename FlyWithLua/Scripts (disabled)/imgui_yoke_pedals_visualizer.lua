@@ -1,8 +1,9 @@
 -- Imgui Yoke Pedals Visualizer
--- William R. Good 08-12-26
+-- William R. Good 10-28-26
 -- Added custom font
 -- Fixed slider Id issue
 -- V 1.04 (Refactored to completely resolve VR exit CTD via dynamic window allocation)
+-- V 1.05 (Refactored to change macro to a toggle like the command is to improve VR stability)
 
 if not SUPPORTS_FLOATING_WINDOWS then
     logMsg("imgui not supported by your FlyWithLua version")
@@ -29,19 +30,19 @@ local function iypv_on_build(wnd, x, y)
     imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF0000FF)
     
     if iypv_wnd and imgui.Button("##my_iypv_colored_button", 15, 15) then
-        float_wnd_set_visible(iypv_wnd, 0) 
+		toggle_iypv_window()	
         imgui.PopStyleColor() 
         imgui.PopStyleColor() 
         return 
     end 
     imgui.PopStyleColor()
+	imgui_push_font(8)
+	
+	if iypv_wnd then
+		imgui.SameLine()
+		imgui.TextUnformatted("Button toggles window")
+	end
     
-    if iypv_wnd then
-        imgui.SameLine()
-        imgui.TextUnformatted("This button hides wnd")
-    end
-    
-    imgui_push_font(7)    
     imgui.SetCursorPosX(20)
     imgui.VSliderFloat("##slider1", 17, 100, rudder_pedal_position, -19.0, 19.0, "")
     imgui.SameLine()
@@ -93,8 +94,8 @@ local iypv_was_vr_enabled = false
 
 -- Dynamic Helper to instantiate window contexts cleanly
 local function create_iypv_window_context()
-    iypv_wnd = float_wnd_create(205, 235, 1, true)
-    float_wnd_set_title(iypv_wnd, "Imgui Visualizer v1.04")
+    iypv_wnd = float_wnd_create(205, 250, 1, true)
+    float_wnd_set_title(iypv_wnd, "Imgui Visualizer v1.05")
     float_wnd_set_imgui_builder(iypv_wnd, "iypv_on_build")
     float_wnd_set_onclose(iypv_wnd, "iypv_on_native_close")
 end
@@ -166,5 +167,6 @@ _G["monitor_iypv_vr_state"] = monitor_iypv_vr_state
 
 ------------------------------------------------------------------------------------------------
 -- Register macros and command hooks cleanly
-add_macro("Imgui Visualizer Toggle: show/hide", "iypv_show_wnd()", "iypv_hide_wnd()", "deactivate")
-create_command("fwl_imgui/visualizer/show_toggle", "open/close Imgui Visualizer Toggle", "toggle_iypv_window()", "", "")
+-- add_macro("Imgui Visualizer Toggle: show/hide", "iypv_show_wnd()", "iypv_hide_wnd()", "deactivate")
+add_macro("Toggle Imgui Visualizer", "toggle_iypv_window()")
+create_command("fwl_imgui/visualizer/show_toggle", "Toggle Imgui Visualizer", "toggle_iypv_window()", "", "")
