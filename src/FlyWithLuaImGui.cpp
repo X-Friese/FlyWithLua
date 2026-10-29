@@ -292,6 +292,12 @@ bool InitializeImGui()
     if (flywithlua::GetFontByName("Roboto-Medium") == nullptr) {
         LoadFontTriplet("Roboto-Medium.ttf", font_size1, font_size2, font_size3);
     }
+    if (flywithlua::GetFontByName("Roboto-Italic") == nullptr && std::ifstream(std::string(kCustomFontDir) + "Roboto-Italic.ttf")) {
+        LoadFontTriplet("Roboto-Italic.ttf", font_size1, font_size2, font_size3);
+    }
+    if (flywithlua::GetFontByName("RobotoMono-Regular") == nullptr && std::ifstream(std::string(kCustomFontDir) + "RobotoMono-Regular.ttf")) {
+        LoadFontTriplet("RobotoMono-Regular.ttf", font_size1, font_size2, font_size3);
+    }
 
     // Auto-discover any additional .ttf or .otf fonts placed in the Custom_Fonts folder
     std::error_code ec;

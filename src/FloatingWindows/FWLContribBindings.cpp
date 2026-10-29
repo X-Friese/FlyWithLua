@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <cctype>
 
 #if IBM
 #include <windows.h>
@@ -324,7 +325,7 @@ static int LuaSliderWithReset(lua_State* L) {
     float v_min   = static_cast<float>(luaL_checknumber(L, 3));
     float v_max   = static_cast<float>(luaL_checknumber(L, 4));
     float def_val = static_cast<float>(luaL_checknumber(L, 5));
-    bool changed = ImGui::SliderWithReset(label, &val, v_min, v_max, def_val);
+    bool changed = ImGui::SliderWithReset(label, &val, def_val, v_min, v_max);
     lua_pushboolean(L, changed);
     lua_pushnumber(L, val);
     return 2;
@@ -368,6 +369,205 @@ static int LuaTextLink(lua_State* L) {
         OpenBrowserURL(url);
     }
     lua_pushboolean(L, clicked);
+    return 1;
+}
+
+static int LuaSmallButtonLink(lua_State* L) {
+    const char* label = luaL_checkstring(L, 1);
+    bool clicked = ImGui::SmallButtonLink(label);
+    if (clicked && lua_gettop(L) >= 2 && !lua_isnil(L, 2)) {
+        std::string url = luaL_checkstring(L, 2);
+        OpenBrowserURL(url);
+    }
+    lua_pushboolean(L, clicked);
+    return 1;
+}
+
+static int LuaAttachItemCursor(lua_State* L) {
+    ImGuiMouseCursor cursor = (lua_gettop(L) >= 1 && lua_isnumber(L, 1))
+                                  ? static_cast<ImGuiMouseCursor>(lua_tointeger(L, 1))
+                                  : ImGuiMouseCursor_Hand;
+    ImGui::AttachItemCursor(cursor);
+    return 0;
+}
+
+static int LuaInputTextGetSelection(lua_State* L) {
+    ImGuiContext* g = ImGui::GetCurrentContext();
+    if (g && g->InputTextState.ID != 0 && g->InputTextState.Stb) {
+        int s = g->InputTextState.GetSelectionStart();
+        int e = g->InputTextState.GetSelectionEnd();
+        if (s > e) std::swap(s, e);
+        int cur = g->InputTextState.GetCursorPos();
+        lua_pushinteger(L, s);
+        lua_pushinteger(L, e);
+        lua_pushinteger(L, cur);
+        return 3;
+    }
+    lua_pushinteger(L, -1);
+    lua_pushinteger(L, -1);
+    lua_pushinteger(L, -1);
+    return 3;
+}
+
+static int LuaInputTextSetSelection(lua_State* L) {
+    ImGuiContext* g = ImGui::GetCurrentContext();
+    int s = static_cast<int>(luaL_checkinteger(L, 1));
+    int e = static_cast<int>(luaL_checkinteger(L, 2));
+    if (g) {
+        ImGuiID target_id = (g->InputTextState.ID != 0) ? g->InputTextState.ID : g->InputTextDeactivatedState.ID;
+        if (target_id != 0) {
+            g->InputTextState.ReloadSelectionStart = s;
+            g->InputTextState.ReloadSelectionEnd = e;
+            g->InputTextState.WantReloadUserBuf = true;
+            g->InputTextReactivateId = target_id;
+            g->InputTextDeactivatedState.ID = 0;
+        }
+    }
+    return 0;
+}
+
+static int LuaCopyButton(lua_State* L) {
+    const char* str_id = luaL_checkstring(L, 1);
+    const char* text_to_copy = luaL_checkstring(L, 2);
+    float duration = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : 1.5f;
+    float size_x = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : 0.0f;
+    float size_y = (lua_gettop(L) >= 5 && !lua_isnil(L, 5)) ? (float)lua_tonumber(L, 5) : 0.0f;
+
+    bool is_copied = false;
+    bool clicked = ImGui::CopyButtonEx(str_id, text_to_copy, duration, ImVec2(size_x, size_y), &is_copied);
+
+    lua_pushboolean(L, clicked);
+    lua_pushboolean(L, is_copied);
+    return 2;
+}
+
+static int LuaCopyLastItemButton(lua_State* L) {
+    const char* str_id = luaL_checkstring(L, 1);
+    float duration = (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) ? (float)lua_tonumber(L, 2) : 1.5f;
+    float size_x = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : 0.0f;
+    float size_y = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : 0.0f;
+
+    bool is_copied = false;
+    bool clicked = ImGui::CopyLastItemButtonEx(str_id, duration, ImVec2(size_x, size_y), &is_copied);
+
+    lua_pushboolean(L, clicked);
+    lua_pushboolean(L, is_copied);
+    return 2;
+}
+
+// Helper to parse ImU32 color from Lua (supports integer, table {r, g, b, [a]}, or nil/0)
+static ImU32 ParseLuaColor(lua_State* L, int idx) {
+    if (lua_gettop(L) < idx || lua_isnil(L, idx)) return 0;
+    if (lua_isnumber(L, idx)) {
+        return (ImU32)lua_tonumber(L, idx);
+    }
+    if (lua_istable(L, idx)) {
+        float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+        lua_rawgeti(L, idx, 1); if (lua_isnumber(L, -1)) r = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        lua_rawgeti(L, idx, 2); if (lua_isnumber(L, -1)) g = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        lua_rawgeti(L, idx, 3); if (lua_isnumber(L, -1)) b = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        lua_rawgeti(L, idx, 4); if (lua_isnumber(L, -1)) a = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+        return ImGui::ColorConvertFloat4ToU32(ImVec4(r, g, b, a));
+    }
+    return 0;
+}
+
+static ImGui::ImGuiBadgeVariant ParseLuaBadgeVariant(lua_State* L, int idx) {
+    if (lua_isnumber(L, idx)) {
+        return static_cast<ImGui::ImGuiBadgeVariant>(lua_tointeger(L, idx));
+    }
+    if (lua_isstring(L, idx)) {
+        std::string s = lua_tostring(L, idx);
+        for (auto& c : s) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        if (s == "primary" || s == "blue") return ImGui::ImGuiBadgeVariant_Primary;
+        if (s == "success" || s == "green") return ImGui::ImGuiBadgeVariant_Success;
+        if (s == "warning" || s == "yellow" || s == "caution") return ImGui::ImGuiBadgeVariant_Warning;
+        if (s == "danger" || s == "red" || s == "error") return ImGui::ImGuiBadgeVariant_Danger;
+        if (s == "info") return ImGui::ImGuiBadgeVariant_Info;
+        return ImGui::ImGuiBadgeVariant_Default;
+    }
+    return ImGui::ImGuiBadgeVariant_Default;
+}
+
+static int LuaBadge(lua_State* L) {
+    const char* text = luaL_checkstring(L, 1);
+    if (!text) return 0;
+
+    if (lua_gettop(L) >= 2 && (lua_istable(L, 2) || (lua_isnumber(L, 2) && lua_tonumber(L, 2) > 10.0))) {
+        ImU32 bg_col = ParseLuaColor(L, 2);
+        ImU32 fg_col = (lua_gettop(L) >= 3) ? ParseLuaColor(L, 3) : 0;
+        float rounding = (lua_gettop(L) >= 4 && lua_isnumber(L, 4)) ? static_cast<float>(lua_tonumber(L, 4)) : -1.0f;
+        ImGui::Badge(text, bg_col, fg_col, rounding);
+    } else {
+        ImGui::ImGuiBadgeVariant variant = (lua_gettop(L) >= 2 && !lua_isnil(L, 2))
+                                               ? ParseLuaBadgeVariant(L, 2)
+                                               : ImGui::ImGuiBadgeVariant_Default;
+        float rounding = (lua_gettop(L) >= 3 && lua_isnumber(L, 3)) ? static_cast<float>(lua_tonumber(L, 3)) : -1.0f;
+        ImGui::Badge(text, variant, rounding);
+    }
+    return 0;
+}
+
+static int LuaPill(lua_State* L) {
+    const char* text = luaL_checkstring(L, 1);
+    if (!text) return 0;
+
+    if (lua_gettop(L) >= 2 && (lua_istable(L, 2) || (lua_isnumber(L, 2) && lua_tonumber(L, 2) > 10.0))) {
+        ImU32 bg_col = ParseLuaColor(L, 2);
+        ImU32 fg_col = (lua_gettop(L) >= 3) ? ParseLuaColor(L, 3) : 0;
+        ImGui::Pill(text, bg_col, fg_col);
+    } else {
+        ImGui::ImGuiBadgeVariant variant = (lua_gettop(L) >= 2 && !lua_isnil(L, 2))
+                                               ? ParseLuaBadgeVariant(L, 2)
+                                               : ImGui::ImGuiBadgeVariant_Default;
+        ImGui::Pill(text, variant);
+    }
+    return 0;
+}
+
+static int LuaKbd(lua_State* L) {
+    const char* key_label = luaL_checkstring(L, 1);
+    if (key_label) {
+        ImGui::Kbd(key_label);
+    }
+    return 0;
+}
+
+static int LuaSpinner(lua_State* L) {
+    const char* label = luaL_checkstring(L, 1);
+    float radius      = (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) ? (float)lua_tonumber(L, 2) : 0.0f;
+    float thickness   = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : -1.0f;
+    ImU32 color       = ParseLuaColor(L, 4);
+    float speed       = (lua_gettop(L) >= 5 && !lua_isnil(L, 5)) ? (float)lua_tonumber(L, 5) : 1.0f;
+    bool res = ImGui::Spinner(label, radius, thickness, color, speed);
+    lua_pushboolean(L, res);
+    return 1;
+}
+
+static int LuaRadialTimer(lua_State* L) {
+    const char* label       = luaL_checkstring(L, 1);
+    float frac              = (float)luaL_checknumber(L, 2);
+    float radius            = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (float)lua_tonumber(L, 3) : 0.0f;
+    float thickness         = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : -1.0f;
+    ImU32 color             = ParseLuaColor(L, 5);
+    ImU32 bg_color          = ParseLuaColor(L, 6);
+    bool clockwise          = (lua_gettop(L) >= 7 && !lua_isnil(L, 7)) ? (lua_toboolean(L, 7) != 0) : true;
+    bool res = ImGui::RadialTimer(label, frac, radius, thickness, color, bg_color, clockwise);
+    lua_pushboolean(L, res);
+    return 1;
+}
+
+static int LuaCountdownTimer(lua_State* L) {
+    const char* label       = luaL_checkstring(L, 1);
+    float current_sec       = (float)luaL_checknumber(L, 2);
+    float max_sec           = (float)luaL_checknumber(L, 3);
+    float radius            = (lua_gettop(L) >= 4 && !lua_isnil(L, 4)) ? (float)lua_tonumber(L, 4) : 0.0f;
+    float thickness         = (lua_gettop(L) >= 5 && !lua_isnil(L, 5)) ? (float)lua_tonumber(L, 5) : -1.0f;
+    ImU32 color             = ParseLuaColor(L, 6);
+    ImU32 bg_color          = ParseLuaColor(L, 7);
+    bool clockwise          = (lua_gettop(L) >= 8 && !lua_isnil(L, 8)) ? (lua_toboolean(L, 8) != 0) : true;
+    bool res = ImGui::CountdownTimer(label, current_sec, max_sec, radius, thickness, color, bg_color, clockwise);
+    lua_pushboolean(L, res);
     return 1;
 }
 
@@ -537,16 +737,77 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaPercentSliderWithReset);    lua_setfield(L, -2, "percent_slider_with_reset");
     lua_pushcfunction(L, LuaPercentSliderWithReset);    lua_setfield(L, -2, "ResettablePercentSlider");
     lua_pushcfunction(L, LuaPercentSliderWithReset);    lua_setfield(L, -2, "resettable_percent_slider");
+    lua_pushcfunction(L, LuaPercentSliderWithReset);    lua_setfield(L, -2, "ResettableSliderPercent");
+    lua_pushcfunction(L, LuaPercentSliderWithReset);    lua_setfield(L, -2, "resettable_slider_percent");
 
     lua_pushcfunction(L, LuaResetButton);               lua_setfield(L, -2, "ResetButton");
     lua_pushcfunction(L, LuaResetButton);               lua_setfield(L, -2, "reset_button");
 
+    lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "Spinner");
+    lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "spinner");
+    lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "ActivitySpinner");
+    lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "activity_spinner");
+    lua_pushcfunction(L, LuaRadialTimer);               lua_setfield(L, -2, "RadialTimer");
+    lua_pushcfunction(L, LuaRadialTimer);               lua_setfield(L, -2, "radial_timer");
+    lua_pushcfunction(L, LuaRadialTimer);               lua_setfield(L, -2, "ProgressDial");
+    lua_pushcfunction(L, LuaRadialTimer);               lua_setfield(L, -2, "progress_dial");
+    lua_pushcfunction(L, LuaCountdownTimer);            lua_setfield(L, -2, "CountdownTimer");
+    lua_pushcfunction(L, LuaCountdownTimer);            lua_setfield(L, -2, "countdown_timer");
+    lua_pushcfunction(L, LuaCountdownTimer);            lua_setfield(L, -2, "CountdownDial");
+    lua_pushcfunction(L, LuaCountdownTimer);            lua_setfield(L, -2, "countdown_dial");
+
     lua_pushcfunction(L, LuaButtonLink);                lua_setfield(L, -2, "ButtonLink");
     lua_pushcfunction(L, LuaButtonLink);                lua_setfield(L, -2, "button_link");
+    lua_pushcfunction(L, LuaSmallButtonLink);           lua_setfield(L, -2, "SmallButtonLink");
+    lua_pushcfunction(L, LuaSmallButtonLink);           lua_setfield(L, -2, "small_button_link");
     lua_pushcfunction(L, LuaTextLink);                  lua_setfield(L, -2, "TextLink");
     lua_pushcfunction(L, LuaTextLink);                  lua_setfield(L, -2, "text_link");
+    lua_pushcfunction(L, LuaAttachItemCursor);          lua_setfield(L, -2, "AttachItemCursor");
+    lua_pushcfunction(L, LuaAttachItemCursor);          lua_setfield(L, -2, "attach_item_cursor");
+    lua_pushcfunction(L, LuaInputTextGetSelection);     lua_setfield(L, -2, "GetInputTextSelection");
+    lua_pushcfunction(L, LuaInputTextGetSelection);     lua_setfield(L, -2, "get_input_text_selection");
+    lua_pushcfunction(L, LuaInputTextSetSelection);     lua_setfield(L, -2, "SetInputTextSelection");
+    lua_pushcfunction(L, LuaInputTextSetSelection);     lua_setfield(L, -2, "set_input_text_selection");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "GetMouseWheel");
     lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "get_mouse_wheel");
+    lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "GetMouseWheelEither");
+    lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "get_mouse_wheel_either");
+    lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "GetMouseWheelAny");
+    lua_pushcfunction(L, LuaGetMouseWheel);             lua_setfield(L, -2, "get_mouse_wheel_any");
+
+    // 7. Badges, Pills & Keycaps
+    lua_pushcfunction(L, LuaBadge);                     lua_setfield(L, -2, "Badge");
+    lua_pushcfunction(L, LuaBadge);                     lua_setfield(L, -2, "badge");
+    lua_pushcfunction(L, LuaBadge);                     lua_setfield(L, -2, "Tag");
+    lua_pushcfunction(L, LuaBadge);                     lua_setfield(L, -2, "tag");
+    lua_pushcfunction(L, LuaPill);                      lua_setfield(L, -2, "Pill");
+    lua_pushcfunction(L, LuaPill);                      lua_setfield(L, -2, "pill");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "Kbd");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "kbd");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "Key");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "key");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "KeyCap");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "key_cap");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "Keycap");
+    lua_pushcfunction(L, LuaKbd);                       lua_setfield(L, -2, "keycap");
+
+    // Badge variant enums
+    lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Default);      lua_setfield(L, -2, "ImGuiBadgeVariant_Default");
+    lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Primary);      lua_setfield(L, -2, "ImGuiBadgeVariant_Primary");
+    lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Success);      lua_setfield(L, -2, "ImGuiBadgeVariant_Success");
+    lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Warning);      lua_setfield(L, -2, "ImGuiBadgeVariant_Warning");
+    lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Danger);       lua_setfield(L, -2, "ImGuiBadgeVariant_Danger");
+    lua_pushinteger(L, ImGui::ImGuiBadgeVariant_Info);         lua_setfield(L, -2, "ImGuiBadgeVariant_Info");
+
+    // 8. Universal Standalone & Chaser Copy Buttons
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "CopyButton");
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "copy_button");
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "CopyBufferButton");
+    lua_pushcfunction(L, LuaCopyButton);                lua_setfield(L, -2, "copy_buffer_button");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "CopyLastItemButton");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "copy_last_item_button");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "CopyTextFieldButton");
+    lua_pushcfunction(L, LuaCopyLastItemButton);        lua_setfield(L, -2, "copy_text_field_button");
 
     lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "SetCursorHandling");
     lua_pushcfunction(L, LuaSetCursorHandling);         lua_setfield(L, -2, "set_cursor_handling");

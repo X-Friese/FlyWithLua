@@ -224,3 +224,11 @@ src/build-win
 
 # Clion project files
 .idea
+
+# Local test scratchpads
+cockpit_notes_restored.md
+
+# Compiled X-Plane Plugin Binaries
+*.xpl
+FlyWithLua/*_x64/*.xpl
+

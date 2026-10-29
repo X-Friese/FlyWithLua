@@ -27,6 +27,7 @@ FlyWithLuaWindow::FlyWithLuaWindow(int width, int height, int decoration) :
 {
     SetWindowTitle("FlyWithLua");
     SetVisible(true);
+    SetCaptureKeyboardOnMouseFocus(true);
 }
 
 void FlyWithLuaWindow::buildInterface() {
@@ -167,6 +168,7 @@ XPLMWindowID FlyWithLuaWindow::getXWindow() {
 }
 
 void FlyWithLuaWindow::requestInputFocus(bool req) {
+    SetExplicitKeyboardFocus(req);
     XPLMTakeKeyboardFocus(req ? GetWindowId() : nullptr);
 }
 

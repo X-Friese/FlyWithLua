@@ -14,6 +14,12 @@ end
 
 -- imgui only works inside a floating window, so we need to create one first:
 demo_wnd = float_wnd_create(800, 450, 1, true)
+local demo_screen_w, demo_screen_h = 1920, 1080
+if XPLMGetScreenSize then
+    demo_screen_w, demo_screen_h = XPLMGetScreenSize()
+end
+-- Lower window position by 300 boxels from standard default top margin
+float_wnd_set_position(demo_wnd, 100, math.max(40, demo_screen_h - 450 - 400))
 -- The first two parameters specify the size of the window in boxels. Boxels are
 -- scalable pixes. If the UI scale is set to 100% in the settings, a boxel equals
 -- a pixel. However, if the user sets the UI scale to more than 100%, a boxel will

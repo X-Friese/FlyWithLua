@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.20"
+#define PLUGIN_VERSION_NO "2.8.21"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -184,6 +184,7 @@
  *  v2.8.19 [Added]   Fix CTD due to FMOD on reload ImGui Font Registry redux: scaling, live reload,
  *                    font guide Integrate ImgWindow v2 contrib extensions (Markdown, TimedTooltip, and Modern Widgets)
  *  v2.8.20 [Added]   Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
+ *  v2.8.21 [Added]   ImgWindow v2.3.0 Sync & Contrib UX Extensions Suite (phase 2)
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
