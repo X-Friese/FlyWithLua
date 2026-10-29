@@ -5,7 +5,7 @@ on: [push]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
-  FWL_VERSION: 2.8.20
+  FWL_VERSION: 2.8.21
 
 jobs:
   build-lin:
@@ -118,6 +118,8 @@ jobs:
         with:
           name: binaries
           path: FlyWithLua/lin_x64
+      - name: Ensure target directories exist
+        run: mkdir -p FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64    
       - name: Test artifact download     
         run: ls -R -l
       - name: Rename lin.xpl to FlyWithLua.xpl
