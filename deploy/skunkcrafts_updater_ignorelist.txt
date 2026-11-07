@@ -7,3 +7,4 @@
 Thumbs.db
 *.bak
 Scripts (Quarantine)
+Scripts/please read the manual.lua
