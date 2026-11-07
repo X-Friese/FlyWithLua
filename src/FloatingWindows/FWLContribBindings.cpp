@@ -182,15 +182,20 @@ static void DefaultMarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data) {
 }
 
 static void FWLMarkdownTooltipCallback(ImGui::MarkdownTooltipCallbackData data) {
+    if (!data.linkData.link || data.linkData.linkLength <= 0) return;
+    std::string link(data.linkData.link, (size_t)data.linkData.linkLength);
+    ImGuiID id = ImGui::GetID(link.c_str());
     if (data.linkData.isImage) {
-        ImGui::SetTooltip("%.*s", data.linkData.linkLength, data.linkData.link);
+        ImGui::MarkdownDetail::ShowMarkdownTooltip(id, true, link.c_str());
     } else {
-        std::string link(data.linkData.link, data.linkData.linkLength);
+        std::string tip;
         if (link.rfind("file:", 0) == 0 || link.rfind("local:", 0) == 0 || link.find(".pdf") != std::string::npos) {
-            ImGui::SetTooltip("Open document\n%.*s", data.linkData.linkLength, data.linkData.link);
+            tip = "**Open Document**\n\n`" + link + "`";
         } else {
-            ImGui::SetTooltip("%s Open in browser\n%.*s", data.linkIcon ? data.linkIcon : "", data.linkData.linkLength, data.linkData.link);
+            std::string icon = data.linkIcon ? data.linkIcon : "";
+            tip = (icon.empty() ? "" : icon + " ") + "**Open in Browser**\n\n`" + link + "`";
         }
+        ImGui::MarkdownDetail::ShowMarkdownTooltip(id, true, tip.c_str());
     }
 }
 
