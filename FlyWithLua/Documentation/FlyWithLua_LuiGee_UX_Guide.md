@@ -214,9 +214,9 @@ Configure tooltip behavior globally or per session:
 
 ---
 
-## 5. Modern Contrib Widgets
+## 5. Modern LuiGee Widgets
 
-The `contrib/widgets/` family adds tactile, specialized controls for simulation settings and telemetry adjustment.
+The `ImGee` widgets suite (`imgui.widgets.*` / `imgui.*`) adds tactile, specialized controls for simulation settings and telemetry adjustment.
 
 ### `changed, new_val = imgui.ToggleButton(label, bool_val)`
 An animated iOS-style sliding pill toggle switch with smooth tactile color transitions.
@@ -669,7 +669,7 @@ Here is a minimal, complete script showing all extensions working together:
 if not SUPPORTS_FLOATING_WINDOWS then return end
 
 local wnd = float_wnd_create(540, 420, 1, true)
-float_wnd_set_title(wnd, "Avionics Contrib Demo")
+float_wnd_set_title(wnd, "Avionics LuiGee Demo")
 float_wnd_set_imgui_builder(wnd, "build_avionics_wnd")
 
 local ap_master = true

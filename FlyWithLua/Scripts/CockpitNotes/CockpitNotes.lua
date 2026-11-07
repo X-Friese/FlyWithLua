@@ -2,7 +2,7 @@
 -- FlyWithLua Cockpit Markdown Editor & Live Previewer
 -- ----------------------------------------------------------------------------
 -- Author: Antigravity pair programming with Steve Goldberg (@slgoldberg)
--- Architecture: Roger2 (ImgWindow Contrib) & Sir Lance (FlyWithLua)
+-- Architecture: Roger2 (ImGee / ImgWindow) & Sir Lance (FlyWithLua)
 -- Description:
 --   An in-sim floating scratchpad, ATIS note-taker, and markdown editor with
 --   real-time preview, 1-click aviation templates, and markdown persistence.
