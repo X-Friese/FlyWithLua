@@ -806,9 +806,9 @@ if qnh < 29.92 then set_altimeter_std() end
 
             imgui.Spacing()
             if imgui.CollapsingHeader("Clickable Links & Markdown Buttons", 32) then
-                imgui.MD.Text("<code dark>{FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)</code>")
+                imgui.MD.Text("<code dark>[FlyWithLua GitHub Project](https://github.com/sparker256/FlyWithLua)</code>")
                 imgui.Indent(40)
-                imgui.MD.TextWrapped("Clickable URL Link: {FlyWithLua GitHub Project}(https://github.com/sparker256/FlyWithLua)")
+                imgui.MD.TextWrapped("Clickable URL Link: [FlyWithLua GitHub Project](https://github.com/sparker256/FlyWithLua)")
                 imgui.MD.TextWrapped("*(Clicking the link above automatically opens your system default web browser!)*")
                 imgui.Unindent(40)
 

@@ -156,18 +156,16 @@ set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
 ```
 ````
 
-### 6. Clickable Hyperlinks & Images (Dual Bracket Syntax)
-FlyWithLua and ImgWindow support both standard CommonMark square brackets and backward-compatible curly brackets side-by-side with zero configuration:
+### 6. Clickable Hyperlinks & Images
+Standard CommonMark Markdown links and images are supported out of the box:
 
-* **Clickable Links:** `[Label](URL)` or `{Label}(URL)`
-* **Images:** `![Alt Text](path/to/image)` or `!{Alt Text}(path/to/image)`
+* **Clickable Links:** `[Label](URL)`
+* **Images:** `![Alt Text](path/to/image)`
 
-Mismatched brackets (like `[foo}`) are safely ignored without disrupting surrounding text. When a hyperlink is clicked, FlyWithLua automatically invokes the native operating system browser (via `open` on macOS, `ShellExecute` on Windows, or `xdg-open` on Linux).
+When a hyperlink is clicked, FlyWithLua automatically invokes the native operating system browser or document viewer (via `open` on macOS, `ShellExecute` on Windows, or `xdg-open` on Linux).
 
 ```lua
 imgui.MD.Text("For aircraft manuals, see the [FlyWithLua Documentation](https://github.com/sparker256/FlyWithLua).")
--- Legacy curly syntax remains fully supported:
-imgui.MD.Text("Also accessible via {FlyWithLua GitHub}(https://github.com/sparker256/FlyWithLua).")
 ```
 
 ---
