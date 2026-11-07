@@ -117,7 +117,7 @@ add_compile_options(-O3 -fPIC)
 # X-Plane plugin
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
-list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLContribBindings.cpp)
+list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLImGeeBindings.cpp)
 # Automatically ensure ImgWindow submodule is initialized and checked out to the commit pinned by this branch
 find_package(Git QUIET)
 if (GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
@@ -135,7 +135,7 @@ endif ()
 
 # ImgWindow v2 (git submodule, pinned to tagged release v2.2.0). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
-set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLContribBindings.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
+set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLImGeeBindings.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
 list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)

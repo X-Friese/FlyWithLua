@@ -13,7 +13,7 @@
 
 FlyWithLua integrates **LuiGee** (*"The Lua Companion to ImGee"*), a modern flight-deck UI toolkit, directly into the Lua scripting environment. This brings tactile avionics widgets, intelligent stationary tooltips, CommonMark 4.1 Markdown, sized typography, and zero-disk texture services to X-Plane floating windows.
 
-All extension bindings are implemented natively in C++ (`src/FloatingWindows/FWLContribBindings.cpp`), exposing zero-overhead wrappers that bridge Lua scripts to `ImgWindow`'s header-only `ImGee` suite.
+All extension bindings are implemented natively in C++ (`src/FloatingWindows/FWLImGeeBindings.cpp`), exposing zero-overhead wrappers that bridge Lua scripts to `ImgWindow`'s header-only `ImGee` suite.
 
 ### Key Capabilities
 - **Semantic Markdown Typography:** Render rich Markdown text with headings, bold, italics, monospace code blocks, unordered and numbered lists, and clickable hyperlinks.

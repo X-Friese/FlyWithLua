@@ -1,4 +1,4 @@
-#include "FWLContribBindings.h"
+#include "FWLImGeeBindings.h"
 #include "FlyWithLuaWindow.h"
 #include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
@@ -215,7 +215,7 @@ static ImGui::TimedTooltip::TooltipConfig& GetFWLTooltipConfig() {
     return s_FWLTooltipConfig;
 }
 
-void UpdateContribMarkdownFonts() {
+void UpdateImGeeMarkdownFonts() {
     static ImGui::MarkdownConfig s_FWLMarkdownConfig;
 
     ImFont* h1 = flywithlua::GetFontByName("Roboto-Medium-20");
@@ -419,7 +419,7 @@ static int LuaTimedTooltipClear(lua_State* L) {
 }
 
 // ----------------------------------------------------------------------------
-// 3. Contrib Widgets Lua Bindings
+// 3. ImGee / LuiGee Widgets Lua Bindings
 // ----------------------------------------------------------------------------
 
 static int LuaToggleButton(lua_State* L) {
@@ -1279,7 +1279,7 @@ static const unsigned char s_AvionicsBeaconPng[] = {
 // Registration & Namespace / Alias Hierarchy Setup
 // ----------------------------------------------------------------------------
 
-void InitContribSupport(lua_State* L) {
+void InitImGeeSupport(lua_State* L) {
     // Auto-register default built-in avionics beacon icon into named texture service:
     ImgWindow::RegisterMemoryImage("avionics_beacon", s_AvionicsBeaconPng, sizeof(s_AvionicsBeaconPng));
 
@@ -1383,7 +1383,7 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaMarkdownButtonMD);          lua_setfield(L, -2, "ButtonMarkdown");
     lua_pushcfunction(L, LuaMarkdownButtonMD);          lua_setfield(L, -2, "button_markdown");
 
-    // 6. Contrib Widgets directly on imgui table
+    // 6. ImGee Widgets directly on imgui table
     lua_pushcfunction(L, LuaToggleButton);              lua_setfield(L, -2, "ToggleButton");
     lua_pushcfunction(L, LuaToggleButton);              lua_setfield(L, -2, "toggle_button");
     lua_pushcfunction(L, LuaToggleButtons);             lua_setfield(L, -2, "ToggleButtons");
@@ -1664,7 +1664,7 @@ void InitContribSupport(lua_State* L) {
     lua_pushcfunction(L, LuaOpenDocument);               lua_setfield(L, -2, "OpenDocument");
     lua_pushcfunction(L, LuaOpenDocument);               lua_setfield(L, -2, "open_document");
 
-    // 7. Global convenience aliases (matching contrib-global.h in C++)
+    // 7. Global convenience aliases (matching imgee-global.h in C++)
     lua_getfield(L, -1, "TimedTooltip");
     lua_setglobal(L, "TimedTooltip");
 
