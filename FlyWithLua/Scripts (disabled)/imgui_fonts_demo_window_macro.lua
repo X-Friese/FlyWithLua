@@ -97,4 +97,4 @@ end
 
 ----"add_macro" - adds the option to the FWL macro menu in X-Plane
 
-add_macro("Imgui Fonts Demo: open/close", "ifd_show_wnd()", "ifd_hide_wnd()", "deactivate")
+add_macro("Toggle Imgui Fonts Demo", "toggle_ifd_window()")

@@ -3,6 +3,7 @@
 
 -- Added custom font
 -- V 1.01 
+-- V 1.02 (Refactored to change macro to a toggle like the command is to improve VR stability)
 
 if not SUPPORTS_FLOATING_WINDOWS then
     logMsg("imgui not supported by your FlyWithLua version")
@@ -22,21 +23,24 @@ local ifti_window_visible = false
 -------------------------------------Build Your GUI Here----------------------------------------
 
 local function ifti_on_build(wnd, x, y)
+    imgui.PushStyleColor(imgui.constant.Col.WindowBg, 0xCC101112)
     imgui.PushStyleColor(imgui.constant.Col.Button, 0xFF0000FF)
     
     -- Custom Red Button
-    if imgui.Button("##my_ifti_colored_button", 15, 15) then
-        -- Indirectly calls the global hide to completely unregister contexts safely
-        ifti_hide_wnd()
+    if ifti_wnd and imgui.Button("##my_ifti_colored_button", 15, 15) then
+        toggle_ifti_window()
         imgui.PopStyleColor()
+		imgui.PopStyleColor()
         return
     end 
     imgui.PopStyleColor()
+	imgui_push_font(8)
+	
+	if ifti_wnd then
+		imgui.SameLine()
+		imgui.TextUnformatted("This button toggles this window")
+	end	
     
-    imgui.SameLine()
-    imgui.TextUnformatted("This button hides this window")
-
-    imgui_push_font(8)
 	local frame_rate_period_formatted = string.format("%.4f", frame_rate_period) 
 	imgui.TextUnformatted(frame_rate_period_formatted)
 	imgui.SameLine()
@@ -52,7 +56,7 @@ local function ifti_on_build(wnd, x, y)
 
 
     imgui.PopFont()
-
+	imgui.PopStyleColor()
 
 end
 
@@ -75,7 +79,7 @@ local ifti_was_vr_enabled = false
 -- Dynamic Helper to instantiate window contexts cleanly
 local function create_ifti_window_context()
     ifti_wnd = float_wnd_create(400, 100, 1, true)
-    float_wnd_set_title(ifti_wnd, "Imgui Frame Time info v1.01")
+    float_wnd_set_title(ifti_wnd, "Imgui Frame Time info v1.02")
     float_wnd_set_imgui_builder(ifti_wnd, "ifti_on_build")
     float_wnd_set_onclose(ifti_wnd, "ifti_on_native_close")
 end
@@ -141,5 +145,5 @@ _G["toggle_ifti_window"] = toggle_ifti_window
 _G["monitor_vr_state"] = monitor_vr_state
 
 ------------------------------------------------------------------------------------------------
-add_macro("Imgui Frame Time Info: show/hide", "ifti_show_wnd()", "ifti_hide_wnd()", "deactivate")
-create_command("fwl_imgui/frame_time_info/show_toggle", "open/close Imgui Frame Time Info Window", "toggle_ifti_window()", "", "")
+add_macro("Toggle Imgui Frame Time Inf", "toggle_ifti_window()")
+create_command("fwl_imgui/frame_time_info/show_toggle", "Toggle Imgui Frame Time Info Window", "toggle_ifti_window()", "", "")

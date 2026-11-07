@@ -111,3 +111,5 @@ v2.8.18 We now have Roboto-Light.ttf, Roboto-Regular.ttf and Roboto-Medium.ttf i
 v2.8.19 Fix CTD due to FMOD on reload ImGui Font Registry redux: scaling, live reload, font guide Integrate ImgWindow v2 contrib extensions (Markdown, TimedTooltip, and Modern Widgets)
 
 v2.8.20 Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
+
+v2.8.21 ImgWindow v2.3.0 & Contrib UX Extensions Suite (phase 2)
