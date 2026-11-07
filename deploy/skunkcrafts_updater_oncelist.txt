@@ -1,0 +1,18 @@
+# ==============================================================================
+# SkunkCrafts Updater Oncelist for FlyWithLua
+# ==============================================================================
+# Files and folders listed here are downloaded ONCE upon initial installation.
+# SkunkCrafts Updater will NEVER overwrite or reset them during updates.
+# ==============================================================================
+
+# User preferences and custom hooks
+fwl_prefs.ini
+user.ini
+user.exit
+skunkcrafts_updater.cfg
+
+# Starter default script in Scripts/
+Scripts/please read the manual.lua
+
+# Standalone add-on packages seeded on first install
+Scripts/CockpitNotes

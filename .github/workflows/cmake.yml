@@ -1,6 +1,22 @@
 name: CMake
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Target SCU Depot Channel'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - release
+          - testing
+          - all
+
+permissions:
+  contents: write
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -137,4 +153,34 @@ jobs:
           name: FlyWithLua_NG+_v${{env.FWL_VERSION}}
           path: |
             ${{github.workspace}}/FlyWithLua*
-          if-no-files-found: error                     
+          if-no-files-found: error
+
+      - name: Stage & Build SkunkCrafts Depot (Tags & Manual Dispatch)
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        run: |
+          CHANNEL="beta"
+          if [[ "${{ github.ref }}" == refs/tags/* && "${{ github.ref }}" != *"-beta"* && "${{ github.ref }}" != *"-test"* ]]; then
+            CHANNEL="release"
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            CHANNEL="${{ inputs.channel }}"
+          fi
+          echo "Building SCU depot for channel: $CHANNEL"
+          chmod +x deploy/stage.sh deploy/xpdepot.py
+          ./deploy/stage.sh "$CHANNEL" --build-depot --package-zip
+
+      - name: Deploy to GitHub Pages (Depot)
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/depot
+          keep_files: true
+
+      - name: Attach Zips to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/dist/FlyWithLua_*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                     

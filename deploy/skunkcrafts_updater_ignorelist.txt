@@ -1,0 +1,9 @@
+# ==============================================================================
+# SkunkCrafts Updater Ignorelist for FlyWithLua
+# ==============================================================================
+# Files/directories that should NEVER be packaged, uploaded to depot, or whitelisted.
+# ==============================================================================
+.DS_Store
+Thumbs.db
+*.bak
+Scripts (Quarantine)
