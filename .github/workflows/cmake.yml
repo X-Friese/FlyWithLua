@@ -12,7 +12,6 @@ on:
         options:
           - beta
           - release
-          - testing
           - all
 
 permissions:

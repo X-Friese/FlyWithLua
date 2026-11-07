@@ -128,7 +128,6 @@ stage_channel() {
 if [[ "$TARGET" == "all" ]]; then
     stage_channel "release"
     stage_channel "beta"
-    stage_channel "testing"
 else
     stage_channel "$TARGET"
 fi
