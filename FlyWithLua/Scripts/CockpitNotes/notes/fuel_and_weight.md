@@ -1,5 +1,7 @@
 # Fuel & Weight Planning
 
+![SimBrief](https://img.shields.io/badge/Dispatch-SimBrief_Validated-green.png) ![Fuel State](https://img.shields.io/badge/Ramp_Fuel-18.8k_lbs-blue.png) ![Type](https://img.shields.io/badge/Type-B737--800-informational.png)
+
 * **Aircraft:** `B737-800 / A320` | **Route:** `KORD -> KMSP`
 * **Cruise:** `FL340 / M0.78` | **Cost Index:** `28`
 * **Dispatch Planning:** [SimBrief Flight Plan](https://www.simbrief.com)
@@ -7,36 +9,43 @@
 ---
 
 ## Weight & Balance Limits
-* **Operating Empty Weight (OEW):** `91,300 lbs`
-* **Payload (Pax + Bags + Cargo):** `35,400 lbs` (158 Pax / 4,800 lbs Bag)
-* **Zero Fuel Weight (ZFW):** `126,700 lbs` (Max: `138,300 lbs`) <badge green>+11,600 lbs OK</badge>
-* **Planned Takeoff Weight (TOW):** `145,500 lbs` (Max: `174,200 lbs`) <badge green>+28,700 lbs OK</badge>
-* **Estimated Landing Weight (ELW):** `136,100 lbs` (Max: `146,300 lbs`) <badge green>+10,200 lbs OK</badge>
-* **Center of Gravity (CG):** `21.4% MAC` | **Takeoff Trim:** <pill green>5.2 ANU</pill>
+| Parameter | Planned (lbs) | Max Limit (lbs) | Margin | Status |
+| :--- | :---: | :---: | :---: | :---: |
+| **OEW** (Operating Empty) | 91,300 | — | — | <badge icon=check green>OK</badge> |
+| **Payload** (Pax + Cargo) | 35,400 | 43,000 | +7,600 | <badge icon=check green>OK</badge> |
+| **ZFW** (Zero Fuel Weight) | 126,700 | 138,300 | +11,600 | <badge icon=check green>+11,600 lbs</badge> |
+| **TOW** (Takeoff Weight) | 145,500 | 174,200 | +28,700 | <badge icon=check green>+28,700 lbs</badge> |
+| **ELW** (Landing Weight) | 136,100 | 146,300 | +10,200 | <badge icon=check green>+10,200 lbs</badge> |
+
+* **Center of Gravity (CG):** `21.4% MAC` | **Takeoff Trim:** <pill icon=check color=#2ecc71>5.2 ANU</pill>
 
 ---
 
 ## Fuel Planning & Reserves (FAR / ICAO)
-* **Taxi Out Fuel:** `800 lbs` (APU + single-engine taxi)
-* **Trip Fuel (KORD-KMSP):** `9,400 lbs` (Enroute burn at FL340)
-* **Contingency Fuel (5%):** `470 lbs` (Route / enroute wind margin)
-* **Alternate Fuel (to KSBN):** `3,100 lbs` (Climb, cruise FL220, descent & missed)
-* **Final Reserve Fuel:** `2,450 lbs` (ICAO 30 min hold @ 1,500 ft AGL)
-* **Extra / Discretionary:** `2,580 lbs` (Terminal vectoring & winter de-icing)
+| Fuel Stage | Amount (lbs) | Flow Time | Profile Notes |
+| :--- | :---: | :---: | :--- |
+| **Taxi Out** | 800 | 00:15 | APU + single-engine taxi |
+| **Trip Fuel (KORD-KMSP)** | 9,400 | 01:08 | Cruise FL340 enroute burn |
+| **Contingency (5%)** | 470 | 00:05 | Enroute wind / track variance |
+| **Alternate (KSBN)** | 3,100 | 00:25 | Climb to FL220, descent & missed |
+| **Final Reserve** | 2,450 | 00:30 | ICAO legal 30 min @ 1,500 ft |
+| **Extra / Discretionary** | 2,580 | 00:20 | Terminal vectoring & winter ops |
 
 ---
 
 ### Fuel Thresholds & Bingo State
-* **Planned Ramp / Block Fuel:** <pill green>18,800 lbs</pill>
-* **Minimum Takeoff Fuel:** `18,000 lbs`
-* **Diversion Bingo Fuel (MSP -> KSBN):** <badge yellow>5,550 lbs</badge>
-* **Emergency Fuel Threshold (Mayday):** <badge red>2,450 lbs</badge>
+| Threshold | Quantity | Indicator | Required Action |
+| :--- | :---: | :---: | :--- |
+| **Ramp / Block Fuel** | 18,800 lbs | <pill icon=check color=#2ecc71>NORMAL</pill> | Totalizer verified against uplift receipt |
+| **Min Takeoff Fuel** | 18,000 lbs | <pill icon=check color=#2ecc71>NORMAL</pill> | Abort takeoff if below threshold |
+| **Diversion Bingo** | 5,550 lbs | <badge icon=warning yellow>BINGO</badge> | Divert immediately to KSBN alternate |
+| **Emergency Fuel** | 2,450 lbs | <badge icon=warning red>MAYDAY</badge> | Declare "Mayday Fuel" with ATC |
 
 ---
 
 ### Pre-Departure Verification Checklist
-- `[ ]` Totalizer gauge verified against fuel uplift receipt (`18,800 lbs`)
-- `[ ]` Cross-feed valve tested and set closed
+- `[ ]` :check: Totalizer gauge verified against fuel uplift receipt (`18,800 lbs`)
+- `[ ]` :warning: Cross-feed valve tested and set closed
 - `[ ]` FMC PERF INIT entered: ZFW `126.7`, Reserves `5.5`, Cost Index `28`
 - `[ ]` Takeoff stabilizer trim `5.2 ANU` dialed & confirmed in green band
 - `[ ]` Takeoff V-Speeds calculated for runway length & condition

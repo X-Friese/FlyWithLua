@@ -1,19 +1,19 @@
-# FlyWithLua Dear ImGui Contrib UX & Extensions Guide
+# FlyWithLua LuiGee Modern UI & Flight-Deck UX Guide
 
-**FlyWithLua 2.8.20+ -- ImgWindow v2.3.0+ -- Dear ImGui 1.92.8**  
-*Comprehensive Reference for Markdown, TimedTooltip, and Modern Interactive Widgets*
+**FlyWithLua 2.8.20+ -- ImGee Modern UI Suite -- Dear ImGui 1.92.8**  
+*Comprehensive Reference for Markdown, TimedTooltip, Tactile Widgets, Sized Typography, and Dynamic Scaling*
 
-> **October 25, 2026**  
-> **Author:** Steven L. Goldberg (`@slgoldberg`) with help from Google Gemini  
-> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImgWindow v2.3.0)
+> **November 2026**  
+> **Author:** Steven L. Goldberg (`@slgoldberg`) and the Rogers  
+> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImGee Suite v1.0.0 / ImgWindow v2.4.0)
 
 ---
 
 ## 1. Overview & Architecture
 
-FlyWithLua integrates the modern **`ImgWindow v2 contrib/`** extension ecosystem directly into the Lua scripting environment. This brings rich typography, intelligent stationary tooltips, smooth animated toggles, reset-enabled sliders, and mouse-wheel chasers to X-Plane floating windows.
+FlyWithLua integrates **LuiGee** (*"The Lua Companion to ImGee"*), a modern flight-deck UI toolkit, directly into the Lua scripting environment. This brings tactile avionics widgets, intelligent stationary tooltips, CommonMark 4.1 Markdown, sized typography, and zero-disk texture services to X-Plane floating windows.
 
-All extension bindings are implemented natively in C++ (`src/FloatingWindows/FWLContribBindings.cpp`), exposing zero-overhead wrappers that bridge Lua scripts to `ImgWindow`'s header-only extension library.
+All extension bindings are implemented natively in C++ (`src/FloatingWindows/FWLContribBindings.cpp`), exposing zero-overhead wrappers that bridge Lua scripts to `ImgWindow`'s header-only `ImGee` suite.
 
 ### Key Capabilities
 - **Semantic Markdown Typography:** Render rich Markdown text with headings, bold, italics, monospace code blocks, unordered and numbered lists, and clickable hyperlinks.
@@ -65,10 +65,33 @@ imgui.Markdown.TextUnformatted("Direct text containing 100% pure data.")
 ```
 
 #### `imgui.Markdown.ButtonMD(label, [tooltip], [wrap_width])`
-Renders a button whose label is parsed with full Markdown support. Returns `true` when clicked.
+Renders an interactive push button supporting procedural vector icons, shortcodes, Unicode glyphs, hand cursor on hover, and rich Markdown tooltips.
+- **Procedural Vector Icons:** Automatically renders vector geometry directly on the button face via XML tags (`<icon caret-up />`), shortcodes (`:undo:`), raw Unicode (`▲`, `↺`), or link macros (`#[^](ICON_CARET_UP)`).
+- **Auto-Centering:** Centers the icon and text dynamically, maintaining crisp layout on any font atlas.
+
 ```lua
-if imgui.Markdown.ButtonMD("Confirm **Auto-Land**##btn", "Engage dual-channel CAT III approach", 300) then
-    engage_autoland()
+-- Vector icon + text button:
+if imgui.Markdown.ButtonMD("Quick Actions <icon caret-up />##btn", "**Quick Actions**\n\nFlight deck snippets menu") then
+    toggle_quick_actions()
+end
+
+-- Pure icon button:
+if imgui.Markdown.ButtonMD("<icon caret-up />##scroll_top", "Scroll to top") then
+    scroll_top()
+end
+```
+
+#### Dedicated Vector Icon Buttons
+- `imgui.IconButton(str_id, icon_name, [w, h], [tooltip]) -> clicked`: Pure vector icon button auto-sized to a crisp square.
+- `imgui.ButtonIcon(label, icon_name, [w, h], [icon_on_right], [tooltip]) -> clicked`: Button with both procedural vector icon and text.
+
+```lua
+if imgui.IconButton("##up_arrow", "caret-up", 0, 0, "Move Note Up") then
+    move_note_up()
+end
+
+if imgui.ButtonIcon("Settings", "gear", 0, 0, false, "Configure Cockpit Notes") then
+    open_settings()
 end
 ```
 
@@ -89,15 +112,22 @@ Pills render rounded, solid-colored badges with contrasting text -- ideal for sy
 
 Supported color keywords: `green`, `red`, `blue`, `yellow`, `orange`, `purple`, `gray`, `error`, `warning`, `caution`, `info`, `success`.
 
+Pills and badges also natively support embedded icons via `icon=`, `img=`, or `image=`, as well as self-closing unary annunciators (`<pill icon=... />`):
+
 ```lua
 imgui.MD.Text("Hydraulics: <pill green>SYSTEM NORMAL</pill> | Fuel Tank A: <pill warning>LOW LEVEL</pill>")
+-- Embedded icon pill:
+imgui.MD.Text("Autopilot: <pill icon=avionics_beacon color=#3498db>NAV / ALT</pill>")
+-- Self-closing unary annunciator:
+imgui.MD.Text("Master Caution: <pill icon=avionics_beacon color=#e74c3c />")
 ```
 
 ### 2. Version & Topic Badges (`<badge color>TEXT</badge>`)
 Badges render slightly more subtle categorized chips for metadata, build tags, and feature markers.
 
 ```lua
-imgui.MD.Text("FlyWithLua <badge blue>v2.8.18</badge> running on <badge purple>Metal / Vulkan</badge>")
+imgui.MD.Text("FlyWithLua <badge blue>v2.8.20</badge> running on <badge purple>Metal / Vulkan</badge>")
+imgui.MD.Text("Firmware: <badge icon=avionics_beacon>v2.3.0</badge>")
 ```
 
 ### 3. Keyboard Shortcut Tags (`<kbd>Key</kbd>`)
@@ -114,7 +144,7 @@ Colors arbitrary text spans using standard 6-digit hex color codes.
 imgui.MD.Text("Target speed: <color #00bc8c>250 knots</color> below <color #f39c12>10,000 ft</color>.")
 ```
 
-### 5. Multi-Line Fenced Code Blocks (```lang)
+### 5. Multi-Line Fenced Code Blocks (`lang`)
 Standard CommonMark triple backticks (or tildes `~~~`) render multi-line code blocks in shaded charcoal containers with rounded corners and an automatic language indicator chip in the upper corner:
 
 ````markdown
@@ -429,7 +459,147 @@ If a user or script author prefers standard OS hardware cursor rendering, dynami
 
 ---
 
-## 7. Universal C++ & Lua Alias Matrix
+## 7. Directional Popups, Pulldowns & Inline StyledText (Phase 3)
+
+FlyWithLua includes Phase 3 interactive UX extensions from `ImgWindow v2.3`:
+
+### 1. `imgui.SelectPulldown(label, current_item, items, [tooltips], [width], [anchor], [align]) -> changed, new_item`
+Renders a compact, single-line dataref / options dropdown selector with a clean, procedural antialiased vector caret (or custom icon font glyph).
+- **Procedural Vector Carets:** When no icon font is defined, renders a crisp vector triangle via `ImDrawList` that scales perfectly and never suffers from missing-glyph Unicode diamonds.
+- **Directional Blossoming (`anchor`):** Supports `imgui.PopupAnchor.BelowItem` (default down-pointing) or `imgui.PopupAnchor.AboveItem` (blossoms UP from bottom docks/status bars with an up-pointing caret!). When open, carets automatically flip orientation.
+- **Scroll Pass-Through When Closed:** Mouse-wheel events pass directly through to the parent container, so scrollable windows scroll smoothly without mutating settings.
+- **Dynamic Wheel Cycling When Open:** Spinning the mouse wheel while the popup is open cycles through items dynamically without closing the popup!
+- **Timed Tooltips Support:** Accepts an optional table of per-item hover tooltips (using smooth `TimedTooltip` to eliminate cursor jitter).
+- **0-Based Indices:** `current_item` and the returned `new_item` are 0-based integers.
+
+```lua
+local nav_sources = { "GPS 1 (WAAS)", "VOR 1 (114.70)", "LOC / ILS", "FMS 1" }
+local nav_tips    = { "Garmin GPS 1 primary", "Oakland VOR", "Instrument Landing System", "Flight Management System" }
+local active_nav  = 0 -- 0-based
+
+-- Downward dropdown selector:
+local changed, new_idx = imgui.SelectPulldown("##NavSel", active_nav, nav_sources, nav_tips, 280)
+if changed then
+    active_nav = new_idx
+end
+
+-- Upward blossoming selector (for bottom status bars / toolbars):
+local changed_dock, new_dock_idx = imgui.SelectPulldown("##DockSel", active_nav, nav_sources, nav_tips, 200,
+    imgui.PopupAnchor.AboveItem, imgui.PopupAlign.Right)
+```
+
+#### Global Caret Configuration
+- `imgui.SetDefaultPulldownCaret(down_caret, [up_caret])`: Configure global icon glyphs (e.g. `ICON_FA_CHEVRON_DOWN`, `ICON_FA_CHEVRON_UP`) or pass `nil` to use procedural vector arrows.
+
+### 2. Directional Popup Item Anchoring
+Anchors popup windows relative to the preceding item's bounding box (`GetItemRectMin` / `Max`) with sub-pixel precision.
+- **Directional Anchors (`imgui.PopupAnchor`):**
+  - `imgui.PopupAnchor.AboveItem` (1): Blossoms **UP** above the item (indispensable for status bars or toolbars docked along the screen bottom).
+  - `imgui.PopupAnchor.BelowItem` (0): Standard downward dropdown menu.
+  - `imgui.PopupAnchor.Auto` (2): Automatically chooses Above or Below based on available screen space.
+- **Alignment Modes (`imgui.PopupAlign`):**
+  - `imgui.PopupAlign.Left` (0): Align left edge with item left edge.
+  - `imgui.PopupAlign.Right` (1): Align right edge with item right edge.
+  - `imgui.PopupAlign.Center` (2): Center horizontally over item.
+  - `imgui.PopupAlign.Auto` (3): Automatically detect boundary edges.
+- **Muscle-Memory Toggle Safety:** Clicking the opener button while the popup is open cleanly toggles it closed without re-opening flicker.
+- **Headroom Reporting:** `imgui.GetLastPopupHeight(str_id)` and `imgui.GetLastPopupSize(str_id)` query the exact measured dimensions of the popup window for host window expansion without guessing.
+
+```lua
+-- Opening anchored popup above a button in a bottom toolbar:
+if imgui.Button("View Options ▲##btnView") then
+    imgui.OpenPopupAtItem("##ViewMenu", imgui.PopupAnchor.AboveItem, imgui.PopupAlign.Left)
+end
+
+if imgui.BeginAnchoredPopup("##ViewMenu") then
+    imgui.TextDisabled("CAMERA MODES")
+    imgui.Separator()
+    if imgui.MenuItem("Cockpit 3D") then SetView(0) end
+    if imgui.MenuItem("Spot View")   then SetView(1) end
+    imgui.Separator()
+    if imgui.MenuItem("Close") then imgui.CloseCurrentPopup() end
+    imgui.EndPopup()
+end
+
+-- Query popup dimensions:
+local width, height = imgui.GetLastPopupSize("##ViewMenu")
+```
+
+### 3. Standalone Inline StyledText (`imgui.TextStyled` / `imgui.StyledText`)
+Renders lightweight, inline rich text without requiring full Markdown document parsing. Also natively recognized inside full Markdown documents and scratchpads (`CockpitNotes`):
+- **Supported Inline Tags:**
+  - `<b>bold</b>`, `<strong>bold</strong>`
+  - `<i>italic</i>`, `<em>italic</em>`
+  - `<mono>monospace</mono>`, `<code>code</code>`
+  - `<h1>` .. `<h3>` inline headings
+  - `<small>reduced text</small>` (Slot 2, typically 12px)
+  - `<tiny>micro text</tiny>` (Slot 2 fallback or dedicated 10px)
+  - `<big>larger text</big>` or `<large>...</large>` (Slot 1, typically 16px)
+  - `<huge>hero text</huge>` (Slot 4, 16px+ bold)
+  - `<regular>reset to body</regular>` or `<sans>...</sans>` (Slot 0, 14px)
+  - `<color name>` or `<color #rrggbb>` (all size tags also accept optional `color=`, e.g. `<tiny color=#888>v1.0.2</tiny>`)
+  - `<pill color>` and `<badge color>` tags with optional `icon=` attributes
+- **Functions:**
+  - `imgui.TextStyled(format_string, ...)` / `imgui.StyledText(...)`
+  - `imgui.TextStyledWrapped(format_string, ...)` / `imgui.StyledTextWrapped(...)`
+  - `imgui.TextStyledUnformatted(string)` / `imgui.StyledTextUnformatted(...)`
+
+```lua
+imgui.TextStyled("Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono>", 0.82)
+imgui.TextStyled("Firmware: <tiny color=#888888>v1.0.2</tiny> | Status: <pill green>ACTIVE</pill>")
+imgui.TextStyled("Heading: <huge>FL340</huge> <small color=gray>(Optimal)</small>")
+imgui.TextStyledWrapped("<i>This paragraph</i> wraps automatically across the column width.")
+```
+
+### 4. Semantic Font Role Direct Text Helpers
+Direct immediate-mode text rendering helpers mapped to the typography hierarchy:
+- `imgui.SmallText("Caption text: %s", status)` / `imgui.SmallTextUnformatted(str)`
+- `imgui.TinyText("Footnote: %s", rev)` / `imgui.TinyTextUnformatted(str)`
+- `imgui.TitleText("Section Header: %s", title)` / `imgui.TitleTextUnformatted(str)`
+- `imgui.MonoText("Dataref: %s", dref_name)` / `imgui.MonoTextUnformatted(str)`
+
+### 4. Semantic Font Roles (`imgui.PushFontRole` / `imgui.PopFontRole`)
+Pushes an explicit typography role from the semantic registry:
+- Roles: `imgui.FontRole.Regular`, `Title`, `Small`, `Bold`, `BoldLarge`, `Monospace`, `Italic`, `MonospaceMedium`, `Heading1`, `Heading2`, `Heading3`.
+
+```lua
+imgui.PushFontRole(imgui.FontRole.Monospace)
+imgui.TextUnformatted("COM1: 121.500 MHz")
+imgui.PopFontRole()
+```
+
+### 5. First-Class Named Badges & Pills (`imgui.BadgeNamed` / `imgui.PillNamed`)
+Directly render pills and badges using named textures/icons:
+
+```lua
+imgui.PillNamed("avionics_beacon", "Mode C", {0.18, 0.80, 0.44, 1.0})
+imgui.BadgeNamed("avionics_beacon", "v2.3.0")
+```
+
+### 6. In-Memory Image Service (`imgui.RegisterMemoryImage`)
+Decode and register raw image files (PNG, JPEG, etc.) directly from memory byte strings into GPU VRAM with **zero disk I/O, zero file permissions issues, and zero temp files**:
+- `success, width, height = imgui.RegisterMemoryImage(name, binary_string_data)`
+- `imgui.UnregisterMemoryImage(name)` / `imgui.DeleteMemoryImage(name)`
+- `exists, width, height = imgui.GetNamedTexture(name)` / `imgui.HasMemoryImage(name)`
+- `imgui.ImageNamed(name, [width, height])`
+
+Once registered via `imgui.RegisterMemoryImage("my_chart", png_bytes)`:
+- **Pure ImGui Lua:** `imgui.ImageNamed("my_chart", 300, 200)`
+- **Markdown Text:** `![Approach Chart](my_chart)`
+- **Inline StyledText:** `<img name="my_chart" width=300 height=200 />`
+- **Pills & Badges:** `<pill icon=my_chart color=#3498db>CHART</pill>` or `imgui.PillNamed("my_chart", "CHART")`
+
+```lua
+-- Register an image downloaded via LuaSocket HTTP or embedded via Base64:
+local ok, w, h = imgui.RegisterMemoryImage("weather_radar", raw_radar_png_bytes)
+if ok then
+    imgui.ImageNamed("weather_radar", w, h)
+end
+```
+
+---
+
+## 8. Universal C++ & Lua Alias Matrix
 
 FlyWithLua provides comprehensive alias coverage matching both standard Dear ImGui PascalCase conventions and C++ namespace aliases:
 
@@ -459,16 +629,39 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Selection Set** | `imgui.SetInputTextSelection` | `imgui.set_input_text_selection` | -- | -- |
 | **Badge Widget** | `imgui.Badge` | `imgui.badge` | -- | `imgui.Tag` |
 | **Pill Widget** | `imgui.Pill` | `imgui.pill` | -- | -- |
+| **Named Badge** | `imgui.BadgeNamed` | `imgui.badge_named` | -- | -- |
+| **Named Pill** | `imgui.PillNamed` | `imgui.pill_named` | -- | -- |
 | **Keycap Widget** | `imgui.Kbd` | `imgui.kbd` | -- | `imgui.Key` / `imgui.Keycap` |
 | **Hyperlinks** | `imgui.ButtonLink` | `imgui.button_link` | -- | `imgui.TextLink` |
+| **Icon Button** | `imgui.IconButton` | `imgui.icon_button` | -- | -- |
+| **Button With Icon** | `imgui.ButtonIcon` | `imgui.button_icon` | -- | -- |
 | **Mouse Cursor State** | `imgui.SetCursorHandling` | `imgui.set_cursor_handling` | -- | `imgui.EnableMouseCursors` |
 | **File Picker Combo** | `imgui.FilePickerCombo` | `imgui.file_picker_combo` | -- | `imgui.FilePicker` |
 | **Open File Dialog** | `imgui.OpenFileDialog` | `imgui.open_file_dialog` | -- | `imgui.OpenDialog` |
 | **Save File Dialog** | `imgui.SaveFileDialog` | `imgui.save_file_dialog` | -- | `imgui.SaveDialog` |
+| **Select Pulldown** | `imgui.SelectPulldown` | `imgui.select_pulldown` | -- | -- |
+| **Set Pulldown Caret**| `imgui.SetDefaultPulldownCaret` | `imgui.set_default_pulldown_caret` | -- | -- |
+| **Open Popup At Item** | `imgui.OpenPopupAtItem` | `imgui.open_popup_at_item` | -- | -- |
+| **Open Popup At Pos** | `imgui.OpenPopupAtPos` | `imgui.open_popup_at_pos` | -- | -- |
+| **Begin Anchored Popup**| `imgui.BeginAnchoredPopup` | `imgui.begin_anchored_popup` | -- | -- |
+| **Get Last Popup Height**| `imgui.GetLastPopupHeight` | `imgui.get_last_popup_height` | -- | -- |
+| **Get Last Popup Size** | `imgui.GetLastPopupSize` | `imgui.get_last_popup_size` | -- | -- |
+| **Styled Text** | `imgui.TextStyled` | `imgui.StyledText` | -- | `imgui.text_styled` |
+| **Styled Text Wrapped**| `imgui.TextStyledWrapped` | `imgui.StyledTextWrapped` | -- | `imgui.text_styled_wrapped` |
+| **Small Text** | `imgui.SmallText` | `imgui.small_text` | `imgui.SmallTextUnformatted` | -- |
+| **Tiny Text** | `imgui.TinyText` | `imgui.tiny_text` | `imgui.TinyTextUnformatted` | -- |
+| **Title Text** | `imgui.TitleText` | `imgui.title_text` | `imgui.TitleTextUnformatted` | -- |
+| **Mono Text** | `imgui.MonoText` | `imgui.mono_text` | `imgui.MonoTextUnformatted` | -- |
+| **Font Role Push** | `imgui.PushFontRole` | `imgui.push_font_role` | -- | -- |
+| **Font Role Pop** | `imgui.PopFontRole` | `imgui.pop_font_role` | -- | -- |
+| **Memory Image Register**| `imgui.RegisterMemoryImage` | `imgui.register_memory_image` | -- | -- |
+| **Memory Image Delete**| `imgui.UnregisterMemoryImage`| `imgui.DeleteMemoryImage` | -- | `imgui.delete_memory_image` |
+| **Memory Image Query** | `imgui.GetNamedTexture` | `imgui.HasMemoryImage` | -- | `imgui.has_memory_image` |
+| **Image Render by Name**| `imgui.ImageNamed` | `imgui.image_named` | -- | -- |
 
 ---
 
-## 8. Complete Interactive Script Recipe
+## 9. Complete Interactive Script Recipe
 
 Here is a minimal, complete script showing all extensions working together:
 
@@ -511,23 +704,27 @@ end
 
 ---
 
-## 9. Bundled Demonstration Scripts
+## 10. Bundled Demonstration Scripts & Add-ons
 
-FlyWithLua includes complete, production-grade example scripts in `FlyWithLua/Scripts (disabled)/` *(to run either script in X-Plane, simply copy or move it from `Scripts (disabled)/` into your active `Scripts/` folder)*:
+FlyWithLua includes production-grade example scripts and turnkey add-ons pre-installed in `FlyWithLua/Scripts/`:
 
-### 1. `imgui_contrib_demo.lua` (Visual Feature Showcase)
+### 1. `ImGui_LuiGee_Demo.lua` (Visual Feature Showcase)
+Pre-installed in `FlyWithLua/Scripts/` and registered with the menu macro `Plugins > FlyWithLua > FlyWithLua Macros > FlyWithLua: LuiGee Modern UI Demo` and command `FlyWithLua/LuiGee/toggle`. It remains dormant until opened by the user.
+
 A comprehensive interactive sandbox window demonstrating:
 - Headings, soft-wrapping, bold, italic, and strikethrough typography.
 - Nested multi-line code blocks with syntax highlighting, copy buttons, and CommonMark indent conformance.
-- Tactile widgets: animated toggles, segmented toggles, resettable sliders, and percent sliders.
+- Tactile avionics widgets: animated toggles, segmented toggles, resettable sliders, percent sliders, and 270° rotary dials.
 - Procedural spinners, sweep dials, and countdown timers.
 - Interactive TimedTooltips with rich embedded Markdown.
+- **Dynamic Proportional Window Zoom:** 50% to 200% canvas zoom with automatic window aspect-ratio scaling, 1-point exact quantum steppers, and 1-click A/B toggle memory.
+- **Phase 3 Widgets & Sized Typography:** Zero-scroll-leak `SelectPulldown` with in-menu wheel cycling, directional popups blossoming UP or DOWN (`OpenPopupAtItem`), standalone inline `TextStyled` typography with embedded icons, inline size tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`), and zero-disk in-memory GPU texture decoding (`imgui.RegisterMemoryImage`).
 
-### 2. `imgui_markdown_editor.lua` (In-Cockpit Notes & Scratchpad)
-A full-featured, professional in-cockpit notes and briefing pad featuring:
+### 2. `CockpitNotes` Add-on (`CockpitNotes.lua`)
+A full-featured, professional in-cockpit notes and briefing pad located in `FlyWithLua/Scripts/CockpitNotes/`:
 - **Three Workflow Modes:** Fullscreen **Write**, side-by-side **Split**, and distraction-free flight **Preview**.
 - **Tactile Canvas Font Zoom:** Range from 50% to 200% with exact 1-point quantum steppers, mouse wheel adjust, and 1-click A/B toggle back to 100% baseline.
-- **Dedicated Multi-Note Storage:** Automatic file persistence in `FlyWithLua/Scripts/MarkdownEditor/` with active note file selection, manual Finder file discovery, and instant new note creation.
+- **Dedicated Multi-Note Storage:** Automatic file persistence in `FlyWithLua/Scripts/CockpitNotes/notes/` with active note file selection, manual Finder file discovery, and instant new note creation.
 - **Flight Operations Checklists:** Rapid task insertion and formatting using verify-and-execute `- [ ]` syntax.
 - **Aviation Quick Templates:** Pre-configured templates for ATIS copy pads, IFR CRAFT clearances, pre-flight checklists, and flight diversion briefings.
 - **About Dialog:** Live Markdown-rendered documentation and credits.
