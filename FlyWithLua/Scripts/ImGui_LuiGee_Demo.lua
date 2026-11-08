@@ -23,7 +23,7 @@ end
 
 local baseline_w   = 860
 local baseline_h   = 620
-local min_header_w = 686  -- Minimum width to cleanly fit title, about, theme, and full zoom suite edge-to-edge without overlap
+local min_header_w = 760  -- Minimum width to cleanly fit title, about, theme pulldown, and full zoom suite edge-to-edge without overlap
 local min_header_h = 420
 local demo_x = math.max(40, math.floor((screen_w - baseline_w) * 0.15))
 local demo_y = math.max(30, math.floor((screen_h - baseline_h) * 0.15))
@@ -56,15 +56,38 @@ local inc_repeat_count       = 0
 local show_about_popup       = false
 local first_run_about        = true
 
--- Theme Preset Selection State (Charcoal, Rusty, Classic Dark)
+-- Theme Preset Selection State (5 ImGee Themes)
 local active_theme_idx          = 0
-local active_theme_name         = "Theme: Charcoal"
 local current_applied_theme_idx = nil
 local theme_names = {
-    [0] = "Theme: Charcoal",
-    [1] = "Theme: Rusty",
-    [2] = "Theme: Dark"
+    "Charcoal (Default)",
+    "Rusty (Aviation)",
+    "ImGui Dark",
+    "ImGui Classic",
+    "ImGui Light"
 }
+local theme_tips = {
+    "**Charcoal (Default)**\nSleek modern slate/graphite flight deck palette.",
+    "**Rusty (Aviation)**\nWarm aviation bronze & terracotta palette (ABC classic).",
+    "**ImGui Dark**\nStock Dear ImGui dark gray color scheme.",
+    "**ImGui Classic**\nLegacy Dear ImGui purplish-blue color scheme.",
+    "**ImGui Light**\nHigh-contrast light daytime color scheme."
+}
+
+local function apply_theme(idx)
+    if idx == 0 then
+        if imgui.ApplyDefaultTheme then imgui.ApplyDefaultTheme()
+        elseif imgui.StyleColorsCharcoal then imgui.StyleColorsCharcoal() end
+    elseif idx == 1 then
+        if imgui.StyleColorsRusty then imgui.StyleColorsRusty() end
+    elseif idx == 2 then
+        if imgui.StyleColorsDark then imgui.StyleColorsDark() end
+    elseif idx == 3 then
+        if imgui.StyleColorsClassic then imgui.StyleColorsClassic() end
+    elseif idx == 4 then
+        if imgui.StyleColorsLight then imgui.StyleColorsLight() end
+    end
+end
 
 local function push_button_repeat(enable)
     if imgui.PushButtonRepeat then
@@ -261,18 +284,11 @@ function luigee_demo_on_build(wnd, x, y)
     end
     if _G.FWL_ACTIVE_THEME_IDX ~= active_theme_idx then
         active_theme_idx = _G.FWL_ACTIVE_THEME_IDX
-        active_theme_name = theme_names[active_theme_idx]
     end
 
     -- Ensure active theme preset is applied to the window's ImGui context
     if current_applied_theme_idx ~= active_theme_idx then
-        if active_theme_idx == 0 then
-            if imgui.StyleColorsCharcoal then imgui.StyleColorsCharcoal() end
-        elseif active_theme_idx == 1 then
-            if imgui.StyleColorsRusty then imgui.StyleColorsRusty() end
-        elseif active_theme_idx == 2 then
-            if imgui.StyleColorsDark then imgui.StyleColorsDark() end
-        end
+        apply_theme(active_theme_idx)
         current_applied_theme_idx = active_theme_idx
     end
 
@@ -341,28 +357,42 @@ function luigee_demo_on_build(wnd, x, y)
     end
 
     imgui.SameLine(0, 6)
-    local theme_clicked = false
-    if imgui.SmallButton then
-        theme_clicked = imgui.SmallButton(active_theme_name .. "##btn_theme")
-    else
-        theme_clicked = imgui.Button(active_theme_name .. "##btn_theme")
-    end
-    if theme_clicked then
-        active_theme_idx = (active_theme_idx + 1) % 3
-        active_theme_name = theme_names[active_theme_idx]
-        _G.FWL_ACTIVE_THEME_IDX = active_theme_idx
-        if active_theme_idx == 0 then
-            if imgui.StyleColorsCharcoal then imgui.StyleColorsCharcoal() end
-        elseif active_theme_idx == 1 then
-            if imgui.StyleColorsRusty then imgui.StyleColorsRusty() end
-        elseif active_theme_idx == 2 then
-            if imgui.StyleColorsDark then imgui.StyleColorsDark() end
+    imgui.TextUnformatted("Theme:")
+    imgui.SameLine(0, 4)
+    if imgui.SelectPulldown then
+        local theme_changed, new_theme = imgui.SelectPulldown("##ThemePicker", active_theme_idx, theme_names, theme_tips, 145.0, nil, nil, true, true)
+        if not theme_changed and imgui.IsItemHovered and imgui.IsItemHovered() then
+            local wheel = (imgui.GetMouseWheel and imgui.GetMouseWheel(true)) or 0
+            if wheel ~= 0 then
+                local dir = (wheel < 0) and 1 or -1
+                new_theme = (active_theme_idx + dir) % 5
+                if new_theme < 0 then new_theme = new_theme + 5 end
+                theme_changed = true
+            end
         end
-        current_applied_theme_idx = active_theme_idx
+        if theme_changed and new_theme ~= active_theme_idx then
+            active_theme_idx = new_theme
+            _G.FWL_ACTIVE_THEME_IDX = active_theme_idx
+            apply_theme(active_theme_idx)
+            current_applied_theme_idx = active_theme_idx
+        end
+    else
+        local cur_name = theme_names[active_theme_idx + 1] or "Charcoal (Default)"
+        if imgui.Button(cur_name .. "##btn_theme") then
+            active_theme_idx = (active_theme_idx + 1) % 5
+            _G.FWL_ACTIVE_THEME_IDX = active_theme_idx
+            apply_theme(active_theme_idx)
+            current_applied_theme_idx = active_theme_idx
+        end
     end
     if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
-        local note = (imgui.StyleColorsDark == nil) and "\n\n*(Note: Classic Dark requires restarting X-Plane to load the updated FlyWithLua binary)*" or ""
-        imgui.TimedTooltip.TextMD("**Click to Switch Theme Preset**\n\nCycles through:\n* **Charcoal** (Muted graphite & slate - ImGee standard)\n* **Rusty** (Warm aviation bronze & terracotta from ABC)\n* **Classic Dark** (Default Dear ImGui electric blue)" .. note)
+        imgui.TimedTooltip.TextMD(
+            "**ImGee Theme Presets** (Click dropdown or roll mouse wheel):\n" ..
+            "• **Charcoal**: Sleek modern slate/graphite flight deck palette (default).\n" ..
+            "• **Rusty**: Warm aviation bronze & terracotta palette (ABC classic).\n" ..
+            "• **ImGui Dark / Classic / Light**: Stock Dear ImGui fallback schemes.\n\n" ..
+            "*(Synchronized across active FlyWithLua windows)*"
+        )
     end
 
     -- Align Zoom Suite cleanly to the right margin of the content area

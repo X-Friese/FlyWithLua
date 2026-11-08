@@ -1084,8 +1084,18 @@ static int LuaSelectPulldown(lua_State* L) {
         align_mode = static_cast<ImGuiPopupAlign>(lua_tointeger(L, arg_idx));
         arg_idx++;
     }
+    bool wrap = false;
+    bool natural_list_order = true;
+    if (top >= arg_idx && !lua_isnil(L, arg_idx)) {
+        wrap = (lua_toboolean(L, arg_idx) != 0);
+        arg_idx++;
+    }
+    if (top >= arg_idx && !lua_isnil(L, arg_idx)) {
+        natural_list_order = (lua_toboolean(L, arg_idx) != 0);
+        arg_idx++;
+    }
 
-    bool changed = ImGui::SelectPulldown(label, &current_item, items, has_tooltips ? &tooltips : nullptr, width, anchor, align_mode);
+    bool changed = ImGui::SelectPulldown(label, &current_item, items, has_tooltips ? &tooltips : nullptr, width, anchor, align_mode, wrap, natural_list_order);
     lua_pushboolean(L, changed);
     lua_pushinteger(L, current_item);
     return 2;
@@ -1441,6 +1451,11 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "RegisterMarkdownTag");
     lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "register_markdown_tag");
 
+    lua_pushcfunction(L, LuaSelectPulldown);            lua_setfield(L, -2, "SelectPulldown");
+    lua_pushcfunction(L, LuaSelectPulldown);            lua_setfield(L, -2, "select_pulldown");
+    lua_pushcfunction(L, LuaSelectPulldown);            lua_setfield(L, -2, "SelectPulldownMD");
+    lua_pushcfunction(L, LuaSelectPulldown);            lua_setfield(L, -2, "select_pulldown_md");
+
     // Assign to imgui.Markdown and imgui.MD
     lua_pushvalue(L, -1);
     lua_setfield(L, -3, "Markdown");
@@ -1659,6 +1674,8 @@ void InitImGeeSupport(lua_State* L) {
     // 10. SelectPulldown Widget
     lua_pushcfunction(L, LuaSelectPulldown);             lua_setfield(L, -2, "SelectPulldown");
     lua_pushcfunction(L, LuaSelectPulldown);             lua_setfield(L, -2, "select_pulldown");
+    lua_pushcfunction(L, LuaSelectPulldown);             lua_setfield(L, -2, "SelectPulldownMD");
+    lua_pushcfunction(L, LuaSelectPulldown);             lua_setfield(L, -2, "select_pulldown_md");
     lua_pushcfunction(L, LuaSetDefaultPulldownCaret);    lua_setfield(L, -2, "SetDefaultPulldownCaret");
     lua_pushcfunction(L, LuaSetDefaultPulldownCaret);    lua_setfield(L, -2, "set_default_pulldown_caret");
 

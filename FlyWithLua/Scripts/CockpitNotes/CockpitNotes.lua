@@ -89,13 +89,37 @@ local split = {
     word_wrap     = true,  -- Auto-wrap toggle on editor (defaults to ON)
 }
 
--- Shared Theme Preset State (Charcoal, Rusty, Classic Dark)
+-- Shared Theme Preset State (5 ImGee Themes)
 local theme_names = {
-    [0] = "Theme: Charcoal",
-    [1] = "Theme: Rusty",
-    [2] = "Theme: Dark"
+    "Charcoal (Default)",
+    "Rusty (Aviation)",
+    "ImGui Dark",
+    "ImGui Classic",
+    "ImGui Light"
+}
+local theme_tips = {
+    "**Charcoal (Default)**\nSleek modern slate/graphite flight deck palette.",
+    "**Rusty (Aviation)**\nWarm aviation bronze & terracotta palette (ABC classic).",
+    "**ImGui Dark**\nStock Dear ImGui dark gray color scheme.",
+    "**ImGui Classic**\nLegacy Dear ImGui purplish-blue color scheme.",
+    "**ImGui Light**\nHigh-contrast light daytime color scheme."
 }
 local current_applied_theme_idx = nil
+
+local function apply_theme(idx)
+    if idx == 0 then
+        if imgui.ApplyDefaultTheme then imgui.ApplyDefaultTheme()
+        elseif imgui.StyleColorsCharcoal then imgui.StyleColorsCharcoal() end
+    elseif idx == 1 then
+        if imgui.StyleColorsRusty then imgui.StyleColorsRusty() end
+    elseif idx == 2 then
+        if imgui.StyleColorsDark then imgui.StyleColorsDark() end
+    elseif idx == 3 then
+        if imgui.StyleColorsClassic then imgui.StyleColorsClassic() end
+    elseif idx == 4 then
+        if imgui.StyleColorsLight then imgui.StyleColorsLight() end
+    end
+end
 
 -- ----------------------------------------------------------------------------
 -- File Persistence & In-Cockpit File Dialogs (Turnkey ImgWindow File Suite)
@@ -1095,17 +1119,43 @@ local function md_editor_render_content()
 
     imgui.SameLine(0, 6)
     local active_theme_idx = _G.FWL_ACTIVE_THEME_IDX or 0
-    local theme_clicked = false
-    local cur_theme_name = theme_names[active_theme_idx] or "Theme: Charcoal"
-    if imgui.SmallButton then
-        theme_clicked = imgui.SmallButton(cur_theme_name .. "##btn_notes_theme")
+    imgui.TextUnformatted("Theme:")
+    imgui.SameLine(0, 4)
+    if imgui.SelectPulldown then
+        local theme_changed, new_theme = imgui.SelectPulldown("##ThemePicker", active_theme_idx, theme_names, theme_tips, 145.0, nil, nil, true, true)
+        if not theme_changed and imgui.IsItemHovered and imgui.IsItemHovered() then
+            local wheel = (imgui.GetMouseWheel and imgui.GetMouseWheel(true)) or 0
+            if wheel ~= 0 then
+                local dir = (wheel < 0) and 1 or -1
+                new_theme = (active_theme_idx + dir) % 5
+                if new_theme < 0 then new_theme = new_theme + 5 end
+                theme_changed = true
+            end
+        end
+        if theme_changed and new_theme ~= active_theme_idx then
+            active_theme_idx = new_theme
+            _G.FWL_ACTIVE_THEME_IDX = active_theme_idx
+            apply_theme(active_theme_idx)
+            current_applied_theme_idx = active_theme_idx
+        end
     else
-        theme_clicked = imgui.Button(cur_theme_name .. "##btn_notes_theme")
+        local cur_name = theme_names[active_theme_idx + 1] or "Charcoal (Default)"
+        if imgui.Button(cur_name .. "##btn_notes_theme") then
+            active_theme_idx = (active_theme_idx + 1) % 5
+            _G.FWL_ACTIVE_THEME_IDX = active_theme_idx
+            apply_theme(active_theme_idx)
+            current_applied_theme_idx = active_theme_idx
+        end
     end
-    if theme_clicked then
-        _G.FWL_ACTIVE_THEME_IDX = ((_G.FWL_ACTIVE_THEME_IDX or 0) + 1) % 3
+    if show_tooltip then
+        show_tooltip(
+            "**ImGee Theme Presets** (Click dropdown or roll mouse wheel):\n" ..
+            "• **Charcoal**: Sleek modern slate/graphite flight deck palette (default).\n" ..
+            "• **Rusty**: Warm aviation bronze & terracotta palette (ABC classic).\n" ..
+            "• **ImGui Dark / Classic / Light**: Stock Dear ImGui fallback schemes.\n\n" ..
+            "*(Synchronized across active FlyWithLua windows)*"
+        )
     end
-    show_tooltip("**Click to Switch Theme Preset**\n\nCycles through:\n* **Charcoal** (Muted graphite & slate - ImGee standard)\n* **Rusty** (Warm aviation bronze & terracotta from ABC)\n* **Classic Dark** (Default Dear ImGui electric blue)\n\n*(Synchronized across active FlyWithLua windows)*")
 
     local cur_top_x = (imgui.GetCursorPosX and imgui.GetCursorPosX()) or 260
     local zoom_group_w = 210
@@ -1746,13 +1796,7 @@ function md_editor_on_build(wnd, x, y)
     end
     local target_theme = _G.FWL_ACTIVE_THEME_IDX
     if current_applied_theme_idx ~= target_theme then
-        if target_theme == 0 then
-            if imgui.StyleColorsCharcoal then imgui.StyleColorsCharcoal() end
-        elseif target_theme == 1 then
-            if imgui.StyleColorsRusty then imgui.StyleColorsRusty() end
-        elseif target_theme == 2 then
-            if imgui.StyleColorsDark then imgui.StyleColorsDark() end
-        end
+        apply_theme(target_theme)
         current_applied_theme_idx = target_theme
     end
 

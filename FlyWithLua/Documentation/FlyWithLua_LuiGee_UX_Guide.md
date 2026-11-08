@@ -517,13 +517,16 @@ If a user or script author prefers standard OS hardware cursor rendering, dynami
 
 FlyWithLua includes Phase 3 interactive UX extensions from `ImgWindow v2.3`:
 
-### 1. `imgui.SelectPulldown(label, current_item, items, [tooltips], [width], [anchor], [align]) -> changed, new_item`
+### 1. `imgui.SelectPulldown(label, current_item, items, [tooltips], [width], [anchor], [align], [wrap], [natural_list_order]) -> changed, new_item`
 Renders a compact, single-line dataref / options dropdown selector with a clean, procedural antialiased vector caret (or custom icon font glyph).
 - **Procedural Vector Carets:** When no icon font is defined, renders a crisp vector triangle via `ImDrawList` that scales perfectly and never suffers from missing-glyph Unicode diamonds.
 - **Directional Blossoming (`anchor`):** Supports `imgui.PopupAnchor.BelowItem` (default down-pointing) or `imgui.PopupAnchor.AboveItem` (blossoms UP from bottom docks/status bars with an up-pointing caret!). When open, carets automatically flip orientation.
 - **Scroll Pass-Through When Closed:** Mouse-wheel events pass directly through to the parent container, so scrollable windows scroll smoothly without mutating settings.
 - **Dynamic Wheel Cycling When Open:** Spinning the mouse wheel while the popup is open cycles through items dynamically without closing the popup!
+- **"Lens UI" Open-Menu Tooltip Latching:** When spinning the mouse wheel inside an open popup, per-item tooltips dynamically target and lock onto the newly focused item until the user deliberately moves the mouse.
+- **Wrap & Natural Direction (`wrap`, `natural_list_order`):** Configurable circular wrapping across index boundaries (`wrap = true`) and natural wheel stepping direction (`natural_list_order = true`).
 - **Timed Tooltips Support:** Accepts an optional table of per-item hover tooltips (using smooth `TimedTooltip` to eliminate cursor jitter).
+- **Markdown Shorthand Aliases:** Also available as `imgui.SelectPulldownMD`, `imgui.Markdown.SelectPulldown`, and `imgui.MD.SelectPulldown`.
 - **0-Based Indices:** `current_item` and the returned `new_item` are 0-based integers.
 
 ```lua
@@ -531,8 +534,9 @@ local nav_sources = { "GPS 1 (WAAS)", "VOR 1 (114.70)", "LOC / ILS", "FMS 1" }
 local nav_tips    = { "Garmin GPS 1 primary", "Oakland VOR", "Instrument Landing System", "Flight Management System" }
 local active_nav  = 0 -- 0-based
 
--- Downward dropdown selector:
-local changed, new_idx = imgui.SelectPulldown("##NavSel", active_nav, nav_sources, nav_tips, 280)
+-- Downward dropdown selector with circular wrapping and natural list order:
+local changed, new_idx = imgui.SelectPulldown("##NavSel", active_nav, nav_sources, nav_tips, 280,
+    imgui.PopupAnchor.BelowItem, imgui.PopupAlign.Left, true, true)
 if changed then
     active_nav = new_idx
 end
@@ -698,7 +702,7 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **File Picker Combo** | `imgui.FilePickerCombo` | `imgui.file_picker_combo` | -- | `imgui.FilePicker` |
 | **Open File Dialog** | `imgui.OpenFileDialog` | `imgui.open_file_dialog` | -- | `imgui.OpenDialog` |
 | **Save File Dialog** | `imgui.SaveFileDialog` | `imgui.save_file_dialog` | -- | `imgui.SaveDialog` |
-| **Select Pulldown** | `imgui.SelectPulldown` | `imgui.select_pulldown` | -- | -- |
+| **Select Pulldown** | `imgui.SelectPulldown` | `imgui.select_pulldown` | `imgui.SelectPulldownMD` | `imgui.MD.SelectPulldown` |
 | **Set Pulldown Caret**| `imgui.SetDefaultPulldownCaret` | `imgui.set_default_pulldown_caret` | -- | -- |
 | **Open Popup At Item** | `imgui.OpenPopupAtItem` | `imgui.open_popup_at_item` | -- | -- |
 | **Open Popup At Pos** | `imgui.OpenPopupAtPos` | `imgui.open_popup_at_pos` | -- | -- |
