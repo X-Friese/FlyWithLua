@@ -9,7 +9,6 @@
 fwl_prefs.ini
 user.ini
 user.exit
-skunkcrafts_updater.cfg
 
 # Standalone add-on packages seeded on first install
 Scripts/CockpitNotes
