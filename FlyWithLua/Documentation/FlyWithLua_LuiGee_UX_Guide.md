@@ -137,14 +137,70 @@ Renders a bordered, keycap-styled box for visual keyboard shortcuts.
 imgui.MD.Text("Press <kbd>Shift</kbd> + <kbd>Ctrl</kbd> + <kbd>R</kbd> to reload Lua scripts.")
 ```
 
-### 4. Custom Hex Colors (`<color #rrggbb>Text</color>`)
-Colors arbitrary text spans using standard 6-digit hex color codes.
+### 4. Custom Hex Colors & Alpha Transparency (`#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa`)
+Colors arbitrary text spans, pills, badges, or style definitions using standard web hexadecimal notation with optional alpha transparency:
+* `#rgb` (12-bit RGB, opaque)
+* `#rgba` (16-bit RGBA with 4-bit alpha)
+* `#rrggbb` (24-bit RGB, opaque)
+* `#rrggbbaa` (32-bit RGBA with full 8-bit alpha)
 
 ```lua
 imgui.MD.Text("Target speed: <color #00bc8c>250 knots</color> below <color #f39c12>10,000 ft</color>.")
+imgui.MD.Text("Translucent overlay: <pill #3498db88>TRANSLUCENT PILL</pill>")
 ```
 
-### 5. Multi-Line Fenced Code Blocks (`lang`)
+#### Smart Capsule Auto-Contrast & Decoupled Backgrounds
+* **Automatic Contrast:** When passing a bare color keyword or hex code into `<pill>` or `<badge>` (e.g. `<pill #ff4444>`), ImGee calculates the background color luminance and automatically renders the enclosed text in crisp, readable high-contrast black or white.
+* **Decoupled Text & Background:** When specifying an explicit `bg=` or `bgcolor=` (e.g. `<style fg=#ffffff bg=#88888840>`), the text foreground color is strictly preserved and decoupled from the background fill box.
+* **Recursive Tag Nesting:** Style tags can be nested recursively within other tags (e.g. `<style green bold>Exterior: <style yellow>WARN</style> Clear</style>`).
+
+### 5. Declarative Semantic Style Tags & Macro Aliases
+Rather than repetitively writing verbose formatting strings or nesting raw XML tags across scripts, developers can define custom semantic Markdown tags dynamically during script initialization:
+
+#### 1. Semantic Style Tags (`imgui.RegisterStyleTag`)
+Maps a custom tag name to a composite typography style combining colors, weights, fonts, and background capsules:
+
+```lua
+-- Define semantic tags during script startup:
+imgui.RegisterStyleTag("cam", "green bold mono")
+imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
+imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
+
+-- Use seamlessly inside any Markdown or StyledText:
+imgui.MD.Text("Camera Axis: <cam>roll</cam> | View: <viewmode>CHASE_CAM</viewmode>")
+imgui.MD.Text("<alert>PULL UP</alert> Terrain ahead!")
+```
+
+#### 2. Declarative Tag Aliases (`imgui.RegisterTagAlias`)
+Expands any arbitrary Markdown or XML template string. Any occurrence of `%s` inside the template is dynamically replaced with the enclosed inner text:
+
+```lua
+-- Register macro template aliases:
+imgui.RegisterTagAlias("tip", "<style yellow><b>Tip: </b></style> %s")
+imgui.RegisterTagAlias("axis", "**Axis: <style cyan bold>%s</style>**")
+
+-- Stamp anywhere in Markdown:
+imgui.MD.Text("<tip>Check altimeter setting before descent.</tip>")
+imgui.MD.Text("<axis>ELEVATOR</axis> trim centered.")
+```
+
+#### 3. Smart Tag Registration (`imgui.RegisterTag`)
+A flexible unified registration entry point that automatically detects the handler type:
+* **Function:** Registers an interactive Lua callback: `function(inner_text, param) ... end`
+* **String with `%s`:** Automatically registers as a template alias (`RegisterTagAlias`)
+* **String without `%s`:** Automatically registers as a semantic style tag (`RegisterStyleTag`)
+
+```lua
+-- Interactive Lua callback tag:
+imgui.RegisterTag("metric", function(inner_text, param)
+    imgui.TextStyled("<pill #3498db>%s</pill> <small color=#aaaaaa>%s</small>", inner_text, param ~= "" and param or "UNITS")
+end)
+
+-- Used in Markdown:
+imgui.MD.Text("Field Elevation: <metric ft>5,420</metric>")
+```
+
+### 6. Multi-Line Fenced Code Blocks (`lang`)
 Standard CommonMark triple backticks (or tildes `~~~`) render multi-line code blocks in shaded charcoal containers with rounded corners and an automatic language indicator chip in the upper corner:
 
 ````markdown
@@ -156,7 +212,7 @@ set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
 ```
 ````
 
-### 6. Clickable Hyperlinks & Images
+### 7. Clickable Hyperlinks & Images
 Standard CommonMark Markdown links and images are supported out of the box:
 
 * **Clickable Links:** `[Label](URL)`
@@ -524,7 +580,12 @@ local width, height = imgui.GetLastPopupSize("##ViewMenu")
 ```
 
 ### 3. Standalone Inline StyledText (`imgui.TextStyled` / `imgui.StyledText`)
-Renders lightweight, inline rich text without requiring full Markdown document parsing. Also natively recognized inside full Markdown documents and scratchpads (`CockpitNotes`):
+Renders lightweight, inline rich text with **continuous baseline alignment** without requiring full Markdown document parsing. Also natively recognized inside full Markdown documents and scratchpads (`CockpitNotes`):
+- **Full Formatted Variadic `printf` Support:**
+  All `TextStyled` and `TextStyledWrapped` variants accept a format string followed by variadic arguments. In Lua, this is automatically dispatched to the native `string.format(...)` engine, allowing seamless dynamic value formatting:
+  ```lua
+  imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", alt_ft, "FT", kias)
+  ```
 - **Supported Inline Tags:**
   - `<b>bold</b>`, `<strong>bold</strong>`
   - `<i>italic</i>`, `<em>italic</em>`
@@ -535,8 +596,8 @@ Renders lightweight, inline rich text without requiring full Markdown document p
   - `<big>larger text</big>` or `<large>...</large>` (Slot 1, typically 16px)
   - `<huge>hero text</huge>` (Slot 4, 16px+ bold)
   - `<regular>reset to body</regular>` or `<sans>...</sans>` (Slot 0, 14px)
-  - `<color name>` or `<color #rrggbb>` (all size tags also accept optional `color=`, e.g. `<tiny color=#888>v1.0.2</tiny>`)
-  - `<pill color>` and `<badge color>` tags with optional `icon=` attributes
+  - `<color name>` or `<color #rgb|#rgba|#rrggbb|#rrggbbaa>` (all size tags also accept optional `color=`, e.g. `<tiny color=#888>v1.0.2</tiny>`)
+  - `<pill color>` and `<badge color>` tags with optional `icon=` attributes and auto-contrast text
 - **Functions:**
   - `imgui.TextStyled(format_string, ...)` / `imgui.StyledText(...)`
   - `imgui.TextStyledWrapped(format_string, ...)` / `imgui.StyledTextWrapped(...)`
@@ -546,7 +607,7 @@ Renders lightweight, inline rich text without requiring full Markdown document p
 imgui.TextStyled("Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono>", 0.82)
 imgui.TextStyled("Firmware: <tiny color=#888888>v1.0.2</tiny> | Status: <pill green>ACTIVE</pill>")
 imgui.TextStyled("Heading: <huge>FL340</huge> <small color=gray>(Optimal)</small>")
-imgui.TextStyledWrapped("<i>This paragraph</i> wraps automatically across the column width.")
+imgui.TextStyledWrapped("<i>This paragraph</i> wraps automatically across the column width using the native StyledText wrapping engine.")
 ```
 
 ### 4. Semantic Font Role Direct Text Helpers
@@ -556,7 +617,7 @@ Direct immediate-mode text rendering helpers mapped to the typography hierarchy:
 - `imgui.TitleText("Section Header: %s", title)` / `imgui.TitleTextUnformatted(str)`
 - `imgui.MonoText("Dataref: %s", dref_name)` / `imgui.MonoTextUnformatted(str)`
 
-### 4. Semantic Font Roles (`imgui.PushFontRole` / `imgui.PopFontRole`)
+### 5. Semantic Font Roles (`imgui.PushFontRole` / `imgui.PopFontRole`)
 Pushes an explicit typography role from the semantic registry:
 - Roles: `imgui.FontRole.Regular`, `Title`, `Small`, `Bold`, `BoldLarge`, `Monospace`, `Italic`, `MonospaceMedium`, `Heading1`, `Heading2`, `Heading3`.
 
@@ -566,7 +627,7 @@ imgui.TextUnformatted("COM1: 121.500 MHz")
 imgui.PopFontRole()
 ```
 
-### 5. First-Class Named Badges & Pills (`imgui.BadgeNamed` / `imgui.PillNamed`)
+### 6. First-Class Named Badges & Pills (`imgui.BadgeNamed` / `imgui.PillNamed`)
 Directly render pills and badges using named textures/icons:
 
 ```lua
@@ -574,7 +635,7 @@ imgui.PillNamed("avionics_beacon", "Mode C", {0.18, 0.80, 0.44, 1.0})
 imgui.BadgeNamed("avionics_beacon", "v2.3.0")
 ```
 
-### 6. In-Memory Image Service (`imgui.RegisterMemoryImage`)
+### 7. In-Memory Image Service (`imgui.RegisterMemoryImage`)
 Decode and register raw image files (PNG, JPEG, etc.) directly from memory byte strings into GPU VRAM with **zero disk I/O, zero file permissions issues, and zero temp files**:
 - `success, width, height = imgui.RegisterMemoryImage(name, binary_string_data)`
 - `imgui.UnregisterMemoryImage(name)` / `imgui.DeleteMemoryImage(name)`
@@ -656,6 +717,9 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Memory Image Delete**| `imgui.UnregisterMemoryImage`| `imgui.DeleteMemoryImage` | -- | `imgui.delete_memory_image` |
 | **Memory Image Query** | `imgui.GetNamedTexture` | `imgui.HasMemoryImage` | -- | `imgui.has_memory_image` |
 | **Image Render by Name**| `imgui.ImageNamed` | `imgui.image_named` | -- | -- |
+| **Register Style Tag** | `imgui.RegisterStyleTag` | `imgui.register_style_tag` | `imgui.Markdown.RegisterStyleTag` | `imgui.RegisterMarkdownStyleTag` |
+| **Register Tag Alias** | `imgui.RegisterTagAlias` | `imgui.register_tag_alias` | `imgui.Markdown.RegisterTagAlias` | `imgui.RegisterMarkdownTagAlias` |
+| **Register Tag (Smart)**| `imgui.RegisterTag` | `imgui.register_tag` | `imgui.Markdown.RegisterTag` | `imgui.RegisterMarkdownTag` |
 
 ---
 

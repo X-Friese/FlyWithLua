@@ -78,23 +78,27 @@ local function pop_button_repeat()
     end
 end
 
--- Ensure TextStyledWrapped and styled_text_wrapped perform true word wrapping across inline styled tags
-imgui.TextStyledWrapped = function(fmt, ...)
-    local str = fmt
-    if select("#", ...) > 0 then
-        str = string.format(fmt, ...)
-    end
-    -- Convert HTML-like tags (<i>, <b>, </i>, </b>) to markdown (*, **) so ImGui::Markdown::TextWrapped
-    -- parses emphasis and performs true word wrapping across styled tokens!
-    local md_str = str:gsub("<b>", "**"):gsub("</b>", "**")
-                      :gsub("<i>", "*"):gsub("</i>", "*")
-    if imgui.MD and imgui.MD.TextWrapped then
-        imgui.MD.TextWrapped(md_str)
-    elseif imgui.TextWrapped then
-        imgui.TextWrapped(str)
-    end
+-- Register Semantic Style Tags & Macro Aliases
+if imgui.RegisterStyleTag then
+    imgui.RegisterStyleTag("cam", "green bold mono")
+    imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
+    imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
 end
-imgui.styled_text_wrapped = imgui.TextStyledWrapped
+
+if imgui.RegisterTagAlias then
+    imgui.RegisterTagAlias("tip", "<style yellow><b> Tip: </b></style> %s")
+    imgui.RegisterTagAlias("axis", "**Axis: <style cyan bold>%s</style>**")
+end
+
+if imgui.RegisterTag then
+    imgui.RegisterTag("metric", function(inner_text, param)
+        if imgui.TextStyled then
+            imgui.TextStyled("<pill #3498db>%s</pill> <small color=#aaaaaa>%s</small>", inner_text, (param and param ~= "") and param or "UNITS")
+        else
+            imgui.TextUnformatted(inner_text .. " " .. (param or ""))
+        end
+    end)
+end
 
 local function scale_window_geometry(from_scale, to_scale)
     if not luigee_demo_wnd or not float_wnd_get_geometry or not float_wnd_set_geometry then return end
@@ -706,6 +710,55 @@ function luigee_demo_on_build(wnd, x, y)
             end
 
             imgui.Spacing()
+            if imgui.CollapsingHeader("Semantic Style Tags & Macro Aliases", 32) then
+                imgui.MD.TextWrapped("Define declarative semantic typography tags, macro template aliases, and interactive Lua callbacks:")
+                imgui.Spacing()
+
+                imgui.MD.Text("Semantic Style Tags (`imgui.RegisterStyleTag`):")
+                imgui.MD.Text("  `<cam>roll</cam>` & `<cam>pitch</cam>` (green bold mono)")
+                imgui.SameLine(390)
+                imgui.MD.Text("<cam>roll</cam> / <cam>pitch</cam>")
+
+                imgui.MD.Text("  `<viewmode>CHASE_CAM</viewmode>` (mono with tinted backdrop)")
+                imgui.SameLine(390)
+                imgui.MD.Text("<viewmode>CHASE_CAM</viewmode>")
+
+                imgui.MD.Text("  `<alert>PULL UP</alert>` (red backdrop white bold)")
+                imgui.SameLine(390)
+                imgui.MD.Text("<alert>PULL UP</alert>")
+
+                imgui.Spacing()
+                imgui.MD.Text("Macro Template Aliases (`imgui.RegisterTagAlias`):")
+                imgui.MD.Text("  `<tip>Check altimeter setting.</tip>`")
+                imgui.SameLine(390)
+                imgui.MD.Text("<tip>Check altimeter setting.</tip>")
+
+                imgui.MD.Text("  `<axis>RUDDER</axis>`")
+                imgui.SameLine(390)
+                imgui.MD.Text("<axis>RUDDER</axis>")
+
+                imgui.Spacing()
+                imgui.MD.Text("Dynamic Lua Callback Tag (`imgui.RegisterTag`):")
+                imgui.MD.Text("  `<metric ft>10,500</metric>`")
+                imgui.SameLine(390)
+                imgui.MD.Text("<metric ft>10,500</metric>")
+
+                imgui.Spacing()
+                imgui.MD.Text("Alpha Hex Transparency & Smart Auto-Contrast:")
+                imgui.MD.Text("  `<pill #3498db88>TRANSLUCENT PILL</pill>` (Hex alpha #rrggbbaa)")
+                imgui.SameLine(390)
+                imgui.MD.Text("<pill #3498db88>TRANSLUCENT PILL</pill>")
+
+                imgui.MD.Text("  `<pill #f1c40f>DARK CONTRAST</pill>` (Auto-contrast dark text)")
+                imgui.SameLine(390)
+                imgui.MD.Text("<pill #f1c40f>DARK CONTRAST</pill>")
+
+                imgui.MD.Text("  `<pill #2c3e50>LIGHT CONTRAST</pill>` (Auto-contrast light text)")
+                imgui.SameLine(390)
+                imgui.MD.Text("<pill #2c3e50>LIGHT CONTRAST</pill>")
+            end
+
+            imgui.Spacing()
             if imgui.CollapsingHeader("Lists, Tables & Variadic Formatting", 32) then
                 imgui.MD.TextWrapped("Pre-flight Checklist (Unordered):")
                 imgui.MD.TextWrapped("* Pitot tube covers removed\n* Flight control surfaces free and clear\n* Fuel quantity verified\n* Transponder set to <pill blue>1200 / VFR</pill>")
@@ -1277,7 +1330,10 @@ end
                 imgui.TextUnformatted("Live Output:")
                 imgui.Indent(20)
                 imgui.TextStyled("Flight Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono> | Target: <color gold>FL%03d</color>", 0.82, 380)
+                imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", 34000, "FT", 285.5)
+                imgui.TextStyled("Semantic Tags: <cam>yaw</cam> | View: <viewmode>COCKPIT_3D</viewmode>")
                 imgui.TextStyled("Annunciators: <pill green>AP1 ENGAGED</pill> <pill blue>LNAV / VNAV</pill> <pill warning>ICE DETECTED</pill>")
+                imgui.TextStyled("Alpha & Auto-Contrast: <pill #3498db88>TRANSLUCENT #rrggbbaa</pill> <pill #f1c40f>AUTO CONTRAST</pill>")
                 imgui.TextStyled("Inline Sizing: <tiny color=#888888>tiny (10px)</tiny> | <small>small (12px)</small> | <regular>regular (14px)</regular> | <big>big (16px)</big> | <huge color=orange>huge (16px+ bold)</huge>")
                 imgui.TextStyledWrapped("Wrapped Styled Text: <i>This is an inline styled paragraph</i> rendered with <b>imgui.TextStyledWrapped</b>. It flows smoothly across window boundaries and supports <color #3498db>custom hex colored highlights</color> on demand.")
                 imgui.Unindent(20)
@@ -1286,8 +1342,10 @@ end
                 imgui.TextUnformatted("Lua Code:")
                 imgui.MD.Text([[
 ```lua
+imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", 34000, "FT", 285.5)
 imgui.TextStyled("Flight Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono>", 0.82)
 imgui.TextStyled("Inline Sizing: <tiny>tiny</tiny> | <small>small</small> | <regular>body</regular> | <big>big</big> | <huge>huge</huge>")
+imgui.TextStyled("Semantic Tags: <cam>yaw</cam> | View: <viewmode>COCKPIT_3D</viewmode>")
 imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text</color>.")
 ```
 ]])

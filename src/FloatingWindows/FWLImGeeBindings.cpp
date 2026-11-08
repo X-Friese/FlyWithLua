@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <cstdlib>
 #include <cctype>
 #include <sys/stat.h>
@@ -354,6 +355,120 @@ static int LuaMarkdownCalcTextSize(lua_State* L) {
     lua_pushnumber(L, sz.x);
     lua_pushnumber(L, sz.y);
     return 2;
+}
+
+// Markdown Tag Registry & Dynamic Callback Management
+static std::unordered_map<std::string, int> s_LuaCustomTagRefs;
+static lua_State* s_CurrentLuaState = nullptr;
+
+static int LuaRegisterMarkdownStyleTag(lua_State* L) {
+    const char* raw_tag = luaL_checkstring(L, 1);
+    const char* style = luaL_checkstring(L, 2);
+    if (!raw_tag || raw_tag[0] == '\0') {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    std::string tag_name = raw_tag;
+    for (char& c : tag_name) c = (char)tolower((unsigned char)c);
+
+    // Clean up any existing Lua callback ref for this tag
+    auto it = s_LuaCustomTagRefs.find(tag_name);
+    if (it != s_LuaCustomTagRefs.end()) {
+        if (s_CurrentLuaState && it->second != LUA_NOREF) {
+            luaL_unref(s_CurrentLuaState, LUA_REGISTRYINDEX, it->second);
+        }
+        s_LuaCustomTagRefs.erase(it);
+    }
+
+    ImGui::RegisterMarkdownStyleTag(tag_name, style ? style : "");
+    lua_pushboolean(L, true);
+    return 1;
+}
+
+static int LuaRegisterMarkdownTagAlias(lua_State* L) {
+    const char* raw_tag = luaL_checkstring(L, 1);
+    const char* tmpl = luaL_checkstring(L, 2);
+    if (!raw_tag || raw_tag[0] == '\0') {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    std::string tag_name = raw_tag;
+    for (char& c : tag_name) c = (char)tolower((unsigned char)c);
+
+    // Clean up any existing Lua callback ref for this tag
+    auto it = s_LuaCustomTagRefs.find(tag_name);
+    if (it != s_LuaCustomTagRefs.end()) {
+        if (s_CurrentLuaState && it->second != LUA_NOREF) {
+            luaL_unref(s_CurrentLuaState, LUA_REGISTRYINDEX, it->second);
+        }
+        s_LuaCustomTagRefs.erase(it);
+    }
+
+    ImGui::RegisterMarkdownTagAlias(tag_name, tmpl ? tmpl : "");
+    lua_pushboolean(L, true);
+    return 1;
+}
+
+static int LuaRegisterMarkdownTag(lua_State* L) {
+    const char* raw_tag = luaL_checkstring(L, 1);
+    if (!raw_tag || raw_tag[0] == '\0') {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    std::string tag_name = raw_tag;
+    for (char& c : tag_name) c = (char)tolower((unsigned char)c);
+
+    if (lua_isfunction(L, 2)) {
+        auto it = s_LuaCustomTagRefs.find(tag_name);
+        if (it != s_LuaCustomTagRefs.end() && it->second != LUA_NOREF) {
+            luaL_unref(L, LUA_REGISTRYINDEX, it->second);
+        }
+
+        lua_pushvalue(L, 2);
+        int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+        s_LuaCustomTagRefs[tag_name] = ref;
+        s_CurrentLuaState = L;
+
+        ImGui::RegisterMarkdownTag(tag_name, [tag_name](const std::string& inner_text, const std::string& param) {
+            if (!s_CurrentLuaState) return;
+            auto fit = s_LuaCustomTagRefs.find(tag_name);
+            if (fit == s_LuaCustomTagRefs.end() || fit->second == LUA_NOREF) return;
+
+            lua_rawgeti(s_CurrentLuaState, LUA_REGISTRYINDEX, fit->second);
+            if (!lua_isfunction(s_CurrentLuaState, -1)) {
+                lua_pop(s_CurrentLuaState, 1);
+                return;
+            }
+            lua_pushlstring(s_CurrentLuaState, inner_text.c_str(), inner_text.length());
+            lua_pushlstring(s_CurrentLuaState, param.c_str(), param.length());
+            if (lua_pcall(s_CurrentLuaState, 2, 0, 0) != 0) {
+                lua_pop(s_CurrentLuaState, 1);
+            }
+        });
+        lua_pushboolean(L, true);
+        return 1;
+    } else if (lua_isstring(L, 2)) {
+        const char* def = lua_tostring(L, 2);
+        std::string s_def = def ? def : "";
+
+        auto it = s_LuaCustomTagRefs.find(tag_name);
+        if (it != s_LuaCustomTagRefs.end()) {
+            if (s_CurrentLuaState && it->second != LUA_NOREF) {
+                luaL_unref(s_CurrentLuaState, LUA_REGISTRYINDEX, it->second);
+            }
+            s_LuaCustomTagRefs.erase(it);
+        }
+
+        if (s_def.find("%s") != std::string::npos) {
+            ImGui::RegisterMarkdownTagAlias(tag_name, s_def);
+        } else {
+            ImGui::RegisterMarkdownStyleTag(tag_name, s_def);
+        }
+        lua_pushboolean(L, true);
+        return 1;
+    } else {
+        return luaL_error(L, "RegisterTag expects a style string, template string, or callback function as argument 2");
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -1071,7 +1186,7 @@ static int LuaStyledText(lua_State* L) {
 
 static int LuaStyledTextWrapped(lua_State* L) {
     std::string s = FormatLuaString(L);
-    ImGui::Markdown::TextWrapped(s);
+    ImGui::StyledTextWrapped("%s", s.c_str());
     return 0;
 }
 
@@ -1280,6 +1395,9 @@ static const unsigned char s_AvionicsBeaconPng[] = {
 // ----------------------------------------------------------------------------
 
 void InitImGeeSupport(lua_State* L) {
+    s_CurrentLuaState = L;
+    s_LuaCustomTagRefs.clear();
+
     // Auto-register default built-in avionics beacon icon into named texture service:
     ImgWindow::RegisterMemoryImage("avionics_beacon", s_AvionicsBeaconPng, sizeof(s_AvionicsBeaconPng));
 
@@ -1307,6 +1425,21 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaMarkdownTextUnformatted);   lua_setfield(L, -2, "text_unformatted");
     lua_pushcfunction(L, LuaMarkdownButtonMD);          lua_setfield(L, -2, "button");
     lua_pushcfunction(L, LuaMarkdownCalcTextSize);      lua_setfield(L, -2, "calc_text_size");
+
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "RegisterStyleTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "register_style_tag");
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "RegisterMarkdownStyleTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "register_markdown_style_tag");
+
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "RegisterTagAlias");
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "register_tag_alias");
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "RegisterMarkdownTagAlias");
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "register_markdown_tag_alias");
+
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "RegisterTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "register_tag");
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "RegisterMarkdownTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "register_markdown_tag");
 
     // Assign to imgui.Markdown and imgui.MD
     lua_pushvalue(L, -1);
@@ -1382,6 +1515,21 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaMarkdownButtonMD);          lua_setfield(L, -2, "button_md");
     lua_pushcfunction(L, LuaMarkdownButtonMD);          lua_setfield(L, -2, "ButtonMarkdown");
     lua_pushcfunction(L, LuaMarkdownButtonMD);          lua_setfield(L, -2, "button_markdown");
+
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "RegisterMarkdownStyleTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "register_markdown_style_tag");
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "RegisterStyleTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "register_style_tag");
+
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "RegisterMarkdownTagAlias");
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "register_markdown_tag_alias");
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "RegisterTagAlias");
+    lua_pushcfunction(L, LuaRegisterMarkdownTagAlias);  lua_setfield(L, -2, "register_tag_alias");
+
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "RegisterMarkdownTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "register_markdown_tag");
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "RegisterTag");
+    lua_pushcfunction(L, LuaRegisterMarkdownTag);       lua_setfield(L, -2, "register_tag");
 
     // 6. ImGee Widgets directly on imgui table
     lua_pushcfunction(L, LuaToggleButton);              lua_setfield(L, -2, "ToggleButton");
