@@ -49,6 +49,9 @@ stage_channel() {
     cp -a "$FWL_SRC/Documentation" "$STAGING_DIR/"
     cp -a "$FWL_SRC/Internals" "$STAGING_DIR/"
     cp -a "$FWL_SRC/Modules" "$STAGING_DIR/"
+    if [[ -d "$FWL_SRC/skunkcrafts" ]]; then
+        cp -a "$FWL_SRC/skunkcrafts" "$STAGING_DIR/"
+    fi
     cp -a "$FWL_SRC/README.txt" "$STAGING_DIR/"
     cp -a "$FWL_SRC/fwl_prefs.ini" "$STAGING_DIR/"
     cp -a "$FWL_SRC/user.ini" "$STAGING_DIR/"
