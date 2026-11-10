@@ -181,7 +181,7 @@ For complete tutorials, API references, and architectural guides, see:
 * **ImGee C++ Architecture:** [slgoldberg/ImgWindow/contrib/ImGee/README.md](https://github.com/slgoldberg/ImgWindow/blob/dev/contrib/ImGee/README.md)
 
 ---
-Created by **Steven L. Goldberg** (@slgoldberg) and the Rogers, with appreciation to **William R. Good** (Bill) for FlyWithLua and **Omar Cornut** for Dear ImGui.
+Created by **Steven L. Goldberg** (@slgoldberg) and the Rogers, with appreciation to **William R. Good** (@sparker256) for FlyWithLua and **Omar Cornut** (@ocornut) for Dear ImGui.
 ]]
 
 function show_luigee_demo()
