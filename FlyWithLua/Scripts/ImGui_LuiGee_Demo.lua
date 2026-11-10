@@ -106,7 +106,7 @@ if imgui.RegisterStyleTag then
     imgui.RegisterStyleTag("cam", "green bold mono")
     imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
     imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
-    imgui.RegisterStyleTag("handle", "mono fg=#ff6b6b bg=#fff9c425")
+    imgui.RegisterStyleTag("handle", "mono fg=red bg=#ffff80")
 end
 
 if imgui.RegisterTagAlias then
