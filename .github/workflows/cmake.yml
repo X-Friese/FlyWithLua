@@ -42,7 +42,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: binaries-lin
-          path: ${{github.workspace}}/build/*.xpl
+          path: ${{github.workspace}}/build/lin_x64/FlyWithLua.xpl
           if-no-files-found: error
           
   build-win:
@@ -65,10 +65,10 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: binaries-win
-          path: ${{github.workspace}}/build/*.xpl
+          path: ${{github.workspace}}/build/win_x64/FlyWithLua.xpl
           if-no-files-found: error
 
-  build-x64-mac:
+  build-mac:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
@@ -80,73 +80,45 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/src
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} 
-      - name: List folder
-        run: ls -R -l
-      - name: Rename mac.xpl to mac_x64.xpl
-        run: mv build/mac.xpl build/mac_x64.xpl                          
       - uses: actions/upload-artifact@v7
         with:
-          name: binaries-x64-mac
-          path: ${{github.workspace}}/build/*.xpl
+          name: binaries-mac
+          path: ${{github.workspace}}/build/mac_x64/FlyWithLua.xpl
           if-no-files-found: error
-      - name: List folder
-        run: ls -R -l          
-          
-  build-arm-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
-      - name: Configure CMake
-        working-directory: ${{github.workspace}}/src
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_ARM=ON
-      - name: Build
-        working-directory: ${{github.workspace}}/src
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-      - name: List folder
-        run: ls -R -l
-      - name: Rename mac.xpl to mac_x64.xpl
-        run: mv build/mac.xpl build/mac_arm.xpl                   
-      - uses: actions/upload-artifact@v7
-        with:
-          name: binaries-arm-mac
-          path: ${{github.workspace}}/build/*.xpl
-          if-no-files-found: error
-      - name: List folder
-        run: ls -R -l          
 
   package:
-    needs: [build-lin, build-win, build-x64-mac, build-arm-mac]
+    needs: [build-lin, build-win, build-mac]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
       
-      - uses: actions/upload-artifact/merge@v7
-        with:
-          name: binaries
-          pattern: binaries-*
-                
-      - uses: actions/download-artifact@v8
-        with:
-          name: binaries
-          path: FlyWithLua/lin_x64
       - name: Ensure target directories exist
         run: mkdir -p FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64    
-      - name: Test artifact download     
-        run: ls -R -l
-      - name: Rename lin.xpl to FlyWithLua.xpl
-        run: mv FlyWithLua/lin_x64/lin.xpl FlyWithLua/lin_x64/FlyWithLua.xpl
-      - name: Rename win.xpl to FlyWithLua/win_x64/FlyWithLua.xpl
-        run: mv FlyWithLua/lin_x64/win.xpl FlyWithLua/win_x64/FlyWithLua.xpl  
-      - name: Create Fat Mac
-        run: lipo -create FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl -o FlyWithLua/mac_x64/FlyWithLua.xpl
-      - name: Remove mac_x64.xpl & mac_arm.xpl    
-        run: rm FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl
-      - name: Did we remove mac_x64.xpl & mac_arm.xpl & win.xpl    
-        run: ls -R -l
+
+      - name: Download Linux binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-lin
+          path: FlyWithLua/lin_x64
+
+      - name: Download Windows binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-win
+          path: FlyWithLua/win_x64
+
+      - name: Download Mac binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-mac
+          path: FlyWithLua/mac_x64
+
+      - name: Verify binaries and architectures
+        run: |
+          ls -la FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64
+          lipo -info FlyWithLua/mac_x64/FlyWithLua.xpl
       - uses: actions/upload-artifact@v7
         with:
           name: FlyWithLua_NG+_v${{env.FWL_VERSION}}

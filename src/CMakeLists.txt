@@ -7,15 +7,10 @@
 
 cmake_minimum_required(VERSION 3.9)
 project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
-# We now have SDK support for arm so building for both architectures for the Mac.
-# X-Plane supports OS X 11.0+, so this should ensure FlyWithLua can run on
-# all supported versions.
-set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
-# We have to do seperate builds for the Mac
-if (BUILD_ARM)
-	set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for mac OS X" FORCE)
-else ()
-	set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for mac OS X" FORCE)
+if (APPLE)
+    # Universal 2 binary: build x86_64 and arm64 in a single pass
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+    set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for macOS" FORCE)
 endif ()
 
 # By default, use optimized release configuration.
@@ -260,12 +255,26 @@ elseif (UNIX)
 endif ()
 
 
-set_target_properties(FlyWithLua PROPERTIES PREFIX "")
+# Determine standard X-Plane 64-bit platform directory
 if (WIN32)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "win")
+    set(FWL_PLATFORM_DIR "win_x64")
 elseif (APPLE)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "mac")
+    set(FWL_PLATFORM_DIR "mac_x64")
 elseif (UNIX)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "lin")
+    set(FWL_PLATFORM_DIR "lin_x64")
 endif ()
-set_target_properties(FlyWithLua PROPERTIES SUFFIX ".xpl")
+
+set_target_properties(FlyWithLua PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "FlyWithLua"
+    SUFFIX ".xpl"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${FWL_PLATFORM_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${FWL_PLATFORM_DIR}"
+)
+
+if (APPLE)
+    add_custom_command(TARGET FlyWithLua POST_BUILD
+        COMMAND /usr/bin/codesign -s - -f $<TARGET_FILE:FlyWithLua>
+        COMMENT "Ad-hoc signing universal binary for macOS"
+    )
+endif ()

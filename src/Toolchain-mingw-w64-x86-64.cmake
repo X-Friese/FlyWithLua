@@ -8,9 +8,16 @@
 set(CMAKE_SYSTEM_NAME Windows)
 set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
 
-# cross compilers to use for C and C++
-set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
+# Cross compilers to use for C and C++
+# Prefer POSIX threading model (winpthreads) required for C++11 std::thread and std::mutex
+find_program(MINGW_CXX_POSIX ${TOOLCHAIN_PREFIX}-g++-posix)
+if (MINGW_CXX_POSIX)
+    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc-posix)
+    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++-posix)
+else ()
+    set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
+    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
+endif ()
 set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
 
 # target environment on the build host system

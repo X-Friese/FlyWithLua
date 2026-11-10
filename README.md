@@ -62,8 +62,7 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 
     ```
     cmake --build .\build
-    mkdir .\FlyWithLua\win_x64
-    copy .\build\win.xpl .\FlyWithLua\win_x64\FlyWithLua.xpl
+    xcopy /E /I /Y .\build\win_x64 .\FlyWithLua\win_x64
     ```
 
 ### On Ubuntu:
@@ -72,7 +71,6 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 
    ```
    sudo apt-get install -y --no-install-recommends build-essential cmake git freeglut3-dev libudev-dev libopenal-dev
-
    ```
 
 2. Checkout and configure the project:
@@ -83,17 +81,16 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
    cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo
    ```
 
-3. Build the project and copy the plugin DLL into the appropriate directory:
+3. Build the project and copy the plugin into the appropriate directory:
 
    ```
    cmake --build ./build
-   mkdir ./FlyWithLua/lin_x64
-   cp ./build/lin.xpl ./FlyWithLua/lin_x64/FlyWithLua.xpl
+   cp -a ./build/lin_x64 ./FlyWithLua/
    ```
 
 ### On OS X:
 
-1. Install XCode, Git, CMake (Homebrew can be convenient for this).
+1. Install Xcode, Git, CMake (Homebrew can be convenient for this).
 
 2. Checkout and configure the project:
 
@@ -103,12 +100,11 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
    cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo
    ```
 
-3. Build the project and copy the plugin DLL into the appropriate directory:
+3. Build the project and copy the plugin into the appropriate directory:
 
    ```
    cmake --build ./build
-   mkdir ./FlyWithLua/mac_x64
-   cp ./build/mac.xpl ./FlyWithLua/mac_x64/FlyWithLua.xpl
+   cp -a ./build/mac_x64 ./FlyWithLua/
    ```
 
 ### Additional tips

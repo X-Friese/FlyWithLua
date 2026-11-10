@@ -15,7 +15,7 @@ rm -r src/build-lin/*
  rm -r build/*
  cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=../src/Toolchain-mingw-w64-x86-64.cmake
  cmake --build ./build -v
- cp ./build/win.xpl ./FlyWithLua/win_x64/FlyWithLua.xpl
+ cp ./build/win_x64/FlyWithLua.xpl ./FlyWithLua/win_x64/FlyWithLua.xpl
 
 
 # Linux build
@@ -37,12 +37,12 @@ cp src/build-lin/lin.xpl FlyWithLua/lin_x64/FlyWithLua.xpl
 rm -r build/*
 cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=../src/Toolchain-ubuntu-osxcross-x86_64-11.3.cmake
 cmake --build ./build -v
-cp ./build/mac.xpl ./mac_x86_64.xpl
+cp ./build/mac_x64/FlyWithLua.xpl ./mac_x86_64.xpl
 
 rm -r build/*
 cmake -S ./src -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_TOOLCHAIN_FILE=../src/Toolchain-ubuntu-osxcross-arm64-11.3.cmake -DBUILD_ARM=ON
 cmake --build ./build -v
-cp ./build/mac.xpl ./mac_arm64.xpl
+cp ./build/mac_x64/FlyWithLua.xpl ./mac_arm64.xpl
 
 lipo -create ./mac_x86_64.xpl ./mac_arm64.xpl -o ./FlyWithLua/mac_x64/FlyWithLua.xpl
 rm mac_x86_64.xpl

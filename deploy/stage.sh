@@ -72,23 +72,33 @@ stage_channel() {
     echo "    Assembling multiplatform binaries..."
     mkdir -p "$STAGING_DIR/mac_x64" "$STAGING_DIR/win_x64" "$STAGING_DIR/lin_x64"
 
-    # Mac: check build/mac.xpl first, fallback to FlyWithLua/mac_x64/FlyWithLua.xpl
-    if [[ -f "$REPO_ROOT/build/mac.xpl" ]]; then
+    # Mac: check build/mac_x64/FlyWithLua.xpl first, then legacy build/mac.xpl, fallback to FlyWithLua/mac_x64/FlyWithLua.xpl
+    if [[ -f "$REPO_ROOT/build/mac_x64/FlyWithLua.xpl" ]]; then
+        cp -a "$REPO_ROOT/build/mac_x64/FlyWithLua.xpl" "$STAGING_DIR/mac_x64/FlyWithLua.xpl"
+        echo "    [Mac] Staged local build: build/mac_x64/FlyWithLua.xpl"
+    elif [[ -f "$REPO_ROOT/build/mac.xpl" ]]; then
         cp -a "$REPO_ROOT/build/mac.xpl" "$STAGING_DIR/mac_x64/FlyWithLua.xpl"
-        echo "    [Mac] Staged local build: build/mac.xpl"
+        echo "    [Mac] Staged legacy build: build/mac.xpl"
     elif [[ -f "$FWL_SRC/mac_x64/FlyWithLua.xpl" ]]; then
         cp -a "$FWL_SRC/mac_x64/FlyWithLua.xpl" "$STAGING_DIR/mac_x64/FlyWithLua.xpl"
         echo "    [Mac] Staged existing binary: FlyWithLua/mac_x64/FlyWithLua.xpl"
     fi
 
-    # Windows: copy win_x64 DLLs and .xpl if present
+    # Windows: copy win_x64 DLLs and .xpl (check local build first)
     if [[ -d "$FWL_SRC/win_x64" ]]; then
         cp -a "$FWL_SRC/win_x64/"* "$STAGING_DIR/win_x64/"
         echo "    [Windows] Staged win_x64 libraries"
     fi
+    if [[ -f "$REPO_ROOT/build/win_x64/FlyWithLua.xpl" ]]; then
+        cp -a "$REPO_ROOT/build/win_x64/FlyWithLua.xpl" "$STAGING_DIR/win_x64/FlyWithLua.xpl"
+        echo "    [Windows] Staged local build: build/win_x64/FlyWithLua.xpl"
+    fi
 
-    # Linux: copy lin_x64 if present
-    if [[ -f "$FWL_SRC/lin_x64/FlyWithLua.xpl" ]]; then
+    # Linux: check build/lin_x64/FlyWithLua.xpl first, fallback to FlyWithLua/lin_x64/FlyWithLua.xpl
+    if [[ -f "$REPO_ROOT/build/lin_x64/FlyWithLua.xpl" ]]; then
+        cp -a "$REPO_ROOT/build/lin_x64/FlyWithLua.xpl" "$STAGING_DIR/lin_x64/FlyWithLua.xpl"
+        echo "    [Linux] Staged local build: build/lin_x64/FlyWithLua.xpl"
+    elif [[ -f "$FWL_SRC/lin_x64/FlyWithLua.xpl" ]]; then
         cp -a "$FWL_SRC/lin_x64/FlyWithLua.xpl" "$STAGING_DIR/lin_x64/FlyWithLua.xpl"
         echo "    [Linux] Staged lin_x64 binary"
     fi
