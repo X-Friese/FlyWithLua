@@ -444,7 +444,7 @@ imgui.Kbd("Ctrl+Shift+P")
 ```
 
 ### In-Cockpit File Dialogs & File Picker Suite
-FlyWithLua integrates turnkey C++11 file selection and directory scanning widgets (`imgui_file_dialog.h`) built directly into ImgWindow.
+FlyWithLua integrates turnkey file selection and directory scanning widgets built directly into ImgWindow.
 - **Microsecond Native Scanning:** Uses POSIX `opendir` on macOS/Linux and Win32 `FindFirstFileW` on Windows -- completely eliminating Windows `io.popen("dir /b ...")` console window flashes, cmd.exe deadlocks, and subprocess overhead.
 - **In-Viewport & VR-Safe:** Renders modals inside the simulator viewport; never stalls the X-Plane graphics thread, and never loses window focus.
 
