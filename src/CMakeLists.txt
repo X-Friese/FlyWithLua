@@ -7,14 +7,32 @@
 
 cmake_minimum_required(VERSION 3.9)
 
-if (APPLE)
-    # Universal 2 binary: build x86_64 and arm64 in a single pass
-    # Must be set BEFORE project() so compiler ABI detection and try_compile use universal flags on pass 1
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
-    set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for macOS" FORCE)
+# Set macOS deployment target and architectures BEFORE project() so CMake's
+# Darwin platform initialization uses them on the very first pass.
+# (Note: APPLE and CMAKE_HOST_APPLE are not defined until inside project(), and
+# CMAKE_OSX_* variables are ignored by CMake on non-macOS targets.)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+if (DEFINED CMAKE_TOOLCHAIN_FILE)
+    # Cross-compiling (e.g., osxcross on Linux): build each architecture in its own pass and join with lipo.
+    if (BUILD_ARM)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for macOS" FORCE)
+    else ()
+        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for macOS" FORCE)
+    endif ()
+else ()
+    # Native macOS host: build Universal 2 binary (x86_64 and arm64) in a single pass.
+    if (BUILD_ARM)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for macOS" FORCE)
+    else ()
+        set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for macOS" FORCE)
+    endif ()
 endif ()
 
 project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
+
+if (APPLE)
+    add_compile_options(-mmacosx-version-min=11.0)
+endif ()
 
 # By default, use optimized release configuration.
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")

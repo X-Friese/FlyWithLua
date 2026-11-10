@@ -4,6 +4,7 @@
 # Files/directories that should NEVER be packaged, uploaded to depot, or whitelisted.
 # ==============================================================================
 .DS_Store
+.gitkeep
 Thumbs.db
 *.bak
 Scripts (Quarantine)

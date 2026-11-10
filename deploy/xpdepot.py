@@ -42,6 +42,7 @@ SYSTEM_IGNORE_FILES = {
     IGNORE_NAME,
     LCL_CONFIG,
     ".DS_Store",
+    ".gitkeep",
     "Thumbs.db",
 }
 
