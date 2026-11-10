@@ -106,6 +106,7 @@ if imgui.RegisterStyleTag then
     imgui.RegisterStyleTag("cam", "green bold mono")
     imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
     imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
+    imgui.RegisterStyleTag("handle", "mono fg=#ff6b6b bg=#fff9c425")
 end
 
 if imgui.RegisterTagAlias then
@@ -181,7 +182,7 @@ For complete tutorials, API references, and architectural guides, see:
 * **ImGee C++ Architecture:** [slgoldberg/ImgWindow/contrib/ImGee/README.md](https://github.com/slgoldberg/ImgWindow/blob/dev/contrib/ImGee/README.md)
 
 ---
-Created by **Steven L. Goldberg** (@slgoldberg) and the Rogers, with appreciation to **William R. Good** (@sparker256) for FlyWithLua and **Omar Cornut** (@ocornut) for Dear ImGui.
+Created by **Steven L. Goldberg** (<handle>@slgoldberg</handle>) and the Rogers, with appreciation to **William R. Good** (<handle>@sparker256</handle>) for FlyWithLua and **Omar Cornut** (<handle>@ocornut</handle>) for Dear ImGui.
 ]]
 
 function show_luigee_demo()
