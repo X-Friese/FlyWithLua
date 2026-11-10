@@ -6,12 +6,15 @@
 #   * -DCREATECOMPLETEEDITION=XXX, where XXX is true or false. Default is true.
 
 cmake_minimum_required(VERSION 3.9)
-project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
+
 if (APPLE)
     # Universal 2 binary: build x86_64 and arm64 in a single pass
+    # Must be set BEFORE project() so compiler ABI detection and try_compile use universal flags on pass 1
     set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
     set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for macOS" FORCE)
 endif ()
+
+project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
 
 # By default, use optimized release configuration.
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
