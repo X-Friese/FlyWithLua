@@ -19,7 +19,7 @@
 #include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
 #include "imgui/imgui_internal.h"
-#include "FWLContribBindings.h"
+#include "FWLImGeeBindings.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -946,8 +946,8 @@ void initFloatingWindowSupport() {
     }
     lua_pop(L, 1);
 
-    // Register modern ImGui contrib extensions (Markdown, TimedTooltip, and Widgets)
-    flywithlua::InitContribSupport(L);
+    // Register modern ImGee / LuiGee extensions (Markdown, TimedTooltip, and Widgets)
+    flywithlua::InitImGeeSupport(L);
 
 	::sol::state_view lua(L);
     lua.set_function("float_wnd_set_imgui_builder", sol::overload(LuaSetCallbackByName<LuaSetImguiBuilder>,

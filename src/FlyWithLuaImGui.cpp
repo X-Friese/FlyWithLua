@@ -16,7 +16,7 @@
 #include "FlyWithLua.h"
 #include "FlyWithLuaImGui.h"
 #include "FloatingWindows/FWLIntegration.h"
-#include "FloatingWindows/FWLContribBindings.h"
+#include "FloatingWindows/FWLImGeeBindings.h"
 #include "ImgWindow.h"
 #include "third_party/iniReader/inireader.h"
 #include "XPLMProcessing.h"
@@ -295,6 +295,12 @@ bool InitializeImGui()
     if (flywithlua::GetFontByName("Roboto-Italic") == nullptr && std::ifstream(std::string(kCustomFontDir) + "Roboto-Italic.ttf")) {
         LoadFontTriplet("Roboto-Italic.ttf", font_size1, font_size2, font_size3);
     }
+    if (flywithlua::GetFontByName("Roboto-Bold") == nullptr && std::ifstream(std::string(kCustomFontDir) + "Roboto-Bold.ttf")) {
+        LoadFontTriplet("Roboto-Bold.ttf", font_size1, font_size2, font_size3);
+    }
+    if (flywithlua::GetFontByName("Roboto-BoldItalic") == nullptr && std::ifstream(std::string(kCustomFontDir) + "Roboto-BoldItalic.ttf")) {
+        LoadFontTriplet("Roboto-BoldItalic.ttf", font_size1, font_size2, font_size3);
+    }
     if (flywithlua::GetFontByName("RobotoMono-Regular") == nullptr && std::ifstream(std::string(kCustomFontDir) + "RobotoMono-Regular.ttf")) {
         LoadFontTriplet("RobotoMono-Regular.ttf", font_size1, font_size2, font_size3);
     }
@@ -373,7 +379,7 @@ bool InitializeImGui()
     }
 
     // Wire semantic fonts (H1, H2, Bold, Italic, Mono) to the ImGui Markdown engine
-    flywithlua::UpdateContribMarkdownFonts();
+    flywithlua::UpdateImGeeMarkdownFonts();
 
     // Note: the GPU upload happens lazily, when the first window draws.
     return true;

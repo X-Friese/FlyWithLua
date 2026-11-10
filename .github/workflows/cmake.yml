@@ -1,11 +1,31 @@
 name: CMake
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'Target SCU Depot Channel (or "none" to skip depot push)'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - beta
+          - release
+          - all
+          - none
+      create_release:
+        description: 'Tag for release history'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: RelWithDebInfo
-  FWL_VERSION: 2.8.21
+  BUILD_TYPE: Release
 
 jobs:
   build-lin:
@@ -27,7 +47,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: binaries-lin
-          path: ${{github.workspace}}/build/*.xpl
+          path: ${{github.workspace}}/build/lin_x64/FlyWithLua.xpl
           if-no-files-found: error
           
   build-win:
@@ -50,10 +70,10 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: binaries-win
-          path: ${{github.workspace}}/build/*.xpl
+          path: ${{github.workspace}}/build/win_x64/FlyWithLua.xpl
           if-no-files-found: error
 
-  build-x64-mac:
+  build-mac:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
@@ -65,76 +85,97 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}/src
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} 
-      - name: List folder
-        run: ls -R -l
-      - name: Rename mac.xpl to mac_x64.xpl
-        run: mv build/mac.xpl build/mac_x64.xpl                          
       - uses: actions/upload-artifact@v7
         with:
-          name: binaries-x64-mac
-          path: ${{github.workspace}}/build/*.xpl
+          name: binaries-mac
+          path: ${{github.workspace}}/build/mac_x64/FlyWithLua.xpl
           if-no-files-found: error
-      - name: List folder
-        run: ls -R -l          
-          
-  build-arm-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: recursive
-      - name: Configure CMake
-        working-directory: ${{github.workspace}}/src
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_ARM=ON
-      - name: Build
-        working-directory: ${{github.workspace}}/src
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-      - name: List folder
-        run: ls -R -l
-      - name: Rename mac.xpl to mac_x64.xpl
-        run: mv build/mac.xpl build/mac_arm.xpl                   
-      - uses: actions/upload-artifact@v7
-        with:
-          name: binaries-arm-mac
-          path: ${{github.workspace}}/build/*.xpl
-          if-no-files-found: error
-      - name: List folder
-        run: ls -R -l          
 
   package:
-    needs: [build-lin, build-win, build-x64-mac, build-arm-mac]
+    needs: [build-lin, build-win, build-mac]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
       
-      - uses: actions/upload-artifact/merge@v7
-        with:
-          name: binaries
-          pattern: binaries-*
-                
-      - uses: actions/download-artifact@v8
-        with:
-          name: binaries
-          path: FlyWithLua/lin_x64
       - name: Ensure target directories exist
         run: mkdir -p FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64    
-      - name: Test artifact download     
-        run: ls -R -l
-      - name: Rename lin.xpl to FlyWithLua.xpl
-        run: mv FlyWithLua/lin_x64/lin.xpl FlyWithLua/lin_x64/FlyWithLua.xpl
-      - name: Rename win.xpl to FlyWithLua/win_x64/FlyWithLua.xpl
-        run: mv FlyWithLua/lin_x64/win.xpl FlyWithLua/win_x64/FlyWithLua.xpl  
-      - name: Create Fat Mac
-        run: lipo -create FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl -o FlyWithLua/mac_x64/FlyWithLua.xpl
-      - name: Remove mac_x64.xpl & mac_arm.xpl    
-        run: rm FlyWithLua/lin_x64/mac_x64.xpl FlyWithLua/lin_x64/mac_arm.xpl
-      - name: Did we remove mac_x64.xpl & mac_arm.xpl & win.xpl    
-        run: ls -R -l
-      - uses: actions/upload-artifact@v7
+
+      - name: Download Linux binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-lin
+          path: FlyWithLua/lin_x64
+
+      - name: Download Windows binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-win
+          path: FlyWithLua/win_x64
+
+      - name: Download Mac binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-mac
+          path: FlyWithLua/mac_x64
+
+      - name: Verify binaries and architectures
+        run: |
+          ls -la FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64
+          lipo -info FlyWithLua/mac_x64/FlyWithLua.xpl
+
+      - name: Resolve FlyWithLua version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            RAW_TAG="${{ github.ref_name }}"
+            FWL_VER="${RAW_TAG#v}"
+          else
+            FWL_VER=$(grep '#define PLUGIN_VERSION_NO' src/FlyWithLua.cpp | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          fi
+          if [[ -z "$FWL_VER" ]]; then
+            FWL_VER="2.8.22"
+          fi
+          echo "FWL_VERSION=$FWL_VER" >> $GITHUB_ENV
+          echo "Resolved FlyWithLua version: $FWL_VER"
+
+      - name: Upload packaging artifact
+        uses: actions/upload-artifact@v7
         with:
           name: FlyWithLua_NG+_v${{env.FWL_VERSION}}
           path: |
             ${{github.workspace}}/FlyWithLua*
-          if-no-files-found: error                     
+          if-no-files-found: error
+
+      - name: Stage & Build SkunkCrafts Depot (Manual Dispatch)
+        if: github.event_name == 'workflow_dispatch' && inputs.channel != 'none'
+        run: |
+          CHANNEL="${{ inputs.channel }}"
+          echo "Building SCU depot for channel: $CHANNEL"
+          chmod +x deploy/stage.sh deploy/xpdepot.py
+          ./deploy/stage.sh "$CHANNEL" --build-depot --package-zip
+
+      - name: Deploy to GitHub Pages (Depot)
+        if: github.event_name == 'workflow_dispatch' && inputs.channel != 'none'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/depot
+          keep_files: true
+
+      - name: Package Standalone Release ZIP
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+        run: |
+          chmod +x deploy/stage.sh deploy/xpdepot.py
+          ./deploy/stage.sh release --package-zip
+
+      - name: Tag for release history & Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.FWL_VERSION }}
+          name: FlyWithLua ${{ env.FWL_VERSION }}
+          generate_release_notes: true
+          files: build/dist/FlyWithLua_*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                     

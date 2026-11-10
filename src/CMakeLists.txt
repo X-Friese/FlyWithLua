@@ -6,16 +6,32 @@
 #   * -DCREATECOMPLETEEDITION=XXX, where XXX is true or false. Default is true.
 
 cmake_minimum_required(VERSION 3.9)
-project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
-# We now have SDK support for arm so building for both architectures for the Mac.
-# X-Plane supports OS X 11.0+, so this should ensure FlyWithLua can run on
-# all supported versions.
+
+# Set macOS deployment target and architectures BEFORE project() so CMake's
+# Darwin platform initialization uses them on the very first pass.
+# (Note: APPLE and CMAKE_HOST_APPLE are not defined until inside project(), and
+# CMAKE_OSX_* variables are ignored by CMake on non-macOS targets.)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
-# We have to do seperate builds for the Mac
-if (BUILD_ARM)
-	set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for mac OS X" FORCE)
+if (DEFINED CMAKE_TOOLCHAIN_FILE)
+    # Cross-compiling (e.g., osxcross on Linux): build each architecture in its own pass and join with lipo.
+    if (BUILD_ARM)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for macOS" FORCE)
+    else ()
+        set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for macOS" FORCE)
+    endif ()
 else ()
-	set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for mac OS X" FORCE)
+    # Native macOS host: build Universal 2 binary (x86_64 and arm64) in a single pass.
+    if (BUILD_ARM)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for macOS" FORCE)
+    else ()
+        set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for macOS" FORCE)
+    endif ()
+endif ()
+
+project(FlyWithLua VERSION 2.8.0 DESCRIPTION "FlyWithLua X-Plane plugin")
+
+if (APPLE)
+    add_compile_options(-mmacosx-version-min=11.0)
 endif ()
 
 # By default, use optimized release configuration.
@@ -117,7 +133,7 @@ add_compile_options(-O3 -fPIC)
 # X-Plane plugin
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
-list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLContribBindings.cpp)
+list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLImGeeBindings.cpp)
 # Automatically ensure ImgWindow submodule is initialized and checked out to the commit pinned by this branch
 find_package(Git QUIET)
 if (GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
@@ -135,7 +151,7 @@ endif ()
 
 # ImgWindow v2 (git submodule, pinned to tagged release v2.2.0). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
-set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLContribBindings.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
+set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLImGeeBindings.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
 list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
@@ -260,12 +276,26 @@ elseif (UNIX)
 endif ()
 
 
-set_target_properties(FlyWithLua PROPERTIES PREFIX "")
+# Determine standard X-Plane 64-bit platform directory
 if (WIN32)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "win")
+    set(FWL_PLATFORM_DIR "win_x64")
 elseif (APPLE)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "mac")
+    set(FWL_PLATFORM_DIR "mac_x64")
 elseif (UNIX)
-    set_target_properties(FlyWithLua PROPERTIES OUTPUT_NAME "lin")
+    set(FWL_PLATFORM_DIR "lin_x64")
 endif ()
-set_target_properties(FlyWithLua PROPERTIES SUFFIX ".xpl")
+
+set_target_properties(FlyWithLua PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "FlyWithLua"
+    SUFFIX ".xpl"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${FWL_PLATFORM_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${FWL_PLATFORM_DIR}"
+)
+
+if (APPLE)
+    add_custom_command(TARGET FlyWithLua POST_BUILD
+        COMMAND /usr/bin/codesign -s - -f $<TARGET_FILE:FlyWithLua>
+        COMMENT "Ad-hoc signing universal binary for macOS"
+    )
+endif ()
