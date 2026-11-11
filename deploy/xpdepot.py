@@ -175,12 +175,7 @@ def build_depot_headless(stage_dir: str, depot_dir: str, lock_status: bool = Fal
     with open(rmt_cfg_path, "w", newline="\n", encoding="utf-8") as fh:
         for k, v in cfg_entries.items():
             fh.write(f"{k}|{v}\n")
-    print(f"==> Wrote client config: {rmt_cfg_path}")
-
-    # Also mirror skunkcrafts_updater.cfg into staging so packaging gets it
-    stage_cfg_path = os.path.join(stage_dir, RMT_CONFIG)
-    shutil.copy2(rmt_cfg_path, stage_cfg_path)
-    print(f"==> Mirrored client config into staging: {stage_cfg_path}")
+    print(f"==> Wrote depot config: {rmt_cfg_path}")
 
     print("==> Depot build completed successfully!")
 
