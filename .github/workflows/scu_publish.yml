@@ -1,0 +1,227 @@
+name: "SkunkCrafts: Publish latest build..."
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Depot publish action(s) and channel(s)'
+        required: true
+        default: 'Publish to beta only (keep release as-is)'
+        type: choice
+        options:
+          - 'Publish to beta only (keep release as-is)'
+          - 'Publish to release only (keep beta as-is)'
+          - 'Promote beta->release, then publish to beta'
+          - 'Publish to BOTH beta AND release'
+      create_release:
+        description: 'Tag for release history (creates/updates tag)'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce master branch only
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
+            echo "::error::SkunkCrafts depot workflows may only be run from the 'master' branch (current ref: ${{ github.ref }})."
+            exit 1
+          fi
+
+      - name: Checkout master source
+        uses: actions/checkout@v6
+
+      - name: Validate PLUGIN_VERSION_NO before building
+        run: |
+          FWL_VER=$(grep '#define PLUGIN_VERSION_NO' src/FlyWithLua.cpp | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          if [[ -z "$FWL_VER" ]]; then
+            echo "::error::Could not parse PLUGIN_VERSION_NO from src/FlyWithLua.cpp -- aborting before build or depot changes."
+            exit 1
+          fi
+          echo "Validated PLUGIN_VERSION_NO: $FWL_VER"
+
+      - name: Verify gh-pages beta exists when promoting first
+        if: inputs.action == 'Promote beta->release, then publish to beta'
+        run: |
+          git fetch origin gh-pages:refs/remotes/origin/gh-pages || {
+            echo "::error::Branch 'gh-pages' does not exist yet -- cannot promote existing beta."
+            exit 1
+          }
+          if ! git cat-file -e origin/gh-pages:depot/beta/FlyWithLua/skunkcrafts_updater.cfg 2>/dev/null; then
+            echo "::error::depot/beta/FlyWithLua/skunkcrafts_updater.cfg not found on gh-pages -- cannot promote existing beta."
+            exit 1
+          fi
+
+  build:
+    needs: [preflight]
+    uses: ./.github/workflows/cmake.yml
+
+  publish:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Assemble freshly compiled multiplatform binaries
+        run: |
+          mkdir -p FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64
+          rm -f FlyWithLua/lin_x64/.gitkeep FlyWithLua/mac_x64/.gitkeep
+
+      - name: Download Linux binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-lin
+          path: FlyWithLua/lin_x64
+
+      - name: Download Windows binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-win
+          path: FlyWithLua/win_x64
+
+      - name: Download Mac binary
+        uses: actions/download-artifact@v8
+        with:
+          name: binaries-mac
+          path: FlyWithLua/mac_x64
+
+      - name: Stage & stamp SkunkCrafts depot payload(s)
+        env:
+          FWL_VERSION: ${{ needs.build.outputs.fwl_version }}
+          PUBLISH_ACTION: ${{ inputs.action }}
+        run: |
+          chmod +x deploy/stage.sh deploy/xpdepot.py
+          case "$PUBLISH_ACTION" in
+            "Publish to beta only (keep release as-is)"|"Promote beta->release, then publish to beta")
+              ./deploy/stage.sh beta --build-depot
+              ;;
+            "Publish to release only (keep beta as-is)")
+              ./deploy/stage.sh release --build-depot
+              ;;
+            "Publish to BOTH beta AND release")
+              ./deploy/stage.sh all --build-depot
+              ;;
+            *)
+              echo "::error::Unknown publish action: $PUBLISH_ACTION"
+              exit 1
+              ;;
+          esac
+
+      - name: Checkout gh-pages depot branch
+        run: |
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add gh-pages-tree origin/gh-pages
+            git -C gh-pages-tree checkout -B gh-pages origin/gh-pages
+          else
+            git worktree add --detach gh-pages-tree
+            git -C gh-pages-tree checkout --orphan gh-pages
+            git -C gh-pages-tree rm -rf . >/dev/null 2>&1 || true
+            touch gh-pages-tree/.nojekyll
+          fi
+
+      - name: Apply atomic depot update & push gh-pages
+        env:
+          FWL_VERSION: ${{ needs.build.outputs.fwl_version }}
+          PUBLISH_ACTION: ${{ inputs.action }}
+        run: |
+          STAGE_DEPOT_ROOT="$PWD/build/depot/depot"
+          cd gh-pages-tree
+
+          BETA_DIR="depot/beta/FlyWithLua"
+          REL_DIR="depot/release/FlyWithLua"
+          mkdir -p depot/beta depot/release
+
+          case "$PUBLISH_ACTION" in
+            "Publish to beta only (keep release as-is)")
+              rm -rf "$BETA_DIR"
+              cp -a "$STAGE_DEPOT_ROOT/beta/FlyWithLua" "$BETA_DIR"
+              COMMIT_MSG="chore(depot): publish ${FWL_VERSION} to beta"
+              ;;
+
+            "Publish to release only (keep beta as-is)")
+              rm -rf "$REL_DIR"
+              cp -a "$STAGE_DEPOT_ROOT/release/FlyWithLua" "$REL_DIR"
+              COMMIT_MSG="chore(depot): publish ${FWL_VERSION} to release"
+              ;;
+
+            "Promote beta->release, then publish to beta")
+              if [[ ! -f "$BETA_DIR/skunkcrafts_updater.cfg" ]]; then
+                echo "::error::Cannot promote: $BETA_DIR/skunkcrafts_updater.cfg missing on gh-pages."
+                exit 1
+              fi
+              PROMOTED_VER=$(grep '^version|' "$BETA_DIR/skunkcrafts_updater.cfg" | head -n1 | cut -d'|' -f2 | tr -d '\r')
+              rm -rf "$REL_DIR"
+              cp -a "$BETA_DIR" "$REL_DIR"
+              rm -rf "$BETA_DIR"
+              cp -a "$STAGE_DEPOT_ROOT/beta/FlyWithLua" "$BETA_DIR"
+              COMMIT_MSG="chore(depot): promote beta (${PROMOTED_VER}) -> release, publish ${FWL_VERSION} to beta"
+              ;;
+
+            "Publish to BOTH beta AND release")
+              rm -rf "$BETA_DIR" "$REL_DIR"
+              cp -a "$STAGE_DEPOT_ROOT/beta/FlyWithLua" "$BETA_DIR"
+              cp -a "$STAGE_DEPOT_ROOT/release/FlyWithLua" "$REL_DIR"
+              COMMIT_MSG="chore(depot): publish ${FWL_VERSION} to beta and release"
+              ;;
+          esac
+
+          touch .nojekyll
+          git add -A
+
+          if git diff --cached --quiet; then
+            DEPOT_RESULT="Depot files already matched ${FWL_VERSION} (no gh-pages commit needed)."
+            echo "$DEPOT_RESULT"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "$COMMIT_MSG"
+            git push origin gh-pages
+            DEPOT_RESULT="$COMMIT_MSG"
+          fi
+
+          CUR_BETA="(none)"
+          CUR_REL="(none)"
+          [[ -f "$BETA_DIR/skunkcrafts_updater.cfg" ]] && CUR_BETA=$(grep '^version|' "$BETA_DIR/skunkcrafts_updater.cfg" | head -n1 | cut -d'|' -f2 | tr -d '\r')
+          [[ -f "$REL_DIR/skunkcrafts_updater.cfg" ]] && CUR_REL=$(grep '^version|' "$REL_DIR/skunkcrafts_updater.cfg" | head -n1 | cut -d'|' -f2 | tr -d '\r')
+
+          {
+            echo "### SkunkCrafts Publish Summary"
+            echo "- **Selected action:** \`${PUBLISH_ACTION}\`"
+            echo "- **Depot update:** ${DEPOT_RESULT}"
+            echo "- **Live \`beta\` channel version:** \`${CUR_BETA}\`"
+            echo "- **Live \`release\` channel version:** \`${CUR_REL}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Package Release ZIP and update Git tag
+        if: inputs.create_release == true
+        env:
+          FWL_VERSION: ${{ needs.build.outputs.fwl_version }}
+        run: |
+          mkdir -p build/dist
+          zip -rq "build/dist/FlyWithLua_NG+_v${FWL_VERSION}.zip" FlyWithLua -x "*.DS_Store" "*/.gitkeep"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "$FWL_VERSION" "${{ github.sha }}"
+          git push origin "refs/tags/$FWL_VERSION" --force
+          echo "- **Git tag & GitHub Release:** \`${FWL_VERSION}\` (\`FlyWithLua_NG+_v${FWL_VERSION}.zip\`)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish or update GitHub Release
+        if: inputs.create_release == true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.build.outputs.fwl_version }}
+          name: FlyWithLua ${{ needs.build.outputs.fwl_version }}
+          generate_release_notes: true
+          files: build/dist/FlyWithLua_NG+_v${{ needs.build.outputs.fwl_version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
