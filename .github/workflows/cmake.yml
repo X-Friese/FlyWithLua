@@ -134,7 +134,8 @@ jobs:
             FWL_VER=$(grep '#define PLUGIN_VERSION_NO' src/FlyWithLua.cpp | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
           fi
           if [[ -z "$FWL_VER" ]]; then
-            FWL_VER="2.8.22"
+            echo "Error: Could not resolve FlyWithLua version"
+            exit 1
           fi
           echo "FWL_VERSION=$FWL_VER" >> $GITHUB_ENV
           echo "Resolved FlyWithLua version: $FWL_VER"
@@ -151,9 +152,9 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.channel != 'none'
         run: |
           CHANNEL="${{ inputs.channel }}"
-          echo "Building SCU depot for channel: $CHANNEL"
+          echo "Building SCU depot for channel: $CHANNEL (version: ${{ env.FWL_VERSION }})"
           chmod +x deploy/stage.sh deploy/xpdepot.py
-          ./deploy/stage.sh "$CHANNEL" --build-depot --package-zip
+          ./deploy/stage.sh "$CHANNEL" --build-depot
 
       - name: Deploy to GitHub Pages (Depot)
         if: github.event_name == 'workflow_dispatch' && inputs.channel != 'none'
@@ -166,8 +167,8 @@ jobs:
       - name: Package Standalone Release ZIP
         if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
         run: |
-          chmod +x deploy/stage.sh deploy/xpdepot.py
-          ./deploy/stage.sh release --package-zip
+          mkdir -p build/dist
+          zip -rq "build/dist/FlyWithLua_NG+_v${{ env.FWL_VERSION }}.zip" FlyWithLua -x "*.DS_Store" "*/.gitkeep"
 
       - name: Tag for release history & Publish GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || (github.event_name == 'workflow_dispatch' && inputs.create_release == true)
@@ -176,6 +177,6 @@ jobs:
           tag_name: ${{ env.FWL_VERSION }}
           name: FlyWithLua ${{ env.FWL_VERSION }}
           generate_release_notes: true
-          files: build/dist/FlyWithLua_*.zip
+          files: build/dist/FlyWithLua_NG+_v${{ env.FWL_VERSION }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}                     

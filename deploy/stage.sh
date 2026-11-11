@@ -2,26 +2,21 @@
 # ==============================================================================
 # FlyWithLua Staging & Packaging Tool
 # ------------------------------------------------------------------------------
-# Assembles the multi-channel SkunkCrafts staging payload for FlyWithLua,
-# runs xpdepot.py to compute manifests (whitelist, sizeslist, oncelist),
-# and optionally packages standalone zip distributions.
+# Assembles the multi-channel SkunkCrafts staging payload for FlyWithLua
+# and runs xpdepot.py to compute depot manifests (whitelist, sizeslist, blacklist).
 #
 # Usage:
-#   ./deploy/stage.sh [release|beta|testing|all] [--build-depot] [--package-zip]
+#   ./deploy/stage.sh [release|beta|all] [--build-depot]
 # ==============================================================================
 
 set -euo pipefail
 
 TARGET="${1:-release}"
 BUILD_DEPOT=false
-PACKAGE_ZIP=false
 
 for arg in "$@"; do
     if [[ "$arg" == "--build-depot" ]]; then
         BUILD_DEPOT=true
-    fi
-    if [[ "$arg" == "--package-zip" ]]; then
-        PACKAGE_ZIP=true
     fi
 done
 
@@ -49,9 +44,6 @@ stage_channel() {
     cp -a "$FWL_SRC/Documentation" "$STAGING_DIR/"
     cp -a "$FWL_SRC/Internals" "$STAGING_DIR/"
     cp -a "$FWL_SRC/Modules" "$STAGING_DIR/"
-    if [[ -d "$FWL_SRC/skunkcrafts" ]]; then
-        cp -a "$FWL_SRC/skunkcrafts" "$STAGING_DIR/"
-    fi
     cp -a "$FWL_SRC/README.txt" "$STAGING_DIR/"
     cp -a "$FWL_SRC/fwl_prefs.ini" "$STAGING_DIR/"
     cp -a "$FWL_SRC/user.ini" "$STAGING_DIR/"
@@ -106,8 +98,17 @@ stage_channel() {
         echo "    [Linux] Staged lin_x64 binary"
     fi
 
-    # 4. Copy SkunkCrafts configuration & control lists
-    cp -a "$CHANNEL_CFG" "$STAGING_DIR/skunkcrafts_updater_config.txt"
+    # 4. Stamp resolved build version onto prototype skunkcrafts_updater_config.txt & copy control lists
+    local RESOLVED_VER="${FWL_VERSION:-}"
+    if [[ -z "$RESOLVED_VER" ]]; then
+        RESOLVED_VER=$(grep '#define PLUGIN_VERSION_NO' "$REPO_ROOT/src/FlyWithLua.cpp" | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+    fi
+    if [[ -z "$RESOLVED_VER" ]]; then
+        echo "Error: Could not resolve PLUGIN_VERSION_NO from src/FlyWithLua.cpp"
+        exit 1
+    fi
+    sed -E "s/^version\|.*/version|${RESOLVED_VER}/" "$CHANNEL_CFG" > "$STAGING_DIR/skunkcrafts_updater_config.txt"
+    echo "    [Version] Stamped version|${RESOLVED_VER} onto prototype skunkcrafts_updater_config.txt"
     cp -a "$REPO_ROOT/deploy/skunkcrafts_updater_oncelist.txt" "$STAGING_DIR/"
     cp -a "$REPO_ROOT/deploy/skunkcrafts_updater_blacklist.txt" "$STAGING_DIR/"
     cp -a "$REPO_ROOT/deploy/skunkcrafts_updater_ignorelist.txt" "$STAGING_DIR/"
@@ -119,22 +120,6 @@ stage_channel() {
         local DEPOT_DIR="$REPO_ROOT/build/depot/depot/$CHANNEL/FlyWithLua"
         echo "==> Generating depot manifests with xpdepot.py for channel: $CHANNEL..."
         python3 "$SCRIPT_DIR/xpdepot.py" --stage "$STAGING_DIR" --depot "$DEPOT_DIR"
-    fi
-
-    # 6. Package distribution zip
-    if [[ "$PACKAGE_ZIP" == true ]]; then
-        local DIST_DIR="$REPO_ROOT/build/dist"
-        mkdir -p "$DIST_DIR"
-
-        local VER="2.8.22"
-        if [[ -f "$STAGING_DIR/skunkcrafts_updater.cfg" ]]; then
-            VER=$(grep "^version|" "$STAGING_DIR/skunkcrafts_updater.cfg" | cut -d'|' -f2 || echo "2.8.22")
-        fi
-
-        local ZIP_NAME="FlyWithLua_${VER}_${CHANNEL}.zip"
-        echo "==> Packaging standalone zip: $DIST_DIR/$ZIP_NAME..."
-        (cd "$REPO_ROOT/build/staging/$CHANNEL" && zip -rq "$DIST_DIR/$ZIP_NAME" "FlyWithLua")
-        echo "    Created: $DIST_DIR/$ZIP_NAME ($(du -h "$DIST_DIR/$ZIP_NAME" | cut -f1))"
     fi
 }
 
