@@ -1,0 +1,49 @@
+# ==============================================================================
+# SkunkCrafts Updater Blacklist for FlyWithLua
+# ==============================================================================
+# Files and folders explicitly removed across client installations on update.
+# Includes both directory entries and explicit file paths so all SCU versions
+# cleanly purge legacy XPLM 2.x/3.x binary layouts.
+# ==============================================================================
+
+# Root-level legacy binaries
+mac.xpl
+win.xpl
+lin.xpl
+
+# Accidental legacy names inside modern platform folders
+mac_x64/mac.xpl
+win_x64/win.xpl
+lin_x64/lin.xpl
+
+# Legacy 64-bit folder and historical contents
+64/
+64/mac.xpl
+64/win.xpl
+64/lin.xpl
+64/OpenAL32.dll
+64/openal32.dll
+64/glut64.dll
+64/libglut-0__.dll
+64/libglut.so.3
+64/libLuaXML_lib_64.so
+64/libhidapi-hidraw.so.0
+64/libluajit-5.1.so.2
+64/libstdc++-6.dll
+64/libudev.so.0
+64/libudev.so.0.13.0
+64/libwinpthread-1.dll
+64/lua51.dll
+64/.gitignore
+
+# Legacy 32-bit folder and historical contents
+32/
+32/mac.xpl
+32/win.xpl
+32/lin.xpl
+32/glut32.dll
+32/libglut.so.3
+32/libhidapi-hidraw.so.0
+32/libluajit-5.1.so.2
+32/lua51.dll
+32/luajit.dylib

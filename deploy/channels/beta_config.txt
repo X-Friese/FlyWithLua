@@ -1,0 +1,9 @@
+zone|custom
+disabled|false
+module|https://sparker256.github.io/FlyWithLua/depot/release/FlyWithLua
+name|FlyWithLua
+version|2.8.22
+locked|false
+main_name|release
+channel.beta|https://sparker256.github.io/FlyWithLua/depot/beta/FlyWithLua
+changelog|Documentation/ChangeLog.txt

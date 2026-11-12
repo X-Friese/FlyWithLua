@@ -113,3 +113,5 @@ v2.8.19 Fix CTD due to FMOD on reload ImGui Font Registry redux: scaling, live r
 v2.8.20 Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
 
 v2.8.21 ImgWindow v2.3.0 & Contrib UX Extensions Suite (phase 2)
+
+v2.8.22 ImgWindow v2.4.0 & LuiGee Modern UI Suite (Phase 3) & Multi-Channel SkunkCrafts Updater

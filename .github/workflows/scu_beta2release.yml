@@ -1,0 +1,75 @@
+name: 'SkunkCrafts: Copy "beta" to "release"'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce master branch only
+        run: |
+          if [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
+            echo "::error::SkunkCrafts depot workflows may only be run from the 'master' branch (current ref: ${{ github.ref }})."
+            exit 1
+          fi
+
+      - name: Checkout gh-pages depot branch
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          path: gh-pages-tree
+
+      - name: Copy beta depot wholesale to release depot
+        run: |
+          cd gh-pages-tree
+          BETA_DIR="depot/beta/FlyWithLua"
+          REL_DIR="depot/release/FlyWithLua"
+
+          if [[ ! -f "$BETA_DIR/skunkcrafts_updater.cfg" ]]; then
+            echo "::error::Cannot promote: $BETA_DIR/skunkcrafts_updater.cfg does not exist on gh-pages."
+            exit 1
+          fi
+
+          BETA_VER=$(grep '^version|' "$BETA_DIR/skunkcrafts_updater.cfg" | head -n1 | cut -d'|' -f2 | tr -d '\r')
+          if [[ -z "$BETA_VER" ]]; then
+            echo "::error::Cannot promote: 'version|' line missing or empty in $BETA_DIR/skunkcrafts_updater.cfg."
+            exit 1
+          fi
+
+          OLD_REL_VER="(none)"
+          if [[ -f "$REL_DIR/skunkcrafts_updater.cfg" ]]; then
+            OLD_REL_VER=$(grep '^version|' "$REL_DIR/skunkcrafts_updater.cfg" | head -n1 | cut -d'|' -f2 | tr -d '\r')
+          fi
+
+          rm -rf "$REL_DIR"
+          mkdir -p "$(dirname "$REL_DIR")"
+          cp -a "$BETA_DIR" "$REL_DIR"
+
+          git add -A "$REL_DIR"
+          if git diff --cached --quiet; then
+            MSG="No changes needed -- 'release' already matches 'beta' (version ${BETA_VER})."
+            echo "$MSG"
+            {
+              echo "### SkunkCrafts: Copy \"beta\" to \"release\""
+              echo "- **Status:** $MSG"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(depot): promote beta (${BETA_VER}) -> release (was ${OLD_REL_VER})"
+          git push origin gh-pages
+
+          MSG="Successfully copied 'beta' (version ${BETA_VER}) to 'release' (previously ${OLD_REL_VER})."
+          echo "$MSG"
+          {
+            echo "### SkunkCrafts: Copy \"beta\" to \"release\""
+            echo "- **Promoted version:** \`${BETA_VER}\`"
+            echo "- **Previous release version:** \`${OLD_REL_VER}\`"
+            echo "- **Result:** $MSG"
+          } >> "$GITHUB_STEP_SUMMARY"
