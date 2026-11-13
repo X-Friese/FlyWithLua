@@ -7849,6 +7849,8 @@ PLUGIN_API void XPluginDisable(void)
     FlyWithLuaMenuId = nullptr;
     ATCMenuId        = nullptr;
     MacroMenuId      = nullptr;
+    ATCMenuItem      = -1;
+    MacroMenuItem    = -1;
 
     // unregister callbacks
     XPLMUnregisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void*) "FWLWindowDrawer");
