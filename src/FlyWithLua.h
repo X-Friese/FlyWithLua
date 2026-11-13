@@ -47,8 +47,11 @@ extern bool LuaIsRunning;                       // Are we working with Lua?
 extern bool WeAreNotInDrawingState;
 extern lua_State   *FWLLua;
 
+extern std::string systemDir;
+extern std::string pluginMainDir;
 extern std::string scriptDir;
 extern std::string quarantineDir;
+const char* GetPluginVersionNo();
 extern bool ReadAllScriptFiles();
 extern int found_bad_function_script;
 extern void DebugLua();
@@ -64,6 +67,9 @@ extern int proggy_clean_default;
 extern int use_custom_fonts;
 extern int enable_script_subfolders;
 extern int subfolder_sets_script_directory;
+extern int check_for_updates;
+extern std::string skipped_update_version;
+extern long long remind_update_after_epoch;
 extern std::string imgui_custom_font1;
 extern std::string imgui_custom_font2;
 extern std::string imgui_custom_font3;
