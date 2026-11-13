@@ -1310,6 +1310,27 @@ int FWLDrawWindowCallback(XPLMDrawingPhase /*inPhase*/,
                     // get the string from the stack
                     strncpy(buffer, lua_tostring(FWLLua, i), sizeof(buffer));
 
+#if LIN
+                    if (!fwlLinuxGlutEnsureReady())
+                    {
+                        float GreenColor[] = {0.0f, 1.0f, 0.0f};
+                        char* lineStart = buffer;
+                        while (lineStart && *lineStart != '\0')
+                        {
+                            char* nl = strchr(lineStart, '\n');
+                            if (nl)
+                                *nl = '\0';
+                            XPLMDrawString(GreenColor, 20, LAST_SCREEN_HIGHT - 20 * i - 15 * NUMBER_OF_CR - 20,
+                                           lineStart, nullptr, xplmFont_Proportional);
+                            if (!nl)
+                                break;
+                            ++NUMBER_OF_CR;
+                            lineStart = nl + 1;
+                        }
+                        continue;
+                    }
+#endif
+
                     // set color and position to OpenGL
                     XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
                     glColor4f(0.0, 1.0, 0.0, 1.0);
@@ -2358,6 +2379,26 @@ static int LuaDrawString(lua_State* L)
     return 0;
 }
 
+#if LIN
+static bool fwlDrawLegacyGlutStringOrFallback(void* glutFont, int x_pos, int y_pos, char* text)
+{
+    if (fwlLinuxGlutEnsureReady())
+    {
+        glRasterPos2f(x_pos, y_pos);
+        for (auto i = 0; text[i] != '\0'; i++)
+        {
+            glutBitmapCharacter(glutFont, text[i]);
+        }
+        return true;
+    }
+
+    GLfloat curColor[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glGetFloatv(GL_CURRENT_COLOR, curColor);
+    XPLMDrawString(curColor, x_pos, y_pos, text, nullptr, xplmFont_Proportional);
+    return false;
+}
+#endif
+
 // GLUT function that will be obsolete after 2.8.15
 static int LuaDrawStringHelv18(lua_State* L)
 {
@@ -2386,6 +2427,9 @@ static int LuaDrawStringHelv18(lua_State* L)
     char string_to_print[LONGSTRING];
     strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
+#if LIN
+    fwlDrawLegacyGlutStringOrFallback(GLUT_BITMAP_HELVETICA_18, x_pos, y_pos, string_to_print);
+#else
     // set position to OpenGL
     glRasterPos2f(x_pos, y_pos);
 
@@ -2394,6 +2438,7 @@ static int LuaDrawStringHelv18(lua_State* L)
     {
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string_to_print[i]);
     }
+#endif
 
     return 0;
 }
@@ -2426,6 +2471,9 @@ static int LuaDrawStringHelv12(lua_State* L)
     char string_to_print[LONGSTRING];
     strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
+#if LIN
+    fwlDrawLegacyGlutStringOrFallback(GLUT_BITMAP_HELVETICA_12, x_pos, y_pos, string_to_print);
+#else
     // set position to OpenGL
     glRasterPos2f(x_pos, y_pos);
 
@@ -2434,6 +2482,7 @@ static int LuaDrawStringHelv12(lua_State* L)
     {
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, string_to_print[i]);
     }
+#endif
 
     return 0;
 }
@@ -2466,6 +2515,9 @@ static int LuaDrawStringHelv10(lua_State* L)
     char string_to_print[LONGSTRING];
     strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
+#if LIN
+    fwlDrawLegacyGlutStringOrFallback(GLUT_BITMAP_HELVETICA_10, x_pos, y_pos, string_to_print);
+#else
     // set position to OpenGL
     glRasterPos2f(x_pos, y_pos);
 
@@ -2474,6 +2526,7 @@ static int LuaDrawStringHelv10(lua_State* L)
     {
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, string_to_print[i]);
     }
+#endif
 
     return 0;
 }
@@ -2506,6 +2559,9 @@ static int LuaDrawStringTimes10(lua_State* L)
     char string_to_print[LONGSTRING];
     strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
+#if LIN
+    fwlDrawLegacyGlutStringOrFallback(GLUT_BITMAP_TIMES_ROMAN_10, x_pos, y_pos, string_to_print);
+#else
     // set position to OpenGL
     glRasterPos2f(x_pos, y_pos);
 
@@ -2514,6 +2570,7 @@ static int LuaDrawStringTimes10(lua_State* L)
     {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, string_to_print[i]);
     }
+#endif
 
     return 0;
 }
@@ -2546,6 +2603,9 @@ static int LuaDrawStringTimes24(lua_State* L)
     char string_to_print[LONGSTRING];
     strncpy(string_to_print, lua_tostring(L, 3), sizeof(string_to_print));
 
+#if LIN
+    fwlDrawLegacyGlutStringOrFallback(GLUT_BITMAP_TIMES_ROMAN_24, x_pos, y_pos, string_to_print);
+#else
     // set position to OpenGL
     glRasterPos2f(x_pos, y_pos);
 
@@ -2554,6 +2614,7 @@ static int LuaDrawStringTimes24(lua_State* L)
     {
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string_to_print[i]);
     }
+#endif
 
     return 0;
 }
