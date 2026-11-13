@@ -22,16 +22,34 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
-      - name: Install other dependencies
+      - name: Configure and Build (Ubuntu 20.04 GLIBC baseline)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends freeglut3-dev libudev-dev libopenal-dev
-      - name: Configure CMake
-        working-directory: ${{ github.workspace }}/src
-        run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
-      - name: Build
-        working-directory: ${{ github.workspace }}/src
-        run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+          docker run --rm \
+            -u root \
+            -e DEBIAN_FRONTEND=noninteractive \
+            -v "${{ github.workspace }}:/work" \
+            -w /work/src \
+            ubuntu:20.04 \
+            bash -euxc "
+              apt-get update
+              apt-get install -y --no-install-recommends \
+                build-essential \
+                cmake \
+                ca-certificates \
+                libgl1-mesa-dev \
+                libudev-dev \
+                libopenal-dev
+              cmake -B /work/build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+              cmake --build /work/build --config ${{ env.BUILD_TYPE }} -j\$(nproc)
+              chown -R $(id -u):$(id -g) /work/build
+            "
+      - name: Verify Linux ELF dependencies and RUNPATH
+        run: |
+          readelf -d "${{ github.workspace }}/build/lin_x64/FlyWithLua.xpl" | grep -E "NEEDED|RPATH|RUNPATH"
+          if readelf -d "${{ github.workspace }}/build/lin_x64/FlyWithLua.xpl" | grep -q "libglut"; then
+            echo "::error::Linux FlyWithLua.xpl must not carry a hard DT_NEEDED dependency on libglut!"
+            exit 1
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: binaries-lin
