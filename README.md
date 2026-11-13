@@ -70,7 +70,7 @@ If you want to grab a most current binary, just download `FlyWithLua_plugin.zip`
 1. Install required software:
 
    ```
-   sudo apt-get install -y --no-install-recommends build-essential cmake git freeglut3-dev libudev-dev libopenal-dev
+   sudo apt-get install -y --no-install-recommends build-essential cmake git libgl1-mesa-dev libudev-dev libopenal-dev
    ```
 
 2. Checkout and configure the project:

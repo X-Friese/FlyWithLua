@@ -134,9 +134,9 @@ add_compile_options(-O3 -fPIC)
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLImGeeBindings.cpp)
-# Automatically ensure ImgWindow submodule is initialized and checked out to the commit pinned by this branch
+# Automatically ensure ImgWindow submodule is initialized if not already populated on disk
 find_package(Git QUIET)
-if (GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
+if (GIT_FOUND AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
     execute_process(
         COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
@@ -161,7 +161,7 @@ if (WIN32)
 elseif (APPLE)
     list(APPEND FLYWITHLUA_SRCS hidapi/mac/hid.c)
 elseif (UNIX)
-    list(APPEND FLYWITHLUA_SRCS hidapi/linux/hid.c)
+    list(APPEND FLYWITHLUA_SRCS hidapi/linux/hid.c LinuxGlutDynamic.cpp)
 endif ()
 
 add_library(FlyWithLua SHARED ${FLYWITHLUA_SRCS})
@@ -169,10 +169,15 @@ add_library(FlyWithLua SHARED ${FLYWITHLUA_SRCS})
 target_compile_features(FlyWithLua PUBLIC cxx_std_11)
 
 # Link OpenGL and OpenAL related libraries.
-find_package(OpenGL REQUIRED)  # apt install freeglut3-dev
+# On Linux, FreeGLUT is loaded dynamically via dlopen (LinuxGlutDynamic.cpp) so FlyWithLua.xpl
+# works across all distro SONAMEs (libglut.so.3, libglut.so.3.12, libglut.so.3.13, etc.).
+find_package(OpenGL REQUIRED)  # apt install libgl1-mesa-dev
 find_library(OPENAL_LIBRARY NAMES openal OpenAL OpenAL32)  # apt install libopenal-dev
-find_library(GLUT_LIBRARY NAMES glut GLUT glut64.lib)  # apt install freeglut3-dev
-target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY} ${GLUT_LIBRARY})
+target_link_libraries(FlyWithLua ${OPENGL_LIBRARIES} ${OPENAL_LIBRARY})
+if (WIN32 OR APPLE)
+    find_library(GLUT_LIBRARY NAMES glut GLUT glut64.lib)
+    target_link_libraries(FlyWithLua ${GLUT_LIBRARY})
+endif ()
 
 # Link Lua related libraries.
 #  ******* This is how we built LuaJit from source for 2.0.5 but not working for 2.1.0 beta3
@@ -265,6 +270,9 @@ elseif (APPLE)
     # embedded.
     target_link_libraries(FlyWithLua "-exported_symbols_list ${CMAKE_SOURCE_DIR}/exports.sym_mac")
 elseif (UNIX)
+    # Prevent CMake from prepending build-machine directories (e.g. /home/runner/work/...) to RUNPATH;
+    # explicit runtime relative search paths are supplied via -Wl,-rpath below.
+    set_target_properties(FlyWithLua PROPERTIES SKIP_BUILD_RPATH TRUE)
     # Specify additional runtime search laths for dynamically-linked libraries.
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/lin_x64)
     target_link_libraries(FlyWithLua -Wl,-rpath=./Resources/plugins/FlyWithLua/Modules)
