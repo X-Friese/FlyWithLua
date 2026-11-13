@@ -134,9 +134,9 @@ add_compile_options(-O3 -fPIC)
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLImGeeBindings.cpp)
-# Automatically ensure ImgWindow submodule is initialized and checked out to the commit pinned by this branch
+# Automatically ensure ImgWindow submodule is initialized if not already populated on disk
 find_package(Git QUIET)
-if (GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
+if (GIT_FOUND AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
     execute_process(
         COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
