@@ -173,20 +173,83 @@ std::string QuotePosixSingle(const std::string& raw) {
 // ----------------------------------------------------------------------------
 // Cross-Platform SkunkCrafts Updater (v3 & v4) Detection and Launch
 // ----------------------------------------------------------------------------
-// Distinguishes:
-//   1. canLaunch:   We resolved a concrete executable / .app bundle path so
-//                   the UI can offer a working 1-click [Launch] button.
-//   2. isInstalled: Either canLaunch is true, OR SkunkCrafts Updater v4/v3
-//                   left its standard per-sim log or per-user prefs.cfg
-//                   (e.g. a portable .exe / .AppImage kept in a custom folder),
-//                   so we still treat the user as an existing SCU user rather
-//                   than prompting them to download SCU from scratch.
+// Notes:
+//   - Only an actual existing executable / .app bundle on disk counts as
+//     installed (leftover prefs.cfg / updater_log.txt files are never treated
+//     as proof that the app is still present).
+//   - Distinguishes SCU v4.0+ from legacy v3.x standalone binaries and detects
+//     the retired 2020 in-sim plugin (Resources/plugins/SkunkCraftsUpdater) so
+//     we can gently nudge users to upgrade to SCU v4 at updater.skunkcrafts.com.
 
 struct UpdaterAvailability {
     bool isInstalled = false;
-    bool canLaunch = false;
+    bool isV4OrNewer = false;
+    bool hasDeprecatedPlugin = false;
     std::string launchTarget;
+    std::string detectedVersion;
 };
+
+bool IsDirectoryPath(const std::string& path) {
+    if (path.empty()) {
+        return false;
+    }
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec);
+}
+
+std::string DetectUpdaterAppVersion(const std::string& appPath, bool& outIsV4) {
+    outIsV4 = false;
+#if defined(__APPLE__)
+    std::ifstream ifs(appPath + "/Contents/Info.plist", std::ios::in | std::ios::binary);
+    if (ifs) {
+        std::ostringstream oss;
+        oss << ifs.rdbuf();
+        std::string plist = oss.str();
+        size_t keyPos = plist.find("CFBundleShortVersionString");
+        if (keyPos != std::string::npos) {
+            size_t s1 = plist.find("<string>", keyPos);
+            size_t s2 = (s1 != std::string::npos) ? plist.find("</string>", s1 + 8) : std::string::npos;
+            if (s1 != std::string::npos && s2 != std::string::npos) {
+                std::string ver = TrimWhitespace(plist.substr(s1 + 8, s2 - (s1 + 8)));
+                if (!ver.empty()) {
+                    outIsV4 = (std::atoi(ver.c_str()) >= 4);
+                    return ver;
+                }
+            }
+        }
+    }
+#else
+    // Every SCU v4 binary on Windows and Linux embeds "SkunkCrafts Updater 4.<minor>.<patch>"
+    FILE* fp = std::fopen(appPath.c_str(), "rb");
+    if (fp) {
+        constexpr const char* kPrefix = "SkunkCrafts Updater ";
+        constexpr size_t kPrefixLen = sizeof("SkunkCrafts Updater ") - 1;
+        const std::string needle = "SkunkCrafts Updater 4.";
+        std::string carry;
+        char chunk[65536];
+        size_t n = 0;
+        while ((n = std::fread(chunk, 1, sizeof(chunk), fp)) > 0) {
+            std::string window = carry + std::string(chunk, n);
+            size_t pos = window.find(needle);
+            if (pos != std::string::npos) {
+                std::fclose(fp);
+                size_t verStart = pos + kPrefixLen;
+                size_t verEnd = verStart;
+                while (verEnd < window.size() &&
+                       (std::isdigit(static_cast<unsigned char>(window[verEnd])) || window[verEnd] == '.')) {
+                    ++verEnd;
+                }
+                (void)kPrefix;
+                outIsV4 = true;
+                return window.substr(verStart, verEnd - verStart);
+            }
+            carry = (window.size() > 64) ? window.substr(window.size() - 64) : window;
+        }
+        std::fclose(fp);
+    }
+#endif
+    return "3.x";
+}
 
 #if defined(_WIN32)
 std::string QueryWinRegString(HKEY rootKey, const char* subKey, const char* valueName, REGSAM wowFlags) {
@@ -231,8 +294,7 @@ std::string NormalizeWinExeCandidate(const std::string& raw) {
     if (IsRegularFileOrBundle(s)) {
         return s;
     }
-    std::error_code ec;
-    if (std::filesystem::is_directory(s, ec)) {
+    if (IsDirectoryPath(s)) {
         std::string joined = JoinPath(s, "SkunkcraftsUpdater.exe");
         if (IsRegularFileOrBundle(joined)) {
             return joined;
@@ -318,16 +380,13 @@ std::string ExtractExecFromDesktopFile(const std::string& desktopPath) {
 UpdaterAvailability DetectSkunkCraftsUpdater() {
     UpdaterAvailability out;
     const std::string simRoot = !systemDir.empty() ? systemDir : std::string(".");
+    out.hasDeprecatedPlugin =
+        IsDirectoryPath(JoinPath(simRoot, "Resources/plugins/SkunkCraftsUpdater")) ||
+        IsDirectoryPath(JoinPath(simRoot, "Resources/plugins/skunkcrafts_updater"));
 
-#if defined(_WIN32)
     std::vector<std::string> candidates;
-    candidates.push_back(JoinPath(simRoot, "SkunkcraftsUpdater.exe"));
-    if (simRoot != ".") {
-        candidates.push_back(".\\SkunkcraftsUpdater.exe");
-    }
-
+#if defined(_WIN32)
     const std::string localAppData = GetEnvString("LOCALAPPDATA");
-    const std::string appData = GetEnvString("APPDATA");
     const std::string progFiles = GetEnvString("ProgramFiles");
     const std::string progFilesX86 = GetEnvString("ProgramFiles(x86)");
 
@@ -345,15 +404,6 @@ UpdaterAvailability DetectSkunkCraftsUpdater() {
         candidates.push_back(JoinPath(progFilesX86, "SkunkcraftsUpdater\\SkunkcraftsUpdater.exe"));
     }
 
-    for (const auto& c : candidates) {
-        if (IsRegularFileOrBundle(c)) {
-            out.isInstalled = true;
-            out.canLaunch = true;
-            out.launchTarget = c;
-            return out;
-        }
-    }
-
     const HKEY roots[] = {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
     const REGSAM views[] = {0, KEY_WOW64_64KEY, KEY_WOW64_32KEY};
     const char* appPathKeys[] = {
@@ -369,35 +419,26 @@ UpdaterAvailability DetectSkunkCraftsUpdater() {
             for (const char* k : appPathKeys) {
                 std::string hit = NormalizeWinExeCandidate(QueryWinRegString(root, k, "", view));
                 if (!hit.empty()) {
-                    out.isInstalled = true;
-                    out.canLaunch = true;
-                    out.launchTarget = hit;
-                    return out;
+                    candidates.push_back(hit);
                 }
             }
             for (const char* k : uninstallKeys) {
                 for (const char* valName : {"InstallLocation", "DisplayIcon"}) {
                     std::string hit = NormalizeWinExeCandidate(QueryWinRegString(root, k, valName, view));
                     if (!hit.empty()) {
-                        out.isInstalled = true;
-                        out.canLaunch = true;
-                        out.launchTarget = hit;
-                        return out;
+                        candidates.push_back(hit);
                     }
                 }
             }
         }
     }
 
-    if (PathExists(JoinPath(simRoot, "Output/skunkcrafts/updater/updater_log.txt")) ||
-        PathExists(JoinPath(simRoot, "skunkcrafts_updater_log.txt")) ||
-        (!appData.empty() && PathExists(JoinPath(appData, "SkunkCrafts\\Updater\\prefs.cfg"))) ||
-        (!localAppData.empty() && PathExists(JoinPath(localAppData, "SkunkCrafts\\Updater\\prefs.cfg")))) {
-        out.isInstalled = true;
+    candidates.push_back(JoinPath(simRoot, "SkunkcraftsUpdater.exe"));
+    if (simRoot != ".") {
+        candidates.push_back(".\\SkunkcraftsUpdater.exe");
     }
 #elif defined(__APPLE__)
     const std::string home = GetEnvString("HOME");
-    std::vector<std::string> candidates;
     candidates.push_back("/Applications/SkunkcraftsUpdater.app");
     if (!home.empty()) {
         candidates.push_back(JoinPath(home, "Applications/SkunkcraftsUpdater.app"));
@@ -406,44 +447,14 @@ UpdaterAvailability DetectSkunkCraftsUpdater() {
     if (simRoot != ".") {
         candidates.push_back("./SkunkcraftsUpdater.app");
     }
-
-    for (const auto& c : candidates) {
-        if (IsRegularFileOrBundle(c)) {
-            out.isInstalled = true;
-            out.canLaunch = true;
-            out.launchTarget = c;
-            return out;
-        }
-    }
-
     std::string lsBundle = FindMacBundleViaLaunchServices();
     if (!lsBundle.empty()) {
-        out.isInstalled = true;
-        out.canLaunch = true;
-        out.launchTarget = lsBundle;
-        return out;
-    }
-
-    if (PathExists(JoinPath(simRoot, "Output/skunkcrafts/updater/updater_log.txt")) ||
-        PathExists(JoinPath(simRoot, "skunkcrafts_updater_log.txt")) ||
-        (!home.empty() && PathExists(JoinPath(home, "Library/Application Support/SkunkCrafts/Updater/prefs.cfg")))) {
-        out.isInstalled = true;
+        candidates.push_back(lsBundle);
     }
 #else
     const std::string home = GetEnvString("HOME");
-    const std::string xdgConfig = GetEnvString("XDG_CONFIG_HOME");
     const std::string xdgData = GetEnvString("XDG_DATA_HOME");
 
-    std::vector<std::string> candidates;
-    for (const char* binName : {
-             "SkunkcraftsUpdater_lin",
-             "SkunkcraftsUpdater-x86_64.AppImage",
-             "SkunkcraftsUpdater.AppImage"}) {
-        candidates.push_back(JoinPath(simRoot, binName));
-        if (simRoot != ".") {
-            candidates.push_back(JoinPath(".", binName));
-        }
-    }
     if (!home.empty()) {
         candidates.push_back(JoinPath(home, ".local/bin/SkunkcraftsUpdater_lin"));
         candidates.push_back(JoinPath(home, ".local/bin/SkunkcraftsUpdater-x86_64.AppImage"));
@@ -454,15 +465,6 @@ UpdaterAvailability DetectSkunkCraftsUpdater() {
     }
     candidates.push_back("/usr/local/bin/SkunkcraftsUpdater_lin");
     candidates.push_back("/usr/bin/SkunkcraftsUpdater_lin");
-
-    for (const auto& c : candidates) {
-        if (IsRegularFileOrBundle(c)) {
-            out.isInstalled = true;
-            out.canLaunch = true;
-            out.launchTarget = c;
-            return out;
-        }
-    }
 
     std::vector<std::string> desktopDirs;
     if (!xdgData.empty()) {
@@ -477,29 +479,53 @@ UpdaterAvailability DetectSkunkCraftsUpdater() {
         for (const char* df : {"SkunkcraftsUpdater.desktop", "skunkcraftsupdater.desktop"}) {
             std::string execBin = ExtractExecFromDesktopFile(JoinPath(dir, df));
             if (!execBin.empty()) {
-                out.isInstalled = true;
-                out.canLaunch = true;
-                out.launchTarget = execBin;
-                return out;
+                candidates.push_back(execBin);
             }
         }
     }
 
-    if (PathExists(JoinPath(simRoot, "Output/skunkcrafts/updater/updater_log.txt")) ||
-        PathExists(JoinPath(simRoot, "skunkcrafts_updater_log.txt")) ||
-        (!xdgConfig.empty() && PathExists(JoinPath(xdgConfig, "SkunkCrafts/Updater/prefs.cfg"))) ||
-        (!xdgConfig.empty() && PathExists(JoinPath(xdgConfig, "skunkcrafts/updater/prefs.cfg"))) ||
-        (!home.empty() && PathExists(JoinPath(home, ".config/SkunkCrafts/Updater/prefs.cfg"))) ||
-        (!home.empty() && PathExists(JoinPath(home, ".config/skunkcrafts/updater/prefs.cfg")))) {
-        out.isInstalled = true;
+    for (const char* binName : {
+             "SkunkcraftsUpdater_lin",
+             "SkunkcraftsUpdater-x86_64.AppImage",
+             "SkunkcraftsUpdater.AppImage"}) {
+        candidates.push_back(JoinPath(simRoot, binName));
+        if (simRoot != ".") {
+            candidates.push_back(JoinPath(".", binName));
+        }
     }
 #endif
 
+    UpdaterAvailability fallbackLegacyApp;
+    for (const auto& c : candidates) {
+        if (!IsRegularFileOrBundle(c)) {
+            continue;
+        }
+        bool isV4 = false;
+        std::string ver = DetectUpdaterAppVersion(c, isV4);
+        if (isV4) {
+            out.isInstalled = true;
+            out.isV4OrNewer = true;
+            out.launchTarget = c;
+            out.detectedVersion = ver;
+            return out;
+        }
+        if (!fallbackLegacyApp.isInstalled) {
+            fallbackLegacyApp.isInstalled = true;
+            fallbackLegacyApp.isV4OrNewer = false;
+            fallbackLegacyApp.hasDeprecatedPlugin = out.hasDeprecatedPlugin;
+            fallbackLegacyApp.launchTarget = c;
+            fallbackLegacyApp.detectedVersion = ver;
+        }
+    }
+
+    if (fallbackLegacyApp.isInstalled) {
+        return fallbackLegacyApp;
+    }
     return out;
 }
 
 void LaunchSkunkCraftsUpdater(const UpdaterAvailability& info) {
-    if (!info.canLaunch || info.launchTarget.empty()) {
+    if (!info.isInstalled || info.launchTarget.empty()) {
         ImGui::OpenURL(kSkunkCraftsWebsiteURL);
         return;
     }
@@ -623,11 +649,16 @@ int CompareVersions(const std::string& lhs, const std::string& rhs) {
 // ----------------------------------------------------------------------------
 
 void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailability& updater) {
-    if (updater.canLaunch) {
-        logMsg(logToDevCon, std::string("FlyWithLua Info: Detected SkunkCrafts Updater (") +
-                            updater.launchTarget + ").");
-    } else if (updater.isInstalled) {
-        logMsg(logToDevCon, "FlyWithLua Info: Detected SkunkCrafts Updater via simulator/user profile.");
+    if (updater.isInstalled) {
+        logMsg(logToDevCon, std::string("FlyWithLua Info: Detected SkunkCrafts Updater v") +
+                            updater.detectedVersion + " (" + updater.launchTarget + ").");
+        if (!updater.isV4OrNewer) {
+            logMsg(logToDevCon,
+                   "FlyWithLua Info: Older SkunkCrafts Updater v3.x detected -- upgrade to v4 for free at https://updater.skunkcrafts.com");
+        }
+    } else if (updater.hasDeprecatedPlugin) {
+        logMsg(logToDevCon,
+               "FlyWithLua Info: Legacy in-sim SkunkCraftsUpdater plugin detected -- install the modern SkunkCrafts Updater v4 app from https://updater.skunkcrafts.com");
     } else {
         logMsg(logToDevCon,
                "FlyWithLua Info: SkunkCrafts Updater not detected -- see https://updater.skunkcrafts.com for 1-click updates.");
@@ -1223,35 +1254,51 @@ protected:
                     chName);
                 ImGui::Spacing();
 
-                if (updater.canLaunch) {
-                    if (ImGui::Button("Launch SkunkCrafts Updater")) {
-                        UpdaterAvailability refreshed = DetectSkunkCraftsUpdater();
-                        {
-                            std::lock_guard<std::mutex> lock(gState.mtx);
-                            gState.updaterInfo = refreshed;
-                        }
-                        LaunchSkunkCraftsUpdater(refreshed);
+                if (ImGui::Button("Launch SkunkCrafts Updater")) {
+                    UpdaterAvailability refreshed = DetectSkunkCraftsUpdater();
+                    {
+                        std::lock_guard<std::mutex> lock(gState.mtx);
+                        gState.updaterInfo = refreshed;
                     }
-                    ApplyHandCursorAndTooltip(
-                        "Open SkunkCrafts Updater (remember to quit X-Plane before updating).");
-                    ImGui::SameLine();
+                    LaunchSkunkCraftsUpdater(refreshed);
                 }
+                ApplyHandCursorAndTooltip(
+                    "Open SkunkCrafts Updater (remember to quit X-Plane before updating).");
+                ImGui::SameLine();
 
                 if (ImGui::ButtonLink("X-Plane.org Download Page")) {
                     ImGui::OpenURL(kOrgDownloadURL);
                 }
                 ImGui::TimedTooltip::TextUnformatted("Prefer manual installs? Open the FlyWithLua NG+ download page on X-Plane.org.");
+
+                if (!updater.isV4OrNewer) {
+                    ImGui::Spacing();
+                    ImGui::TextColored(
+                        ImVec4(0.96f, 0.78f, 0.35f, 1.0f),
+                        "Tip: You have SkunkCrafts Updater v%s -- v4 is available free with multi-sim & public beta support:",
+                        updater.detectedVersion.c_str());
+                    if (ImGui::ButtonLink("Upgrade to SkunkCrafts Updater v4")) {
+                        ImGui::OpenURL(kSkunkCraftsWebsiteURL);
+                    }
+                    ImGui::TimedTooltip::TextUnformatted("Open updater.skunkcrafts.com to download SkunkCrafts Updater v4.");
+                }
             } else {
+                if (updater.hasDeprecatedPlugin) {
+                    ImGui::TextColored(
+                        ImVec4(0.96f, 0.78f, 0.35f, 1.0f),
+                        "Note: The old in-sim SkunkCraftsUpdater plugin is retired and cannot replace running plugin binaries.");
+                    ImGui::Spacing();
+                }
                 ImGui::TextWrapped(
-                    "FlyWithLua supports fast 1-click updates with the free SkunkCrafts Updater app, "
+                    "FlyWithLua supports fast 1-click updates with the free SkunkCrafts Updater v4 app, "
                     "or you can download the new .zip manually from X-Plane.org.");
                 ImGui::Spacing();
 
-                if (ImGui::ButtonLink("Get SkunkCrafts Updater (Free)")) {
+                if (ImGui::ButtonLink("Get SkunkCrafts Updater v4 (Free)")) {
                     ImGui::OpenURL(kSkunkCraftsWebsiteURL);
                 }
                 ImGui::TimedTooltip::TextUnformatted(
-                    "Open updater.skunkcrafts.com to download the free SkunkCrafts Updater app.");
+                    "Open updater.skunkcrafts.com to download the free SkunkCrafts Updater v4 app.");
 
                 ImGui::SameLine();
                 if (ImGui::ButtonLink("Download .zip on X-Plane.org")) {
@@ -1311,37 +1358,50 @@ protected:
             ImGui::Separator();
             ImGui::Spacing();
 
-            bool drewFirstButton = false;
             if (updater.isInstalled) {
-                ImGui::TextWrapped("SkunkCrafts Updater is installed and ready to manage FlyWithLua updates.");
+                ImGui::TextWrapped("SkunkCrafts Updater (v%s) is installed and ready to manage FlyWithLua updates.",
+                                   updater.detectedVersion.c_str());
+                if (!updater.isV4OrNewer) {
+                    ImGui::Spacing();
+                    ImGui::TextColored(
+                        ImVec4(0.96f, 0.78f, 0.35f, 1.0f),
+                        "Tip: SkunkCrafts Updater v4 is available free at updater.skunkcrafts.com.");
+                }
                 ImGui::Spacing();
-                if (updater.canLaunch) {
-                    if (ImGui::Button("Launch SkunkCrafts Updater")) {
-                        UpdaterAvailability refreshed = DetectSkunkCraftsUpdater();
-                        {
-                            std::lock_guard<std::mutex> lock(gState.mtx);
-                            gState.updaterInfo = refreshed;
-                        }
-                        LaunchSkunkCraftsUpdater(refreshed);
+                if (ImGui::Button("Launch SkunkCrafts Updater")) {
+                    UpdaterAvailability refreshed = DetectSkunkCraftsUpdater();
+                    {
+                        std::lock_guard<std::mutex> lock(gState.mtx);
+                        gState.updaterInfo = refreshed;
                     }
-                    ApplyHandCursorAndTooltip("Open SkunkCrafts Updater.");
-                    drewFirstButton = true;
+                    LaunchSkunkCraftsUpdater(refreshed);
+                }
+                ApplyHandCursorAndTooltip("Open SkunkCrafts Updater.");
+                if (!updater.isV4OrNewer) {
+                    ImGui::SameLine();
+                    if (ImGui::ButtonLink("Get v4 Upgrade")) {
+                        ImGui::OpenURL(kSkunkCraftsWebsiteURL);
+                    }
+                    ImGui::TimedTooltip::TextUnformatted("Open updater.skunkcrafts.com to download SkunkCrafts Updater v4.");
                 }
             } else {
+                if (updater.hasDeprecatedPlugin) {
+                    ImGui::TextColored(
+                        ImVec4(0.96f, 0.78f, 0.35f, 1.0f),
+                        "Note: The old in-sim SkunkCraftsUpdater plugin is retired -- install the v4 app instead.");
+                    ImGui::Spacing();
+                }
                 ImGui::TextWrapped(
-                    "Tip: Install the free SkunkCrafts Updater app "
+                    "Tip: Install the free SkunkCrafts Updater v4 app "
                     "for 1-click FlyWithLua updates and repairs.");
                 ImGui::Spacing();
-                if (ImGui::ButtonLink("Get SkunkCrafts Updater (Free)")) {
+                if (ImGui::ButtonLink("Get SkunkCrafts Updater v4 (Free)")) {
                     ImGui::OpenURL(kSkunkCraftsWebsiteURL);
                 }
                 ImGui::TimedTooltip::TextUnformatted("Open updater.skunkcrafts.com in your browser.");
-                drewFirstButton = true;
             }
 
-            if (drewFirstButton) {
-                ImGui::SameLine();
-            }
+            ImGui::SameLine();
             if (ImGui::Button("Re-check Now")) {
                 UpdaterAvailability refreshed = DetectSkunkCraftsUpdater();
                 {
