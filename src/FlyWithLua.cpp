@@ -293,6 +293,7 @@
 #include "XSBComDefs.h"
 #include "FloatingWindows/FWLIntegration.h"
 #include "FlyWithLuaImGui.h"
+#include "FWLSkunkCrafts.h"
 
 
 // include OpenAL
@@ -1091,6 +1092,14 @@ int proggy_clean_default = 0;
 int use_custom_fonts = 0;
 int enable_script_subfolders = 1;
 int subfolder_sets_script_directory = 1;
+int check_for_updates = 1;
+std::string skipped_update_version;
+long long remind_update_after_epoch = 0;
+
+const char* GetPluginVersionNo()
+{
+    return PLUGIN_VERSION_NO;
+}
 
 clock_t speak_time;
 
@@ -7761,6 +7770,8 @@ PLUGIN_API int XPluginStart(
 
 PLUGIN_API void XPluginStop(void)
 {
+    scu::StopAsyncWorker();
+
     // clean HID device connections and free memory
     hid_exit();
 
@@ -7849,6 +7860,8 @@ PLUGIN_API void XPluginDisable(void)
     FlyWithLuaMenuId = nullptr;
     ATCMenuId        = nullptr;
     MacroMenuId      = nullptr;
+    ATCMenuItem      = -1;
+    MacroMenuItem    = -1;
 
     // unregister callbacks
     XPLMUnregisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void*) "FWLWindowDrawer");
@@ -7961,6 +7974,8 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Enable Verbose Logging Mode", (void*) "VerboseMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
+    XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "Check for FlyWithLua Updates...", (void*) "CheckUpdates", 1);
 
     // init the XSB connection
     XSBPluginId             = XPLMFindPluginBySignature("vatsim.protodev.clients.xsquawkbox");
@@ -8004,6 +8019,7 @@ PLUGIN_API int XPluginEnable(void)
     {
         logMsg(logToDevCon, "FlyWithLua Error: Unable to initialize the shared ImGui font atlas.");
     }
+    scu::OnPluginEnable();
 
     // Starting the Lua engine
     /* use the default allocator. */
@@ -8306,6 +8322,7 @@ float MyFastLoopCallback(
 
     fmodint::fmod_data_update();
     flwnd::onFlightLoop();
+    scu::OnFlightLoopTick();
     // fmodint::fmod_initialization();
 
     return TimeBetweenCallbacks;
@@ -8766,6 +8783,12 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
             XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
             verbose_logging_mode = 1;
         }
+        return;
+    }
+
+    if (!strcmp((char*) iRef, "CheckUpdates"))
+    {
+        scu::OpenUpdateStatusWindow();
         return;
     }
 }

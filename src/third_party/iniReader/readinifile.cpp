@@ -75,4 +75,18 @@ void flywithlua::process_read_ini_file()
 
   // Option A (1, default) vs Option B (0): Does subfolder script loading dynamically set SCRIPT_DIRECTORY?
   readOptionAsInt("SubfolderSetsScriptDirectory", &subfolder_sets_script_directory);
+
+  // SkunkCrafts update check & reminder preferences
+  check_for_updates = 1;
+  readOptionAsInt("CheckForUpdates", &check_for_updates);
+  skipped_update_version = getOptionToString("SkippedUpdateVersion");
+  remind_update_after_epoch = 0;
+  std::string remindEpochStr = getOptionToString("RemindUpdateAfterEpoch");
+  if (!remindEpochStr.empty()) {
+    try {
+      remind_update_after_epoch = std::stoll(remindEpochStr);
+    } catch (...) {
+      remind_update_after_epoch = 0;
+    }
+  }
 }
