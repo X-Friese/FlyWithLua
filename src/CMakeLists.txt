@@ -151,9 +151,9 @@ endif ()
 
 # ImgWindow v2 (git submodule, pinned to tagged release v2.2.0). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
-set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLImGeeBindings.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
+set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLImGeeBindings.cpp FWLSkunkCrafts.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()
-list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp)
+list(APPEND FLYWITHLUA_SRCS FlyWithLuaImGui.cpp FWLSkunkCrafts.cpp)
 list(APPEND FLYWITHLUA_SRCS imgui/imgui.cpp imgui/imgui_demo.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_lua_bindings.cpp)
 list(APPEND FLYWITHLUA_SRCS Fmod/FmodIntegration.cpp)
 if (WIN32)
@@ -248,6 +248,10 @@ endif ()
 if (UNIX)
     find_library(DL_LIBRARY dl)
     target_link_libraries(FlyWithLua ${DL_LIBRARY})
+    if (NOT APPLE)
+        find_package(Threads REQUIRED)
+        target_link_libraries(FlyWithLua Threads::Threads)
+    endif ()
 endif ()
 
 # Link OS X core system libraries.

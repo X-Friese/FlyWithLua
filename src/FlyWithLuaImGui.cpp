@@ -15,6 +15,7 @@
 
 #include "FlyWithLua.h"
 #include "FlyWithLuaImGui.h"
+#include "FWLSkunkCrafts.h"
 #include "FloatingWindows/FWLIntegration.h"
 #include "FloatingWindows/FWLImGeeBindings.h"
 #include "ImgWindow.h"
@@ -388,6 +389,7 @@ bool InitializeImGui()
 void TeardownImGui()
 {
     // Step 0: close every floating window first, so none can draw against a dead atlas.
+    flywithlua::scu::CloseAlertWindow();
     flwnd::deinitFloatingWindowSupport();
 
     // Step 1: delete custom loaded textures (ImgWindow::DeleteTexture()).
