@@ -668,12 +668,21 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
     const std::string skDir = JoinPath(pluginDir, "skunkcrafts");
     const std::string chDir = JoinPath(skDir, "channels");
     const std::string channelCfg = JoinPath(skDir, "channel.cfg");
-    const std::string betaCfg = JoinPath(chDir, "beta.cfg");
     const std::string betaRemoved = JoinPath(chDir, "beta.cfg.removed");
     const std::string betaWithdrawn = JoinPath(chDir, "beta.cfg.withdrawn");
+    const std::string legacyBetaCfg = JoinPath(pluginDir, "skunkcrafts_updater_beta.cfg");
 
-    // 1. Create skunkcrafts_updater.cfg if missing (e.g. partial manual zip extraction),
-    //    or ensure public channel keys exist if an older file is present.
+    const bool hasChannelCfg = PathExists(channelCfg);
+    const bool legacyDisabled = PathExists(legacyBetaCfg) &&
+                                CfgValueFromFile(legacyBetaCfg, "enabled") == "false";
+    const bool shouldBootstrapBeta = !hasChannelCfg && !legacyDisabled &&
+                                     !PathExists(betaRemoved) && !PathExists(betaWithdrawn);
+
+    // Create skunkcrafts_updater.cfg if missing (e.g. partial manual zip extraction),
+    // or ensure public channel keys (and initial channel|beta bootstrap before SCU 4.x
+    // creates skunkcrafts/channel.cfg) exist when an older file is present.
+    // FlyWithLua never creates or modifies the skunkcrafts/ directory itself; SCU 4.x
+    // owns skunkcrafts/ and migrates channel|beta + channel.beta automatically on first run.
     if (!PathExists(mainCfg)) {
         std::ofstream ofs(mainCfg, std::ios::out | std::ios::trunc | std::ios::binary);
         if (ofs) {
@@ -685,6 +694,9 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
                 << "locked|false\n"
                 << "main_name|release\n"
                 << "channel.beta|" << kDepotBetaURL << "\n";
+            if (shouldBootstrapBeta) {
+                ofs << "channel|beta\n";
+            }
             ofs.close();
             logMsg(logToDevCon,
                    "FlyWithLua Info: skunkcrafts_updater.cfg was missing and has been created automatically.");
@@ -696,7 +708,9 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
     } else {
         bool missingMainName = CfgValueFromFile(mainCfg, "main_name").empty();
         bool missingBetaKey = CfgValueFromFile(mainCfg, "channel.beta").empty();
-        if (missingMainName || missingBetaKey) {
+        bool missingBootstrapChannel = shouldBootstrapBeta &&
+                                       CfgValueFromFile(mainCfg, "channel").empty();
+        if (missingMainName || missingBetaKey || missingBootstrapChannel) {
             EnsureEndsWithNewline(mainCfg);
             std::ofstream ofs(mainCfg, std::ios::out | std::ios::app | std::ios::binary);
             if (ofs) {
@@ -706,42 +720,10 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
                 if (missingBetaKey) {
                     ofs << "channel.beta|" << kDepotBetaURL << "\n";
                 }
+                if (missingBootstrapChannel) {
+                    ofs << "channel|beta\n";
+                }
             }
-        }
-    }
-
-    // 2. Initialize SCU 4.x skunkcrafts/channel.cfg ONLY when channel.cfg does not exist.
-    //    Once SCU 4.x runs, switching back to Main writes "channel|stable" into channel.cfg
-    //    (never deleting channel.cfg), so user channel selections are never overridden.
-    std::error_code ec;
-    if (!PathExists(channelCfg)) {
-        std::filesystem::create_directories(chDir, ec);
-        const char* initialChannel = "beta";
-        const std::string legacyBetaCfg = JoinPath(pluginDir, "skunkcrafts_updater_beta.cfg");
-        if (PathExists(legacyBetaCfg) && CfgValueFromFile(legacyBetaCfg, "enabled") == "false") {
-            initialChannel = "stable";
-        }
-        std::ofstream ofs(channelCfg, std::ios::out | std::ios::trunc | std::ios::binary);
-        if (ofs) {
-            ofs << "channel|" << initialChannel << "\n";
-            ofs.close();
-            logMsg(logToDevCon,
-                   std::string("FlyWithLua Info: Initialized SkunkCrafts 4.x channel configuration (") +
-                   initialChannel + ").");
-        }
-    }
-
-    // 3. Ensure skunkcrafts/channels/beta.cfg exists when channel.cfg is present,
-    //    unless SCU explicitly wrote a .removed or .withdrawn tombstone.
-    if (PathExists(channelCfg) && !PathExists(betaCfg) &&
-        !PathExists(betaRemoved) && !PathExists(betaWithdrawn)) {
-        std::filesystem::create_directories(chDir, ec);
-        std::ofstream ofs(betaCfg, std::ios::out | std::ios::trunc | std::ios::binary);
-        if (ofs) {
-            ofs << "channel|beta\n"
-                << "module|" << kDepotBetaURL << "\n"
-                << "zone|custom\n"
-                << "public|true\n";
         }
     }
 }
@@ -774,6 +756,19 @@ std::string ResolveFollowedChannelURL(const std::string& pluginDir, bool& outIsB
             return inlineURL;
         }
         return mainURL;
+    }
+
+    // Pre-first-run bootstrap key in skunkcrafts_updater.cfg (before SCU 4.x creates channel.cfg)
+    std::string bootstrapCh = CfgValueFromFile(mainCfg, "channel");
+    if (!bootstrapCh.empty()) {
+        if (bootstrapCh == "stable") {
+            return mainURL;
+        }
+        std::string inlineURL = CfgValueFromFile(mainCfg, ("channel." + bootstrapCh).c_str());
+        if (!inlineURL.empty()) {
+            outIsBeta = true;
+            return inlineURL;
+        }
     }
 
     // Read-only fallback for legacy SCU 3.x skunkcrafts_updater_beta.cfg

@@ -232,3 +232,6 @@ cockpit_notes_restored.md
 *.xpl
 FlyWithLua/*_x64/*.xpl
 
+# SkunkCrafts Updater 4.x local client state directory (generated at runtime by SCU)
+FlyWithLua/skunkcrafts/
+
