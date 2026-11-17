@@ -616,6 +616,145 @@ static int LuaPercentSliderWithReset(lua_State* L) {
     return 2;
 }
 
+static int LuaKnob(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* label = luaL_checkstring(L, 1);
+    float val        = static_cast<float>(luaL_checknumber(L, 2));
+    float v_min      = (top >= 3 && !lua_isnil(L, 3)) ? static_cast<float>(luaL_checknumber(L, 3)) : 0.0f;
+    float v_max      = (top >= 4 && !lua_isnil(L, 4)) ? static_cast<float>(luaL_checknumber(L, 4)) : 1.0f;
+    const char* fmt  = (top >= 5 && !lua_isnil(L, 5)) ? luaL_checkstring(L, 5) : "%.2f";
+    float radius     = (top >= 6 && !lua_isnil(L, 6)) ? static_cast<float>(luaL_checknumber(L, 6)) : 0.0f;
+    float wheel_step = (top >= 7 && !lua_isnil(L, 7)) ? static_cast<float>(luaL_checknumber(L, 7)) : 0.0f;
+    ImGuiKnobFlags flags = (top >= 8 && !lua_isnil(L, 8)) ? static_cast<ImGuiKnobFlags>(luaL_checkinteger(L, 8)) : ImGuiKnobFlags_None;
+
+    bool changed = ImGui::Knob(label, &val, v_min, v_max, fmt, radius, wheel_step, flags);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, val);
+    return 2;
+}
+
+static int LuaKnobWithReset(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* label = luaL_checkstring(L, 1);
+    float val = static_cast<float>(luaL_checknumber(L, 2));
+    float a   = static_cast<float>(luaL_checknumber(L, 3));
+    float b   = static_cast<float>(luaL_checknumber(L, 4));
+
+    float v_min = a;
+    float v_max = b;
+    float def_val = a;
+    if (top >= 5 && lua_isnumber(L, 5)) {
+        float c = static_cast<float>(lua_tonumber(L, 5));
+        if (a < b) {
+            // Lua SliderWithReset convention: (v_min, v_max, default_val)
+            v_min   = a;
+            v_max   = b;
+            def_val = c;
+        } else if (b < c) {
+            // C++ ImGui::KnobWithReset convention: (default_val, v_min, v_max)
+            def_val = a;
+            v_min   = b;
+            v_max   = c;
+        } else {
+            v_min   = a;
+            v_max   = b;
+            def_val = c;
+        }
+    }
+
+    const char* fmt      = (top >= 6 && !lua_isnil(L, 6)) ? luaL_checkstring(L, 6) : "%.2f";
+    float radius         = (top >= 7 && !lua_isnil(L, 7)) ? static_cast<float>(luaL_checknumber(L, 7)) : 0.0f;
+    float wheel_step     = (top >= 8 && !lua_isnil(L, 8)) ? static_cast<float>(luaL_checknumber(L, 8)) : 0.0f;
+    const char* tip      = (top >= 9 && !lua_isnil(L, 9)) ? luaL_checkstring(L, 9) : nullptr;
+    ImGuiKnobFlags flags = (top >= 10 && !lua_isnil(L, 10)) ? static_cast<ImGuiKnobFlags>(luaL_checkinteger(L, 10)) : ImGuiKnobFlags_None;
+
+    bool changed = ImGui::KnobWithReset(label, &val, def_val, v_min, v_max, fmt, radius, wheel_step, tip, flags);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, val);
+    return 2;
+}
+
+static int LuaDimmerKnob(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* label   = luaL_checkstring(L, 1);
+    float val           = static_cast<float>(luaL_checknumber(L, 2));
+    float v_min_active  = (top >= 3 && !lua_isnil(L, 3)) ? static_cast<float>(luaL_checknumber(L, 3)) : 0.05f;
+    float v_max         = (top >= 4 && !lua_isnil(L, 4)) ? static_cast<float>(luaL_checknumber(L, 4)) : 1.0f;
+    float v_default     = (top >= 5 && !lua_isnil(L, 5)) ? static_cast<float>(luaL_checknumber(L, 5)) : 1.0f;
+    const char* fmt     = (top >= 6 && !lua_isnil(L, 6)) ? luaL_checkstring(L, 6) : "%.0f%%";
+    float radius        = (top >= 7 && !lua_isnil(L, 7)) ? static_cast<float>(luaL_checknumber(L, 7)) : 0.0f;
+    float wheel_step    = (top >= 8 && !lua_isnil(L, 8)) ? static_cast<float>(luaL_checknumber(L, 8)) : 0.02f;
+    bool has_detente    = (top >= 9 && !lua_isnil(L, 9)) ? (lua_toboolean(L, 9) != 0) : true;
+    float v_off         = (top >= 10 && !lua_isnil(L, 10)) ? static_cast<float>(luaL_checknumber(L, 10)) : 0.0f;
+    ImGuiKnobFlags flags = (top >= 11 && !lua_isnil(L, 11)) ? static_cast<ImGuiKnobFlags>(luaL_checkinteger(L, 11)) : ImGuiKnobFlags_None;
+
+    bool changed = ImGui::DimmerKnob(label, &val, v_min_active, v_max, v_default, fmt, radius, wheel_step, has_detente, v_off, flags);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, val);
+    return 2;
+}
+
+static int LuaKnobPercent(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* label    = luaL_checkstring(L, 1);
+    float val            = static_cast<float>(luaL_checknumber(L, 2));
+    float v_default      = (top >= 3 && !lua_isnil(L, 3)) ? static_cast<float>(luaL_checknumber(L, 3)) : 1.0f;
+    float v_min          = (top >= 4 && !lua_isnil(L, 4)) ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
+    float v_max          = (top >= 5 && !lua_isnil(L, 5)) ? static_cast<float>(luaL_checknumber(L, 5)) : 1.0f;
+    const char* fmt      = (top >= 6 && !lua_isnil(L, 6)) ? luaL_checkstring(L, 6) : "%.0f%%";
+    float radius         = (top >= 7 && !lua_isnil(L, 7)) ? static_cast<float>(luaL_checknumber(L, 7)) : 0.0f;
+    float wheel_step     = (top >= 8 && !lua_isnil(L, 8)) ? static_cast<float>(luaL_checknumber(L, 8)) : 0.01f;
+    ImGuiKnobFlags flags = (top >= 9 && !lua_isnil(L, 9)) ? static_cast<ImGuiKnobFlags>(luaL_checkinteger(L, 9)) : ImGuiKnobFlags_None;
+
+    bool changed = ImGui::KnobEx(label, &val, v_min, v_max, v_default, fmt, radius, wheel_step, false, 0.0f, flags);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, val);
+    return 2;
+}
+
+static int LuaKnobPercentWithReset(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* label    = luaL_checkstring(L, 1);
+    float val            = static_cast<float>(luaL_checknumber(L, 2));
+    float v_default      = (top >= 3 && !lua_isnil(L, 3)) ? static_cast<float>(luaL_checknumber(L, 3)) : 1.0f;
+    float radius         = (top >= 4 && !lua_isnil(L, 4)) ? static_cast<float>(luaL_checknumber(L, 4)) : 0.0f;
+    float wheel_step     = (top >= 5 && !lua_isnil(L, 5)) ? static_cast<float>(luaL_checknumber(L, 5)) : 0.01f;
+    const char* tip      = (top >= 6 && !lua_isnil(L, 6)) ? luaL_checkstring(L, 6) : nullptr;
+    ImGuiKnobFlags flags = (top >= 7 && !lua_isnil(L, 7)) ? static_cast<ImGuiKnobFlags>(luaL_checkinteger(L, 7)) : ImGuiKnobFlags_None;
+
+    bool changed = ImGui::KnobWithReset(label, &val, v_default, 0.0f, 1.0f, "%.0f%%", radius, wheel_step, tip, flags);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, val);
+    return 2;
+}
+
+static int LuaKnobEx(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* label    = luaL_checkstring(L, 1);
+    float val            = static_cast<float>(luaL_checknumber(L, 2));
+    float v_min          = static_cast<float>(luaL_checknumber(L, 3));
+    float v_max          = static_cast<float>(luaL_checknumber(L, 4));
+    float v_default      = (top >= 5 && !lua_isnil(L, 5)) ? static_cast<float>(luaL_checknumber(L, 5)) : 1.0f;
+    const char* fmt      = (top >= 6 && !lua_isnil(L, 6)) ? luaL_checkstring(L, 6) : "%.2f";
+    float radius         = (top >= 7 && !lua_isnil(L, 7)) ? static_cast<float>(luaL_checknumber(L, 7)) : 0.0f;
+    float wheel_step     = (top >= 8 && !lua_isnil(L, 8)) ? static_cast<float>(luaL_checknumber(L, 8)) : 0.0f;
+    bool has_detente     = (top >= 9 && !lua_isnil(L, 9)) ? (lua_toboolean(L, 9) != 0) : false;
+    float v_off          = (top >= 10 && !lua_isnil(L, 10)) ? static_cast<float>(luaL_checknumber(L, 10)) : 0.0f;
+    ImGuiKnobFlags flags = (top >= 11 && !lua_isnil(L, 11)) ? static_cast<ImGuiKnobFlags>(luaL_checkinteger(L, 11)) : ImGuiKnobFlags_None;
+
+    bool is_active = false;
+    bool is_hovered = false;
+    bool is_scrolling = false;
+    bool changed = ImGui::KnobEx(label, &val, v_min, v_max, v_default, fmt, radius, wheel_step, has_detente, v_off, flags,
+                                 &is_active, &is_hovered, &is_scrolling);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, val);
+    lua_pushboolean(L, is_active);
+    lua_pushboolean(L, is_hovered);
+    lua_pushboolean(L, is_scrolling);
+    return 5;
+}
+
 static int LuaResetButton(lua_State* L) {
     const char* str_id = luaL_checkstring(L, 1);
     bool is_mod   = lua_toboolean(L, 2) != 0;
@@ -1576,6 +1715,64 @@ void InitImGeeSupport(lua_State* L) {
 
     lua_pushcfunction(L, LuaResetButton);               lua_setfield(L, -2, "ResetButton");
     lua_pushcfunction(L, LuaResetButton);               lua_setfield(L, -2, "reset_button");
+
+    // Avionics Rotary Knobs & Dimmer Dials (imgui_knobs.h)
+    lua_pushcfunction(L, LuaKnob);                      lua_setfield(L, -2, "Knob");
+    lua_pushcfunction(L, LuaKnob);                      lua_setfield(L, -2, "knob");
+    lua_pushcfunction(L, LuaKnob);                      lua_setfield(L, -2, "RotaryDial");
+    lua_pushcfunction(L, LuaKnob);                      lua_setfield(L, -2, "rotary_dial");
+
+    lua_pushcfunction(L, LuaKnobWithReset);             lua_setfield(L, -2, "KnobWithReset");
+    lua_pushcfunction(L, LuaKnobWithReset);             lua_setfield(L, -2, "knob_with_reset");
+    lua_pushcfunction(L, LuaKnobWithReset);             lua_setfield(L, -2, "ResettableKnob");
+    lua_pushcfunction(L, LuaKnobWithReset);             lua_setfield(L, -2, "resettable_knob");
+
+    lua_pushcfunction(L, LuaDimmerKnob);                lua_setfield(L, -2, "DimmerKnob");
+    lua_pushcfunction(L, LuaDimmerKnob);                lua_setfield(L, -2, "dimmer_knob");
+
+    lua_pushcfunction(L, LuaKnobPercent);               lua_setfield(L, -2, "KnobPercent");
+    lua_pushcfunction(L, LuaKnobPercent);               lua_setfield(L, -2, "knob_percent");
+    lua_pushcfunction(L, LuaKnobPercent);               lua_setfield(L, -2, "PercentKnob");
+    lua_pushcfunction(L, LuaKnobPercent);               lua_setfield(L, -2, "percent_knob");
+
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "PercentKnobWithReset");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "percent_knob_with_reset");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "KnobPercentWithReset");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "knob_percent_with_reset");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "ResettablePercentKnob");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "resettable_percent_knob");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "ResettableKnobPercent");
+    lua_pushcfunction(L, LuaKnobPercentWithReset);      lua_setfield(L, -2, "resettable_knob_percent");
+
+    lua_pushcfunction(L, LuaKnobEx);                    lua_setfield(L, -2, "KnobEx");
+    lua_pushcfunction(L, LuaKnobEx);                    lua_setfield(L, -2, "knob_ex");
+
+    // KnobFlags sub-table and flat constants
+    lua_newtable(L);
+    lua_pushinteger(L, ImGuiKnobFlags_None);            lua_setfield(L, -2, "None");
+    lua_pushinteger(L, ImGuiKnobFlags_NoInput);         lua_setfield(L, -2, "NoInput");
+    lua_pushinteger(L, ImGuiKnobFlags_NoDetente);       lua_setfield(L, -2, "NoDetente");
+    lua_pushinteger(L, ImGuiKnobFlags_ShowTicks);       lua_setfield(L, -2, "ShowTicks");
+    lua_pushinteger(L, ImGuiKnobFlags_ValueBelow);      lua_setfield(L, -2, "ValueBelow");
+    lua_pushinteger(L, ImGuiKnobFlags_NoValueText);     lua_setfield(L, -2, "NoValueText");
+    lua_pushinteger(L, ImGuiKnobFlags_CursorHand);      lua_setfield(L, -2, "CursorHand");
+    lua_setfield(L, -2, "KnobFlags");
+
+    lua_pushinteger(L, ImGuiKnobFlags_None);            lua_setfield(L, -2, "KnobFlags_None");
+    lua_pushinteger(L, ImGuiKnobFlags_NoInput);         lua_setfield(L, -2, "KnobFlags_NoInput");
+    lua_pushinteger(L, ImGuiKnobFlags_NoDetente);       lua_setfield(L, -2, "KnobFlags_NoDetente");
+    lua_pushinteger(L, ImGuiKnobFlags_ShowTicks);       lua_setfield(L, -2, "KnobFlags_ShowTicks");
+    lua_pushinteger(L, ImGuiKnobFlags_ValueBelow);      lua_setfield(L, -2, "KnobFlags_ValueBelow");
+    lua_pushinteger(L, ImGuiKnobFlags_NoValueText);     lua_setfield(L, -2, "KnobFlags_NoValueText");
+    lua_pushinteger(L, ImGuiKnobFlags_CursorHand);      lua_setfield(L, -2, "KnobFlags_CursorHand");
+
+    lua_pushinteger(L, ImGuiKnobFlags_None);            lua_setfield(L, -2, "ImGuiKnobFlags_None");
+    lua_pushinteger(L, ImGuiKnobFlags_NoInput);         lua_setfield(L, -2, "ImGuiKnobFlags_NoInput");
+    lua_pushinteger(L, ImGuiKnobFlags_NoDetente);       lua_setfield(L, -2, "ImGuiKnobFlags_NoDetente");
+    lua_pushinteger(L, ImGuiKnobFlags_ShowTicks);       lua_setfield(L, -2, "ImGuiKnobFlags_ShowTicks");
+    lua_pushinteger(L, ImGuiKnobFlags_ValueBelow);      lua_setfield(L, -2, "ImGuiKnobFlags_ValueBelow");
+    lua_pushinteger(L, ImGuiKnobFlags_NoValueText);     lua_setfield(L, -2, "ImGuiKnobFlags_NoValueText");
+    lua_pushinteger(L, ImGuiKnobFlags_CursorHand);      lua_setfield(L, -2, "ImGuiKnobFlags_CursorHand");
 
     lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "Spinner");
     lua_pushcfunction(L, LuaSpinner);                   lua_setfield(L, -2, "spinner");
