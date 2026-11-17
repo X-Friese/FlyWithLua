@@ -213,7 +213,7 @@ std::string DetectUpdaterAppVersion(const std::string& appPath, bool& outIsV4) {
                 std::string ver = TrimWhitespace(plist.substr(s1 + 8, s2 - (s1 + 8)));
                 if (!ver.empty()) {
                     outIsV4 = (std::atoi(ver.c_str()) >= 4);
-                    return ver;
+                    return outIsV4 ? ver : std::string("3.x");
                 }
             }
         }
