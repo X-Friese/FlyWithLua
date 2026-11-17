@@ -80,7 +80,7 @@ jobs:
           if-no-files-found: error
 
   build-mac:
-    runs-on: macos-latest
+    runs-on: macos-26-intel
     steps:
       - uses: actions/checkout@v6
         with:
@@ -91,6 +91,14 @@ jobs:
       - name: Build
         working-directory: ${{ github.workspace }}/src
         run: cmake --build ${{ github.workspace }}/build --config ${{ env.BUILD_TYPE }}
+      - name: Verify Universal 2 macOS architectures
+        run: |
+          LIPO_OUT=$(lipo -info "${{ github.workspace }}/build/mac_x64/FlyWithLua.xpl")
+          echo "$LIPO_OUT"
+          if [[ "$LIPO_OUT" != *"x86_64"* || "$LIPO_OUT" != *"arm64"* ]]; then
+            echo "::error::Expected Universal 2 (x86_64 + arm64) macOS binary, got: $LIPO_OUT"
+            exit 1
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: binaries-mac
@@ -99,7 +107,7 @@ jobs:
 
   package:
     needs: [build-lin, build-win, build-mac]
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     outputs:
       fwl_version: ${{ steps.resolve_version.outputs.fwl_version }}
     steps:
@@ -130,10 +138,10 @@ jobs:
           name: binaries-mac
           path: FlyWithLua/mac_x64
 
-      - name: Verify binaries and architectures
+      - name: Verify packaged binaries
         run: |
           ls -la FlyWithLua/lin_x64 FlyWithLua/win_x64 FlyWithLua/mac_x64
-          lipo -info FlyWithLua/mac_x64/FlyWithLua.xpl
+          file FlyWithLua/lin_x64/FlyWithLua.xpl FlyWithLua/win_x64/FlyWithLua.xpl FlyWithLua/mac_x64/FlyWithLua.xpl
 
       - name: Resolve FlyWithLua version
         id: resolve_version
