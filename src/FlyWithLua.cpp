@@ -185,6 +185,9 @@
  *                    font guide Integrate ImgWindow v2 contrib extensions (Markdown, TimedTooltip, and Modern Widgets)
  *  v2.8.20 [Added]   Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
  *  v2.8.21 [Added]   ImgWindow v2.3.0 Sync & Contrib UX Extensions Suite (phase 2)
+ *  v2.8.22 [changed] ImgWindow v2.4.0 & LuiGee Modern UI Suite (Phase 3) & Multi-Channel SkunkCrafts Updater Dynamically load libglut
+ *                    Simplify SkunkCrafts Beta Bootstrap to Single-File skunkcrafts_updater.cfg
+ *                    Wire missing LuiGee rotary knob bindings (imgui_knobs.h) & sync ImgWindow v2.4.1
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
