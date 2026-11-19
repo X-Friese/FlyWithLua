@@ -157,15 +157,15 @@ end
 local about_luigee_markdown = [[# About FlyWithLua LuiGee
 <pill color=#f39c12>v1.0.0</pill> <badge green>Powered by ImGee</badge> <pill blue>FlyWithLua Phase 3</pill>
 
-**LuiGee** — *The Lua Companion to ImGee* — is the turnkey Dear ImGui avionics & flight-deck UI toolkit bundled with **FlyWithLua**.
+**LuiGee** -- *The Lua Companion to ImGee* -- is the turnkey Dear ImGui avionics & flight-deck UI toolkit bundled with **FlyWithLua**.
 
 It brings physical avionics controls, intelligent stationary tooltips, CommonMark 4.1 Markdown, sized typography, and zero-disk texture services directly to Lua script authors without low-level C++ boilerplate.
 
 ---
 
 ### Key Capabilities:
-* **Tactile Avionics Widgets:** Animated toggle switches, rotary dials, mouse-wheel stepped sliders with 1-click Reset/Undo memory, and upward-blossoming pulldown selectors.
-* **Smart Typography:** Inline sized text tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`), and dynamic multi-size font scaling.
+* **Tactile Avionics Widgets:** Animated toggle switches, rotary dials, mouse-wheel stepped sliders/drags/combos with 1-click Reset/Undo memory, and upward-blossoming pulldown selectors.
+* **Smart Typography:** Inline sized text tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`, `imgui.BoldItalicText`), and dynamic multi-size font scaling.
 * **CommonMark 4.1 & GFM Tables:** Turnkey Markdown rendering with header anchors, drag-resizable data tables, inline status pills, release badges, keyboard shortcuts (`<kbd>`), and fenced code blocks with copy buttons.
 * **Stationary Adaptive Tooltips:** `imgui.TimedTooltip` provides jitter-free hover documentation with reading-delay adaptation and embedded Markdown.
 * **In-Memory Image Service:** Render raw compressed image bytes (PNG/JPEG) directly into GPU VRAM with zero temporary files and zero disk I/O.
@@ -271,6 +271,17 @@ local demo_spinner_speed    = 1.0
 local demo_timer_val        = 0.65
 local demo_countdown_cur    = 42.0
 local demo_countdown_max    = 60.0
+local baro_preset_idx       = 1
+local baro_presets          = { "STD (29.92 inHg)", "QNH 1013 hPa", "Local (30.04 inHg)", "Low (29.58 inHg)" }
+local baro_tooltips         = {
+    "Standard pressure datum above transition altitude (**29.92 inHg**)",
+    "ICAO standard hectopascal datum (**1013.25 hPa**)",
+    "Reported local station altimeter setting",
+    "Low-pressure frontal trough reference"
+}
+local autopilot_alt_ft      = 12000
+local fd_coupled            = true
+local seatbelt_sign         = true
 
 -- Avionics Rotary Knobs & Compact Sound Mixer state
 local instrument_dimmer     = 0.85
@@ -1092,6 +1103,27 @@ if qnh < 29.92 then set_altimeter_std() end
                 end
                 imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
 
+                if imgui.DragIntWithReset and imgui.ComboWithReset and imgui.MouseWheelCheckbox then
+                    imgui.Spacing()
+                    local alt_chg, new_alt = imgui.DragIntWithReset("MCP Target Altitude", autopilot_alt_ft, 100.0, 1000, 45000, 10000, "%d ft", 0, 500, "Reset target altitude to 10,000 ft")
+                    if alt_chg then
+                        autopilot_alt_ft = new_alt
+                    end
+                    imgui.TimedTooltip.TextMD("Mouse-wheel & drag integer selector (`DragIntWithReset`) -- roll wheel to step by **500 ft**, or click <icon undo /> to reset/undo.")
+
+                    local baro_chg, new_baro = imgui.ComboWithReset("Baro Reference", baro_preset_idx, 1, baro_presets, false, "Reset baro reference to STD (29.92)", nil, baro_tooltips)
+                    if baro_chg then
+                        baro_preset_idx = new_baro
+                    end
+                    imgui.TimedTooltip.TextMD("Dropdown combo with 1-click Reset/Undo (`ComboWithReset`) and per-option Lens UI tooltips when scrolling open.")
+
+                    local fd_chg, new_fd = imgui.MouseWheelCheckbox("Flight Director Coupled (Scroll or Click)", fd_coupled)
+                    if fd_chg then
+                        fd_coupled = new_fd
+                    end
+                    imgui.TimedTooltip.Text("Checkbox with Hand/ResizeNS hover affordance and mouse-wheel up/down state stepping.")
+                end
+
                 imgui.Spacing()
                 imgui.Separator()
 
@@ -1161,11 +1193,28 @@ if qnh < 29.92 then set_altimeter_std() end
 
             imgui.TextUnformatted("Status Badges & Tags:")
             imgui.SameLine()
-            imgui.Badge("ONLINE", "success")
+            imgui.Badge("ONLINE", "success", nil, "check")
             imgui.SameLine()
-            imgui.Badge("EXPIRING", "warning")
+            imgui.Badge("EXPIRING", "warning", nil, "warning")
             imgui.SameLine()
             imgui.Tag("FAULT", "danger")
+
+            if imgui.Icon then
+                imgui.Spacing()
+                imgui.TextUnformatted("Procedural Vector Icons:")
+                imgui.SameLine()
+                imgui.Icon("plane", 16, "#5dade2", "Aircraft vector glyph")
+                imgui.SameLine()
+                imgui.Icon("compass", 16, "#48c9b0", "Heading / Navigation glyph")
+                imgui.SameLine()
+                imgui.Icon("gear", 16, nil, "Settings / Systems glyph")
+                imgui.SameLine()
+                imgui.Icon("check", 16, "#2ecc71", "Normal / Verified glyph")
+                imgui.SameLine()
+                imgui.Icon("warning", 16, "#f39c12", "Caution glyph")
+                imgui.SameLine()
+                imgui.Icon("star", 16, "#f1c40f", "Favorite / Preset glyph")
+            end
 
             imgui.Spacing()
             imgui.TextUnformatted("Pills & Dual Colors:")
@@ -1222,13 +1271,26 @@ if qnh < 29.92 then set_altimeter_std() end
             imgui.Spacing()
             imgui.TextUnformatted("Hyperlinks & Affordances:")
             imgui.SameLine()
-            imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
+            if imgui.ExternalTextLink then
+                imgui.ExternalTextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
+            else
+                imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
+            end
             imgui.SameLine()
             imgui.TextUnformatted(" | ")
             imgui.SameLine()
             imgui.ButtonLink("FlyWithLua Issues", "https://github.com/sparker256/FlyWithLua/issues")
             imgui.SameLine()
             imgui.SmallButtonLink("SmallButtonLink Demo", "https://github.com/sparker256/FlyWithLua")
+
+            if imgui.CheckboxLink then
+                imgui.Spacing()
+                local sb_chg, new_sb = imgui.CheckboxLink("Fasten Seatbelt Sign (Hand Cursor)", seatbelt_sign)
+                if sb_chg then seatbelt_sign = new_sb end
+                imgui.SameLine(400)
+                imgui.TextLink("[Click to Toggle Preflight Note]")
+                imgui.TimedTooltip.TextMD("**Click-to-Toggle Tooltip:** Calling `imgui.TextLink(label)` with no URL preserves `LinkClickResult` toggle mode so clicking pins or dismisses this `TimedTooltip`!")
+            end
 
             imgui.EndTabItem()
         end
@@ -1460,13 +1522,16 @@ imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text
 
             imgui.Spacing()
             -- 4. Direct Semantic Text Helpers
-            if imgui.CollapsingHeader("4. Direct Semantic Text Helpers (SmallText, TinyText, TitleText, MonoText)", 32) then
+            if imgui.CollapsingHeader("4. Direct Semantic Text Helpers (SmallText, TinyText, TitleText, MonoText, BoldItalicText)", 32) then
                 imgui.MD.TextWrapped("Direct immediate-mode text rendering helpers mapped to the typography hierarchy:")
                 imgui.Spacing()
 
                 imgui.Indent(20)
                 imgui.TitleText("TitleText: Avionics Nav Log & Route Plan")
                 imgui.TextUnformatted("Regular Text: Cruising at FL340 over DLL VOR.")
+                if imgui.BoldItalicText then
+                    imgui.BoldItalicText("BoldItalicText: Strong soft emphasis for callouts & advisory notes.")
+                end
                 imgui.SmallText("SmallText (12px): Standard caption, secondary annotations, and table subtext.")
                 imgui.TinyText("TinyText (10px): Micro annotations, build hashes, and footnote disclaimers.")
                 imgui.MonoText("MonoText: sim/cockpit2/radios/actuators/com1_frequency_hz = 121500")
@@ -1477,6 +1542,7 @@ imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text
                 imgui.MD.Text([[
 ```lua
 imgui.TitleText("Avionics Status: %s", "NORMAL")
+imgui.BoldItalicText("Advisory: %s", "RNAV RNP 0.30 REQUIRED")
 imgui.SmallText("Last GPS update: %d seconds ago", 2)
 imgui.TinyText("Firmware build: %s", "v2.3.0-4268f3d")
 imgui.MonoText("Active Dataref: %s", "sim/flightmodel/position/latitude")

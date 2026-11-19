@@ -81,11 +81,15 @@ if imgui.Markdown.ButtonMD("<icon caret-up />##scroll_top", "Scroll to top") the
 end
 ```
 
-#### Dedicated Vector Icon Buttons
-- `imgui.IconButton(str_id, icon_name, [w, h], [tooltip]) -> clicked`: Pure vector icon button auto-sized to a crisp square.
-- `imgui.ButtonIcon(label, icon_name, [w, h], [icon_on_right], [tooltip]) -> clicked`: Button with both procedural vector icon and text.
+#### Dedicated Vector Icons & Icon Buttons
+- `imgui.Icon(icon_name, [size], [color], [tooltip])`: Draws a standalone antialiased vector icon inline (`"plane"`, `"compass"`, `"gear"`, `"check"`, `"warning"`, `"undo"`, `"copy"`, `"external-link"`, etc.).
+- `imgui.IconButton(str_id, icon_name, [w, h], [tooltip], [icon_color]) -> clicked`: Pure vector icon button auto-sized to a crisp square.
+- `imgui.ButtonIcon(label, icon_name, [w, h], [icon_on_right], [tooltip], [icon_color]) -> clicked`: Button with both procedural vector icon and text.
+- `imgui.IsVectorIcon(icon_name) -> bool` and `imgui.NormalizeIconName(name) -> canonical_name`: Query or normalize icon names and aliases.
 
 ```lua
+imgui.Icon("plane", 16, "#5dade2", "Active aircraft profile")
+imgui.SameLine()
 if imgui.IconButton("##up_arrow", "caret-up", 0, 0, "Move Note Up") then
     move_note_up()
 end
@@ -95,10 +99,14 @@ if imgui.ButtonIcon("Settings", "gear", 0, 0, false, "Configure Cockpit Notes") 
 end
 ```
 
-#### `width, height = imgui.Markdown.CalcTextSize(text, [wrap_width])`
-Calculates the pixel dimensions required to render a given Markdown string before drawing.
+#### `imgui.Markdown.DelayedTooltipMD(markdown_str, [wrap_width])` and `clicked = imgui.Markdown.TextLink(format_string, ...)`
+- `DelayedTooltipMD` (also on root `imgui.DelayedTooltipMD`): Attaches a delayed rich Markdown tooltip directly to the preceding item.
+- `Markdown.TextLink` (`imgui.TextMDLink`): Renders inline Markdown text with a pointing-hand hover cursor and click detection (plus click-to-toggle `TimedTooltip` support).
+
+#### `width, height = imgui.Markdown.CalcTextSize(text, [wrap_width], [font_scale])`
+Calculates the pixel dimensions required to render a given Markdown string before drawing (also aliased as `imgui.Markdown.CalcSize` and `imgui.CalcMarkdownSize`).
 ```lua
-local w, h = imgui.Markdown.CalcTextSize("### Heading Example")
+local w, h = imgui.Markdown.CalcTextSize("### Heading Example", 360, 1.0)
 ```
 
 ---
@@ -241,15 +249,8 @@ The standard Dear ImGui tooltip (`imgui.SetTooltip`) suffers from several UX lim
 
 ### TimedTooltip Functions
 
-#### `imgui.TimedTooltip.Text(format_string, ...)`
-Shows a stationary plain text tooltip when the preceding widget is hovered.
-```lua
-imgui.Button("AP Master##btn")
-imgui.TimedTooltip.Text("Flight Director and Autopilot Master Engagement Switch")
-```
-
-#### `imgui.TimedTooltip.MD.Text(format_string, ...)`
-Shows a stationary tooltip rendered with full Markdown and pill styling.
+#### `shown = imgui.TimedTooltip.Text(format_string, ...)` and `imgui.TimedTooltip.MD.Text(format_string, ...)`
+Shows a stationary plain-text or rich Markdown tooltip when the preceding widget is hovered, returning `true` on frames where the tooltip popup is visible.
 ```lua
 imgui.Button("Pitot Heat##btn")
 imgui.TimedTooltip.MD.Text("### Pitot Tube Heating System\n\n" ..
@@ -258,13 +259,22 @@ imgui.TimedTooltip.MD.Text("### Pitot Tube Heating System\n\n" ..
                            "* <color #f39c12>Caution: Ground operation limited to 5 minutes.</color>")
 ```
 
-#### Dwell & Dimension Controls
+#### Click-to-Toggle Links & Proxy Tooltips
+- `imgui.TimedTooltip.TextLink(fmt, ...)` / `imgui.TimedTooltip.TextMDLink(fmt, ...)`: Attaches a hand cursor and click-to-toggle tooltip behavior to the preceding item.
+- `imgui.TimedTooltip.ToggleOnClick()`: Marks the preceding widget eligible for click-to-pin / click-to-dismiss tooltip toggling.
+- `imgui.TimedTooltip.TextProxy(item_id, is_hovered, fmt, ...)` / `TextMDProxy(...)`: Drives a stationary tooltip from a synthetic widget ID and explicit hover boolean (used for custom canvas regions or open-menu Lens UI items).
+
+#### Dwell, Dimension, Color & Font-Scale Controls
 Configure tooltip behavior globally or per session:
-- `imgui.TimedTooltip.SetHoverDelay(cycles)` -- Number of frames cursor must hover before tooltip appears.
+- `imgui.TimedTooltip.SetHoverDelay(cycles)` (`SetDelay`) -- Frames cursor must hover before tooltip appears.
 - `imgui.TimedTooltip.SetMaxDisplay(cycles)` -- Base display timeout in frames.
-- `imgui.TimedTooltip.SetMaxWidth(pixels)` -- Maximum wrap width in pixels (defaults to 400px).
-- `imgui.TimedTooltip.SetMinWidth(pixels)` -- Minimum width in pixels.
-- `imgui.TimedTooltip.Clear()` -- Immediately dismisses any active tooltip.
+- `imgui.TimedTooltip.SetGracePeriod(cycles)` -- Fast re-entry grace window when scanning across adjacent controls.
+- `imgui.TimedTooltip.SetWiggleLatch(enabled)` -- Keeps the tooltip alive when the pilot intentionally wiggles the cursor to keep reading.
+- `imgui.TimedTooltip.SetMaxWidth(pixels)` / `SetMinWidth(pixels)` / `SetDefaultWrapWidth(pixels)` -- Tooltip width bounds.
+- `imgui.TimedTooltip.SetColors(bg_col, border_col, [text_col])` -- Custom tooltip surface colors (pass `nil` for defaults).
+- `imgui.TimedTooltip.SetFontScalePolicy(policy)` / `GetFontScalePolicy()` -- Controls how tooltip text responds to zoomed windows (`imgui.TimedTooltip.FontScalePolicy.Damped`, `FixedChrome`, or `LinearInherit`).
+- `imgui.TimedTooltip.SetFontScaleMultiplier(mult)` and `SetFontScale(abs_override)` -- Relative multiplier or explicit scale override (`0.0` restores automatic policy).
+- `imgui.TimedTooltip.Clear()` (`ClearActiveTooltip`) -- Immediately dismisses any active tooltip.
 
 ---
 
@@ -272,8 +282,8 @@ Configure tooltip behavior globally or per session:
 
 The `ImGee` widgets suite (`imgui.widgets.*` / `imgui.*`) adds tactile, specialized controls for simulation settings and telemetry adjustment.
 
-### `changed, new_val = imgui.ToggleButton(label, bool_val)`
-An animated iOS-style sliding pill toggle switch with smooth tactile color transitions.
+### `changed, new_val = imgui.ToggleButton(label, bool_or_int_val, [w, h], [allow_mouse_wheel], [hover_cursor])`
+An animated iOS-style sliding pill toggle switch with smooth tactile color transitions and mouse-wheel up/down support. Accepts either a `boolean` or `0`/`1` integer and returns the matching Lua type. Global defaults can be tuned via `imgui.SetDefaultToggleButtonScale(scale)` and `imgui.SetDefaultToggleButtonColors(active_bg, inactive_bg, knob_col)`.
 ```lua
 local changed, new_state = imgui.ToggleButton("Cabin Lights", cabin_lights_on)
 if changed then
@@ -281,40 +291,43 @@ if changed then
 end
 ```
 
-### `changed, new_state = imgui.ToggleButtons(label, int_state, off_label, on_label)`
-A segmented multi-state toggle control.
+### `changed, new_state, hovered_item = imgui.ToggleButtons(label, state, off_label, on_label, [item_tooltips], [allow_mouse_wheel], [hover_cursor])`
+A segmented two-state toggle control with optional per-segment tooltips (`{ "Off tip", "On tip" }`) and mouse-wheel stepping. Returns `hovered_item` (`0`, `1`, or `-1`) as a third value.
 ```lua
-local changed, new_mode = imgui.ToggleButtons("##RecogLights", light_mode, "OFF", "STROBE")
+local changed, new_mode = imgui.ToggleButtons("##RecogLights", light_mode, "OFF", "STROBE", { "Recognition lights off", "High-intensity strobe" })
 if changed then
     light_mode = new_mode
 end
 ```
 
-### `changed, new_val = imgui.SliderWithReset(label, val, min, max, default_val)`
-A horizontal slider paired with an adjacent reset button (↺) that instantly returns the slider to its calibrated default value.
+### Mouse-Wheel Sliders, Drags, Combos & Resettable Controls
+All scalar and preset controls support hover-and-scroll mouse-wheel adjustment (`Shift` for fine, `Ctrl` for coarse) and optional 1-click Reset/Undo memory (`imgui.SetResetButtonUndoEnabled(true)`):
+- `changed, new_val = imgui.SliderWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
+- `changed, new_val = imgui.SliderIntWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
+- `changed, new_val = imgui.PercentSlider(label, val, [min], [max], [format], [flags], [wheel_step])`
+- `changed, new_val = imgui.PercentSliderWithReset(label, val, [default_val], [min], [max], [format], [flags], [wheel_step], [reset_tooltip])`
+- `changed, new_val = imgui.MouseWheelSlider(label, val, min, max, [format], [flags], [wheel_step])` (and `MouseWheelSliderInt`)
+- `changed, new_val = imgui.MouseWheelDrag(label, val, [speed], [min], [max], [format], [flags], [wheel_step])` (and `MouseWheelDragInt`)
+- `changed, new_val = imgui.DragWithReset(label, val, [speed], [min], [max], [default_val], [format], [flags], [wheel_step], [reset_tooltip])` (and `DragIntWithReset`)
+- `changed, new_idx = imgui.MouseWheelCombo(label, current_idx, items_table, [wrap], [popup_max_height_in_items], [arrow_style], [item_tooltips])` (1-based `current_idx`)
+- `changed, new_idx = imgui.ComboWithReset(label, current_idx, default_idx, items_table, [wrap], [reset_tooltip], [arrow_style], [item_tooltips])` (1-based `current_idx`; also accepts `(label, current_idx, items_table, default_idx, ...)`)
+- `changed, new_bool = imgui.MouseWheelCheckbox(label, bool_val, [hover_cursor])`
+
+Global combo & reset helpers:
+- `imgui.SetMouseWheelAutoDefeat(enabled)` / `GetMouseWheelAutoDefeat()` -- Prevents wheel controls from hijacking an actively scrolling parent panel.
+- `imgui.SetDefaultComboArrowStyle(style)` / `GetDefaultComboArrowStyle()` -- `imgui.ComboArrowStyle.DownWhenClosed`, `RightWhenClosed`, `UpWhenClosed`, or `StaticDown`.
+- `imgui.SetResetButtonUndoEnabled(enabled)` / `GetResetButtonUndoEnabled()` -- Clicking reset a second time restores the previous custom value.
+- `imgui.SetDefaultResetButtonLabel(glyph)` and `imgui.SetDefaultRestoreButtonLabel(glyph)`.
+
 ```lua
 local changed, new_trim = imgui.SliderWithReset("Aileron Trim", aileron_trim, -1.0, 1.0, 0.0)
-if changed then
-    aileron_trim = new_trim
-end
-```
+if changed then aileron_trim = new_trim end
 
-### `changed, new_val = imgui.PercentSlider(label, val)`
-A slider designed for normalized floating point values `[0.0 .. 1.0]`, automatically displayed and formatted as an integer percentage (`0% .. 100%`).
-```lua
-local changed, new_flaps = imgui.PercentSlider("Flaps Deflection", flaps_deploy)
-if changed then
-    flaps_deploy = new_flaps
-end
-```
+local alt_chg, new_alt = imgui.DragIntWithReset("Target Altitude", mcp_alt, 100.0, 1000, 45000, 10000, "%d ft", 0, 500)
+if alt_chg then mcp_alt = new_alt end
 
-### `changed, new_val = imgui.PercentSliderWithReset(label, val, default_val)`
-Combines the normalized percent slider with an automatic reset button.
-```lua
-local changed, new_mix = imgui.PercentSliderWithReset("Mixture", fuel_mixture, 1.0)
-if changed then
-    fuel_mixture = new_mix
-end
+local baro_chg, new_baro = imgui.ComboWithReset("Baro Mode", baro_idx, 1, { "STD 29.92", "QNH 1013", "Local" })
+if baro_chg then baro_idx = new_baro end
 ```
 
 ### Avionics Rotary Knobs & Dimmer Dials (`imgui.Knob`, `imgui.KnobWithReset`, `imgui.DimmerKnob`)
@@ -381,8 +394,8 @@ if changed then
 end
 ```
 
-### `changed, new_idx = imgui.CycleItemOnMouseWheel(idx, count, [wrap])`
-Cycles an integer index when the mouse wheel is scrolled over the preceding widget. Supports standard 1-based Lua indexing.
+### `changed, new_idx = imgui.CycleItemOnMouseWheel(idx, count, [wrap], [natural_list_order], [set_cursor])`
+Cycles an integer index (1-based `[1..count]`, explicit range `(idx, min_idx, max_idx, [wrap], ...)`, or boolean `(bool_val, [natural_order])`) when the mouse wheel is scrolled over the preceding widget. For simple up=ON / down=OFF boolean stepping on custom items, call `imgui.ToggleItemOnMouseWheel(bool_val, [set_cursor])`.
 ```lua
 local gear_modes = { "UP", "OFF", "DOWN" }
 imgui.Button(string.format("Gear Lever: %s", gear_modes[gear_idx]), 200, 30)
@@ -392,11 +405,24 @@ if changed then
 end
 ```
 
-### `clicked = imgui.ButtonLink(label, [url])` and `imgui.TextLink(label, [url])`
-Renders a button or text item styled as a hyperlink. If `url` is supplied, clicking automatically opens the URL in the system browser.
+### Clickable Links & Active Cursor Affordances (`imgui.ButtonLink`, `TextLink`, `ExternalTextLink`, `CheckboxLink`, ...)
+Ergonomic controls that automatically display a pointing-hand cursor (`ImGuiMouseCursor_Hand`) on hover:
+- `clicked = imgui.ButtonLink(label, [url_or_w], [h])` and `imgui.SmallButtonLink(label, [url])`
+- `clicked = imgui.TextLink(label, [url], [color])` -- Ambient-color clickable text. When called without a `url`, preserves `LinkClickResult` toggle state so clicking pins or dismisses a trailing `TimedTooltip`!
+- `clicked = imgui.ExternalTextLink(label, [url])` -- Hyperlink styled in link-blue with a trailing vector external-link icon (`external-link`).
+- `changed, new_bool = imgui.CheckboxLink(label, bool_val)`
+- `clicked [, new_val] = imgui.RadioButtonLink(label, active_bool_or_cur_int, [button_int])`
+- `clicked, new_selected = imgui.SelectableLink(label, [selected], [flags], [w, h])`
+- `activated, new_selected = imgui.MenuItemLink(label, [shortcut], [selected], [enabled])`
+- `imgui.AttachItemCursor([cursor])` / `imgui.ShowLinkCursorOnHover()` -- Attaches a hover cursor (default `Hand`) to any preceding stock widget.
+
 ```lua
-imgui.TextLink("Check METAR Weather Reports", "https://aviationweather.gov/metar")
+imgui.ExternalTextLink("Check METAR Weather Reports", "https://aviationweather.gov/metar")
 imgui.ButtonLink("FlyWithLua Forum Support", "https://forums.x-plane.org")
+
+-- Click-to-toggle tooltip (no URL passed):
+imgui.TextLink("[Preflight Briefing Notes]")
+imgui.TimedTooltip.TextMD("Click again to dismiss this pinned briefing card.")
 ```
 
 ### `imgui.Spinner(label, [radius], [thickness], [color], [speed])`
@@ -433,26 +459,26 @@ Convenience helper wrapping `RadialTimer` with remaining seconds and total max s
 imgui.CountdownTimer("Approach Timer (42s / 60s)", 42.0, 60.0, 20, 4.0, {1.0, 0.65, 0.0, 1.0})
 ```
 
-### `clicked = imgui.ResetButton(str_id, [is_modified], [draw_frame])`
-A standalone DPI-scaled vector undo/reset button (`↺`) matching standard ImgWindow widget sizing.
-- **`is_modified`**: `true` renders the glyph in standard white/active styling. `false` (baseline) renders it dimmed/disabled.
-- **`draw_frame`**: Whether to draw a button bounding frame or leave it flat/transparent.
+### `clicked = imgui.ResetButton(str_id, [is_modified], [width], [abutting], [tooltip], [is_restore_mode])`
+A standalone DPI-scaled vector undo/reset button (`↺`) matching standard ImgWindow widget sizing. Also accepts the compact 3-argument form `imgui.ResetButton(str_id, is_modified, abutting)`.
+- **`is_modified`**: `true` renders the glyph in active styling; `false` renders it dimmed (or in restore/redo mode when `is_restore_mode = true`).
+- **`abutting`**: `true` rounds only the right corners so the button joins flush against a preceding input frame; `false` draws a standalone rounded button.
 ```lua
-local reset_clicked = imgui.ResetButton("##reset_zoom", current_zoom ~= 100, false)
+local reset_clicked = imgui.ResetButton("##reset_zoom", current_zoom ~= 100, 0, false, nil, can_restore)
 if reset_clicked then
     current_zoom = 100
 end
 ```
 
-### `clicked, is_copied = imgui.CopyButton(str_id, text_to_copy)`
-Renders a 1-click clipboard copy button with automatic transient visual feedback (changing label to `Copied!` in green for 1.5 seconds) and built-in `TimedTooltip` integration.
+### `clicked, is_copied = imgui.CopyButton(str_id, text_to_copy, [duration], [w, h])`
+Renders a 1-click clipboard copy button with automatic transient visual feedback (changing icon/state to copied green checkmark for `duration` seconds, default `1.5`) and built-in `TimedTooltip` integration.
 - Also aliased as `imgui.CopyBufferButton`.
 ```lua
 imgui.CopyButton("##copy_notes", editor_text)
 ```
 
-### `clicked, is_copied = imgui.CopyLastItemButton(str_id, [prefix], [suffix])`
-A non-intrusive chaser copy button that attaches to the preceding widget on the same line (such as an `InputText` or label) and copies its content with optional prefix and suffix formatting.
+### `clicked, is_copied = imgui.CopyLastItemButton(str_id, [duration], [w, h])`
+A non-intrusive chaser copy button that attaches to the preceding widget on the same line (such as an `InputText` or label) and copies its text buffer to the clipboard.
 - Also aliased as `imgui.CopyTextFieldButton`.
 ```lua
 imgui.InputText("##airport_code", icao_buf, 8)
@@ -476,23 +502,24 @@ if s >= 0 and e > s then
 end
 ```
 
-### `delta = imgui.GetMouseWheel([consume])` and `imgui.GetMouseWheelEither([consume])`
+### `delta = imgui.GetMouseWheel([consume])`, `GetMouseWheelH([consume])`, and `GetMouseWheelEither([consume])`
 Low-level mouse wheel query primitives.
-- `imgui.GetMouseWheel(consume)`: Returns vertical scroll wheel clicks.
-- `imgui.GetMouseWheelEither(consume)`: Returns vertical scroll clicks, falling back to horizontal scroll clicks (ideal for Mac trackpads and horizontal mice).
-- When `consume` is `true`, immediately consumes the event by zeroing `io.MouseWheel` so underlying parent windows do not scroll inadvertently.
+- `imgui.GetMouseWheel(consume)` (`GetMouseWheelV`): Returns vertical scroll wheel clicks.
+- `imgui.GetMouseWheelH(consume)`: Returns horizontal scroll wheel clicks.
+- `imgui.GetMouseWheelEither(consume)` (`GetMouseWheelAny`): Returns vertical scroll clicks, falling back to horizontal scroll clicks (ideal for Mac trackpads and horizontal mice).
+- When `consume` is `true`, immediately consumes the active wheel axis so underlying parent windows do not scroll inadvertently.
 
 ### Standalone Procedural Badges, Pills & Keycaps
 While badges and pills are frequently used inline inside Markdown strings, FlyWithLua also exposes them as standalone procedural widgets:
-- `imgui.Badge(text, [variant])` -- Subtle categorization chip.
-- `imgui.Pill(text, [variant])` -- Solid-colored rounded pill.
+- `imgui.Badge(text, [variant_or_bg_col], [text_col], [icon_name], [icon_size], [rounding])` -- Subtle categorization chip with optional leading vector icon.
+- `imgui.Pill(text, [variant_or_bg_col], [text_col], [icon_name], [icon_size], [rounding])` -- Solid-colored rounded pill with optional leading vector icon.
 - `imgui.Kbd(text)` -- Framed keyboard keycap.
 
-Variants: `"default"`, `"primary"`, `"success"` (`"green"`), `"warning"` (`"yellow"`), `"danger"` (`"red"`), `"info"` (`"blue"`).
+Variants: `"default"`, `"primary"`, `"success"` (`"green"`), `"warning"` (`"yellow"`), `"danger"` (`"red"`), `"info"` (`"blue"`), or enum constants in `imgui.BadgeVariant` (`Default`, `Primary`, `Success`, `Warning`, `Danger`, `Info`), or custom RGBA tables / `#hex` strings.
 ```lua
-imgui.Badge("METAR OK", "success")
+imgui.Badge("METAR OK", "success", nil, "check")
 imgui.SameLine()
-imgui.Pill("AUTOPILOT ENGAGED", "primary")
+imgui.Pill("AUTOPILOT ENGAGED", "primary", nil, "plane")
 imgui.SameLine()
 imgui.Kbd("Ctrl+Shift+P")
 ```
@@ -674,10 +701,11 @@ Direct immediate-mode text rendering helpers mapped to the typography hierarchy:
 - `imgui.TinyText("Footnote: %s", rev)` / `imgui.TinyTextUnformatted(str)`
 - `imgui.TitleText("Section Header: %s", title)` / `imgui.TitleTextUnformatted(str)`
 - `imgui.MonoText("Dataref: %s", dref_name)` / `imgui.MonoTextUnformatted(str)`
+- `imgui.BoldItalicText("Advisory: %s", note)` / `imgui.BoldItalicTextUnformatted(str)`
 
 ### 5. Semantic Font Roles (`imgui.PushFontRole` / `imgui.PopFontRole`)
 Pushes an explicit typography role from the semantic registry:
-- Roles: `imgui.FontRole.Regular`, `Title`, `Small`, `Bold`, `BoldLarge`, `Monospace`, `Italic`, `MonospaceMedium`, `Heading1`, `Heading2`, `Heading3`.
+- Roles: `imgui.FontRole.Regular`, `Title`, `Small`, `Bold`, `BoldLarge`, `Monospace`, `Italic`, `MonospaceMedium`, `BoldItalic`, `Heading1`, `Heading2`, `Heading3`, `Tiny`.
 
 ```lua
 imgui.PushFontRole(imgui.FontRole.Monospace)
@@ -686,7 +714,7 @@ imgui.PopFontRole()
 ```
 
 ### 6. First-Class Named Badges & Pills (`imgui.BadgeNamed` / `imgui.PillNamed`)
-Directly render pills and badges using named textures/icons:
+Directly render pills and badges using named textures/icons (optional `bg_col`, `text_col`, `icon_size`, `rounding`):
 
 ```lua
 imgui.PillNamed("avionics_beacon", "Mode C", {0.18, 0.80, 0.44, 1.0})
@@ -714,6 +742,13 @@ if ok then
 end
 ```
 
+### 8. Cockpit Themes & OS URL / Document Launchers
+Switch curated ImGee cockpit color themes per window context, or launch external URLs and local manuals cleanly across macOS, Windows, and Linux:
+- `imgui.StyleColorsCharcoal()` / `imgui.ApplyDefaultTheme()` -- Low-glare Charcoal flight-deck palette (default).
+- `imgui.StyleColorsRusty()` -- Warm night-flying / amber-accented Rusty palette.
+- `imgui.StyleColorsDark()`, `imgui.StyleColorsLight()`, `imgui.StyleColorsClassic()` -- Standard Dear ImGui palettes.
+- `ok = imgui.OpenURL(url_or_path)` and `ok = imgui.OpenDocument(local_path)` -- Opens web URLs or simulator-relative PDF/text documents in the user's native viewer.
+
 ---
 
 ## 8. Universal C++ & Lua Alias Matrix
@@ -726,13 +761,24 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Markdown Wrapped** | `imgui.Markdown.TextWrapped` | `imgui.MD.TextWrapped` | `Markdown.TextWrapped` | `imgui.TextWrappedMD` |
 | **Markdown Direct** | `imgui.Markdown.TextUnformatted` | `imgui.MD.TextUnformatted` | `Markdown.TextUnformatted` | `imgui.TextUnformattedMD` |
 | **Markdown Button** | `imgui.Markdown.ButtonMD` | `imgui.MD.ButtonMD` | `Markdown.ButtonMD` | `imgui.ButtonMD` |
+| **Markdown Link** | `imgui.Markdown.TextLink` | `imgui.MD.TextLink` | `Markdown.TextLink` | `imgui.TextMDLink` |
+| **Markdown Tooltip** | `imgui.Markdown.DelayedTooltipMD` | `imgui.MD.DelayedTooltipMD` | `Markdown.DelayedTooltipMD` | `imgui.DelayedTooltipMD` |
+| **Markdown Measure** | `imgui.Markdown.CalcTextSize` | `imgui.Markdown.CalcSize` | `Markdown.CalcSize` | `imgui.CalcMarkdownSize` |
 | **TimedTooltip Plain** | `imgui.TimedTooltip.Text` | `imgui.TimedTooltip.text` | `TimedTooltip.Text` | -- |
 | **TimedTooltip MD** | `imgui.TimedTooltip.MD.Text` | `imgui.TimedTooltip.TextMD` | `TimedTooltip.MD.Text` | `TimedTooltip.TextMD` |
+| **TimedTooltip Link/Proxy** | `imgui.TimedTooltip.TextMDLink` | `imgui.TimedTooltip.TextLink` | `TimedTooltip.TextMDProxy` | `TimedTooltip.ToggleOnClick` |
 | **Toggle Button** | `imgui.ToggleButton` | `imgui.toggle_button` | -- | -- |
 | **Segmented Toggles** | `imgui.ToggleButtons` | `imgui.toggle_buttons` | -- | -- |
+| **Wheel Checkbox** | `imgui.MouseWheelCheckbox` | `imgui.mouse_wheel_checkbox` | -- | `imgui.ToggleItemOnMouseWheel` |
+| **Wheel Slider** | `imgui.MouseWheelSlider` | `imgui.mouse_wheel_slider` | -- | `imgui.MouseWheelSliderInt` |
 | **Slider With Reset** | `imgui.SliderWithReset` | `imgui.slider_with_reset` | -- | `imgui.ResettableSlider` |
+| **Int Slider w/ Reset** | `imgui.SliderIntWithReset` | `imgui.slider_int_with_reset` | -- | `imgui.ResettableSliderInt` |
 | **Percent Slider** | `imgui.PercentSlider` | `imgui.percent_slider` | -- | `imgui.SliderPercent` |
 | **Percent Slider w/ Reset** | `imgui.PercentSliderWithReset` | `imgui.percent_slider_with_reset` | -- | `imgui.ResettablePercentSlider` |
+| **Wheel Drag** | `imgui.MouseWheelDrag` | `imgui.mouse_wheel_drag` | -- | `imgui.MouseWheelDragInt` |
+| **Drag With Reset** | `imgui.DragWithReset` | `imgui.drag_with_reset` | -- | `imgui.DragIntWithReset` |
+| **Wheel Combo** | `imgui.MouseWheelCombo` | `imgui.mouse_wheel_combo` | -- | -- |
+| **Combo With Reset** | `imgui.ComboWithReset` | `imgui.combo_with_reset` | -- | `imgui.ResettableCombo` |
 | **Rotary Knob** | `imgui.Knob` | `imgui.knob` | -- | `imgui.RotaryDial` |
 | **Knob With Reset** | `imgui.KnobWithReset` | `imgui.knob_with_reset` | -- | `imgui.ResettableKnob` |
 | **Dimmer Knob (Detente)** | `imgui.DimmerKnob` | `imgui.dimmer_knob` | -- | -- |
@@ -755,7 +801,9 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Named Badge** | `imgui.BadgeNamed` | `imgui.badge_named` | -- | -- |
 | **Named Pill** | `imgui.PillNamed` | `imgui.pill_named` | -- | -- |
 | **Keycap Widget** | `imgui.Kbd` | `imgui.kbd` | -- | `imgui.Key` / `imgui.Keycap` |
-| **Hyperlinks** | `imgui.ButtonLink` | `imgui.button_link` | -- | `imgui.TextLink` |
+| **Hyperlinks** | `imgui.ButtonLink` | `imgui.button_link` | `imgui.ExternalTextLink` | `imgui.TextLink` / `SmallButtonLink` |
+| **Link Controls** | `imgui.CheckboxLink` | `imgui.RadioButtonLink` | `imgui.SelectableLink` | `imgui.MenuItemLink` |
+| **Standalone Icon** | `imgui.Icon` | `imgui.icon` | `imgui.IsVectorIcon` | `imgui.NormalizeIconName` |
 | **Icon Button** | `imgui.IconButton` | `imgui.icon_button` | -- | -- |
 | **Button With Icon** | `imgui.ButtonIcon` | `imgui.button_icon` | -- | -- |
 | **Mouse Cursor State** | `imgui.SetCursorHandling` | `imgui.set_cursor_handling` | -- | `imgui.EnableMouseCursors` |
@@ -775,8 +823,11 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Tiny Text** | `imgui.TinyText` | `imgui.tiny_text` | `imgui.TinyTextUnformatted` | -- |
 | **Title Text** | `imgui.TitleText` | `imgui.title_text` | `imgui.TitleTextUnformatted` | -- |
 | **Mono Text** | `imgui.MonoText` | `imgui.mono_text` | `imgui.MonoTextUnformatted` | -- |
+| **Bold-Italic Text** | `imgui.BoldItalicText` | `imgui.bold_italic_text` | `imgui.BoldItalicTextUnformatted` | -- |
 | **Font Role Push** | `imgui.PushFontRole` | `imgui.push_font_role` | -- | -- |
 | **Font Role Pop** | `imgui.PopFontRole` | `imgui.pop_font_role` | -- | -- |
+| **Cockpit Themes** | `imgui.StyleColorsCharcoal` | `imgui.StyleColorsRusty` | `imgui.ApplyDefaultTheme` | `imgui.style_colors_charcoal` |
+| **URL / Doc Opener** | `imgui.OpenURL` | `imgui.open_url` | `imgui.OpenDocument` | `imgui.open_document` |
 | **Memory Image Register**| `imgui.RegisterMemoryImage` | `imgui.register_memory_image` | -- | -- |
 | **Memory Image Delete**| `imgui.UnregisterMemoryImage`| `imgui.DeleteMemoryImage` | -- | `imgui.delete_memory_image` |
 | **Memory Image Query** | `imgui.GetNamedTexture` | `imgui.HasMemoryImage` | -- | `imgui.has_memory_image` |
