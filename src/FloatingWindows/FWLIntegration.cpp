@@ -48,7 +48,7 @@ typedef void(CallbackSetter)(sol::light<FloatingWindow>, CallbackProvider const&
 std::vector<std::shared_ptr<FloatingWindow>> floatingWindows;
 std::vector<ImTextureID> textureIDs;
 
-inline FloatingWindow* GetValidFloatingWindow(void* ptr) {
+FloatingWindow* GetValidFloatingWindow(void* ptr) {
     if (!ptr) return nullptr;
     for (const auto& wndPtr : floatingWindows) {
         if (wndPtr.get() == ptr) {
@@ -56,6 +56,12 @@ inline FloatingWindow* GetValidFloatingWindow(void* ptr) {
         }
     }
     return nullptr;
+}
+
+void RegisterManagedFloatingWindow(const std::shared_ptr<FloatingWindow>& wnd) {
+    if (wnd) {
+        floatingWindows.push_back(wnd);
+    }
 }
 
 ImTextureID loadImage(const std::string& fileName) {
@@ -825,6 +831,38 @@ void LuaSetImguiBuilder(sol::light<FloatingWindow> fwnd, CallbackProvider const&
             // FindAndQuarantine (L);
             return;
         }
+
+        // Lazily resolve the owning script directory from the builder closure's Lua debug info (@.../Scripts/Subfolder/Script.lua)
+        // since FlyWithLua resets global SCRIPT_DIRECTORY back to root Scripts/ after boot.
+        if (iwnd.getAutoMarkdownBaseDir().empty() && flywithlua::FWLLua != nullptr) {
+            lua_State* L = flywithlua::FWLLua;
+            std::string resolved_dir;
+            builder.push(L);
+            lua_Debug ar = {};
+            if (lua_getinfo(L, ">S", &ar) != 0 && ar.source != nullptr && ar.source[0] == '@') {
+                std::string src(ar.source + 1);
+                size_t sep = src.find_last_of("/\\");
+                if (sep != std::string::npos) {
+                    resolved_dir = src.substr(0, sep + 1);
+                }
+            }
+            if (resolved_dir.empty()) {
+                lua_getglobal(L, "SCRIPT_DIRECTORY");
+                if (lua_isstring(L, -1)) {
+                    resolved_dir = lua_tostring(L, -1);
+                }
+                lua_pop(L, 1);
+            }
+            if (!resolved_dir.empty()) {
+                iwnd.setAutoMarkdownBaseDir(resolved_dir);
+            }
+        }
+
+        const char* auto_base_dir = iwnd.getAutoMarkdownBaseDir().empty() ? nullptr : iwnd.getAutoMarkdownBaseDir().c_str();
+        const char* explicit_base_dir = iwnd.hasExplicitMarkdownBaseDir()
+            ? (iwnd.getExplicitMarkdownBaseDir().empty() ? "" : iwnd.getExplicitMarkdownBaseDir().c_str())
+            : nullptr;
+        flywithlua::ScopedMarkdownWindowBaseDir mdBaseDirScope(auto_base_dir, explicit_base_dir);
 
         int left, top, right, bottom;
         XPLMGetWindowGeometry(iwnd.getXWindow(), &left, &top, &right, &bottom);

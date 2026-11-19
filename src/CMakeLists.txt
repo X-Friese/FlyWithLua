@@ -134,22 +134,29 @@ add_compile_options(-O3 -fPIC)
 # FIXME: Split this into individual targets.
 list(APPEND FLYWITHLUA_SRCS FlyWithLua.cpp third_party/iniReader/inireader.cpp third_party/iniReader/readinifile.cpp)
 list(APPEND FLYWITHLUA_SRCS FloatingWindows/FWLIntegration.cpp FloatingWindows/FlyWithLuaWindow.cpp FloatingWindows/FloatingWindow.cpp FloatingWindows/FWLImGeeBindings.cpp)
-# Automatically ensure ImgWindow submodule is initialized if not already populated on disk
+# Automatically ensure ImgWindow (and nested contrib/ImGee) submodules are initialized if missing on disk
 find_package(Git QUIET)
-if (GIT_FOUND AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
+set(FWL_SUBMODULES_MISSING FALSE)
+if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp")
+    set(FWL_SUBMODULES_MISSING TRUE)
+elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/.gitmodules" AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/contrib/ImGee/imgee.h")
+    set(FWL_SUBMODULES_MISSING TRUE)
+endif ()
+
+if (GIT_FOUND AND FWL_SUBMODULES_MISSING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../.git")
     execute_process(
         COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.."
         RESULT_VARIABLE GIT_SUBMOD_RESULT
     )
-    if (NOT GIT_SUBMOD_RESULT EQUAL "0" AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp")
+    if (NOT GIT_SUBMOD_RESULT EQUAL "0" AND (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp" OR (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/.gitmodules" AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/contrib/ImGee/imgee.h")))
         message(FATAL_ERROR "Failed to update submodules automatically. Please run: git submodule update --init --recursive")
     endif ()
-elseif (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ImgWindow/ImgWindow.cpp")
-    message(FATAL_ERROR "src/ImgWindow is missing! Please run: git submodule update --init --recursive")
+elseif (FWL_SUBMODULES_MISSING)
+    message(FATAL_ERROR "src/ImgWindow (or nested contrib/ImGee) is missing! Please run: git submodule update --init --recursive")
 endif ()
 
-# ImgWindow v2 (git submodule, pinned to tagged release v2.2.0). It ships no CMakeLists.txt, so its sources are compiled directly.
+# ImgWindow v2.5+ (git submodule with nested contrib/ImGee). It ships no CMakeLists.txt, so its sources are compiled directly.
 list(APPEND FLYWITHLUA_SRCS ImgWindow/ImgWindow.cpp ImgWindow/ImgFontAtlas.cpp)
 set_source_files_properties(ImgWindow/ImgWindow.cpp FloatingWindows/FWLImGeeBindings.cpp FWLSkunkCrafts.cpp PROPERTIES COMPILE_FLAGS "-Wno-float-equal")
 # Shared ImgFontAtlas lifecycle: InitializeImGui() / TeardownImGui()

@@ -364,7 +364,7 @@ local templates = {
 ## Waypoint Navigation Log
 | Fix / Waypoint | Airway | Course | Leg (NM) | Rem (NM) | Altitude | Est Fuel (lbs) | Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **KORD** | — | — | 0 | 334 | Field | 18,800 | <badge icon=plane green>DEP</badge> |
+| **KORD** | -- | -- | 0 | 334 | Field | 18,800 | <badge icon=plane green>DEP</badge> |
 | **JOT** (Joliet VOR) | DCT | 215° | 28 | 306 | 5,000 | 17,900 | <pill icon=check color=#2ecc71>CLIMB</pill> |
 | **BAE** (Badger VOR) | V100 | 322° | 64 | 242 | FL240 | 16,100 | <pill icon=check color=#2ecc71>CLIMB</pill> |
 | **DLL** (Dells VOR) | V100 | 305° | 78 | 164 | FL340 | 14,800 | <pill icon=plane color=#3498db>CRUISE</pill> |
@@ -394,7 +394,7 @@ local templates = {
 ## Weight & Balance Limits
 | Parameter | Planned (lbs) | Max Limit (lbs) | Margin | Status |
 | :--- | :---: | :---: | :---: | :---: |
-| **OEW** (Operating Empty) | 91,300 | — | — | <badge icon=check green>OK</badge> |
+| **OEW** (Operating Empty) | 91,300 | -- | -- | <badge icon=check green>OK</badge> |
 | **Payload** (Pax + Cargo) | 35,400 | 43,000 | +7,600 | <badge icon=check green>OK</badge> |
 | **ZFW** (Zero Fuel Weight) | 126,700 | 138,300 | +11,600 | <badge icon=check green>+11,600 lbs</badge> |
 | **TOW** (Takeoff Weight) | 145,500 | 174,200 | +28,700 | <badge icon=check green>+28,700 lbs</badge> |
@@ -473,8 +473,8 @@ local templates = {
 | **Estimated Touchdown FOB** | 5,500 | 01:10 | <badge icon=check green>SAFE</badge> |
 | **Final Legal Reserve** | 2,450 | 00:30 | Required |
 | **Usable Holding Margin** | +3,050 | +00:38 | <badge icon=check green>+38 min hold</badge> |
-| **Minimum Diversion Bingo** | 5,550 | — | <badge icon=warning yellow>BINGO</badge> |
-| **Emergency Fuel Threshold** | 2,450 | — | <badge icon=warning red>MAYDAY</badge> |
+| **Minimum Diversion Bingo** | 5,550 | -- | <badge icon=warning yellow>BINGO</badge> |
+| **Emergency Fuel Threshold** | 2,450 | -- | <badge icon=warning red>MAYDAY</badge> |
 
 ---
 
@@ -728,6 +728,16 @@ local function wrap_or_insert(prefix, suffix, default_text, is_line_prefix)
     cached_sel_end   = -1
 end
 
+local function sync_window_note_base_dir(full_path_or_nil)
+    if not editor_wnd or not imgui.MD or not imgui.MD.SetWindowBaseDir then return end
+    if full_path_or_nil and #full_path_or_nil > 0 then
+        local parent_dir = full_path_or_nil:match("^(.*[/\\])")
+        imgui.MD.SetWindowBaseDir(editor_wnd, parent_dir)
+    else
+        imgui.MD.SetWindowBaseDir(editor_wnd, nil)
+    end
+end
+
 local function load_note_from_full_path(chosen_path)
     if not chosen_path or #chosen_path == 0 then return end
     local f, err = io.open(chosen_path, "r")
@@ -737,6 +747,7 @@ local function load_note_from_full_path(chosen_path)
         local fname = chosen_path:match("([^/\\]+)$") or chosen_path
         current_filename = fname
         current_note_file = fname
+        sync_window_note_base_dir(chosen_path)
         editor_epoch = editor_epoch + 1
         just_formatted = true
         save_status_msg = "Loaded: " .. fname
@@ -761,6 +772,7 @@ local function save_note_to_full_path(save_path)
         local fname = save_path:match("([^/\\]+)$") or save_path
         current_filename = fname
         current_note_file = fname
+        sync_window_note_base_dir(save_path)
         save_status_msg = "Saved: " .. fname
         save_status_path = save_path
         save_status_time = os.time()
@@ -787,6 +799,7 @@ local function load_note(filename)
         f:close()
         current_filename = filename
         current_note_file = filename
+        sync_window_note_base_dir(nil)
         editor_epoch = editor_epoch + 1
         just_formatted = true
         save_status_msg = "Loaded: " .. filename
@@ -1052,6 +1065,18 @@ local function render_bottom_status_bar(avail_w)
         end
         if imgui.MenuItem("Insert Interactive Table") then
             wrap_or_insert("\n| Parameter | Value | Status |\n| :--- | :---: | :---: |\n| Engine 1 | Normal | <icon green check /> <badge green>OK</badge> |\n| Pitot Heat | Off | <icon orange warning /> <badge red>OFF</badge> |\n", "", "")
+            split.should_scroll = true
+        end
+        if imgui.MenuItem("Insert Note Callout (> [!NOTE])") then
+            wrap_or_insert("\n> [!NOTE]\n> ", "", "Operational briefing note\n", true)
+            split.should_scroll = true
+        end
+        if imgui.MenuItem("Insert Tip Callout (> [!TIP])") then
+            wrap_or_insert("\n> [!TIP]\n> ", "", "Procedure tip or shortcut\n", true)
+            split.should_scroll = true
+        end
+        if imgui.MenuItem("Insert Caution Callout (> [!CAUTION])") then
+            wrap_or_insert("\n> [!CAUTION]\n> ", "", "Critical safety or minima alert\n", true)
             split.should_scroll = true
         end
         imgui.Separator()

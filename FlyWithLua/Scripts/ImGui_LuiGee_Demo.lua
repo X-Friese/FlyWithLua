@@ -155,18 +155,19 @@ local function resize_window_to_zoom(target_zoom)
 end
 
 local about_luigee_markdown = [[# About FlyWithLua LuiGee
-<pill color=#f39c12>v1.0.0</pill> <badge green>Powered by ImGee</badge> <pill blue>FlyWithLua Phase 3</pill>
+<pill color=#f39c12>v1.1.0</pill> <badge green>Powered by ImGee</badge> <pill blue>ImgWindow v2.5</pill>
 
 **LuiGee** -- *The Lua Companion to ImGee* -- is the turnkey Dear ImGui avionics & flight-deck UI toolkit bundled with **FlyWithLua**.
 
-It brings physical avionics controls, intelligent stationary tooltips, CommonMark 4.1 Markdown, sized typography, and zero-disk texture services directly to Lua script authors without low-level C++ boilerplate.
+It brings physical avionics controls, intelligent stationary tooltips, CommonMark 4.1 Markdown, GFM callouts & floated figures, two-layer zoomable viewports, sized typography, and zero-disk texture services directly to Lua script authors without low-level C++ boilerplate.
 
 ---
 
 ### Key Capabilities:
 * **Tactile Avionics Widgets:** Animated toggle switches, rotary dials, mouse-wheel stepped sliders/drags/combos with 1-click Reset/Undo memory, and upward-blossoming pulldown selectors.
 * **Smart Typography:** Inline sized text tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`, `imgui.BoldItalicText`), and dynamic multi-size font scaling.
-* **CommonMark 4.1 & GFM Tables:** Turnkey Markdown rendering with header anchors, drag-resizable data tables, inline status pills, release badges, keyboard shortcuts (`<kbd>`), and fenced code blocks with copy buttons.
+* **CommonMark 4.1, GFM Tables & Callout Cards:** Native blockquotes and all 5 GFM callout cards (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), drag-resizable sortable data tables, text-wrapping floated images (`float=left|right`), captions, and in-context modal lightboxes.
+* **Two-Layer Zoomable Viewports:** `imgui.BeginZoomedViewport` + `imgui.ZoomViewportControls` keep header/footer chrome crisp at 1.0x while scaling scrollable inner document bodies from 50% to 250% via `Ctrl`/`Cmd + MouseWheel`.
 * **Stationary Adaptive Tooltips:** `imgui.TimedTooltip` provides jitter-free hover documentation with reading-delay adaptation and embedded Markdown.
 * **In-Memory Image Service:** Render raw compressed image bytes (PNG/JPEG) directly into GPU VRAM with zero temporary files and zero disk I/O.
 * **Proportional Canvas Zoom:** Seamlessly scale font sizes and window geometry from 50% to 200% with exact baseline preservation.
@@ -240,6 +241,43 @@ function luigee_demo_on_close(wnd)
     hide_luigee_demo()
 end
 
+-- Live In-Sim User Guide Window (powered by prefab ImgDocWindow / imgui.DocWindow)
+local luigee_guide_wnd = nil
+
+function open_luigee_user_guide()
+    if not imgui.DocWindow or not imgui.DocWindow.Create then
+        if imgui.OpenDocument then
+            imgui.OpenDocument("Resources/plugins/FlyWithLua/Documentation/FlyWithLua_LuiGee_UX_Guide.pdf")
+        end
+        return
+    end
+    if not luigee_guide_wnd then
+        luigee_guide_wnd = imgui.DocWindow.Create({
+            title   = "FlyWithLua LuiGee UX Guide",
+            file    = "Documentation/FlyWithLua_LuiGee_UX_Guide.md",
+            pdf     = "Documentation/FlyWithLua_LuiGee_UX_Guide.pdf",
+            width   = 860,
+            height  = 720,
+            opacity = 0.90,
+            visible = true,
+        })
+    else
+        imgui.DocWindow.Show(luigee_guide_wnd)
+    end
+end
+
+function toggle_luigee_user_guide()
+    if not imgui.DocWindow or not imgui.DocWindow.Create then
+        open_luigee_user_guide()
+        return
+    end
+    if not luigee_guide_wnd then
+        open_luigee_user_guide()
+    else
+        imgui.DocWindow.Toggle(luigee_guide_wnd)
+    end
+end
+
 -- Command & Macro Menu Registration (Never pops up at startup uninvited)
 create_command(
     "FlyWithLua/LuiGee/toggle",
@@ -249,7 +287,16 @@ create_command(
     ""
 )
 
+create_command(
+    "FlyWithLua/LuiGee/toggle_guide",
+    "Toggle FlyWithLua LuiGee Live User Guide window",
+    "toggle_luigee_user_guide()",
+    "",
+    ""
+)
+
 add_macro("FlyWithLua: LuiGee Modern UI Demo", "command_once('FlyWithLua/LuiGee/toggle')")
+add_macro("FlyWithLua: LuiGee User Guide (Live Manual)", "command_once('FlyWithLua/LuiGee/toggle_guide')")
 
 -- Configure responsive tooltips (~0.4s delay at 60fps instead of 1.1s)
 if imgui.TimedTooltip and imgui.TimedTooltip.SetHoverDelay then
@@ -296,6 +343,8 @@ local nav_source_idx        = 0  -- 0-based for SelectPulldown
 local nav_sources           = { "GPS 1 (Primary / WAAS)", "VOR 1 (114.70 OAK)", "LOC / ILS (Rwy 28R)", "FMS 1 (Internal RNAV)", "TACAN (Ch 47X)" }
 local nav_tooltips          = { "Garmin GPS 1 with SBAS/WAAS precision guidance", "Oakland VOR/DME 114.70 MHz", "Instrument Landing System Localizer", "Flight Management System lateral route", "Tactical Air Navigation tactical channel" }
 local selected_view_action  = "Cockpit 3D"
+local doc_vp_zoom           = { zoom = 1.0, min_zoom = 0.5, max_zoom = 2.5, border = true }
+local embedded_doc_state    = { zoom = 1.0, transparent_hud = false, theme_index = 0 }
 
 function luigee_demo_on_build(wnd, x, y)
     -- Synchronize active theme preset across FlyWithLua windows
@@ -374,6 +423,22 @@ function luigee_demo_on_build(wnd, x, y)
     end
     if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
         imgui.TimedTooltip.TextMD("**About LuiGee**\n\nView toolkit capabilities, version info, and architecture credits.")
+    end
+
+    if imgui.DocWindow and imgui.DocWindow.Create then
+        imgui.SameLine(0, 6)
+        local guide_clicked = false
+        if imgui.SmallButton then
+            guide_clicked = imgui.SmallButton("User Guide##btn_live_guide")
+        else
+            guide_clicked = imgui.Button("User Guide##btn_live_guide")
+        end
+        if guide_clicked then
+            open_luigee_user_guide()
+        end
+        if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
+            imgui.TimedTooltip.TextMD("**Open Live In-Sim User Guide (`ImgDocWindow`)**\n\nOpens `FlyWithLua_LuiGee_UX_Guide.md` directly inside X-Plane with TOC section jumping, 2x Retina floated figures, zoom/pan lightboxes, opacity & theme controls.")
+        end
     end
 
     imgui.SameLine(0, 6)
@@ -927,6 +992,31 @@ if qnh < 29.92 then set_altimeter_std() end
                 imgui.Unindent(40)
             end
 
+            imgui.Spacing()
+            if imgui.CollapsingHeader("Blockquotes, GFM Callout Cards & Floated Figures (v1.1)", 32) then
+                imgui.MD.TextWrapped([=[
+> **Standard Blockquote:** Clearance delivery on `121.75 MHz` -- advise receipt of Information **BRAVO** on initial contact.
+> > **Nested Quote:** Read back runway assignment and initial altitude verbatim.
+
+> [!NOTE]
+> Relative Markdown image paths automatically resolve against the owning script's subfolder (`GetWindowBaseDir`) with zero configuration.
+
+> [!TIP]
+> Hold <kbd>Ctrl</kbd> (or <kbd>Cmd</kbd> on macOS) + Mouse Wheel inside a `ZoomableViewport` to scale briefing documents smoothly.
+
+> [!IMPORTANT]
+> Cross-check barometric altimeters (`29.92 inHg` / `1013 hPa`) passing transition altitude.
+
+> [!WARNING]
+> Pitot heat must be **ON** prior to entering visible moisture below `+10 C` RAT.
+
+> [!CAUTION]
+> Terrain closure alert -- verify minimum safe altitude before descending below `4,000 ft MSL`.
+
+<img src="avionics_beacon" width="32" height="32" float="left" lightbox /> **Text-Wrapping Floated Figure (`float="left" lightbox`):** Paragraph lines wrap cleanly beside the floated beacon texture and reclaim full column width beneath it. Click the icon to open its high-contrast in-context lightbox!
+]=])
+            end
+
             if imgui.EndChild then imgui.EndChild() end
             end
             imgui.EndTabItem()
@@ -1203,15 +1293,19 @@ if qnh < 29.92 then set_altimeter_std() end
                 imgui.Spacing()
                 imgui.TextUnformatted("Procedural Vector Icons:")
                 imgui.SameLine()
-                imgui.Icon("plane", 16, "#5dade2", "Aircraft vector glyph")
+                imgui.Icon("plane", 16, "#5dade2", "Aircraft vector glyph (click to pin/dismiss tooltip)")
                 imgui.SameLine()
                 imgui.Icon("compass", 16, "#48c9b0", "Heading / Navigation glyph")
                 imgui.SameLine()
                 imgui.Icon("gear", 16, nil, "Settings / Systems glyph")
                 imgui.SameLine()
-                imgui.Icon("check", 16, "#2ecc71", "Normal / Verified glyph")
+                imgui.Icon("lightbulb", 16, "#2ecc71", "Tip / Lightbulb glyph")
                 imgui.SameLine()
-                imgui.Icon("warning", 16, "#f39c12", "Caution glyph")
+                imgui.Icon("important", 16, "#a569bd", "Important / Report glyph")
+                imgui.SameLine()
+                imgui.Icon("warning", 16, "#f39c12", "Warning triangle glyph")
+                imgui.SameLine()
+                imgui.Icon("caution", 16, "#e74c3c", "Caution octagon glyph")
                 imgui.SameLine()
                 imgui.Icon("star", 16, "#f1c40f", "Favorite / Preset glyph")
             end
@@ -1576,6 +1670,60 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
 ]])
             end
 
+            if imgui.BeginZoomedViewport and imgui.ZoomViewportControls then
+                imgui.Spacing()
+                -- 6. Two-Layer Zoomable Viewport
+                if imgui.CollapsingHeader("6. Two-Layer Zoomable Viewport (BeginZoomedViewport)", 32) then
+                    imgui.AlignTextToFramePadding()
+                    imgui.TextUnformatted("1.0x Fixed Toolbar Chrome:")
+                    imgui.SameLine()
+                    imgui.ZoomViewportControls(doc_vp_zoom, "##demo_doc_vp")
+                    imgui.TimedTooltip.Text("Click [-] / [+] or [100%] A/B toggle, or hold Ctrl/Cmd + MouseWheel inside the viewport below.")
+
+                    if imgui.BeginZoomedViewport("##DemoZoomBody", doc_vp_zoom, 0, 170) then
+                        imgui.MD.TextWrapped("### Scrollable Zoomed Briefing Viewport\n" ..
+                            "Header controls stay at **1.0x** while this inner child scales smoothly (`" ..
+                            tostring(doc_vp_zoom.zoom_percent or 100) .. "%%`).\n\n" ..
+                            "> [!TIP]\n" ..
+                            "> Hold <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> and roll the mouse wheel right over this card!")
+                    end
+                    imgui.EndZoomedViewport()
+                end
+            end
+
+            if imgui.DocumentViewer and imgui.DocWindow then
+                imgui.Spacing()
+                -- 7. Turnkey In-Sim Manual Viewer (DocViewer & DocWindow)
+                if imgui.CollapsingHeader("7. Turnkey In-Sim Manual Viewer (DocViewer & DocWindow)", 32) then
+                    imgui.MD.TextWrapped("Open full illustrated Markdown manuals in a prefab glass X-Plane window (`imgui.DocWindow.Create`) or embed `imgui.DocumentViewer` directly inside any panel:")
+                    if imgui.ButtonIcon then
+                        if imgui.ButtonIcon("Open Illustrated LuiGee UX Guide Window", "external-link") then
+                            open_luigee_user_guide()
+                        end
+                    elseif imgui.Button("Open Illustrated LuiGee UX Guide Window") then
+                        open_luigee_user_guide()
+                    end
+                    imgui.TimedTooltip.TextMD("Launches `Documentation/FlyWithLua_LuiGee_UX_Guide.md` in a dedicated `ImgDocWindow` with TOC jump, opacity, themes, and Retina lightboxes.")
+
+                    imgui.Spacing()
+                    local sample_manual = [=[# Mini Approach Manual
+## 1. Lateral Guidance
+Verify **LOC** frequency and course inbound prior to final approach fix.
+
+> [!NOTE]
+> Click the **Section** pulldown above or `[Jump to Missed Approach](#2-missed-approach)` to test internal `#slug` anchor scrolling!
+
+## 2. Missed Approach
+Climb straight ahead to `4,000 ft MSL`, then turn right heading `280` to intercept radial.
+]=]
+                    imgui.DocumentViewer("##EmbeddedMiniDoc", sample_manual, embedded_doc_state, {
+                        title = "Embedded DocumentViewer",
+                        show_opacity_controls = false,
+                        show_theme_picker = false,
+                    }, 0, 260)
+                end
+            end
+
             if imgui.EndChild then imgui.EndChild() end
             end
             imgui.EndTabItem()
@@ -1606,6 +1754,13 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
         imgui.Separator()
         if imgui.Button("  Close  ", 100, 0) then
             imgui.CloseCurrentPopup()
+        end
+        if imgui.DocWindow and imgui.DocWindow.Create then
+            imgui.SameLine()
+            if imgui.Button("  Open Live User Guide  ", 190, 0) then
+                imgui.CloseCurrentPopup()
+                open_luigee_user_guide()
+            end
         end
         imgui.EndPopup()
     end

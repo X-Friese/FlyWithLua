@@ -1,5 +1,7 @@
 #include "FWLImGeeBindings.h"
+#include "FWLIntegration.h"
 #include "FlyWithLuaWindow.h"
+#include "FWLDocWindow.h"
 #include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
 #include "imgui.h"
@@ -11,6 +13,7 @@
 #include <unordered_map>
 #include <cstdlib>
 #include <cctype>
+#include <cstdint>
 #include <sys/stat.h>
 
 #include "XPLMUtilities.h"
@@ -322,6 +325,41 @@ static void FWLMarkdownTooltipCallback(ImGui::MarkdownTooltipCallbackData data) 
 
 static ImGui::TimedTooltip::TooltipConfig s_FWLTooltipConfig;
 static bool s_FWLTooltipConfigInitialized = false;
+static ImGui::MarkdownConfig s_FWLMarkdownConfig;
+static std::string s_GlobalMarkdownBaseDir;
+static bool s_HasGlobalMarkdownBaseDir = false;
+static const char* s_ActiveWindowAutoBaseDir = nullptr;
+static const char* s_ActiveWindowExplicitBaseDir = nullptr;
+
+static void RefreshEffectiveMarkdownBaseDir() {
+    if (s_ActiveWindowExplicitBaseDir != nullptr) {
+        s_FWLMarkdownConfig.baseDir = (s_ActiveWindowExplicitBaseDir[0] != '\0') ? s_ActiveWindowExplicitBaseDir : nullptr;
+    } else if (s_HasGlobalMarkdownBaseDir) {
+        s_FWLMarkdownConfig.baseDir = s_GlobalMarkdownBaseDir.empty() ? nullptr : s_GlobalMarkdownBaseDir.c_str();
+    } else if (s_ActiveWindowAutoBaseDir != nullptr && s_ActiveWindowAutoBaseDir[0] != '\0') {
+        s_FWLMarkdownConfig.baseDir = s_ActiveWindowAutoBaseDir;
+    } else {
+        s_FWLMarkdownConfig.baseDir = nullptr;
+    }
+}
+
+ScopedMarkdownWindowBaseDir::ScopedMarkdownWindowBaseDir(const char* auto_base_dir, const char* explicit_base_dir)
+    : m_prev_base_dir(s_FWLMarkdownConfig.baseDir)
+{
+    s_ActiveWindowAutoBaseDir = auto_base_dir;
+    s_ActiveWindowExplicitBaseDir = explicit_base_dir;
+    RefreshEffectiveMarkdownBaseDir();
+}
+
+ScopedMarkdownWindowBaseDir::~ScopedMarkdownWindowBaseDir() {
+    s_ActiveWindowAutoBaseDir = nullptr;
+    s_ActiveWindowExplicitBaseDir = nullptr;
+    if (s_HasGlobalMarkdownBaseDir) {
+        s_FWLMarkdownConfig.baseDir = s_GlobalMarkdownBaseDir.empty() ? nullptr : s_GlobalMarkdownBaseDir.c_str();
+    } else {
+        s_FWLMarkdownConfig.baseDir = m_prev_base_dir;
+    }
+}
 
 static ImGui::TimedTooltip::TooltipConfig& GetFWLTooltipConfig() {
     if (!s_FWLTooltipConfigInitialized) {
@@ -333,8 +371,6 @@ static ImGui::TimedTooltip::TooltipConfig& GetFWLTooltipConfig() {
 }
 
 void UpdateImGeeMarkdownFonts() {
-    static ImGui::MarkdownConfig s_FWLMarkdownConfig;
-
     ImFont* h1 = flywithlua::GetFontByName("Roboto-Medium-20");
     if (!h1) h1 = flywithlua::GetFontByName("Roboto-Medium");
     if (!h1) h1 = flywithlua::GetDefaultFont();
@@ -492,6 +528,158 @@ static int LuaMarkdownTextLink(lua_State* L) {
     // Preserve unconsumed click-to-toggle state unless caller passed a bare URL handled elsewhere
     lua_pushboolean(L, res.clicked);
     return 1;
+}
+
+static int LuaMarkdownSetBaseDir(lua_State* L) {
+    if (lua_gettop(L) < 1 || lua_isnil(L, 1)) {
+        s_GlobalMarkdownBaseDir.clear();
+        s_HasGlobalMarkdownBaseDir = false;
+    } else {
+        const char* dir = luaL_checkstring(L, 1);
+        s_GlobalMarkdownBaseDir = dir ? dir : "";
+        s_HasGlobalMarkdownBaseDir = true;
+    }
+    RefreshEffectiveMarkdownBaseDir();
+    return 0;
+}
+
+static int LuaMarkdownGetBaseDir(lua_State* L) {
+    if (s_FWLMarkdownConfig.baseDir && s_FWLMarkdownConfig.baseDir[0] != '\0') {
+        lua_pushstring(L, s_FWLMarkdownConfig.baseDir);
+    } else if (s_HasGlobalMarkdownBaseDir && !s_GlobalMarkdownBaseDir.empty()) {
+        lua_pushstring(L, s_GlobalMarkdownBaseDir.c_str());
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int LuaMarkdownSetWindowBaseDir(lua_State* L) {
+    if (!lua_islightuserdata(L, 1)) {
+        return luaL_error(L, "SetWindowBaseDir: expected floating window handle as argument 1");
+    }
+    flwnd::FloatingWindow* wnd = flwnd::GetValidFloatingWindow(lua_touserdata(L, 1));
+    auto* fwlWnd = dynamic_cast<flwnd::FlyWithLuaWindow*>(wnd);
+    if (!fwlWnd) {
+        return 0;
+    }
+    if (lua_gettop(L) < 2 || lua_isnil(L, 2)) {
+        fwlWnd->clearExplicitMarkdownBaseDir();
+        if (s_ActiveWindowExplicitBaseDir != nullptr) {
+            s_ActiveWindowExplicitBaseDir = nullptr;
+            RefreshEffectiveMarkdownBaseDir();
+        }
+    } else {
+        const char* dir = luaL_checkstring(L, 2);
+        fwlWnd->setExplicitMarkdownBaseDir(dir ? dir : "");
+        if (s_ActiveWindowAutoBaseDir != nullptr || s_ActiveWindowExplicitBaseDir != nullptr) {
+            s_ActiveWindowExplicitBaseDir = fwlWnd->getExplicitMarkdownBaseDir().c_str();
+            RefreshEffectiveMarkdownBaseDir();
+        }
+    }
+    return 0;
+}
+
+static int LuaMarkdownGetWindowBaseDir(lua_State* L) {
+    if (!lua_islightuserdata(L, 1)) {
+        lua_pushnil(L);
+        return 1;
+    }
+    flwnd::FloatingWindow* wnd = flwnd::GetValidFloatingWindow(lua_touserdata(L, 1));
+    auto* fwlWnd = dynamic_cast<flwnd::FlyWithLuaWindow*>(wnd);
+    if (!fwlWnd) {
+        lua_pushnil(L);
+        return 1;
+    }
+    if (fwlWnd->hasExplicitMarkdownBaseDir()) {
+        if (fwlWnd->getExplicitMarkdownBaseDir().empty()) lua_pushnil(L);
+        else lua_pushstring(L, fwlWnd->getExplicitMarkdownBaseDir().c_str());
+    } else if (!fwlWnd->getAutoMarkdownBaseDir().empty()) {
+        lua_pushstring(L, fwlWnd->getAutoMarkdownBaseDir().c_str());
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int LuaMarkdownSetShowImageCaptions(lua_State* L) {
+    s_FWLMarkdownConfig.showImageCaptions = (lua_gettop(L) < 1) ? true : (lua_toboolean(L, 1) != 0);
+    return 0;
+}
+
+static int LuaMarkdownGetShowImageCaptions(lua_State* L) {
+    lua_pushboolean(L, s_FWLMarkdownConfig.showImageCaptions);
+    return 1;
+}
+
+static int LuaMarkdownSetEnableImageLightbox(lua_State* L) {
+    s_FWLMarkdownConfig.enableImageLightbox = (lua_gettop(L) < 1) ? true : (lua_toboolean(L, 1) != 0);
+    return 0;
+}
+
+static int LuaMarkdownGetEnableImageLightbox(lua_State* L) {
+    lua_pushboolean(L, s_FWLMarkdownConfig.enableImageLightbox);
+    return 1;
+}
+
+static int LuaMarkdownSetEnableTableTooltips(lua_State* L) {
+    s_FWLMarkdownConfig.enableTableTooltips = (lua_gettop(L) < 1) ? true : (lua_toboolean(L, 1) != 0);
+    return 0;
+}
+
+static int LuaMarkdownGetEnableTableTooltips(lua_State* L) {
+    lua_pushboolean(L, s_FWLMarkdownConfig.enableTableTooltips);
+    return 1;
+}
+
+static int LuaMarkdownSetShowCodeCopyButton(lua_State* L) {
+    s_FWLMarkdownConfig.showCodeCopyButton = (lua_gettop(L) < 1) ? true : (lua_toboolean(L, 1) != 0);
+    return 0;
+}
+
+static int LuaMarkdownGetShowCodeCopyButton(lua_State* L) {
+    lua_pushboolean(L, s_FWLMarkdownConfig.showCodeCopyButton);
+    return 1;
+}
+
+static int LuaMarkdownConfigure(lua_State* L) {
+    luaL_checktype(L, 1, LUA_TTABLE);
+    lua_getfield(L, 1, "base_dir");
+    if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        lua_getfield(L, 1, "baseDir");
+    }
+    if (lua_isstring(L, -1)) {
+        s_GlobalMarkdownBaseDir = lua_tostring(L, -1);
+        s_HasGlobalMarkdownBaseDir = true;
+        RefreshEffectiveMarkdownBaseDir();
+    }
+    lua_pop(L, 1);
+
+    auto readBoolOpt = [&](const char* k1, const char* k2, bool& target) {
+        lua_getfield(L, 1, k1);
+        if (lua_isnil(L, -1) && k2) {
+            lua_pop(L, 1);
+            lua_getfield(L, 1, k2);
+        }
+        if (lua_isboolean(L, -1)) {
+            target = (lua_toboolean(L, -1) != 0);
+        }
+        lua_pop(L, 1);
+    };
+    readBoolOpt("show_image_captions", "showImageCaptions", s_FWLMarkdownConfig.showImageCaptions);
+    readBoolOpt("enable_image_lightbox", "enableImageLightbox", s_FWLMarkdownConfig.enableImageLightbox);
+    readBoolOpt("enable_table_tooltips", "enableTableTooltips", s_FWLMarkdownConfig.enableTableTooltips);
+    readBoolOpt("show_code_copy_button", "showCodeCopyButton", s_FWLMarkdownConfig.showCodeCopyButton);
+    return 0;
+}
+
+static int LuaMarkdownClearImageCache(lua_State* L) {
+    (void)L;
+#if defined(IMGUI_MARKDOWN_IMAGE_SERVICE_H)
+    ImGui::MarkdownImageService::ClearTextureCache();
+#endif
+    return 0;
 }
 
 // Markdown Tag Registry & Dynamic Callback Management
@@ -2581,6 +2769,760 @@ static int LuaOpenDocument(lua_State* L) {
     return 1;
 }
 
+// ----------------------------------------------------------------------------
+// 16. Two-Layer Zoomable Viewport (imgui_zoomable_viewport.h)
+// ----------------------------------------------------------------------------
+
+#if defined(IMGUI_ZOOMABLE_VIEWPORT_H)
+struct ActiveLuaZoomViewport {
+    ImGui::ZoomableViewportState* state = nullptr;
+    int lua_table_ref = LUA_NOREF;
+};
+
+static std::unordered_map<uintptr_t, ImGui::ZoomableViewportState> s_TableViewportStates;
+static std::unordered_map<std::string, ImGui::ZoomableViewportState> s_NamedViewportStates;
+static std::vector<ActiveLuaZoomViewport> s_ActiveLuaZoomViewports;
+
+static void SyncLuaTableToViewportState(lua_State* L, int idx, ImGui::ZoomableViewportState& st) {
+    int abs_idx = (idx < 0) ? (lua_gettop(L) + idx + 1) : idx;
+    if (!lua_istable(L, abs_idx)) return;
+
+    auto readFloat = [&](const char* k, float& dst) {
+        lua_getfield(L, abs_idx, k);
+        if (lua_type(L, -1) == LUA_TNUMBER) dst = static_cast<float>(lua_tonumber(L, -1));
+        lua_pop(L, 1);
+    };
+    auto readBool = [&](const char* k, bool& dst) {
+        lua_getfield(L, abs_idx, k);
+        if (lua_isboolean(L, -1)) dst = (lua_toboolean(L, -1) != 0);
+        lua_pop(L, 1);
+    };
+
+    readFloat("zoom", st.zoom);
+    readFloat("default_zoom", st.default_zoom);
+    readFloat("last_zoom", st.last_zoom);
+    readFloat("min_zoom", st.min_zoom);
+    readFloat("max_zoom", st.max_zoom);
+    readFloat("wheel_step", st.wheel_step);
+    readFloat("button_step", st.button_step);
+    readBool("enable_ctrl_wheel", st.enable_ctrl_wheel);
+    readBool("border", st.border);
+
+    lua_getfield(L, abs_idx, "content_padding");
+    if (lua_type(L, -1) == LUA_TNUMBER) {
+        float pad = static_cast<float>(lua_tonumber(L, -1));
+        st.content_padding = ImVec2(pad, pad);
+    } else if (lua_istable(L, -1)) {
+        lua_rawgeti(L, -1, 1);
+        float px = lua_isnumber(L, -1) ? static_cast<float>(lua_tonumber(L, -1)) : -1.0f;
+        lua_pop(L, 1);
+        lua_rawgeti(L, -1, 2);
+        float py = lua_isnumber(L, -1) ? static_cast<float>(lua_tonumber(L, -1)) : -1.0f;
+        lua_pop(L, 1);
+        st.content_padding = ImVec2(px, py);
+    }
+    lua_pop(L, 1);
+}
+
+static void SyncViewportStateToLuaTable(lua_State* L, int idx, const ImGui::ZoomableViewportState& st) {
+    int abs_idx = (idx < 0) ? (lua_gettop(L) + idx + 1) : idx;
+    if (!lua_istable(L, abs_idx)) return;
+    lua_pushnumber(L, st.zoom);              lua_setfield(L, abs_idx, "zoom");
+    lua_pushnumber(L, st.last_zoom);         lua_setfield(L, abs_idx, "last_zoom");
+    lua_pushinteger(L, st.GetZoomPercent()); lua_setfield(L, abs_idx, "zoom_percent");
+}
+
+static ImGui::ZoomableViewportState* ResolveLuaViewportState(lua_State* L, int idx, const char* fallback_id) {
+    int abs_idx = (idx < 0) ? (lua_gettop(L) + idx + 1) : idx;
+    if (abs_idx >= 1 && abs_idx <= lua_gettop(L)) {
+        if (lua_istable(L, abs_idx)) {
+            uintptr_t key = reinterpret_cast<uintptr_t>(lua_topointer(L, abs_idx));
+            ImGui::ZoomableViewportState& st = s_TableViewportStates[key];
+            SyncLuaTableToViewportState(L, abs_idx, st);
+            return &st;
+        }
+        if (lua_type(L, abs_idx) == LUA_TSTRING) {
+            const char* id = lua_tostring(L, abs_idx);
+            return &s_NamedViewportStates[id ? id : "##default_zoom_vp"];
+        }
+    }
+    return &s_NamedViewportStates[fallback_id ? fallback_id : "##default_zoom_vp"];
+}
+
+static int LuaBeginZoomedViewport(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* str_id = luaL_checkstring(L, 1);
+    ImGui::ZoomableViewportState* st = nullptr;
+    int tbl_ref = LUA_NOREF;
+    int size_idx = 3;
+
+    if (top >= 2 && lua_istable(L, 2)) {
+        st = ResolveLuaViewportState(L, 2, str_id);
+        lua_pushvalue(L, 2);
+        tbl_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+        size_idx = 3;
+    } else if (top >= 2 && lua_type(L, 2) == LUA_TNUMBER) {
+        st = &s_NamedViewportStates[str_id ? str_id : "##default_zoom_vp"];
+        size_idx = 2;
+    } else {
+        st = &s_NamedViewportStates[str_id ? str_id : "##default_zoom_vp"];
+        size_idx = 3;
+    }
+
+    float w = 0.0f, h = 0.0f;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar;
+    if (top >= size_idx) {
+        if (lua_istable(L, size_idx)) {
+            lua_rawgeti(L, size_idx, 1); w = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L, 1);
+            lua_rawgeti(L, size_idx, 2); h = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L, 1);
+            if (top >= size_idx + 1 && lua_isnumber(L, size_idx + 1)) {
+                flags = static_cast<ImGuiWindowFlags>(lua_tointeger(L, size_idx + 1));
+            }
+        } else if (lua_isnumber(L, size_idx)) {
+            w = static_cast<float>(lua_tonumber(L, size_idx));
+            if (top >= size_idx + 1 && lua_isnumber(L, size_idx + 1)) {
+                h = static_cast<float>(lua_tonumber(L, size_idx + 1));
+            }
+            if (top >= size_idx + 2 && lua_isnumber(L, size_idx + 2)) {
+                flags = static_cast<ImGuiWindowFlags>(lua_tointeger(L, size_idx + 2));
+            }
+        }
+    }
+
+    bool visible = ImGui::BeginZoomedViewport(str_id, *st, ImVec2(w, h), flags);
+    if (tbl_ref != LUA_NOREF && lua_istable(L, 2)) {
+        SyncViewportStateToLuaTable(L, 2, *st);
+    }
+    ActiveLuaZoomViewport active;
+    active.state = st;
+    active.lua_table_ref = tbl_ref;
+    s_ActiveLuaZoomViewports.push_back(active);
+
+    lua_pushboolean(L, visible);
+    lua_pushnumber(L, st->zoom);
+    return 2;
+}
+
+static int LuaEndZoomedViewport(lua_State* L) {
+    if (!s_ActiveLuaZoomViewports.empty()) {
+        ActiveLuaZoomViewport active = s_ActiveLuaZoomViewports.back();
+        s_ActiveLuaZoomViewports.pop_back();
+        if (active.state) {
+            ImGui::EndZoomedViewport(*active.state);
+            if (active.lua_table_ref != LUA_NOREF) {
+                lua_rawgeti(L, LUA_REGISTRYINDEX, active.lua_table_ref);
+                if (lua_istable(L, -1)) {
+                    SyncViewportStateToLuaTable(L, -1, *active.state);
+                }
+                lua_pop(L, 1);
+                luaL_unref(L, LUA_REGISTRYINDEX, active.lua_table_ref);
+            }
+        } else {
+            ImGui::EndZoomedViewport();
+        }
+    } else {
+        ImGui::EndZoomedViewport();
+    }
+    return 0;
+}
+
+static int LuaZoomViewportControls(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* id_suffix = (top >= 2 && lua_type(L, 2) == LUA_TSTRING) ? lua_tostring(L, 2) : "##imgee_zoom_ctrl";
+    ImGui::ZoomableViewportState* st = ResolveLuaViewportState(L, 1, id_suffix);
+    bool changed = ImGui::ZoomViewportControls(*st, id_suffix);
+    if (top >= 1 && lua_istable(L, 1)) {
+        SyncViewportStateToLuaTable(L, 1, *st);
+    }
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, st->zoom);
+    return 2;
+}
+
+static int LuaSetViewportZoom(lua_State* L) {
+    float target = static_cast<float>(luaL_checknumber(L, 2));
+    ImGui::ZoomableViewportState* st = ResolveLuaViewportState(L, 1, "##default_zoom_vp");
+    bool changed = ImGui::SetViewportZoom(*st, target);
+    if (lua_istable(L, 1)) SyncViewportStateToLuaTable(L, 1, *st);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, st->zoom);
+    return 2;
+}
+
+static int LuaStepViewportZoom(lua_State* L) {
+    float delta = static_cast<float>(luaL_checknumber(L, 2));
+    ImGui::ZoomableViewportState* st = ResolveLuaViewportState(L, 1, "##default_zoom_vp");
+    bool changed = ImGui::StepViewportZoom(*st, delta);
+    if (lua_istable(L, 1)) SyncViewportStateToLuaTable(L, 1, *st);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, st->zoom);
+    return 2;
+}
+
+static int LuaResetViewportZoom(lua_State* L) {
+    bool allow_undo = (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) ? (lua_toboolean(L, 2) != 0) : false;
+    ImGui::ZoomableViewportState* st = ResolveLuaViewportState(L, 1, "##default_zoom_vp");
+    bool changed = ImGui::ResetViewportZoom(*st, allow_undo);
+    if (lua_istable(L, 1)) SyncViewportStateToLuaTable(L, 1, *st);
+    lua_pushboolean(L, changed);
+    lua_pushnumber(L, st->zoom);
+    return 2;
+}
+#endif // IMGUI_ZOOMABLE_VIEWPORT_H
+
+// ----------------------------------------------------------------------------
+// 17. Standalone DocumentViewer & Turnkey ImgDocWindow (imgui_doc_viewer.h / ImgDocWindow.h)
+// ----------------------------------------------------------------------------
+
+#if defined(IMGUI_DOC_VIEWER_H)
+static std::unordered_map<uintptr_t, ImGui::DocumentViewerState> s_TableDocViewerStates;
+static std::unordered_map<std::string, ImGui::DocumentViewerState> s_NamedDocViewerStates;
+
+static std::string GetCallerLuaScriptDir(lua_State* L) {
+    for (int lvl = 1; lvl <= 4; ++lvl) {
+        lua_Debug ar = {};
+        if (lua_getstack(L, lvl, &ar) != 0 && lua_getinfo(L, "S", &ar) != 0) {
+            if (ar.source != nullptr && ar.source[0] == '@') {
+                std::string src(ar.source + 1);
+                size_t sep = src.find_last_of("/\\");
+                if (sep != std::string::npos) {
+                    return src.substr(0, sep + 1);
+                }
+            }
+        }
+    }
+    lua_getglobal(L, "SCRIPT_DIRECTORY");
+    std::string fallback;
+    if (lua_isstring(L, -1)) {
+        fallback = lua_tostring(L, -1);
+    }
+    lua_pop(L, 1);
+    return fallback;
+}
+
+static void SyncLuaTableToDocViewerState(lua_State* L, int idx, ImGui::DocumentViewerState& st) {
+    int abs_idx = (idx < 0) ? (lua_gettop(L) + idx + 1) : idx;
+    if (!lua_istable(L, abs_idx)) return;
+
+    auto readFloat = [&](const char* k, float& dst) {
+        lua_getfield(L, abs_idx, k);
+        if (lua_type(L, -1) == LUA_TNUMBER) dst = static_cast<float>(lua_tonumber(L, -1));
+        lua_pop(L, 1);
+    };
+    auto readInt = [&](const char* k, int& dst) {
+        lua_getfield(L, abs_idx, k);
+        if (lua_type(L, -1) == LUA_TNUMBER) dst = static_cast<int>(lua_tointeger(L, -1));
+        lua_pop(L, 1);
+    };
+    auto readBool = [&](const char* k, bool& dst) {
+        lua_getfield(L, abs_idx, k);
+        if (lua_isboolean(L, -1)) dst = (lua_toboolean(L, -1) != 0);
+        lua_pop(L, 1);
+    };
+
+    readFloat("zoom", st.viewport.zoom);
+    readFloat("default_zoom", st.viewport.default_zoom);
+    readFloat("last_zoom", st.viewport.last_zoom);
+    readFloat("min_zoom", st.viewport.min_zoom);
+    readFloat("max_zoom", st.viewport.max_zoom);
+    readFloat("wheel_step", st.viewport.wheel_step);
+    readFloat("button_step", st.viewport.button_step);
+    readBool("border", st.viewport.border);
+
+    readInt("theme_index", st.theme_index);
+    readBool("transparent_hud", st.transparent_hud);
+    readFloat("window_opacity", st.window_opacity);
+    readBool("dynamic_cursors_enabled", st.dynamic_cursors_enabled);
+    readBool("is_open", st.is_open);
+}
+
+static void SyncDocViewerStateToLuaTable(lua_State* L, int idx, const ImGui::DocumentViewerState& st) {
+    int abs_idx = (idx < 0) ? (lua_gettop(L) + idx + 1) : idx;
+    if (!lua_istable(L, abs_idx)) return;
+    lua_pushnumber(L, st.viewport.zoom);      lua_setfield(L, abs_idx, "zoom");
+    lua_pushnumber(L, st.viewport.last_zoom); lua_setfield(L, abs_idx, "last_zoom");
+    lua_pushinteger(L, static_cast<int>(std::round(st.viewport.zoom * 100.0f))); lua_setfield(L, abs_idx, "zoom_percent");
+    lua_pushinteger(L, st.theme_index);       lua_setfield(L, abs_idx, "theme_index");
+    lua_pushboolean(L, st.transparent_hud);   lua_setfield(L, abs_idx, "transparent_hud");
+    lua_pushnumber(L, st.window_opacity);     lua_setfield(L, abs_idx, "window_opacity");
+    lua_pushboolean(L, st.dynamic_cursors_enabled); lua_setfield(L, abs_idx, "dynamic_cursors_enabled");
+    lua_pushboolean(L, st.is_open);           lua_setfield(L, abs_idx, "is_open");
+    lua_pushinteger(L, st.active_toc_index + 1); lua_setfield(L, abs_idx, "active_toc_index");
+    lua_pushnumber(L, st.last_scroll_y);      lua_setfield(L, abs_idx, "scroll_y");
+}
+
+static ImGui::DocumentViewerState* ResolveLuaDocViewerState(lua_State* L, int idx, const char* fallback_id) {
+    int abs_idx = (idx < 0) ? (lua_gettop(L) + idx + 1) : idx;
+    if (abs_idx >= 1 && abs_idx <= lua_gettop(L)) {
+        if (lua_istable(L, abs_idx)) {
+            uintptr_t key = reinterpret_cast<uintptr_t>(lua_topointer(L, abs_idx));
+            ImGui::DocumentViewerState& st = s_TableDocViewerStates[key];
+            SyncLuaTableToDocViewerState(L, abs_idx, st);
+            return &st;
+        }
+        if (lua_type(L, abs_idx) == LUA_TSTRING) {
+            const char* id = lua_tostring(L, abs_idx);
+            return &s_NamedDocViewerStates[id ? id : "##default_doc_viewer"];
+        }
+    }
+    return &s_NamedDocViewerStates[fallback_id ? fallback_id : "##default_doc_viewer"];
+}
+
+static int LuaDocumentViewer(lua_State* L) {
+    int top = lua_gettop(L);
+    const char* str_id = luaL_checkstring(L, 1);
+    size_t md_len = 0;
+    const char* md_text = luaL_checklstring(L, 2, &md_len);
+
+    ImGui::DocumentViewerState* st = nullptr;
+    bool has_state_tbl = false;
+    int cfg_idx = 0;
+    int size_idx = 0;
+
+    if (top >= 3 && lua_istable(L, 3)) {
+        st = ResolveLuaDocViewerState(L, 3, str_id);
+        has_state_tbl = true;
+        if (top >= 4 && lua_istable(L, 4)) {
+            cfg_idx = 4;
+            size_idx = 5;
+        } else if (top >= 4 && lua_isnil(L, 4)) {
+            size_idx = 5;
+        } else {
+            size_idx = 4;
+        }
+    } else if (top >= 3 && lua_isnil(L, 3)) {
+        st = &s_NamedDocViewerStates[str_id ? str_id : "##default_doc_viewer"];
+        if (top >= 4 && lua_istable(L, 4)) {
+            cfg_idx = 4;
+            size_idx = 5;
+        } else {
+            size_idx = 5;
+        }
+    } else {
+        st = &s_NamedDocViewerStates[str_id ? str_id : "##default_doc_viewer"];
+        size_idx = 3;
+    }
+
+    ImGui::DocumentViewerConfig cfg;
+    cfg.baseDir = s_FWLMarkdownConfig.baseDir;
+    std::string s_title, s_med_title, s_cmp_title, s_base_dir, s_pdf_path, s_footer_hint;
+
+    if (cfg_idx > 0 && lua_istable(L, cfg_idx)) {
+        auto readStr = [&](const char* k1, const char* k2, std::string& store, const char*& ptr) {
+            lua_getfield(L, cfg_idx, k1);
+            if (lua_isnil(L, -1) && k2) { lua_pop(L, 1); lua_getfield(L, cfg_idx, k2); }
+            if (lua_type(L, -1) == LUA_TSTRING) {
+                store = lua_tostring(L, -1);
+                ptr = store.c_str();
+            }
+            lua_pop(L, 1);
+        };
+        auto readBool = [&](const char* k1, const char* k2, bool& dst) {
+            lua_getfield(L, cfg_idx, k1);
+            if (lua_isnil(L, -1) && k2) { lua_pop(L, 1); lua_getfield(L, cfg_idx, k2); }
+            if (lua_isboolean(L, -1)) dst = (lua_toboolean(L, -1) != 0);
+            lua_pop(L, 1);
+        };
+        auto readFloat = [&](const char* k1, const char* k2, float& dst) {
+            lua_getfield(L, cfg_idx, k1);
+            if (lua_isnil(L, -1) && k2) { lua_pop(L, 1); lua_getfield(L, cfg_idx, k2); }
+            if (lua_type(L, -1) == LUA_TNUMBER) dst = static_cast<float>(lua_tonumber(L, -1));
+            lua_pop(L, 1);
+        };
+        auto readInt = [&](const char* k1, const char* k2, int& dst) {
+            lua_getfield(L, cfg_idx, k1);
+            if (lua_isnil(L, -1) && k2) { lua_pop(L, 1); lua_getfield(L, cfg_idx, k2); }
+            if (lua_type(L, -1) == LUA_TNUMBER) dst = static_cast<int>(lua_tointeger(L, -1));
+            lua_pop(L, 1);
+        };
+
+        readStr("title", nullptr, s_title, cfg.title);
+        readStr("medium_title", "mediumTitle", s_med_title, cfg.medium_title);
+        readStr("compact_title", "compactTitle", s_cmp_title, cfg.compact_title);
+        readStr("base_dir", "baseDir", s_base_dir, cfg.baseDir);
+        readStr("external_pdf_path", "externalPdfPath", s_pdf_path, cfg.externalPdfPath);
+        readStr("footer_hint", "footerHint", s_footer_hint, cfg.footerHint);
+
+        readBool("show_title_icon", "showTitleIcon", cfg.showTitleIcon);
+        readBool("enable_image_lightbox", "enableImageLightbox", cfg.enableImageLightbox);
+        readBool("show_image_captions", "showImageCaptions", cfg.showImageCaptions);
+        readBool("enable_table_tooltips", "enableTableTooltips", cfg.enableTableTooltips);
+        readInt("max_toc_heading_level", "maxTocHeadingLevel", cfg.maxTocHeadingLevel);
+        readFloat("toc_width", "tocWidth", cfg.tocWidth);
+        readBool("scale_row2_with_zoom", "scaleRow2WithZoom", cfg.scaleRow2WithZoom);
+        readBool("show_header_row1", "showHeaderRow1", cfg.showHeaderRow1);
+        readBool("show_header_row2", "showHeaderRow2", cfg.showHeaderRow2);
+        readBool("show_scroll_reset_button", "showScrollResetButton", cfg.showScrollResetButton);
+        readBool("show_opacity_controls", "showOpacityControls", cfg.showOpacityControls);
+        readBool("show_theme_picker", "showThemePicker", cfg.showThemePicker);
+        readBool("show_footer", "showFooter", cfg.showFooter);
+        readBool("show_footer_close_button", "showFooterCloseButton", cfg.showFooterCloseButton);
+        readBool("show_close_button", "showCloseButton", cfg.showCloseButton);
+    }
+
+    float w = 0.0f, h = 0.0f;
+    if (size_idx > 0 && top >= size_idx) {
+        if (lua_istable(L, size_idx)) {
+            lua_rawgeti(L, size_idx, 1); w = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L, 1);
+            lua_rawgeti(L, size_idx, 2); h = static_cast<float>(lua_tonumber(L, -1)); lua_pop(L, 1);
+        } else if (lua_isnumber(L, size_idx)) {
+            w = static_cast<float>(lua_tonumber(L, size_idx));
+            if (top >= size_idx + 1 && lua_isnumber(L, size_idx + 1)) {
+                h = static_cast<float>(lua_tonumber(L, size_idx + 1));
+            }
+        }
+    }
+
+    bool open = ImGui::DocumentViewer(str_id, md_text, md_len, *st, &cfg, ImVec2(w, h));
+    if (has_state_tbl) {
+        SyncDocViewerStateToLuaTable(L, 3, *st);
+    }
+    lua_pushboolean(L, open);
+    return 1;
+}
+
+static int LuaParseMarkdownToc(lua_State* L) {
+    size_t len = 0;
+    const char* md = luaL_checklstring(L, 1, &len);
+    int max_lvl = (lua_gettop(L) >= 2 && lua_isnumber(L, 2)) ? static_cast<int>(lua_tointeger(L, 2)) : 3;
+    std::vector<ImGui::DocumentTocEntry> toc;
+    std::string first_h1;
+    ImGui::ParseMarkdownToc(md, len, toc, max_lvl, &first_h1);
+
+    lua_newtable(L);
+    for (size_t i = 0; i < toc.size(); ++i) {
+        lua_newtable(L);
+        lua_pushinteger(L, toc[i].level);                 lua_setfield(L, -2, "level");
+        lua_pushstring(L, toc[i].title.c_str());          lua_setfield(L, -2, "title");
+        lua_pushstring(L, toc[i].display_label.c_str());  lua_setfield(L, -2, "display_label");
+        lua_pushstring(L, toc[i].slug.c_str());           lua_setfield(L, -2, "slug");
+        lua_pushinteger(L, static_cast<lua_Integer>(toc[i].byte_offset + 1)); lua_setfield(L, -2, "byte_offset");
+        lua_rawseti(L, -2, static_cast<int>(i + 1));
+    }
+    if (!first_h1.empty()) lua_pushstring(L, first_h1.c_str());
+    else lua_pushnil(L);
+    return 2;
+}
+
+static int LuaJumpToDocumentAnchor(lua_State* L) {
+    const char* slug = luaL_checkstring(L, 2);
+    ImGui::DocumentViewerState* st = ResolveLuaDocViewerState(L, 1, "##default_doc_viewer");
+    bool ok = ImGui::JumpToDocumentAnchor(*st, slug);
+    if (lua_istable(L, 1)) SyncDocViewerStateToLuaTable(L, 1, *st);
+    lua_pushboolean(L, ok);
+    return 1;
+}
+
+static int LuaJumpToDocumentHeading(lua_State* L) {
+    int idx_1based = static_cast<int>(luaL_checkinteger(L, 2));
+    ImGui::DocumentViewerState* st = ResolveLuaDocViewerState(L, 1, "##default_doc_viewer");
+    bool ok = ImGui::JumpToDocumentHeading(*st, idx_1based - 1);
+    if (lua_istable(L, 1)) SyncDocViewerStateToLuaTable(L, 1, *st);
+    lua_pushboolean(L, ok);
+    return 1;
+}
+
+static int LuaToggleDocumentScrollReset(lua_State* L) {
+    ImGui::DocumentViewerState* st = ResolveLuaDocViewerState(L, 1, "##default_doc_viewer");
+    bool changed = ImGui::ToggleDocumentScrollReset(*st);
+    if (lua_istable(L, 1)) SyncDocViewerStateToLuaTable(L, 1, *st);
+    lua_pushboolean(L, changed);
+    return 1;
+}
+
+static int LuaApplyDocumentViewerTheme(lua_State* L) {
+    int theme_idx = static_cast<int>(luaL_checkinteger(L, 1));
+    bool trans = (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) ? (lua_toboolean(L, 2) != 0) : false;
+    float opacity = (lua_gettop(L) >= 3 && lua_isnumber(L, 3)) ? static_cast<float>(lua_tonumber(L, 3)) : 0.80f;
+    ImGui::ApplyDocumentViewerTheme(theme_idx, trans, opacity);
+    return 0;
+}
+
+// --- Turnkey Prefab ImgDocWindow Bindings (imgui.DocWindow / float_wnd_create_doc) ---
+
+static flwnd::FWLDocWindow* GetValidFWLDocWindow(lua_State* L, int idx = 1) {
+    if (!lua_islightuserdata(L, idx)) return nullptr;
+    flwnd::FloatingWindow* wnd = flwnd::GetValidFloatingWindow(lua_touserdata(L, idx));
+    return dynamic_cast<flwnd::FWLDocWindow*>(wnd);
+}
+
+static int LuaDocWindowCreate(lua_State* L) {
+    int top = lua_gettop(L);
+    std::string script_dir = GetCallerLuaScriptDir(L);
+
+    std::string title = "Documentation";
+    std::string file_path;
+    std::string raw_markdown;
+    std::string base_dir;
+    std::string fallback_markdown;
+    std::string pdf_path;
+    int width  = ImgDocWindow::kDefaultWidth;
+    int height = ImgDocWindow::kDefaultHeight;
+    int decoration = xplm_WindowDecorationSelfDecoratedResizable;
+    bool cursors = (flywithlua::imgui_mouse_cursors != 0);
+    bool init_visible = true;
+    bool has_zoom = false; float init_zoom = 1.0f;
+    bool has_theme = false; int init_theme = 0;
+    bool has_opacity = false; float init_opacity = 0.80f;
+    bool has_trans = false; bool init_trans = true;
+    bool has_scale_on_zoom = false; bool scale_on_zoom = true;
+    bool has_auto_reload = false; bool auto_reload = true;
+
+    if (top >= 1 && lua_istable(L, 1)) {
+        auto getStr = [&](const char* k1, const char* k2, std::string& dst) {
+            lua_getfield(L, 1, k1);
+            if (lua_isnil(L, -1) && k2) { lua_pop(L, 1); lua_getfield(L, 1, k2); }
+            if (lua_type(L, -1) == LUA_TSTRING) dst = lua_tostring(L, -1);
+            lua_pop(L, 1);
+        };
+        getStr("title", nullptr, title);
+        getStr("file", "markdown_file", file_path);
+        getStr("markdown", "text", raw_markdown);
+        getStr("base_dir", "baseDir", base_dir);
+        getStr("fallback", "fallback_markdown", fallback_markdown);
+        getStr("pdf", "companion_pdf", pdf_path);
+
+        lua_getfield(L, 1, "width");  if (lua_isnumber(L, -1)) width  = static_cast<int>(lua_tointeger(L, -1)); lua_pop(L, 1);
+        lua_getfield(L, 1, "height"); if (lua_isnumber(L, -1)) height = static_cast<int>(lua_tointeger(L, -1)); lua_pop(L, 1);
+        lua_getfield(L, 1, "decoration"); if (lua_isnumber(L, -1)) decoration = static_cast<int>(lua_tointeger(L, -1)); lua_pop(L, 1);
+        lua_getfield(L, 1, "cursors"); if (lua_isboolean(L, -1)) cursors = (lua_toboolean(L, -1) != 0); lua_pop(L, 1);
+        lua_getfield(L, 1, "visible"); if (lua_isboolean(L, -1)) init_visible = (lua_toboolean(L, -1) != 0); lua_pop(L, 1);
+
+        lua_getfield(L, 1, "zoom");
+        if (lua_isnumber(L, -1)) { has_zoom = true; init_zoom = static_cast<float>(lua_tonumber(L, -1)); }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 1, "theme");
+        if (lua_isnumber(L, -1)) { has_theme = true; init_theme = static_cast<int>(lua_tointeger(L, -1)); }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 1, "opacity");
+        if (lua_isnumber(L, -1)) { has_opacity = true; init_opacity = static_cast<float>(lua_tonumber(L, -1)); }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 1, "transparent_hud");
+        if (lua_isboolean(L, -1)) { has_trans = true; init_trans = (lua_toboolean(L, -1) != 0); }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 1, "scale_window_on_zoom");
+        if (lua_isboolean(L, -1)) { has_scale_on_zoom = true; scale_on_zoom = (lua_toboolean(L, -1) != 0); }
+        lua_pop(L, 1);
+
+        lua_getfield(L, 1, "auto_reload");
+        if (lua_isboolean(L, -1)) { has_auto_reload = true; auto_reload = (lua_toboolean(L, -1) != 0); }
+        lua_pop(L, 1);
+    } else {
+        if (top >= 1 && lua_type(L, 1) == LUA_TSTRING) title = lua_tostring(L, 1);
+        if (top >= 2 && lua_type(L, 2) == LUA_TSTRING) file_path = lua_tostring(L, 2);
+        if (top >= 3 && lua_type(L, 3) == LUA_TSTRING) pdf_path = lua_tostring(L, 3);
+        if (top >= 4 && lua_isnumber(L, 4)) width = static_cast<int>(lua_tointeger(L, 4));
+        if (top >= 5 && lua_isnumber(L, 5)) height = static_cast<int>(lua_tointeger(L, 5));
+        if (top >= 6 && lua_isnumber(L, 6)) decoration = static_cast<int>(lua_tointeger(L, 6));
+    }
+
+    try {
+        auto docWnd = std::make_shared<flwnd::FWLDocWindow>(title, width, height, decoration, cursors);
+        if (!fallback_markdown.empty()) {
+            docWnd->SetFallbackMarkdown(fallback_markdown);
+        }
+        if (!file_path.empty()) {
+            docWnd->LoadMarkdownFileWithScriptDir(file_path, script_dir);
+        } else if (!raw_markdown.empty()) {
+            docWnd->SetMarkdownText(raw_markdown, base_dir.empty() ? script_dir : base_dir);
+        }
+        if (!pdf_path.empty()) {
+            docWnd->SetCompanionPdfWithScriptDir(pdf_path, script_dir);
+        }
+        if (has_scale_on_zoom) docWnd->SetScaleWindowOnZoom(scale_on_zoom);
+        if (has_auto_reload)   docWnd->SetAutoReloadOnDiskChange(auto_reload);
+        if (has_theme)         docWnd->SetTheme(init_theme);
+        if (has_trans)         docWnd->SetTransparentHud(init_trans);
+        if (has_opacity)       docWnd->SetWindowOpacity(init_opacity);
+        if (has_zoom)          docWnd->SetZoom(init_zoom, false);
+        if (!init_visible)     docWnd->SetVisible(false);
+
+        flwnd::RegisterManagedFloatingWindow(docWnd);
+        lua_pushlightuserdata(L, docWnd.get());
+        return 1;
+    } catch (const std::exception& e) {
+        flywithlua::logMsg(logToDevCon, std::string("FlyWithLua Error: Couldn't create DocWindow: ") + e.what());
+        lua_pushnil(L);
+        return 1;
+    }
+}
+
+static int LuaDocWindowLoadFile(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    const char* path = luaL_checkstring(L, 2);
+    if (!docWnd || !path) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    bool ok = docWnd->LoadMarkdownFileWithScriptDir(path, GetCallerLuaScriptDir(L));
+    lua_pushboolean(L, ok);
+    return 1;
+}
+
+static int LuaDocWindowSetMarkdown(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    const char* md = luaL_checkstring(L, 2);
+    if (!docWnd) return 0;
+    std::string base_dir = (lua_gettop(L) >= 3 && lua_type(L, 3) == LUA_TSTRING)
+                               ? std::string(lua_tostring(L, 3))
+                               : GetCallerLuaScriptDir(L);
+    docWnd->SetMarkdownText(md ? md : "", base_dir);
+    return 0;
+}
+
+static int LuaDocWindowSetFallbackMarkdown(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    const char* md = luaL_checkstring(L, 2);
+    if (docWnd && md) docWnd->SetFallbackMarkdown(md);
+    return 0;
+}
+
+static int LuaDocWindowSetCompanionPdf(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    if (!docWnd) return 0;
+    const char* pdf = (lua_gettop(L) >= 2 && lua_type(L, 2) == LUA_TSTRING) ? lua_tostring(L, 2) : "";
+    docWnd->SetCompanionPdfWithScriptDir(pdf ? pdf : "", GetCallerLuaScriptDir(L));
+    return 0;
+}
+
+static int LuaDocWindowReload(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushboolean(L, docWnd ? docWnd->ReloadDocument() : false);
+    return 1;
+}
+
+static int LuaDocWindowShow(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    if (docWnd) {
+        docWnd->SetVisible(true);
+        docWnd->bringToFront();
+    }
+    return 0;
+}
+
+static int LuaDocWindowHide(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    if (docWnd) docWnd->SetVisible(false);
+    return 0;
+}
+
+static int LuaDocWindowToggle(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    if (!docWnd) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    bool next_vis = !docWnd->GetVisible();
+    docWnd->SetVisible(next_vis);
+    if (next_vis) docWnd->bringToFront();
+    lua_pushboolean(L, next_vis);
+    return 1;
+}
+
+static int LuaDocWindowIsVisible(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushboolean(L, docWnd ? docWnd->GetVisible() : false);
+    return 1;
+}
+
+static int LuaDocWindowSetZoom(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    float z = static_cast<float>(luaL_checknumber(L, 2));
+    bool resize = (lua_gettop(L) >= 3 && !lua_isnil(L, 3)) ? (lua_toboolean(L, 3) != 0) : false;
+    if (docWnd) docWnd->SetZoom(z, resize);
+    return 0;
+}
+
+static int LuaDocWindowGetZoom(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushnumber(L, docWnd ? docWnd->GetZoom() : 1.0);
+    return 1;
+}
+
+static int LuaDocWindowSetTheme(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    int idx = static_cast<int>(luaL_checkinteger(L, 2));
+    if (docWnd) docWnd->SetTheme(idx);
+    return 0;
+}
+
+static int LuaDocWindowGetTheme(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushinteger(L, docWnd ? docWnd->GetTheme() : 0);
+    return 1;
+}
+
+static int LuaDocWindowSetOpacity(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    float op = static_cast<float>(luaL_checknumber(L, 2));
+    if (docWnd) docWnd->SetWindowOpacity(op);
+    return 0;
+}
+
+static int LuaDocWindowGetOpacity(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushnumber(L, docWnd ? docWnd->GetWindowOpacity() : 0.80);
+    return 1;
+}
+
+static int LuaDocWindowSetTransparentHud(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    bool en = (lua_gettop(L) < 2) ? true : (lua_toboolean(L, 2) != 0);
+    if (docWnd) docWnd->SetTransparentHud(en);
+    return 0;
+}
+
+static int LuaDocWindowGetTransparentHud(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushboolean(L, docWnd ? docWnd->GetTransparentHud() : false);
+    return 1;
+}
+
+static int LuaDocWindowSetScaleWindowOnZoom(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    bool en = (lua_gettop(L) < 2) ? true : (lua_toboolean(L, 2) != 0);
+    if (docWnd) docWnd->SetScaleWindowOnZoom(en);
+    return 0;
+}
+
+static int LuaDocWindowGetScaleWindowOnZoom(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushboolean(L, docWnd ? docWnd->GetScaleWindowOnZoom() : true);
+    return 1;
+}
+
+static int LuaDocWindowSetAutoReload(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    bool en = (lua_gettop(L) < 2) ? true : (lua_toboolean(L, 2) != 0);
+    if (docWnd) docWnd->SetAutoReloadOnDiskChange(en);
+    return 0;
+}
+
+static int LuaDocWindowGetAutoReload(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    lua_pushboolean(L, docWnd ? docWnd->GetAutoReloadOnDiskChange() : true);
+    return 1;
+}
+
+static int LuaDocWindowJumpToAnchor(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    const char* slug = luaL_checkstring(L, 2);
+    lua_pushboolean(L, (docWnd && slug) ? docWnd->JumpToAnchor(slug) : false);
+    return 1;
+}
+
+static int LuaDocWindowJumpToSection(lua_State* L) {
+    auto* docWnd = GetValidFWLDocWindow(L, 1);
+    int idx_1based = static_cast<int>(luaL_checkinteger(L, 2));
+    lua_pushboolean(L, docWnd ? docWnd->JumpToSection(idx_1based - 1) : false);
+    return 1;
+}
+#endif // IMGUI_DOC_VIEWER_H
+
 // Statically embedded 16x16 avionics radio beacon icon (emerald radar pulse rings):
 static const unsigned char s_AvionicsBeaconPng[] = {
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -2604,6 +3546,24 @@ static const unsigned char s_AvionicsBeaconPng[] = {
 void InitImGeeSupport(lua_State* L) {
     s_CurrentLuaState = L;
     s_LuaCustomTagRefs.clear();
+    s_GlobalMarkdownBaseDir.clear();
+    s_HasGlobalMarkdownBaseDir = false;
+    s_ActiveWindowAutoBaseDir = nullptr;
+    s_ActiveWindowExplicitBaseDir = nullptr;
+    s_FWLMarkdownConfig.baseDir = nullptr;
+    s_FWLMarkdownConfig.showImageCaptions = false;
+    s_FWLMarkdownConfig.enableImageLightbox = false;
+    s_FWLMarkdownConfig.enableTableTooltips = true;
+    s_FWLMarkdownConfig.showCodeCopyButton = true;
+#if defined(IMGUI_ZOOMABLE_VIEWPORT_H)
+    s_TableViewportStates.clear();
+    s_NamedViewportStates.clear();
+    s_ActiveLuaZoomViewports.clear();
+#endif
+#if defined(IMGUI_DOC_VIEWER_H)
+    s_TableDocViewerStates.clear();
+    s_NamedDocViewerStates.clear();
+#endif
 
     // Auto-register default built-in avionics beacon icon into named texture service:
     ImgWindow::RegisterMemoryImage("avionics_beacon", s_AvionicsBeaconPng, sizeof(s_AvionicsBeaconPng));
@@ -2630,6 +3590,20 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaMarkdownDelayedTooltipMD);  lua_setfield(L, -2, "DelayedTooltip");
     lua_pushcfunction(L, LuaMarkdownTextLink);          lua_setfield(L, -2, "TextLink");
     lua_pushcfunction(L, LuaMarkdownTextLink);          lua_setfield(L, -2, "TextMDLink");
+    lua_pushcfunction(L, LuaMarkdownSetBaseDir);             lua_setfield(L, -2, "SetBaseDir");
+    lua_pushcfunction(L, LuaMarkdownGetBaseDir);             lua_setfield(L, -2, "GetBaseDir");
+    lua_pushcfunction(L, LuaMarkdownSetWindowBaseDir);       lua_setfield(L, -2, "SetWindowBaseDir");
+    lua_pushcfunction(L, LuaMarkdownGetWindowBaseDir);       lua_setfield(L, -2, "GetWindowBaseDir");
+    lua_pushcfunction(L, LuaMarkdownSetShowImageCaptions);   lua_setfield(L, -2, "SetShowImageCaptions");
+    lua_pushcfunction(L, LuaMarkdownGetShowImageCaptions);   lua_setfield(L, -2, "GetShowImageCaptions");
+    lua_pushcfunction(L, LuaMarkdownSetEnableImageLightbox); lua_setfield(L, -2, "SetEnableImageLightbox");
+    lua_pushcfunction(L, LuaMarkdownGetEnableImageLightbox); lua_setfield(L, -2, "GetEnableImageLightbox");
+    lua_pushcfunction(L, LuaMarkdownSetEnableTableTooltips); lua_setfield(L, -2, "SetEnableTableTooltips");
+    lua_pushcfunction(L, LuaMarkdownGetEnableTableTooltips); lua_setfield(L, -2, "GetEnableTableTooltips");
+    lua_pushcfunction(L, LuaMarkdownSetShowCodeCopyButton);  lua_setfield(L, -2, "SetShowCodeCopyButton");
+    lua_pushcfunction(L, LuaMarkdownGetShowCodeCopyButton);  lua_setfield(L, -2, "GetShowCodeCopyButton");
+    lua_pushcfunction(L, LuaMarkdownConfigure);              lua_setfield(L, -2, "Configure");
+    lua_pushcfunction(L, LuaMarkdownClearImageCache);        lua_setfield(L, -2, "ClearImageCache");
 
     lua_pushcfunction(L, LuaMarkdownText);              lua_setfield(L, -2, "text");
     lua_pushcfunction(L, LuaMarkdownTextWrapped);       lua_setfield(L, -2, "text_wrapped");
@@ -2642,6 +3616,20 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaMarkdownDelayedTooltipMD);  lua_setfield(L, -2, "delayed_tooltip");
     lua_pushcfunction(L, LuaMarkdownTextLink);          lua_setfield(L, -2, "text_link");
     lua_pushcfunction(L, LuaMarkdownTextLink);          lua_setfield(L, -2, "text_md_link");
+    lua_pushcfunction(L, LuaMarkdownSetBaseDir);             lua_setfield(L, -2, "set_base_dir");
+    lua_pushcfunction(L, LuaMarkdownGetBaseDir);             lua_setfield(L, -2, "get_base_dir");
+    lua_pushcfunction(L, LuaMarkdownSetWindowBaseDir);       lua_setfield(L, -2, "set_window_base_dir");
+    lua_pushcfunction(L, LuaMarkdownGetWindowBaseDir);       lua_setfield(L, -2, "get_window_base_dir");
+    lua_pushcfunction(L, LuaMarkdownSetShowImageCaptions);   lua_setfield(L, -2, "set_show_image_captions");
+    lua_pushcfunction(L, LuaMarkdownGetShowImageCaptions);   lua_setfield(L, -2, "get_show_image_captions");
+    lua_pushcfunction(L, LuaMarkdownSetEnableImageLightbox); lua_setfield(L, -2, "set_enable_image_lightbox");
+    lua_pushcfunction(L, LuaMarkdownGetEnableImageLightbox); lua_setfield(L, -2, "get_enable_image_lightbox");
+    lua_pushcfunction(L, LuaMarkdownSetEnableTableTooltips); lua_setfield(L, -2, "set_enable_table_tooltips");
+    lua_pushcfunction(L, LuaMarkdownGetEnableTableTooltips); lua_setfield(L, -2, "get_enable_table_tooltips");
+    lua_pushcfunction(L, LuaMarkdownSetShowCodeCopyButton);  lua_setfield(L, -2, "set_show_code_copy_button");
+    lua_pushcfunction(L, LuaMarkdownGetShowCodeCopyButton);  lua_setfield(L, -2, "get_show_code_copy_button");
+    lua_pushcfunction(L, LuaMarkdownConfigure);              lua_setfield(L, -2, "configure");
+    lua_pushcfunction(L, LuaMarkdownClearImageCache);        lua_setfield(L, -2, "clear_image_cache");
 
     lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "RegisterStyleTag");
     lua_pushcfunction(L, LuaRegisterMarkdownStyleTag);  lua_setfield(L, -2, "register_style_tag");
@@ -3310,6 +4298,125 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaOpenURL);                    lua_setfield(L, -2, "open_url");
     lua_pushcfunction(L, LuaOpenDocument);               lua_setfield(L, -2, "OpenDocument");
     lua_pushcfunction(L, LuaOpenDocument);               lua_setfield(L, -2, "open_document");
+
+#if defined(IMGUI_ZOOMABLE_VIEWPORT_H)
+    // 16. Two-Layer Zoomable Viewport
+    lua_pushcfunction(L, LuaBeginZoomedViewport);        lua_setfield(L, -2, "BeginZoomedViewport");
+    lua_pushcfunction(L, LuaBeginZoomedViewport);        lua_setfield(L, -2, "begin_zoomed_viewport");
+    lua_pushcfunction(L, LuaEndZoomedViewport);          lua_setfield(L, -2, "EndZoomedViewport");
+    lua_pushcfunction(L, LuaEndZoomedViewport);          lua_setfield(L, -2, "end_zoomed_viewport");
+    lua_pushcfunction(L, LuaZoomViewportControls);       lua_setfield(L, -2, "ZoomViewportControls");
+    lua_pushcfunction(L, LuaZoomViewportControls);       lua_setfield(L, -2, "zoom_viewport_controls");
+    lua_pushcfunction(L, LuaSetViewportZoom);            lua_setfield(L, -2, "SetViewportZoom");
+    lua_pushcfunction(L, LuaSetViewportZoom);            lua_setfield(L, -2, "set_viewport_zoom");
+    lua_pushcfunction(L, LuaStepViewportZoom);           lua_setfield(L, -2, "StepViewportZoom");
+    lua_pushcfunction(L, LuaStepViewportZoom);           lua_setfield(L, -2, "step_viewport_zoom");
+    lua_pushcfunction(L, LuaResetViewportZoom);          lua_setfield(L, -2, "ResetViewportZoom");
+    lua_pushcfunction(L, LuaResetViewportZoom);          lua_setfield(L, -2, "reset_viewport_zoom");
+#endif
+
+#if defined(IMGUI_DOC_VIEWER_H)
+    // 17. Standalone DocumentViewer & Turnkey ImgDocWindow
+    lua_pushcfunction(L, LuaDocumentViewer);             lua_setfield(L, -2, "DocumentViewer");
+    lua_pushcfunction(L, LuaDocumentViewer);             lua_setfield(L, -2, "document_viewer");
+    lua_pushcfunction(L, LuaParseMarkdownToc);           lua_setfield(L, -2, "ParseMarkdownToc");
+    lua_pushcfunction(L, LuaParseMarkdownToc);           lua_setfield(L, -2, "parse_markdown_toc");
+    lua_pushcfunction(L, LuaJumpToDocumentAnchor);       lua_setfield(L, -2, "JumpToDocumentAnchor");
+    lua_pushcfunction(L, LuaJumpToDocumentAnchor);       lua_setfield(L, -2, "jump_to_document_anchor");
+    lua_pushcfunction(L, LuaJumpToDocumentHeading);      lua_setfield(L, -2, "JumpToDocumentHeading");
+    lua_pushcfunction(L, LuaJumpToDocumentHeading);      lua_setfield(L, -2, "jump_to_document_heading");
+    lua_pushcfunction(L, LuaToggleDocumentScrollReset);  lua_setfield(L, -2, "ToggleDocumentScrollReset");
+    lua_pushcfunction(L, LuaToggleDocumentScrollReset);  lua_setfield(L, -2, "toggle_document_scroll_reset");
+    lua_pushcfunction(L, LuaApplyDocumentViewerTheme);   lua_setfield(L, -2, "ApplyDocumentViewerTheme");
+    lua_pushcfunction(L, LuaApplyDocumentViewerTheme);   lua_setfield(L, -2, "apply_document_viewer_theme");
+    lua_pushcfunction(L, LuaDocWindowCreate);            lua_setfield(L, -2, "CreateDocWindow");
+    lua_pushcfunction(L, LuaDocWindowCreate);            lua_setfield(L, -2, "create_doc_window");
+
+    // DocumentViewerTheme enum sub-table
+    lua_newtable(L);
+    lua_pushinteger(L, ImGui::DocumentViewerTheme_Charcoal); lua_setfield(L, -2, "Charcoal");
+    lua_pushinteger(L, ImGui::DocumentViewerTheme_Rusty);    lua_setfield(L, -2, "Rusty");
+    lua_pushinteger(L, ImGui::DocumentViewerTheme_Dark);     lua_setfield(L, -2, "Dark");
+    lua_pushinteger(L, ImGui::DocumentViewerTheme_Classic);  lua_setfield(L, -2, "Classic");
+    lua_pushinteger(L, ImGui::DocumentViewerTheme_Light);    lua_setfield(L, -2, "Light");
+    lua_setfield(L, -2, "DocumentViewerTheme");
+
+    // imgui.DocViewer sub-namespace
+    lua_newtable(L);
+    lua_pushcfunction(L, LuaDocumentViewer);             lua_setfield(L, -2, "Render");
+    lua_pushcfunction(L, LuaDocumentViewer);             lua_setfield(L, -2, "render");
+    lua_pushcfunction(L, LuaDocumentViewer);             lua_setfield(L, -2, "Show");
+    lua_pushcfunction(L, LuaDocumentViewer);             lua_setfield(L, -2, "show");
+    lua_pushcfunction(L, LuaParseMarkdownToc);           lua_setfield(L, -2, "ParseToc");
+    lua_pushcfunction(L, LuaParseMarkdownToc);           lua_setfield(L, -2, "parse_toc");
+    lua_pushcfunction(L, LuaJumpToDocumentAnchor);       lua_setfield(L, -2, "JumpToAnchor");
+    lua_pushcfunction(L, LuaJumpToDocumentAnchor);       lua_setfield(L, -2, "jump_to_anchor");
+    lua_pushcfunction(L, LuaJumpToDocumentHeading);      lua_setfield(L, -2, "JumpToHeading");
+    lua_pushcfunction(L, LuaJumpToDocumentHeading);      lua_setfield(L, -2, "jump_to_heading");
+    lua_pushcfunction(L, LuaToggleDocumentScrollReset);  lua_setfield(L, -2, "ToggleScrollReset");
+    lua_pushcfunction(L, LuaToggleDocumentScrollReset);  lua_setfield(L, -2, "toggle_scroll_reset");
+    lua_pushcfunction(L, LuaApplyDocumentViewerTheme);   lua_setfield(L, -2, "ApplyTheme");
+    lua_pushcfunction(L, LuaApplyDocumentViewerTheme);   lua_setfield(L, -2, "apply_theme");
+    lua_setfield(L, -2, "DocViewer");
+
+    // imgui.DocWindow sub-namespace (Prefab ImgDocWindow wrapper)
+    lua_newtable(L);
+    lua_pushcfunction(L, LuaDocWindowCreate);                 lua_setfield(L, -2, "Create");
+    lua_pushcfunction(L, LuaDocWindowCreate);                 lua_setfield(L, -2, "create");
+    lua_pushcfunction(L, LuaDocWindowLoadFile);               lua_setfield(L, -2, "LoadFile");
+    lua_pushcfunction(L, LuaDocWindowLoadFile);               lua_setfield(L, -2, "load_file");
+    lua_pushcfunction(L, LuaDocWindowSetMarkdown);            lua_setfield(L, -2, "SetMarkdown");
+    lua_pushcfunction(L, LuaDocWindowSetMarkdown);            lua_setfield(L, -2, "set_markdown");
+    lua_pushcfunction(L, LuaDocWindowSetFallbackMarkdown);    lua_setfield(L, -2, "SetFallbackMarkdown");
+    lua_pushcfunction(L, LuaDocWindowSetFallbackMarkdown);    lua_setfield(L, -2, "set_fallback_markdown");
+    lua_pushcfunction(L, LuaDocWindowSetCompanionPdf);        lua_setfield(L, -2, "SetCompanionPdf");
+    lua_pushcfunction(L, LuaDocWindowSetCompanionPdf);        lua_setfield(L, -2, "set_companion_pdf");
+    lua_pushcfunction(L, LuaDocWindowReload);                 lua_setfield(L, -2, "Reload");
+    lua_pushcfunction(L, LuaDocWindowReload);                 lua_setfield(L, -2, "reload");
+    lua_pushcfunction(L, LuaDocWindowShow);                   lua_setfield(L, -2, "Show");
+    lua_pushcfunction(L, LuaDocWindowShow);                   lua_setfield(L, -2, "show");
+    lua_pushcfunction(L, LuaDocWindowHide);                   lua_setfield(L, -2, "Hide");
+    lua_pushcfunction(L, LuaDocWindowHide);                   lua_setfield(L, -2, "hide");
+    lua_pushcfunction(L, LuaDocWindowToggle);                 lua_setfield(L, -2, "Toggle");
+    lua_pushcfunction(L, LuaDocWindowToggle);                 lua_setfield(L, -2, "toggle");
+    lua_pushcfunction(L, LuaDocWindowIsVisible);              lua_setfield(L, -2, "IsVisible");
+    lua_pushcfunction(L, LuaDocWindowIsVisible);              lua_setfield(L, -2, "is_visible");
+    lua_pushcfunction(L, LuaDocWindowSetZoom);                lua_setfield(L, -2, "SetZoom");
+    lua_pushcfunction(L, LuaDocWindowSetZoom);                lua_setfield(L, -2, "set_zoom");
+    lua_pushcfunction(L, LuaDocWindowGetZoom);                lua_setfield(L, -2, "GetZoom");
+    lua_pushcfunction(L, LuaDocWindowGetZoom);                lua_setfield(L, -2, "get_zoom");
+    lua_pushcfunction(L, LuaDocWindowSetTheme);               lua_setfield(L, -2, "SetTheme");
+    lua_pushcfunction(L, LuaDocWindowSetTheme);               lua_setfield(L, -2, "set_theme");
+    lua_pushcfunction(L, LuaDocWindowGetTheme);               lua_setfield(L, -2, "GetTheme");
+    lua_pushcfunction(L, LuaDocWindowGetTheme);               lua_setfield(L, -2, "get_theme");
+    lua_pushcfunction(L, LuaDocWindowSetOpacity);             lua_setfield(L, -2, "SetOpacity");
+    lua_pushcfunction(L, LuaDocWindowSetOpacity);             lua_setfield(L, -2, "set_opacity");
+    lua_pushcfunction(L, LuaDocWindowGetOpacity);             lua_setfield(L, -2, "GetOpacity");
+    lua_pushcfunction(L, LuaDocWindowGetOpacity);             lua_setfield(L, -2, "get_opacity");
+    lua_pushcfunction(L, LuaDocWindowSetTransparentHud);      lua_setfield(L, -2, "SetTransparentHud");
+    lua_pushcfunction(L, LuaDocWindowSetTransparentHud);      lua_setfield(L, -2, "set_transparent_hud");
+    lua_pushcfunction(L, LuaDocWindowGetTransparentHud);      lua_setfield(L, -2, "GetTransparentHud");
+    lua_pushcfunction(L, LuaDocWindowGetTransparentHud);      lua_setfield(L, -2, "get_transparent_hud");
+    lua_pushcfunction(L, LuaDocWindowSetScaleWindowOnZoom);   lua_setfield(L, -2, "SetScaleWindowOnZoom");
+    lua_pushcfunction(L, LuaDocWindowSetScaleWindowOnZoom);   lua_setfield(L, -2, "set_scale_window_on_zoom");
+    lua_pushcfunction(L, LuaDocWindowGetScaleWindowOnZoom);   lua_setfield(L, -2, "GetScaleWindowOnZoom");
+    lua_pushcfunction(L, LuaDocWindowGetScaleWindowOnZoom);   lua_setfield(L, -2, "get_scale_window_on_zoom");
+    lua_pushcfunction(L, LuaDocWindowSetAutoReload);          lua_setfield(L, -2, "SetAutoReload");
+    lua_pushcfunction(L, LuaDocWindowSetAutoReload);          lua_setfield(L, -2, "set_auto_reload");
+    lua_pushcfunction(L, LuaDocWindowGetAutoReload);          lua_setfield(L, -2, "GetAutoReload");
+    lua_pushcfunction(L, LuaDocWindowGetAutoReload);          lua_setfield(L, -2, "get_auto_reload");
+    lua_pushcfunction(L, LuaDocWindowJumpToAnchor);           lua_setfield(L, -2, "JumpToAnchor");
+    lua_pushcfunction(L, LuaDocWindowJumpToAnchor);           lua_setfield(L, -2, "jump_to_anchor");
+    lua_pushcfunction(L, LuaDocWindowJumpToSection);          lua_setfield(L, -2, "JumpToSection");
+    lua_pushcfunction(L, LuaDocWindowJumpToSection);          lua_setfield(L, -2, "jump_to_section");
+    lua_setfield(L, -2, "DocWindow");
+
+    lua_register(L, "float_wnd_create_doc", LuaDocWindowCreate);
+    lua_getfield(L, -1, "DocWindow");
+    lua_setglobal(L, "DocWindow");
+    lua_getfield(L, -1, "DocViewer");
+    lua_setglobal(L, "DocViewer");
+#endif
 
     // 7. Global convenience aliases (matching imgee-global.h in C++)
     lua_getfield(L, -1, "TimedTooltip");
