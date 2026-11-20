@@ -13,6 +13,7 @@ namespace flywithlua {
 
 void InitImGeeSupport(lua_State* L);
 void UpdateImGeeMarkdownFonts();
+void ClearImGeeMarkdownTextures();
 
 class ScopedMarkdownWindowBaseDir {
 public:

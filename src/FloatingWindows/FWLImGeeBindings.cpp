@@ -3521,6 +3521,16 @@ static int LuaDocWindowJumpToSection(lua_State* L) {
     lua_pushboolean(L, docWnd ? docWnd->JumpToSection(idx_1based - 1) : false);
     return 1;
 }
+
+static int LuaOpenBuiltInLuiGeeGuide(lua_State*) {
+    flwnd::OpenBuiltInLuiGeeGuide();
+    return 0;
+}
+
+static int LuaToggleBuiltInLuiGeeGuide(lua_State*) {
+    flwnd::ToggleBuiltInLuiGeeGuide();
+    return 0;
+}
 #endif // IMGUI_DOC_VIEWER_H
 
 // Statically embedded 16x16 avionics radio beacon icon (emerald radar pulse rings):
@@ -4409,7 +4419,16 @@ void InitImGeeSupport(lua_State* L) {
     lua_pushcfunction(L, LuaDocWindowJumpToAnchor);           lua_setfield(L, -2, "jump_to_anchor");
     lua_pushcfunction(L, LuaDocWindowJumpToSection);          lua_setfield(L, -2, "JumpToSection");
     lua_pushcfunction(L, LuaDocWindowJumpToSection);          lua_setfield(L, -2, "jump_to_section");
+    lua_pushcfunction(L, LuaOpenBuiltInLuiGeeGuide);          lua_setfield(L, -2, "OpenLuiGeeGuide");
+    lua_pushcfunction(L, LuaOpenBuiltInLuiGeeGuide);          lua_setfield(L, -2, "open_luigee_guide");
+    lua_pushcfunction(L, LuaToggleBuiltInLuiGeeGuide);        lua_setfield(L, -2, "ToggleLuiGeeGuide");
+    lua_pushcfunction(L, LuaToggleBuiltInLuiGeeGuide);        lua_setfield(L, -2, "toggle_luigee_guide");
     lua_setfield(L, -2, "DocWindow");
+
+    lua_pushcfunction(L, LuaOpenBuiltInLuiGeeGuide);          lua_setfield(L, -2, "OpenLuiGeeGuide");
+    lua_pushcfunction(L, LuaOpenBuiltInLuiGeeGuide);          lua_setfield(L, -2, "open_luigee_guide");
+    lua_pushcfunction(L, LuaToggleBuiltInLuiGeeGuide);        lua_setfield(L, -2, "ToggleLuiGeeGuide");
+    lua_pushcfunction(L, LuaToggleBuiltInLuiGeeGuide);        lua_setfield(L, -2, "toggle_luigee_guide");
 
     lua_register(L, "float_wnd_create_doc", LuaDocWindowCreate);
     lua_getfield(L, -1, "DocWindow");
@@ -4429,6 +4448,12 @@ void InitImGeeSupport(lua_State* L) {
     lua_setglobal(L, "MD");
 
     lua_pop(L, 1); // Pop imgui table
+}
+
+void ClearImGeeMarkdownTextures() {
+#if defined(IMGUI_MARKDOWN_EXT_H) && !defined(IMGEE_DISABLE_MARKDOWN) && !defined(CONTRIB_DISABLE_MARKDOWN)
+    ImGui::MarkdownImageService::ClearTextureCache();
+#endif
 }
 
 } // namespace flywithlua

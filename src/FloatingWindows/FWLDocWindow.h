@@ -171,6 +171,11 @@ public:
 
     void setCloseCallback(CloseCallback cb) override { mOnCloseCB = cb; }
 
+    void setImguiCursorHandling(bool enabled) {
+        GetViewerState().dynamic_cursors_enabled = enabled;
+        SetImgCursorHandling(enabled);
+    }
+
 protected:
     ImGuiWindowFlags_ beforeBegin() override {
         ImGuiIO& io = ImGui::GetIO();
@@ -180,7 +185,13 @@ protected:
             if (reg) io.FontDefault = reg;
         }
         io.ConfigDebugHighlightIdConflicts = (flywithlua::imgui_debug_popup == 1);
-        return ImgDocWindow::beforeBegin();
+        ImGuiWindowFlags_ flags = ImgDocWindow::beforeBegin();
+        enforceSolidOpaqueWhenNotTransparent();
+        return flags;
+    }
+
+    void onDocumentThemeChanged(int /*themeIndex*/, bool /*transparentHud*/, float /*opacity*/) override {
+        enforceSolidOpaqueWhenNotTransparent();
     }
 
     void onDocumentClosed() override {
@@ -188,6 +199,17 @@ protected:
     }
 
 private:
+    void enforceSolidOpaqueWhenNotTransparent() {
+        // Upstream ApplyDocumentViewerTheme leaves stock Dear ImGui theme WindowBg.w (< 1.0f,
+        // e.g. 0.94f in Dark, 0.85f in Classic, 0.96f in Charcoal/Rusty) when transparent_hud
+        // is false. Force 100% solid WindowBg alpha whenever Transparent HUD is OFF while
+        // preserving GetViewerState().window_opacity untouched for the slider.
+        if (!GetTransparentHud() || !IsSelfDecorated()) {
+            ImGuiStyle& st = ImGui::GetStyle();
+            st.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            st.Colors[ImGuiCol_Border].w   = 1.0f;
+        }
+    }
     static WindowGeometry MakeDefaultDocGeometry(int width, int height) {
         int sl = 0, st = 0;
         XPLMGetScreenBoundsGlobal(&sl, &st, nullptr, nullptr);

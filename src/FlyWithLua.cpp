@@ -958,10 +958,14 @@ bool ReadPrefFile();
 
 // The user will be able to handle the plugin with commands
 XPLMCommandRef MyReloadScriptsCommand = nullptr;
+XPLMCommandRef MyToggleLuiGeeGuideCommand = nullptr;
 
 int MyReloadScriptsCommandHandler(XPLMCommandRef inCommand,
                                   XPLMCommandPhase inPhase,
                                   void* inRefcon);
+int MyToggleLuiGeeGuideCommandHandler(XPLMCommandRef inCommand,
+                                      XPLMCommandPhase inPhase,
+                                      void* inRefcon);
 
 void initPluginDirectory(); // snagar
 
@@ -6857,11 +6861,16 @@ void ResetLuaEngine()
     // Mid-flight font atlas rebuild on script reload (ABC pattern)
     if (LuaResetCount > 0)
     {
+        flwnd::SaveAndCloseBuiltInDocWindowsForReload();
         TeardownImGui();
         ReadPrefFile();
         if (!InitializeImGui())
         {
             logMsg(logToDevCon, "FlyWithLua Error: Unable to re-initialize the shared ImGui font atlas on reload.");
+        }
+        else
+        {
+            flwnd::RestoreBuiltInDocWindowsAfterReload();
         }
     }
 
@@ -7867,6 +7876,10 @@ PLUGIN_API void XPluginDisable(void)
     XPLMUnregisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void*) "FWLWindowDrawer");
     XPLMUnregisterKeySniffer(FWLKeySniffer, 0, (void*) "FWLKeySniffer");
     XPLMUnregisterCommandHandler(MyReloadScriptsCommand, MyReloadScriptsCommandHandler, 0, nullptr);
+    if (MyToggleLuiGeeGuideCommand != nullptr)
+    {
+        XPLMUnregisterCommandHandler(MyToggleLuiGeeGuideCommand, MyToggleLuiGeeGuideCommandHandler, 0, nullptr);
+    }
     XPLMUnregisterFlightLoopCallback(MyFastLoopCallback, nullptr);
     XPLMUnregisterFlightLoopCallback(MySlowLoopCallback, nullptr);
     XPLMUnregisterFlightLoopCallback(MyEveryFrameLoopCallback, nullptr);
@@ -7916,6 +7929,7 @@ PLUGIN_API int XPluginEnable(void)
 
     // The commands
     MyReloadScriptsCommand = XPLMCreateCommand("FlyWithLua/debugging/reload_scripts", "Reload all Lua script files.");
+    MyToggleLuiGeeGuideCommand = XPLMCreateCommand("FlyWithLua/LuiGee/toggle_guide", "Toggle FlyWithLua LuiGee UX Guide window.");
 
 
     // Now tell X-Plane about our commands
@@ -7923,6 +7937,10 @@ PLUGIN_API int XPluginEnable(void)
                                MyReloadScriptsCommandHandler,     // in Handler
                                0,                                 // Receive input when plugin windows.
                                nullptr);                       // inRefcon.
+    XPLMRegisterCommandHandler(MyToggleLuiGeeGuideCommand,
+                               MyToggleLuiGeeGuideCommandHandler,
+                               0,
+                               nullptr);
 
     // Check in the main functions
     XPLMRegisterFlightLoopCallback(
@@ -7975,6 +7993,7 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Enable Verbose Logging Mode", (void*) "VerboseMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+    XPLMAppendMenuItem(FlyWithLuaMenuId, "LuiGee UX Guide...", (void*) "LuiGeeGuide", 1);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Check for FlyWithLua Updates...", (void*) "CheckUpdates", 1);
 
     // init the XSB connection
@@ -8695,6 +8714,17 @@ int MyReloadScriptsCommandHandler(XPLMCommandRef /*inCommand*/,
     return 0; // we resume the command
 }
 
+int MyToggleLuiGeeGuideCommandHandler(XPLMCommandRef /*inCommand*/,
+                                      XPLMCommandPhase inPhase,
+                                      void* /*inRefcon*/)
+{
+    if (inPhase == xplm_CommandBegin)
+    {
+        flwnd::ToggleBuiltInLuiGeeGuide();
+    }
+    return 0;
+}
+
 // execute the macro by setting a mission level
 
 void MacroMenuHandler(void* /*mRef*/, void* iRef)
@@ -8783,6 +8813,12 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
             XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
             verbose_logging_mode = 1;
         }
+        return;
+    }
+
+    if (!strcmp((char*) iRef, "LuiGeeGuide"))
+    {
+        flwnd::OpenBuiltInLuiGeeGuide();
         return;
     }
 

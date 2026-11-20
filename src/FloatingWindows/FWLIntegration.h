@@ -25,6 +25,13 @@ bool FindAndQuarantine (lua_State *L);
 FloatingWindow* GetValidFloatingWindow(void* ptr);
 void RegisterManagedFloatingWindow(const std::shared_ptr<FloatingWindow>& wnd);
 
+// Built-in native C++ documentation window(s) owned by FlyWithLua itself
+void OpenBuiltInLuiGeeGuide();
+void ToggleBuiltInLuiGeeGuide();
+void CloseBuiltInDocWindows();
+void SaveAndCloseBuiltInDocWindowsForReload();
+void RestoreBuiltInDocWindowsAfterReload();
+
 }
 
 #endif /* FLOATINGWINDOWS_FWLINTEGRATION_H_ */

@@ -241,40 +241,12 @@ function luigee_demo_on_close(wnd)
     hide_luigee_demo()
 end
 
--- Live In-Sim User Guide Window (powered by prefab ImgDocWindow / imgui.DocWindow)
-local luigee_guide_wnd = nil
-
+-- Live In-Sim User Guide Window (native C++ FlyWithLua built-in ImgDocWindow)
 function open_luigee_user_guide()
-    if not imgui.DocWindow or not imgui.DocWindow.Create then
-        if imgui.OpenDocument then
-            imgui.OpenDocument("Resources/plugins/FlyWithLua/Documentation/FlyWithLua_LuiGee_UX_Guide.pdf")
-        end
-        return
-    end
-    if not luigee_guide_wnd then
-        luigee_guide_wnd = imgui.DocWindow.Create({
-            title   = "FlyWithLua LuiGee UX Guide",
-            file    = "Documentation/FlyWithLua_LuiGee_UX_Guide.md",
-            pdf     = "Documentation/FlyWithLua_LuiGee_UX_Guide.pdf",
-            width   = 860,
-            height  = 720,
-            opacity = 0.90,
-            visible = true,
-        })
-    else
-        imgui.DocWindow.Show(luigee_guide_wnd)
-    end
-end
-
-function toggle_luigee_user_guide()
-    if not imgui.DocWindow or not imgui.DocWindow.Create then
-        open_luigee_user_guide()
-        return
-    end
-    if not luigee_guide_wnd then
-        open_luigee_user_guide()
-    else
-        imgui.DocWindow.Toggle(luigee_guide_wnd)
+    if imgui.OpenLuiGeeGuide then
+        imgui.OpenLuiGeeGuide()
+    elseif imgui.OpenDocument then
+        imgui.OpenDocument("Resources/plugins/FlyWithLua/Documentation/FlyWithLua_LuiGee_UX_Guide.pdf")
     end
 end
 
@@ -287,16 +259,7 @@ create_command(
     ""
 )
 
-create_command(
-    "FlyWithLua/LuiGee/toggle_guide",
-    "Toggle FlyWithLua LuiGee Live User Guide window",
-    "toggle_luigee_user_guide()",
-    "",
-    ""
-)
-
 add_macro("FlyWithLua: LuiGee Modern UI Demo", "command_once('FlyWithLua/LuiGee/toggle')")
-add_macro("FlyWithLua: LuiGee User Guide (Live Manual)", "command_once('FlyWithLua/LuiGee/toggle_guide')")
 
 -- Configure responsive tooltips (~0.4s delay at 60fps instead of 1.1s)
 if imgui.TimedTooltip and imgui.TimedTooltip.SetHoverDelay then

@@ -7,7 +7,7 @@
 > **Author:** Steven L. Goldberg (`@slgoldberg`) and the Rogers  
 > **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImGee Suite v1.1.0 / ImgWindow v2.5)
 
-![LuiGee in Action: Turnkey DocumentViewer with 1.0x header toolbars, section-jump pulldown, opacity and theme controls, floated schematics, and GFM callouts](images/fig_doc_viewer.png)
+![LuiGee in Action: Turnkey DocumentViewer with 1.0x header toolbars, section-jump pulldown, opacity and theme controls, floated schematics, and GFM callouts](<images/fig_doc_viewer.png =540 center>)
 
 ---
 
@@ -27,7 +27,7 @@ All bindings live natively in `src/FloatingWindows/FWLImGeeBindings.cpp` and `FW
 - **Tactile Widgets & Active Cursors:** Animated `ToggleButton` switches, `Knob` / `DimmerKnob` potentiometers with two-step `OFF` detents, mouse-wheel sliders/drags/combos with 1-click A/B Reset-with-Undo (`↺` / `↻`), upward-blossoming `SelectPulldown` menus with Lens UI tooltip latching, and non-blocking in-sim file dialogs.
 - **Semantic Typography & Themes:** 9-slot `ImFontRole` hierarchy, baseline-aligned inline `StyledText` (`<tiny>`, `<small>`, `<big>`, `<huge>`, `<mono>`), zero-disk `RegisterMemoryImage` textures, and curated `Charcoal` and `Rusty` color palettes.
 
-![Combining LuiGee Subsystems & Widgets: Live Markdown scratchpad with interactive toolbar, status capsules, GFM tables, and procedural vector icons](images/fig_cockpit_scratchpad.png)
+![Combining LuiGee Subsystems & Widgets: Live Markdown scratchpad with interactive toolbar, status capsules, GFM tables, and procedural vector icons](<images/fig_cockpit_scratchpad.png =500 center>)
 
 ### Orientation Roadmap
 - **[2. Markdown Extension (`imgui.Markdown` / `MD`)](#2-markdown-extension-imguimarkdown--md)** -- CommonMark prose, vector icons, sortable GFM tables, fenced code blocks, callouts, and floated/lightbox figures.
@@ -100,7 +100,7 @@ end
 
 #### Dedicated Vector Icons & Icon Buttons
 
-<img src="images/fig_vector_icons.png" align="right" width="380" alt="Procedural Vector Icons, IconButton, and ButtonIcon"/>
+<img src="images/fig_vector_icons.png" align="right" width="450" alt="Procedural Vector Icons, IconButton, and ButtonIcon"/>
 
 - `imgui.Icon(icon_name, [size], [color], [tooltip])`: Draws a standalone antialiased vector icon inline (`"plane"`, `"compass"`, `"gear"`, `"check"`, `"warning"`, `"lightbulb"`, `"important"`, `"caution"`, `"undo"`, `"copy"`, `"external-link"`, etc.). Clicking an icon with a trailing `TimedTooltip` pins or dismisses the tooltip.
 - `imgui.IconButton(str_id, icon_name, [w, h], [tooltip], [icon_color]) -> clicked`: Pure vector icon button auto-sized to a crisp square.
@@ -124,7 +124,7 @@ end
 #### Interactive GFM Tables (Tristate Sorting & Resizable Columns)
 Standard GitHub Flavored Markdown pipe tables (`| Col A | Col B |`) automatically render with **tristate column sorting** (click any header to cycle Ascending -> Descending -> Original order), **drag-resizable column dividers**, **right-edge table width grips**, and context-aware `TimedTooltip` hints (`imgui.MD.SetEnableTableTooltips(true)`):
 
-![Interactive GFM Markdown Tables: Tristate column sorting, drag-resizable dividers, and inline status badges](images/fig_gfm_tables.png)
+![Interactive GFM Markdown Tables: Tristate column sorting, drag-resizable dividers, and inline status badges](<images/fig_gfm_tables.png =500 center>)
 
 #### `imgui.Markdown.DelayedTooltipMD(markdown_str, [wrap_width])` and `clicked = imgui.Markdown.TextLink(format_string, ...)`
 - `DelayedTooltipMD` (also on root `imgui.DelayedTooltipMD`): Attaches a delayed rich Markdown tooltip directly to the preceding item.
@@ -140,7 +140,7 @@ local w, h = imgui.Markdown.CalcTextSize("### Heading Example", 360, 1.0)
 
 ## 3. Inline Styling: Pills, Badges, Keys & Colors
 
-<img src="images/fig_pills_and_badges.png" align="right" width="380" alt="Status Badges, Pills, PillNamed, and 3D Kbd keycaps"/>
+<img src="images/fig_pills_and_badges.png" align="right" width="455" alt="Status Badges, Pills, PillNamed, and 3D Kbd keycaps"/>
 
 FlyWithLua supports inline XML-style tags embedded directly inside Markdown text (as well as standalone immediate-mode widgets in Section 5):
 
@@ -251,7 +251,7 @@ set("sim/cockpit2/autopilot/vvi_dial_fpm", target_vvi)
 ```
 ````
 
-![Fenced Code Containers: Shaded charcoal blocks with language chips and 1-click clipboard copy](images/fig_code_blocks.png)
+![Fenced Code Containers: Shaded charcoal blocks with language chips and 1-click clipboard copy](<images/fig_code_blocks.png =500 center>)
 
 ### 7. Native Blockquotes & GFM Callout Cards
 Standard `>` blockquotes (including nested `> >` levels and fenced code blocks inside quotes) and all five GitHub Flavored Markdown callout alerts render as accented cards with dedicated procedural vector icons:
@@ -267,7 +267,7 @@ imgui.MD.TextWrapped([=[
 ]=])
 ```
 
-![GFM Alert Callout Cards: All five callout variants with procedural vector icons and tinted underlays](images/fig_callout_cards.png)
+![GFM Alert Callout Cards: All five callout variants with procedural vector icons and tinted underlays](<images/fig_callout_cards.png =380 center>)
 
 ### 8. Clickable Hyperlinks, Floated Figures, Lightboxes & Smart `baseDir`
 Standard CommonMark Markdown links and rich figure modifiers are supported out of the box:
@@ -290,13 +290,13 @@ imgui.MD.Configure({ show_image_captions = true, enable_image_lightbox = true })
 imgui.MD.Text("For aircraft manuals, see the [FlyWithLua Documentation](https://github.com/sparker256/FlyWithLua).")
 ```
 
-![Text-Wrapping Image Floats & Figure Captions: Mid-paragraph reflow around a floated schematic with lightbox affordance](images/fig_markdown_floats_captions.png)
+![Text-Wrapping Image Floats & Figure Captions: Mid-paragraph reflow around a floated schematic with lightbox affordance](<images/fig_markdown_floats_captions.png =500 center>)
 
 ---
 
 ## 4. TimedTooltip Extension (`imgui.TimedTooltip` / `TimedTooltip`)
 
-<img src="images/fig_timed_tooltips.png" align="right" width="385" alt="Stationary TimedTooltip with dwell delay and embedded status pills"/>
+<img src="images/fig_timed_tooltips.png" align="right" width="460" alt="Stationary TimedTooltip with dwell delay and embedded status pills"/>
 
 The standard Dear ImGui tooltip (`imgui.SetTooltip`) suffers from several UX limitations in desktop flight simulators:
 - **Cursor tracking / Jitter:** The tooltip position moves with every sub-pixel mouse movement, distracting the pilot.
@@ -349,7 +349,7 @@ The `ImGee` widgets suite (`imgui.*`) adds tactile, immediate-mode controls with
 
 ### Tactile Animated Toggle Switches (`ToggleButton` & `ToggleButtons`)
 
-<img src="images/fig_toggle_switches.png" align="right" width="375" alt="Animated ToggleButton and segmented ToggleButtons"/>
+<img src="images/fig_toggle_switches.png" align="right" width="450" alt="Animated ToggleButton and segmented ToggleButtons"/>
 
 - **`changed, new_val = imgui.ToggleButton(label, bool_or_int_val, [w, h], [allow_mouse_wheel], [hover_cursor])`**: Smooth `io.DeltaTime`-animated pill switch with clamped mouse-wheel stepping over the track. Accepts either a `boolean` or `0`/`1` integer and returns the matching Lua type. Global defaults can be tuned via `imgui.SetDefaultToggleButtonScale(scale)` and `imgui.SetDefaultToggleButtonColors(active_bg, inactive_bg, knob_col)`.
 - **`changed, new_state, hovered_item = imgui.ToggleButtons(label, state, off_label, on_label, [item_tooltips], [allow_mouse_wheel], [hover_cursor])`**: Segmented two-state mode selector with optional per-segment tooltips (`{ "Off tip", "On tip" }`) and mouse-wheel stepping.
@@ -366,6 +366,9 @@ if m_chg then light_mode = new_mode end
 ```
 
 ### Mouse-Wheel Sliders, Drags, Combos & Resettable Controls
+
+<img src="images/fig_sliders_reset.png" align="right" width="460" alt="Mouse-Wheel Sliders & Combos with Reset: Natural wheel stepping and flush 1-click A/B undo chasers"/>
+
 All scalar and preset controls support hover-and-scroll mouse-wheel adjustment (`Shift` for fine, `Ctrl` for coarse) and optional 1-click Reset/Undo memory (`imgui.SetResetButtonUndoEnabled(true)`):
 - `changed, new_val = imgui.SliderWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
 - `changed, new_val = imgui.SliderIntWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
@@ -384,6 +387,8 @@ Global combo & reset helpers:
 - `imgui.SetResetButtonUndoEnabled(enabled)` / `GetResetButtonUndoEnabled()` -- Clicking reset a second time restores the previous custom value.
 - `imgui.SetDefaultResetButtonLabel(glyph)` and `imgui.SetDefaultRestoreButtonLabel(glyph)`.
 
+<br clear="all"/>
+
 ```lua
 local changed, new_trim = imgui.SliderWithReset("Aileron Trim", aileron_trim, -1.0, 1.0, 0.0)
 if changed then aileron_trim = new_trim end
@@ -395,9 +400,10 @@ local baro_chg, new_baro = imgui.ComboWithReset("Baro Mode", baro_idx, 1, { "STD
 if baro_chg then baro_idx = new_baro end
 ```
 
-![Mouse-Wheel Sliders & Combos with Reset: Natural wheel stepping and flush 1-click A/B undo chasers](images/fig_sliders_reset.png)
-
 ### Avionics Rotary Knobs & Dimmer Dials (`imgui.Knob`, `imgui.KnobWithReset`, `imgui.DimmerKnob`)
+
+<img src="images/fig_rotary_knobs.png" align="right" width="465" alt="Rotary Knobs & Dimmer Dials: 270-degree potentiometers with graduation ticks, two-step OFF detente, and 1-click reset"/>
+
 Compact 270-degree rotary potentiometers (`imgui_knobs.h`) designed for dense cockpit panels, lighting controls, and multi-channel audio mixers.
 - **Dual-Mode Input:** Hover and roll the mouse wheel (`Shift` for fine adjustment, `Ctrl` for coarse steps) or click-and-drag vertically/horizontally. Automatically consumes wheel input while hovered so parent windows do not scroll inadvertently.
 - **Auto-Proportional Sizing (`radius = 0`):** Leaving `radius` at `0` (or `nil`) sizes the dial automatically to `0.75 * GetFrameHeight()`, keeping knobs compact and scaling proportionally with window font zoom.
@@ -428,6 +434,8 @@ Combine flags with `+` (or `bit.bor`):
 - `imgui.KnobFlags.NoInput` (`1`) -- Read-only indicator dial.
 - `imgui.KnobFlags.CursorHand` (`32`) -- Shows a pointing hand cursor on hover instead of the default horizontal range cursor (`<-->`).
 
+<br clear="all"/>
+
 ```lua
 -- Inline cockpit dimmer (2-step OFF detente) and resettable volume knob:
 local changed, v = imgui.DimmerKnob(
@@ -450,8 +458,6 @@ local eng_chg, eng = imgui.KnobPercent(
     "ENG", eng_vol, 0.75, 0.0, 1.0, "%.0f%%", 0, 0.02, strip_flags)
 if eng_chg then eng_vol = eng end
 ```
-
-![Rotary Knobs & Dimmer Dials: 270-degree potentiometers with graduation ticks, two-step OFF detente, and 1-click reset](images/fig_rotary_knobs.png)
 
 ### `changed, new_val = imgui.AdjustItemOnMouseWheel(val, min, max, [step])`
 Detects mouse wheel scrolling when hovering over the preceding item (e.g. a button or custom area) and increments or decrements the floating-point value.
@@ -476,7 +482,7 @@ end
 
 ### Clickable Links & Active Cursor Affordances (`imgui.ButtonLink`, `TextLink`, `ExternalTextLink`, `CheckboxLink`, ...)
 
-<img src="images/fig_clickable_links.png" align="right" width="380" alt="ButtonLink, TextLink, CheckboxLink, and RadioButtonLink with Hand cursor"/>
+<img src="images/fig_clickable_links.png" align="right" width="460" alt="ButtonLink, TextLink, CheckboxLink, and RadioButtonLink with Hand cursor"/>
 
 Ergonomic controls that automatically display a pointing-hand cursor (`ImGuiMouseCursor_Hand`) on hover:
 - `clicked = imgui.ButtonLink(label, [url_or_w], [h])` and `imgui.SmallButtonLink(label, [url])`
@@ -501,7 +507,7 @@ imgui.TimedTooltip.TextMD("Click again to dismiss this pinned briefing card.")
 
 ### Activity Spinners & Radial Countdown Dials (`Spinner`, `RadialTimer`, `CountdownTimer`)
 
-<img src="images/fig_spinners_and_dials.png" align="right" width="385" alt="Activity Spinners, ProgressDial, and CountdownTimer dials"/>
+<img src="images/fig_spinners_and_dials.png" align="right" width="460" alt="Activity Spinners, ProgressDial, and CountdownTimer dials"/>
 
 Antialiased `ImDrawList` activity arcs and 12-o'clock radial countdown dials with zero texture or font dependencies and built-in click-to-toggle `TimedTooltip` support:
 - **`imgui.Spinner(label, [radius], [thickness], [color], [speed])`** (`ActivitySpinner`) -- Sinusoidal expanding/contracting activity ring (`radius = 0` scales automatically with `GetFontSize()`).
@@ -529,7 +535,7 @@ end
 
 ### Clipboard Copy Buttons (`CopyButton` & `CopyLastItemButton`)
 
-<img src="images/fig_copy_button.png" align="left" width="380" alt="CopyButton and CopyLastItemButton with transient Copied! state"/>
+<img src="images/fig_copy_button.png" align="left" width="455" alt="CopyButton and CopyLastItemButton with transient Copied! state"/>
 
 - **`clicked, is_copied = imgui.CopyButton(str_id, text_to_copy, [duration], [w, h])`** (`CopyBufferButton`): 1-click clipboard copy button with anti-twitch geometry, transient green checkmark `"Copied!"` confirmation (`duration` defaults to `1.5` seconds), and built-in `TimedTooltip` integration.
 - **`clicked, is_copied = imgui.CopyLastItemButton(str_id, [duration], [w, h])`** (`CopyTextFieldButton`): Non-intrusive chaser copy button that attaches to the preceding `InputText` or label on the same line and copies its buffer.
@@ -617,7 +623,7 @@ end
 is_save_open = still_open
 ```
 
-![Non-Blocking In-Cockpit File Picker & Modal Browser](images/fig_file_dialog.png)
+![Non-Blocking In-Cockpit File Picker & Modal Browser](<images/fig_file_dialog.png =430 center>)
 
 ---
 
@@ -660,7 +666,8 @@ FlyWithLua includes directional popup placement, Lens UI pulldowns, inline `Styl
 
 ### 1. `imgui.SelectPulldown(label, current_item, items, [tooltips], [width], [anchor], [align], [wrap], [natural_list_order]) -> changed, new_item`
 
-![Directional Anchored Popups & SelectPulldown: Scroll pass-through when closed and live wheel stepping when open](images/fig_popup_menus.png)
+<img src="images/fig_popup_menus.png" align="right" width="450" alt="Directional Anchored Popups & SelectPulldown: Scroll pass-through when closed and live wheel stepping when open"/>
+
 Renders a compact, single-line dataref / options dropdown selector with a clean, procedural antialiased vector caret (or custom icon font glyph).
 - **Procedural Vector Carets:** When no icon font is defined, renders a crisp vector triangle via `ImDrawList` that scales perfectly and never suffers from missing-glyph Unicode diamonds.
 - **Directional Blossoming (`anchor`):** Supports `imgui.PopupAnchor.BelowItem` (default down-pointing) or `imgui.PopupAnchor.AboveItem` (blossoms UP from bottom docks/status bars with an up-pointing caret!). When open, carets automatically flip orientation.
@@ -671,6 +678,8 @@ Renders a compact, single-line dataref / options dropdown selector with a clean,
 - **Timed Tooltips Support:** Accepts an optional table of per-item hover tooltips (using smooth `TimedTooltip` to eliminate cursor jitter).
 - **Markdown Shorthand Aliases:** Also available as `imgui.SelectPulldownMD`, `imgui.Markdown.SelectPulldown`, and `imgui.MD.SelectPulldown`.
 - **0-Based Indices:** `current_item` and the returned `new_item` are 0-based integers.
+
+<br clear="all"/>
 
 ```lua
 local nav_sources = { "GPS 1 (WAAS)", "VOR 1 (114.70)", "LOC / ILS", "FMS 1" }
@@ -757,7 +766,7 @@ imgui.TextStyled("Heading: <huge>FL340</huge> <small color=gray>(Optimal)</small
 imgui.TextStyledWrapped("<i>This paragraph</i> wraps automatically across the column width using the native StyledText wrapping engine.")
 ```
 
-![Semantic Typography & Inline StyledText: Font role hierarchy, baseline-aligned badges and pills, keycaps, and vector icons](images/fig_typography_styled_text.png)
+![Semantic Typography & Inline StyledText: Font role hierarchy, baseline-aligned badges and pills, keycaps, and vector icons](<images/fig_typography_styled_text.png =500 center>)
 
 ### 4. Semantic Font Role Direct Text Helpers
 Direct immediate-mode text rendering helpers mapped to the typography hierarchy:
@@ -813,7 +822,7 @@ Switch curated ImGee cockpit color themes per window context, or launch external
 - `imgui.StyleColorsDark()`, `imgui.StyleColorsLight()`, `imgui.StyleColorsClassic()` -- Standard Dear ImGui palettes.
 - `ok = imgui.OpenURL(url_or_path)` and `ok = imgui.OpenDocument(local_path)` -- Opens web URLs or simulator-relative PDF/text documents in the user's native viewer.
 
-![Curated Color Themes: Charcoal studio slate default and Rusty warm bronze side-by-side](images/fig_themes_comparison.png)
+![Curated Color Themes: Charcoal studio slate default and Rusty warm bronze side-by-side](<images/fig_themes_comparison.png =540 center>)
 
 ### 9. Two-Layer Zoomable Viewport (`imgui.BeginZoomedViewport` / `ZoomViewportControls`)
 Renders unscaled `1.0x` header, toolbar, and footer chrome alongside a scrollable `Nx`-zoomed (`50% .. 250%`) inner child region with native `Ctrl+MouseWheel` (and `Cmd+MouseWheel` on macOS) zoom stepping:
@@ -840,7 +849,10 @@ imgui.EndZoomedViewport()
 
 ## 8. Turnkey In-Sim Manual Viewers (`imgui.DocWindow` & `imgui.DocumentViewer`)
 
-When your FlyWithLua script or aircraft utility ships with a `.md` user manual, checklist reference, or release guide, LuiGee provides **two** turnkey ways to present it live inside X-Plane with zero layout code:
+> [!TIP]
+> **Built-In LuiGee UX Guide Window:** This guide itself is built directly into FlyWithLua in native C++ -- open it anytime from **`Plugins > FlyWithLua > LuiGee UX Guide...`**, bind X-Plane command `FlyWithLua/LuiGee/toggle_guide`, or call `imgui.OpenLuiGeeGuide()` / `imgui.ToggleLuiGeeGuide()` from Lua.
+
+When your own FlyWithLua script or aircraft utility ships with a `.md` user manual, checklist reference, or release guide, LuiGee provides **two** turnkey ways to present it live inside X-Plane with zero layout code:
 
 ### 1. Prefab X-Plane Manual Window (`imgui.DocWindow` / `float_wnd_create_doc`)
 Wraps `ImgWindow/contrib/ImgDocWindow.h` directly for Lua scripts, giving you a complete, self-decorated glass X-Plane documentation window in a single call:
