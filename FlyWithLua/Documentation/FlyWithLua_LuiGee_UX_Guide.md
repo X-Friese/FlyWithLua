@@ -30,13 +30,14 @@ All bindings live natively in `src/FloatingWindows/FWLImGeeBindings.cpp` and `FW
 ![Combining LuiGee Subsystems & Widgets: Live Markdown scratchpad with interactive toolbar, status capsules, GFM tables, and procedural vector icons](<images/fig_cockpit_scratchpad.png =500 center>)
 
 ### Orientation Roadmap
-- **[2. Markdown Extension (`imgui.Markdown` / `MD`)](#2-markdown-extension-imguimarkdown--md)** -- CommonMark prose, vector icons, sortable GFM tables, fenced code blocks, callouts, and floated/lightbox figures.
+- **[1. Overview & Architecture](#1-overview--architecture)** -- Immediate-mode UI architecture, key capabilities, and font auto-wiring.
+- **[2. Markdown Extension (imgui.Markdown / MD)](#2-markdown-extension-imguimarkdown--md)** -- CommonMark prose, vector icons, sortable GFM tables, fenced code blocks, callouts, and floated/lightbox figures.
 - **[3. Inline Styling: Pills, Badges, Keys & Colors](#3-inline-styling-pills-badges-keys--colors)** -- Auto-contrasting `<pill>`, `<badge>`, `<kbd>`, `#rrggbbaa` colors, and declarative custom tags.
-- **[4. TimedTooltip Extension (`imgui.TimedTooltip`)](#4-timedtooltip-extension-imguitimedtooltip--timedtooltip)** -- Stationary delayed tooltips, click-to-toggle indicators, and font-scale policies.
+- **[4. TimedTooltip Extension (imgui.TimedTooltip)](#4-timedtooltip-extension-imguitimedtooltip--timedtooltip)** -- Stationary delayed tooltips, click-to-toggle indicators, and font-scale policies.
 - **[5. Modern LuiGee Widgets](#5-modern-luigee-widgets)** -- Toggles, wheel sliders/combos with Reset/Undo, rotary knobs, links, spinners, copy buttons, and file dialogs.
 - **[6. Dynamic ImGui Mouse Cursors](#6-dynamic-imgui-mouse-cursors)** -- Automatic `Hand`, `ResizeEW`, `ResizeNS`, and `TextInput` cursor affordances.
 - **[7. Popups, Pulldowns, Typography & Themes](#7-directional-popups-pulldowns-typography--themes)** -- `SelectPulldown`, `OpenPopupAtItem`, `StyledText`, `FontRole`, memory images, `ZoomableViewport`, and themes.
-- **[8. Turnkey In-Sim Manual Viewers (`DocWindow` & `DocumentViewer`)](#8-turnkey-in-sim-manual-viewers-imguidocwindow--imguidocumentviewer)** -- Prefab `ImgDocWindow` help windows and embedded `DocumentViewer` panels.
+- **[8. Turnkey In-Sim Manual Viewers (DocWindow & DocumentViewer)](#8-turnkey-in-sim-manual-viewers-imguidocwindow--imguidocumentviewer)** -- Prefab `ImgDocWindow` help windows and embedded `DocumentViewer` panels.
 - **[9. Universal C++ & Lua Alias Matrix](#9-universal-c--lua-alias-matrix)** -- Complete PascalCase, shorthand, and `snake_case` lookup table.
 - **[10. Complete Interactive Script Recipe](#10-complete-interactive-script-recipe)** & **[11. Bundled Demo Scripts](#11-bundled-demonstration-scripts--add-ons)**.
 
@@ -49,14 +50,14 @@ The Markdown extension parses standard Markdown syntax and renders it as native 
 ### Semantic Font Auto-Wiring
 The Markdown system automatically hooks into FlyWithLua's **Named Font Registry**:
 
-| Markdown Element | Target Font Name | Fallback Font | Visual Style |
-| :--- | :--- | :--- | :--- |
-| **Heading 1** (`#`) | `Roboto-Medium-20` | `Roboto-Medium`, Default | 20px Bold / Underlined |
-| **Heading 2** (`##`) | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold / Underlined |
-| **Heading 3** (`###`) | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold |
-| **Bold** (`**bold**`) | `Roboto-Medium` | `Roboto-Regular`, Default | Medium / Semi-Bold weight |
-| **Italics** (`*italic*`) | `Roboto-Italic-16` | `Roboto-Italic`, `Roboto-Light` | True Italic / Slanted weight |
-| **Monospace / Code** (`code`) | `RobotoMono-Regular-16` | `RobotoMono-Regular`, `ProggyForever` | Scalable Monospace font |
+| Markdown Element | Markdown Syntax | Target Font Name | Fallback Font | Visual Style |
+| :--- | :--- | :--- | :--- | :--- |
+| **Heading 1** | `# Title` | `Roboto-Medium-20` | `Roboto-Medium`, Default | 20px Bold / Underlined |
+| **Heading 2** | `## Title` | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold / Underlined |
+| **Heading 3** | `### Title` | `Roboto-Medium-16` | `Roboto-Medium`, Default | 16px Bold |
+| **Bold Text** | `**text**` | `Roboto-Medium` | `Roboto-Regular`, Default | Medium / Semi-Bold weight |
+| **Italic Text** | `*text*` | `Roboto-Italic-16` | `Roboto-Italic`, `Roboto-Light` | True Italic / Slanted weight |
+| **Monospace Code** | `` `code` `` | `RobotoMono-Regular-16` | `RobotoMono-Regular`, `ProggyForever` | Scalable Monospace font |
 
 *(Note: True italic and scalable monospace typographies are powered by `Roboto-Italic.ttf` and `RobotoMono-Regular.ttf`, bundled directly in `FlyWithLua/Custom_Fonts/`. If not present, the engine gracefully falls back to `Roboto-Light` or `ProggyForever`).*
 
@@ -83,7 +84,7 @@ imgui.Markdown.TextUnformatted("Direct text containing 100% pure data.")
 
 #### `imgui.Markdown.ButtonMD(label, [tooltip], [wrap_width])`
 Renders an interactive push button supporting procedural vector icons, shortcodes, Unicode glyphs, hand cursor on hover, and rich Markdown tooltips.
-- **Procedural Vector Icons:** Automatically renders vector geometry directly on the button face via XML tags (`<icon caret-up />`), shortcodes (`:undo:`), raw Unicode (`▲`, `↺`), or link macros (`#[^](ICON_CARET_UP)`).
+- **Procedural Vector Icons:** Automatically renders vector geometry directly on the button face via XML tags (e.g. `"<icon caret-up />"`), shortcodes (e.g. `":undo:"`), raw Unicode (e.g. `"▲"`, `"↺"`), or link macros (e.g. `"#[^](ICON_CARET_UP)"`).
 - **Auto-Centering:** Centers the icon and text dynamically, maintaining crisp layout on any font atlas.
 
 ```lua
@@ -267,7 +268,7 @@ imgui.MD.TextWrapped([=[
 ]=])
 ```
 
-![GFM Alert Callout Cards: All five callout variants with procedural vector icons and tinted underlays](<images/fig_callout_cards.png =380 center>)
+![GFM Alert Callout Cards: All five callout variants with procedural vector icons and tinted underlays](<images/fig_callout_cards.png =620 center>)
 
 ### 8. Clickable Hyperlinks, Floated Figures, Lightboxes & Smart `baseDir`
 Standard CommonMark Markdown links and rich figure modifiers are supported out of the box:
