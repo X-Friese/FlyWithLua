@@ -104,26 +104,44 @@ std::shared_ptr<FWLDocWindow> EnsureBuiltInLuiGeeGuideCreated() {
 } // namespace
 #endif // defined(IMGUI_DOC_VIEWER_H)
 
+bool IsBuiltInLuiGeeGuideVisible() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    return (s_BuiltInLuiGeeGuide && s_BuiltInLuiGeeGuide->isVisible());
+#else
+    return false;
+#endif
+}
+
+void SyncBuiltInDocMenuCheckmarks() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (flywithlua::FlyWithLuaMenuId && flywithlua::LuiGeeGuideCheckedPosition >= 0) {
+        bool vis = IsBuiltInLuiGeeGuideVisible();
+        XPLMCheckMenuItem(
+            flywithlua::FlyWithLuaMenuId,
+            flywithlua::LuiGeeGuideCheckedPosition,
+            vis ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+    }
+#endif
+}
+
 void OpenBuiltInLuiGeeGuide() {
 #if defined(IMGUI_DOC_VIEWER_H)
     auto wnd = EnsureBuiltInLuiGeeGuideCreated();
     if (wnd) {
         wnd->SetVisible(true);
         wnd->bringToFront();
+        SyncBuiltInDocMenuCheckmarks();
     }
 #endif
 }
 
 void ToggleBuiltInLuiGeeGuide() {
 #if defined(IMGUI_DOC_VIEWER_H)
-    if (!s_BuiltInLuiGeeGuide) {
+    if (!s_BuiltInLuiGeeGuide || !s_BuiltInLuiGeeGuide->isVisible()) {
         OpenBuiltInLuiGeeGuide();
-        return;
-    }
-    bool nextVis = !s_BuiltInLuiGeeGuide->GetVisible();
-    s_BuiltInLuiGeeGuide->SetVisible(nextVis);
-    if (nextVis) {
-        s_BuiltInLuiGeeGuide->bringToFront();
+    } else {
+        s_BuiltInLuiGeeGuide->SetVisible(false);
+        SyncBuiltInDocMenuCheckmarks();
     }
 #endif
 }
@@ -134,6 +152,7 @@ void CloseBuiltInDocWindows() {
         s_BuiltInLuiGeeGuide->SetVisible(false);
         s_BuiltInLuiGeeGuide.reset();
     }
+    SyncBuiltInDocMenuCheckmarks();
 #endif
 }
 
@@ -1228,6 +1247,7 @@ void onFlightLoop() {
     if (s_BuiltInLuiGeeGuide && s_BuiltInLuiGeeGuide->isVisible()) {
         s_BuiltInLuiGeeGuide->moveFromOrToVR();
     }
+    SyncBuiltInDocMenuCheckmarks();
 #endif
 }
 

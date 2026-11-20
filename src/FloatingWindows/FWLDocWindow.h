@@ -24,6 +24,8 @@ namespace flwnd {
 
 #if defined(IMGUI_DOC_VIEWER_H)
 
+void SyncBuiltInDocMenuCheckmarks();
+
 class FWLDocWindow : public FloatingWindow, public ImgDocWindow {
 public:
     FWLDocWindow(
@@ -196,6 +198,7 @@ protected:
 
     void onDocumentClosed() override {
         reportClose();
+        SyncBuiltInDocMenuCheckmarks();
     }
 
 private:

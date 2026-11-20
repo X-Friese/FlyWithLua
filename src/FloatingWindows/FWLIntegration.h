@@ -29,6 +29,8 @@ void RegisterManagedFloatingWindow(const std::shared_ptr<FloatingWindow>& wnd);
 void OpenBuiltInLuiGeeGuide();
 void ToggleBuiltInLuiGeeGuide();
 void CloseBuiltInDocWindows();
+bool IsBuiltInLuiGeeGuideVisible();
+void SyncBuiltInDocMenuCheckmarks();
 void SaveAndCloseBuiltInDocWindowsForReload();
 void RestoreBuiltInDocWindowsAfterReload();
 

@@ -1065,8 +1065,9 @@ static XPLMDataRef FWLViewType          = XPLMFindDataRef("sim/graphics/view/vie
 // Don't want to use buttons? Here is a nice little menu
 void FlyWithLuaMenuHandler(void*, void*);
 
-XPLMMenuID FlyWithLuaMenuId;
+XPLMMenuID flywithlua::FlyWithLuaMenuId = nullptr;
 int        FlyWithLuaMenuItem;
+int        flywithlua::LuiGeeGuideCheckedPosition = -1;
 
 XPLMMenuCheck DevMenuMode;
 int DevModeCheckedPosition = 10;
@@ -7993,7 +7994,8 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Enable Verbose Logging Mode", (void*) "VerboseMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
-    XPLMAppendMenuItem(FlyWithLuaMenuId, "LuiGee UX Guide...", (void*) "LuiGeeGuide", 1);
+    LuiGeeGuideCheckedPosition = XPLMAppendMenuItem(FlyWithLuaMenuId, "LuiGee UX Guide", (void*) "LuiGeeGuide", 1);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, LuiGeeGuideCheckedPosition, xplm_Menu_Unchecked);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Check for FlyWithLua Updates...", (void*) "CheckUpdates", 1);
 
     // init the XSB connection
@@ -8818,7 +8820,7 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
 
     if (!strcmp((char*) iRef, "LuiGeeGuide"))
     {
-        flwnd::OpenBuiltInLuiGeeGuide();
+        flwnd::ToggleBuiltInLuiGeeGuide();
         return;
     }
 

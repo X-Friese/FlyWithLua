@@ -13,7 +13,7 @@
 
 ## 1. Overview & Architecture
 
-FlyWithLua integrates **LuiGee** (*"The Lua Companion to ImGee"*), bringing modern immediate-mode UI ergonomics directly into Lua scripts across X-Plane 11.20+ and X-Plane 12+. Instead of flat debug panels, missing Unicode `?` boxes, and jittery cursor-chasing tooltips, script authors get physical toggle switches, 270-degree rotary dimmer dials, 1-click Reset-with-Undo sliders and combos, stationary Markdown tooltips, 2x-sharp procedural vector icons, and turnkey in-cockpit manual windows with zero C++ boilerplate.
+FlyWithLua integrates **LuiGee** (*"The Lua Companion to ImGee"*), bringing modern immediate-mode UI ergonomics directly into Lua scripts across X-Plane 11.20+ and X-Plane 12+. Instead of flat debug panels, missing Unicode `<?>` boxes, and jittery cursor-chasing tooltips, script authors get physical toggle switches, 270-degree rotary dimmer dials, 1-click Reset-with-Undo sliders and combos, stationary Markdown tooltips, 2x-sharp procedural vector icons, and turnkey in-cockpit manual windows with zero C++ boilerplate.
 
 All bindings live natively in `src/FloatingWindows/FWLImGeeBindings.cpp` and `FWLDocWindow.h`, bridging Lua scripts directly to `ImgWindow` and `ImGee`.
 
