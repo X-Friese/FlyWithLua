@@ -5,7 +5,7 @@
 
 > **November 2026**  
 > **Author:** Steven L. Goldberg (`@slgoldberg`) and the Rogers  
-> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImGee Suite v1.0.0 / ImgWindow v2.4.0)
+> **Target Release:** FlyWithLua 2.8.20+ (Built against Dear ImGui 1.92.8 & ImGee Suite v1.0.0 / ImgWindow v2.4.1)
 
 ---
 
@@ -19,7 +19,7 @@ All extension bindings are implemented natively in C++ (`src/FloatingWindows/FWL
 - **Semantic Markdown Typography:** Render rich Markdown text with headings, bold, italics, monospace code blocks, unordered and numbered lists, and clickable hyperlinks.
 - **Visual Pills, Badges & Custom Colors:** Inline `<pill>`, `<badge>`, `<kbd>`, and `<color #rrggbb>` formatting for cockpit annunciators, system status, and flight telemetry.
 - **Intelligent Stationary Tooltips (`TimedTooltip`):** Stationary hover tooltips that do not jitter or track the mouse, feature reading-adaptive dwell timeouts, enforce layout style isolation, and fully support embedded Markdown.
-- **Tactile UX Widgets:** Smooth animated `ToggleButton`, segmented `ToggleButtons`, `SliderWithReset` (with reset icon button), `PercentSlider`, mouse-wheel scroll chasers, and hyperlink widgets.
+- **Tactile UX Widgets:** Smooth animated `ToggleButton`, segmented `ToggleButtons`, compact 270-degree rotary knobs and dimmer dials (`Knob`, `KnobWithReset`, `DimmerKnob`, `KnobPercent`), `SliderWithReset` (with reset icon button), `PercentSlider`, mouse-wheel scroll chasers, and hyperlink widgets.
 - **Universal C++ & PascalCase Alias Parity:** Strict parity with C++ Dear ImGui casing (`imgui.Markdown.Text`, `imgui.TimedTooltip.Text`, `imgui.ToggleButton`), accompanied by short aliases (`imgui.MD.Text`, `MD.Text`, `TimedTooltip.Text`) and case-tolerant fallbacks.
 - **Variadic String Formatting:** Pass `printf`-style format specifiers (`%s`, `%d`, `%.2f`) directly into any text or tooltip function without needing manual calls to `string.format()`.
 
@@ -315,6 +315,60 @@ local changed, new_mix = imgui.PercentSliderWithReset("Mixture", fuel_mixture, 1
 if changed then
     fuel_mixture = new_mix
 end
+```
+
+### Avionics Rotary Knobs & Dimmer Dials (`imgui.Knob`, `imgui.KnobWithReset`, `imgui.DimmerKnob`)
+Compact 270-degree rotary potentiometers (`imgui_knobs.h`) designed for dense cockpit panels, lighting controls, and multi-channel audio mixers.
+- **Dual-Mode Input:** Hover and roll the mouse wheel (`Shift` for fine adjustment, `Ctrl` for coarse steps) or click-and-drag vertically/horizontally. Automatically consumes wheel input while hovered so parent windows do not scroll inadvertently.
+- **Auto-Proportional Sizing (`radius = 0`):** Leaving `radius` at `0` (or `nil`) sizes the dial automatically to `0.75 * GetFrameHeight()`, keeping knobs compact and scaling proportionally with window font zoom.
+- **Double-Click Reset:** Double-clicking a knob snaps directly back to its `default_val` (or toggles between `OFF` and `default_val` on dimmer knobs).
+
+#### `changed, new_val = imgui.Knob(label, val, [min], [max], [format], [radius], [wheel_step], [flags])`
+Standard rotary potentiometer (`min` defaults to `0.0`, `max` to `1.0`, `format` to `"%.2f"`). Also aliased as `imgui.RotaryDial`.
+
+#### `changed, new_val = imgui.KnobWithReset(label, val, min, max, default_val, [format], [radius], [wheel_step], [reset_tooltip], [flags])`
+Pairs the rotary knob with an inline vector reset button (`↺`) and built-in `TimedTooltip` readout. Accepts either Lua slider parameter order `(min, max, default_val)` or C++ ImGee parameter order `(default_val, min, max)`.
+
+#### `changed, new_val = imgui.DimmerKnob(label, val, [min_active], [max], [default_val], [format], [radius], [wheel_step], [has_off_detente], [v_off], [flags])`
+Avionics dimmer or audio volume pot with a tactile **two-step `OFF` detente**:
+- Counter-clockwise rotation stops firmly at `min_active` (default `0.05` / `5%`) so you do not accidentally mute or power down a channel in flight.
+- A second deliberate step downward clicks across the detente into `OFF` (`v_off`, default `0.0`), displaying `"OFF"` in amber.
+- One step clockwise from `OFF` clicks immediately back to `min_active`.
+
+#### `changed, new_val = imgui.KnobPercent(label, val, [default_val], [min], [max], [format], [radius], [wheel_step], [flags])`
+Normalized `[0.0 .. 1.0]` rotary knob formatted as `"%.0f%%"` with double-click reset to `default_val` (default `1.0`). For an inline reset button on a percent knob, call `imgui.PercentKnobWithReset(label, val, [default_val], [radius], [wheel_step], [reset_tooltip], [flags])`.
+
+#### Layout & Behavior Flags (`imgui.KnobFlags`)
+Combine flags with `+` (or `bit.bor`):
+- `imgui.KnobFlags.None` (`0`) -- Inline horizontal layout (`[Knob] [Value] [Label]`).
+- `imgui.KnobFlags.ValueBelow` (`8`) -- Compact vertical channel-strip layout (`[Label]` on top, `[Knob]` centered, `[Value]` below), ideal for side-by-side sound mixer strips.
+- `imgui.KnobFlags.ShowTicks` (`4`) -- Draws perimeter graduation tick marks around the 270-degree sweep.
+- `imgui.KnobFlags.NoValueText` (`16`) -- Hides the formatted numeric readout.
+- `imgui.KnobFlags.NoDetente` (`2`) -- Disables two-step detente clamping.
+- `imgui.KnobFlags.NoInput` (`1`) -- Read-only indicator dial.
+- `imgui.KnobFlags.CursorHand` (`32`) -- Shows a pointing hand cursor on hover instead of the default horizontal range cursor (`<-->`).
+
+```lua
+-- Inline cockpit dimmer (2-step OFF detente) and resettable volume knob:
+local changed, v = imgui.DimmerKnob(
+    "Instrument Backlight", backlight_lvl, 0.05, 1.0, 1.0, "%.0f%%")
+if changed then backlight_lvl = v end
+
+imgui.SameLine(0, 20)
+local r_chg, r_val = imgui.KnobWithReset(
+    "Radio Volume", radio_vol, 0.0, 1.0, 0.70, "%.0f%%", 0, 0.02, "Reset to 70%")
+if r_chg then radio_vol = r_val end
+
+-- Compact Sound Mixer strip (stacked label + ticks + click-past-5% mute):
+local strip_flags = imgui.KnobFlags.ValueBelow + imgui.KnobFlags.ShowTicks
+local c1_chg, c1 = imgui.DimmerKnob(
+    "COM1", com1_vol, 0.05, 1.0, 0.85, "%.0f%%", 0, 0.02, true, 0.0, strip_flags)
+if c1_chg then com1_vol = c1 end
+
+imgui.SameLine(0, 18)
+local eng_chg, eng = imgui.KnobPercent(
+    "ENG", eng_vol, 0.75, 0.0, 1.0, "%.0f%%", 0, 0.02, strip_flags)
+if eng_chg then eng_vol = eng end
 ```
 
 ### `changed, new_val = imgui.AdjustItemOnMouseWheel(val, min, max, [step])`
@@ -679,6 +733,12 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Slider With Reset** | `imgui.SliderWithReset` | `imgui.slider_with_reset` | -- | `imgui.ResettableSlider` |
 | **Percent Slider** | `imgui.PercentSlider` | `imgui.percent_slider` | -- | `imgui.SliderPercent` |
 | **Percent Slider w/ Reset** | `imgui.PercentSliderWithReset` | `imgui.percent_slider_with_reset` | -- | `imgui.ResettablePercentSlider` |
+| **Rotary Knob** | `imgui.Knob` | `imgui.knob` | -- | `imgui.RotaryDial` |
+| **Knob With Reset** | `imgui.KnobWithReset` | `imgui.knob_with_reset` | -- | `imgui.ResettableKnob` |
+| **Dimmer Knob (Detente)** | `imgui.DimmerKnob` | `imgui.dimmer_knob` | -- | -- |
+| **Percent Knob** | `imgui.KnobPercent` | `imgui.knob_percent` | -- | `imgui.PercentKnob` |
+| **Percent Knob w/ Reset** | `imgui.PercentKnobWithReset` | `imgui.percent_knob_with_reset` | -- | `imgui.KnobPercentWithReset` |
+| **Low-Level Knob** | `imgui.KnobEx` | `imgui.knob_ex` | -- | -- |
 | **Reset / Undo Button** | `imgui.ResetButton` | `imgui.reset_button` | -- | -- |
 | **Mouse Wheel Adjust** | `imgui.AdjustItemOnMouseWheel` | `imgui.adjust_item_on_mouse_wheel` | -- | -- |
 | **Mouse Wheel Cycle** | `imgui.CycleItemOnMouseWheel` | `imgui.cycle_item_on_mouse_wheel` | -- | -- |

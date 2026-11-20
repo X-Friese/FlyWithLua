@@ -272,6 +272,14 @@ local demo_timer_val        = 0.65
 local demo_countdown_cur    = 42.0
 local demo_countdown_max    = 60.0
 
+-- Avionics Rotary Knobs & Compact Sound Mixer state
+local instrument_dimmer     = 0.85
+local radio_volume          = 0.70
+local mixer_com1            = 0.85
+local mixer_nav1            = 0.60
+local mixer_engines         = 0.75
+local mixer_cabin           = 0.50
+
 -- Phase 3 state variables
 local nav_source_idx        = 0  -- 0-based for SelectPulldown
 local nav_sources           = { "GPS 1 (Primary / WAAS)", "VOR 1 (114.70 OAK)", "LOC / ILS (Rwy 28R)", "FMS 1 (Internal RNAV)", "TACAN (Ch 47X)" }
@@ -967,109 +975,177 @@ if qnh < 29.92 then set_altimeter_std() end
         end
 
         -- ====================================================================
-        -- TAB 3: Tactile Controls & Sliders (Guaranteed Zero-Scroll)
+        -- TAB 3: Tactile Controls, Rotary Knobs & Sliders
         -- ====================================================================
         if imgui.BeginTabItem("Tactile Controls") then
-            imgui.Spacing()
-            imgui.MD.TextWrapped("### Smooth Animated & Mouse-Wheel Adjusted Controls")
-            imgui.MD.TextWrapped("*(Tip: Mouse-wheel directly over switches flips states; clicking toggles via either the buttons or labels)*")
-            imgui.Spacing()
-
-            -- Row 1: Avionics Master & De-Ice System (Side-by-side)
-            local toggle_changed, new_toggle = imgui.ToggleButton("Avionics Master Switch", avionics_master_state)
-            if toggle_changed then
-                avionics_master_state = new_toggle
+            local tab3_vis = true
+            if imgui.BeginChild then
+                tab3_vis = imgui.BeginChild("##tab3_content_scroll", 0, 0, false)
             end
-            imgui.TimedTooltip.Text("Smooth animated slide toggle switch with tactile color transition.")
+            if tab3_vis then
+                if imgui.SetWindowFontScale then
+                    imgui.SetWindowFontScale(content_zoom)
+                end
+                imgui.Spacing()
+                imgui.MD.TextWrapped("### Smooth Animated & Mouse-Wheel Adjusted Controls")
+                imgui.MD.TextWrapped("*(Tip: Mouse-wheel directly over switches and knobs adjusts states; double-click knobs to reset)*")
+                imgui.Spacing()
 
-            imgui.SameLine()
-            if avionics_master_state then
-                imgui.MD.Text("<pill green>ONLINE</pill>")
-            else
-                imgui.MD.Text("<pill gray>OFFLINE</pill>")
+                -- Row 1: Avionics Master & De-Ice System (Side-by-side)
+                local toggle_changed, new_toggle = imgui.ToggleButton("Avionics Master Switch", avionics_master_state)
+                if toggle_changed then
+                    avionics_master_state = new_toggle
+                end
+                imgui.TimedTooltip.Text("Smooth animated slide toggle switch with tactile color transition.")
+
+                imgui.SameLine()
+                if avionics_master_state then
+                    imgui.MD.Text("<pill green>ONLINE</pill>")
+                else
+                    imgui.MD.Text("<pill gray>OFFLINE</pill>")
+                end
+
+                imgui.SameLine(math.floor(420 * content_zoom))
+                imgui.TextUnformatted("De-Ice System:")
+                imgui.SameLine()
+                local seg_changed, new_seg = imgui.ToggleButtons("##DeIceSeg", deice_mode, "OFF", "AUTO")
+                if seg_changed then
+                    deice_mode = new_seg
+                end
+                imgui.TimedTooltip.Text("Segmented multi-state toggle selector.")
+
+                imgui.Spacing()
+                imgui.Separator()
+
+                -- Row 2: Avionics Rotary Knobs & Compact Sound Mixer Strip
+                if imgui.Knob and imgui.DimmerKnob and imgui.KnobWithReset then
+                    imgui.MD.TextWrapped("### Avionics Rotary Knobs & Compact Sound Mixer")
+                    imgui.Spacing()
+
+                    -- Left column: Inline Cockpit Dimmer (with 2-step OFF detente) + KnobWithReset
+                    imgui.BeginGroup()
+                    local dim_changed, new_dim = imgui.DimmerKnob("Instrument Backlight", instrument_dimmer, 0.05, 1.0, 1.0, "%.0f%%")
+                    if dim_changed then
+                        instrument_dimmer = new_dim
+                    end
+                    imgui.TimedTooltip.TextMD("Potentiometer dimmer with **2-step OFF detente**.\nRoll mouse wheel or drag; step past 5%% to click into **OFF** (double-click toggles OFF / 100%%).")
+
+                    imgui.Spacing()
+                    local rvol_changed, new_rvol = imgui.KnobWithReset("Radio Volume", radio_volume, 0.0, 1.0, 0.70, "%.0f%%", 0, 0.02, "Reset radio volume to 70%")
+                    if rvol_changed then
+                        radio_volume = new_rvol
+                    end
+                    imgui.TimedTooltip.TextMD("Compact 270-degree avionics rotary knob with 1-click vector reset (<icon undo />).")
+                    imgui.EndGroup()
+
+                    -- Right column: Compact 4-Channel Audio Mixer Strip (ValueBelow + ShowTicks)
+                    imgui.SameLine(math.floor(400 * content_zoom))
+                    imgui.BeginGroup()
+                    if imgui.SmallText then
+                        imgui.SmallText("Compact Sound Mixer Strip (Hover + Wheel / Double-Click):")
+                    else
+                        imgui.TextUnformatted("Compact Sound Mixer Strip:")
+                    end
+                    local mixer_flags = (imgui.KnobFlags and (imgui.KnobFlags.ValueBelow + imgui.KnobFlags.ShowTicks)) or 12
+                    local mixer_gap   = math.floor(20 * content_zoom)
+
+                    local c1_chg, c1_val = imgui.DimmerKnob("COM1", mixer_com1, 0.05, 1.0, 0.85, "%.0f%%", 0, 0.02, true, 0.0, mixer_flags)
+                    if c1_chg then mixer_com1 = c1_val end
+                    imgui.TimedTooltip.TextMD("**COM1 Audio** -- Roll wheel or drag. Step below 5%% to click into **OFF** (mute); double-click for 85%%.")
+
+                    imgui.SameLine(0, mixer_gap)
+                    local n1_chg, n1_val = imgui.DimmerKnob("NAV1", mixer_nav1, 0.05, 1.0, 0.60, "%.0f%%", 0, 0.02, true, 0.0, mixer_flags)
+                    if n1_chg then mixer_nav1 = n1_val end
+                    imgui.TimedTooltip.TextMD("**NAV1 Ident** -- Two-step mute detente below 5%%; double-click resets to 60%%.")
+
+                    imgui.SameLine(0, mixer_gap)
+                    local eng_chg, eng_val = imgui.KnobPercent("ENG", mixer_engines, 0.75, 0.0, 1.0, "%.0f%%", 0, 0.02, mixer_flags)
+                    if eng_chg then mixer_engines = eng_val end
+                    imgui.TimedTooltip.TextMD("**Engines** -- Continuous 0%%..100%% rotary pot; double-click resets to 75%%.")
+
+                    imgui.SameLine(0, mixer_gap)
+                    local cab_chg, cab_val = imgui.KnobPercent("CABIN", mixer_cabin, 0.50, 0.0, 1.0, "%.0f%%", 0, 0.02, mixer_flags)
+                    if cab_chg then mixer_cabin = cab_val end
+                    imgui.TimedTooltip.TextMD("**Cabin / Intercom** -- Continuous 0%%..100%% rotary pot; double-click resets to 50%%.")
+                    imgui.EndGroup()
+
+                    imgui.Spacing()
+                    imgui.Separator()
+                end
+
+                -- Row 3: Sliders with Reset and Normalized Percentage
+                local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
+                if trim_changed then
+                    throttle_trim = new_trim
+                end
+                imgui.TimedTooltip.TextMD("Click the reset button (<icon undo />) to snap trim back to neutral (0.00).")
+
+                local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
+                if flaps_changed then
+                    flaps_pct = new_flaps
+                end
+                imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
+
+                local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
+                if hud_changed then
+                    hud_brightness = new_hud
+                end
+                imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
+
+                imgui.Spacing()
+                imgui.Separator()
+
+                -- Row 4: Mouse Wheel Chasers (Side-by-side)
+                imgui.MD.TextWrapped("### Mouse Wheel Chasers")
+                imgui.TextUnformatted("Hover your mouse cursor over the boxes below and scroll the mouse wheel:")
+
+                imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
+                local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
+                if freq_changed then
+                    com1_freq = new_freq
+                end
+                imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
+
+                imgui.SameLine(math.floor(400 * content_zoom))
+                local cur_view_name = camera_views[camera_view_idx] or "Unknown"
+                imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
+                local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
+                if cam_changed then
+                    camera_view_idx = new_cam
+                end
+                imgui.TimedTooltip.Text("Scroll mouse wheel over this button to cycle through camera views!")
+
+                imgui.Spacing()
+                imgui.Separator()
+
+                -- Row 5: Procedural Sweeping Dials (Adjustable via Sliders)
+                imgui.MD.TextWrapped("### Sweeping Progress & Countdown Dials")
+                imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or scroll mouse wheel:")
+                imgui.Spacing()
+
+                -- Radial Timer Dial: Sweeps progress clockwise from 12 o'clock
+                imgui.RadialTimer(string.format("Fuel Burn Cycle (%.0f%%)", demo_timer_val * 100), demo_timer_val, math.floor(16 * content_zoom), 3.5, {0.2, 0.85, 0.3, 1.0})
+                imgui.TimedTooltip.Text("Radial progress dial: sweeps from 12 o'clock clockwise based on fractional progress (0.0 .. 1.0).")
+
+                imgui.SameLine(math.floor(400 * content_zoom))
+                imgui.SetNextItemWidth(-1)
+                local timer_changed, new_timer = imgui.PercentSlider("##tslider", demo_timer_val)
+                if timer_changed then demo_timer_val = new_timer end
+
+                imgui.Spacing()
+
+                -- Countdown Timer Helper: Seconds elapsed/remaining
+                imgui.CountdownTimer(string.format("Approach Timer (%.1fs / %.0fs)", demo_countdown_cur, demo_countdown_max), demo_countdown_cur, demo_countdown_max, math.floor(16 * content_zoom), 3.5, {1.0, 0.65, 0.0, 1.0})
+                imgui.TimedTooltip.Text("Countdown timer: accepts remaining seconds and max seconds, sweeping down smoothly.")
+
+                imgui.SameLine(math.floor(400 * content_zoom))
+                imgui.SetNextItemWidth(-1)
+                local cd_changed, new_cd = imgui.SliderWithReset("##cdslider", demo_countdown_cur, 0.0, demo_countdown_max, 42.0)
+                if cd_changed then demo_countdown_cur = new_cd end
             end
-
-            imgui.SameLine(420)
-            imgui.TextUnformatted("De-Ice System:")
-            imgui.SameLine()
-            local seg_changed, new_seg = imgui.ToggleButtons("##DeIceSeg", deice_mode, "OFF", "AUTO")
-            if seg_changed then
-                deice_mode = new_seg
+            if imgui.BeginChild and imgui.EndChild then
+                imgui.EndChild()
             end
-            imgui.TimedTooltip.Text("Segmented multi-state toggle selector.")
-
-            imgui.Spacing()
-            imgui.Separator()
-
-            -- Row 2: Sliders with Reset and Normalized Percentage
-            local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
-            if trim_changed then
-                throttle_trim = new_trim
-            end
-            imgui.TimedTooltip.TextMD("Click the reset button (<icon undo />) to snap trim back to neutral (0.00).")
-
-            local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
-            if flaps_changed then
-                flaps_pct = new_flaps
-            end
-            imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
-
-            local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
-            if hud_changed then
-                hud_brightness = new_hud
-            end
-            imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
-
-            imgui.Spacing()
-            imgui.Separator()
-
-            -- Row 3: Mouse Wheel Chasers (Side-by-side)
-            imgui.MD.TextWrapped("### Mouse Wheel Chasers")
-            imgui.TextUnformatted("Hover your mouse cursor over the boxes below and scroll the mouse wheel:")
-
-            imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), 360, 32)
-            local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
-            if freq_changed then
-                com1_freq = new_freq
-            end
-            imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
-
-            imgui.SameLine(400)
-            local cur_view_name = camera_views[camera_view_idx] or "Unknown"
-            imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), 360, 32)
-            local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
-            if cam_changed then
-                camera_view_idx = new_cam
-            end
-            imgui.TimedTooltip.Text("Scroll mouse wheel over this button to cycle through camera views!")
-
-            imgui.Spacing()
-            imgui.Separator()
-
-            -- Row 4: Procedural Sweeping Dials (Adjustable via Sliders)
-            imgui.MD.TextWrapped("### Sweeping Progress & Countdown Dials")
-            imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or scroll mouse wheel:")
-            imgui.Spacing()
-
-            -- Radial Timer Dial: Sweeps progress clockwise from 12 o'clock
-            imgui.RadialTimer(string.format("Fuel Burn Cycle (%.0f%%)", demo_timer_val * 100), demo_timer_val, 16, 3.5, {0.2, 0.85, 0.3, 1.0})
-            imgui.TimedTooltip.Text("Radial progress dial: sweeps from 12 o'clock clockwise based on fractional progress (0.0 .. 1.0).")
-
-            imgui.SameLine(400)
-            imgui.SetNextItemWidth(-1)
-            local timer_changed, new_timer = imgui.PercentSlider("##tslider", demo_timer_val)
-            if timer_changed then demo_timer_val = new_timer end
-
-            imgui.Spacing()
-
-            -- Countdown Timer Helper: Seconds elapsed/remaining
-            imgui.CountdownTimer(string.format("Approach Timer (%.1fs / %.0fs)", demo_countdown_cur, demo_countdown_max), demo_countdown_cur, demo_countdown_max, 16, 3.5, {1.0, 0.65, 0.0, 1.0})
-            imgui.TimedTooltip.Text("Countdown timer: accepts remaining seconds and max seconds, sweeping down smoothly.")
-
-            imgui.SameLine(400)
-            imgui.SetNextItemWidth(-1)
-            local cd_changed, new_cd = imgui.SliderWithReset("##cdslider", demo_countdown_cur, 0.0, demo_countdown_max, 42.0)
-            if cd_changed then demo_countdown_cur = new_cd end
 
             imgui.EndTabItem()
         end
