@@ -1671,13 +1671,30 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
                     imgui.Spacing()
                     local sample_manual = [=[# Mini Approach Manual
 ## 1. Lateral Guidance
-Verify **LOC** frequency and course inbound prior to final approach fix.
+Verify **LOC** frequency `108.90 MHz` and inbound course `281°` prior to the intermediate approach fix (IAF).
+
+Maintain RNAV cross-track tolerance within `0.3 NM` during initial course alignment. Cross `WAYPT` at or above `5,000 ft MSL`.
 
 > [!NOTE]
-> Click the **Section** pulldown above or `[Jump to Missed Approach](#2-missed-approach)` to test internal `#slug` anchor scrolling!
+> Click the **Section** pulldown above or `[Jump to Missed Approach](#3-missed-approach-holding)` to test internal `#slug` anchor scrolling!
 
-## 2. Missed Approach
-Climb straight ahead to `4,000 ft MSL`, then turn right heading `280` to intercept radial.
+## 2. Vertical Profile & Minima
+Intercept the electronic glideslope or VNAV advisory path at `3,200 ft MSL`. Set missed approach altitude in the MCP window once glideslope is captured.
+
+* **Decision Altitude (DA):** `250 ft MSL` (`200 ft AGL`).
+* **Approach Category:** CAT C/D minimums require `1/2 SM` visibility or `2400 RVR`.
+* **Temperature Compensation:** Apply cold weather altimetry corrections below `0°C`.
+
+## 3. Missed Approach & Holding
+Execute immediately on reaching DA without visual contact, or if lateral deviation exceeds 1 dot:
+
+1. Press TOGA, advance thrust to go-around limit, and call **"Flaps 15, positive rate, gear up"**.
+2. Climb straight ahead to `4,000 ft MSL`.
+3. At `1,500 ft`, turn right heading `280°` to intercept and track the `OAK VOR R-300` inbound to `HOLDX`.
+4. Hold northwest on the `120°` inbound course, 1-minute right-hand patterns, maintaining `4,000 ft MSL`.
+
+> [!IMPORTANT]
+> Confirm missed approach holding fuel reserves and advise ATC immediately if holding duration exceeds 15 minutes.
 ]=]
                     imgui.DocumentViewer("##EmbeddedMiniDoc", sample_manual, embedded_doc_state, {
                         title = "Embedded DocumentViewer",
