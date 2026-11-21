@@ -1647,8 +1647,8 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
                         imgui.MD.TextWrapped("### Scrollable Zoomed Briefing Viewport\n" ..
                             "Header controls stay at **1.0x** while this inner child scales smoothly (`" ..
                             tostring(doc_vp_zoom.zoom_percent or 100) .. "%`).\n\n" ..
-                            "> [!TIP]\n" ..
-                            "> Click the '-' or '+' buttons above to lower or increase the zoom of this card, respectively!")
+                            "> [!NOTE]\n" ..
+                            "> **Runway 28R Braking Action:** Reported medium-to-poor by preceding 737. Plan autobrake 3 or MAX reverse on touchdown.")
                     end
                     imgui.EndZoomedViewport()
                 end
