@@ -826,7 +826,7 @@ Switch curated ImGee cockpit color themes per window context, or launch external
 ![Curated Color Themes: Charcoal studio slate default and Rusty warm bronze side-by-side](<images/fig_themes_comparison.png =780 center>)
 
 ### 9. Two-Layer Zoomable Viewport (`imgui.BeginZoomedViewport` / `ZoomViewportControls`)
-Renders unscaled `1.0x` header, toolbar, and footer chrome alongside a scrollable `Nx`-zoomed (`50% .. 250%`) inner child region with native `Ctrl+MouseWheel` (and `Cmd+MouseWheel` on macOS) zoom stepping:
+Renders unscaled `1.0x` header, toolbar, and footer chrome alongside a scrollable `Nx`-zoomed (`50% .. 250%`) inner child region with toolbar stepper buttons and 1-click A/B toggle:
 - `changed, cur_zoom = imgui.ZoomViewportControls(state_tbl_or_id, [id_suffix])` -- Draws a compact `[-]` `[100%]` `[+]` toolbar cluster (clicking the center percentage button toggles between `default_zoom` and the prior custom zoom).
 - `visible, cur_zoom = imgui.BeginZoomedViewport(str_id, [state_tbl], [w, h], [window_flags])` -- Opens the zoomed child region and updates `state_tbl.zoom`, `state_tbl.last_zoom`, and `state_tbl.zoom_percent`. Always pair unconditionally with `imgui.EndZoomedViewport()` (just like `BeginChild` / `EndChild`).
 - Programmatic helpers: `imgui.SetViewportZoom(state, zoom)`, `imgui.StepViewportZoom(state, delta)`, and `imgui.ResetViewportZoom(state, [allow_undo_toggle])`.

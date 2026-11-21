@@ -167,7 +167,7 @@ It brings physical avionics controls, intelligent stationary tooltips, CommonMar
 * **Tactile Avionics Widgets:** Animated toggle switches, rotary dials, mouse-wheel stepped sliders/drags/combos with 1-click Reset/Undo memory, and upward-blossoming pulldown selectors.
 * **Smart Typography:** Inline sized text tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`, `imgui.BoldItalicText`), and dynamic multi-size font scaling.
 * **CommonMark 4.1, GFM Tables & Callout Cards:** Native blockquotes and all 5 GFM callout cards (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), drag-resizable sortable data tables, text-wrapping floated images (`float=left|right`), captions, and in-context modal lightboxes.
-* **Two-Layer Zoomable Viewports:** `imgui.BeginZoomedViewport` + `imgui.ZoomViewportControls` keep header/footer chrome crisp at 1.0x while scaling scrollable inner document bodies from 50% to 250% via `Ctrl`/`Cmd + MouseWheel`.
+* **Two-Layer Zoomable Viewports:** `imgui.BeginZoomedViewport` + `imgui.ZoomViewportControls` keep header/footer chrome crisp at 1.0x while scaling scrollable inner document bodies from 50% to 250% via toolbar steppers and 1-click A/B toggle.
 * **Stationary Adaptive Tooltips:** `imgui.TimedTooltip` provides jitter-free hover documentation with reading-delay adaptation and embedded Markdown.
 * **In-Memory Image Service:** Render raw compressed image bytes (PNG/JPEG) directly into GPU VRAM with zero temporary files and zero disk I/O.
 * **Proportional Canvas Zoom:** Seamlessly scale font sizes and window geometry from 50% to 200% with exact baseline preservation.
@@ -1641,14 +1641,14 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
                     imgui.TextUnformatted("1.0x Fixed Toolbar Chrome:")
                     imgui.SameLine()
                     imgui.ZoomViewportControls(doc_vp_zoom, "##demo_doc_vp")
-                    imgui.TimedTooltip.Text("Click [-] / [+] or [100%] A/B toggle, or hold Ctrl/Cmd + MouseWheel inside the viewport below.")
+                    imgui.TimedTooltip.Text("Click [-] / [+] to step zoom, or click [100%] to toggle A/B zoom.")
 
                     if imgui.BeginZoomedViewport("##DemoZoomBody", doc_vp_zoom, 0, 170) then
                         imgui.MD.TextWrapped("### Scrollable Zoomed Briefing Viewport\n" ..
                             "Header controls stay at **1.0x** while this inner child scales smoothly (`" ..
-                            tostring(doc_vp_zoom.zoom_percent or 100) .. "%%`).\n\n" ..
+                            tostring(doc_vp_zoom.zoom_percent or 100) .. "%`).\n\n" ..
                             "> [!TIP]\n" ..
-                            "> Hold <kbd>Ctrl</kbd> or <kbd>Cmd</kbd> and roll the mouse wheel right over this card!")
+                            "> Click the '-' or '+' buttons above to lower or increase the zoom of this card, respectively!")
                     end
                     imgui.EndZoomedViewport()
                 end
