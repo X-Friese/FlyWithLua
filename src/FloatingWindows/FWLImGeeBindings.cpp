@@ -309,7 +309,9 @@ static void FWLMarkdownTooltipCallback(ImGui::MarkdownTooltipCallbackData data) 
         ImGui::MarkdownDetail::ShowMarkdownTooltip(id, true, link.c_str());
     } else {
         std::string tip;
-        if (link.rfind("file:", 0) == 0 || link.rfind("local:", 0) == 0 || link.find(".pdf") != std::string::npos) {
+        if (!link.empty() && link[0] == '#') {
+            tip = "**Jump to Section**\n\n`" + link + "`";
+        } else if (link.rfind("file:", 0) == 0 || link.rfind("local:", 0) == 0 || link.find(".pdf") != std::string::npos) {
             tip = "**Open Document**\n\n`" + link + "`";
         } else {
             std::string icon = data.linkIcon ? data.linkIcon : "";
