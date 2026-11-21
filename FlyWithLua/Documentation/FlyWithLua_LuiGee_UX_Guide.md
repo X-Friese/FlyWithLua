@@ -823,7 +823,7 @@ Switch curated ImGee cockpit color themes per window context, or launch external
 - `imgui.StyleColorsDark()`, `imgui.StyleColorsLight()`, `imgui.StyleColorsClassic()` -- Standard Dear ImGui palettes.
 - `ok = imgui.OpenURL(url_or_path)` and `ok = imgui.OpenDocument(local_path)` -- Opens web URLs or simulator-relative PDF/text documents in the user's native viewer.
 
-![Curated Color Themes: Charcoal studio slate default and Rusty warm bronze side-by-side](<images/fig_themes_comparison.png =540 center>)
+![Curated Color Themes: Charcoal studio slate default and Rusty warm bronze side-by-side](<images/fig_themes_comparison.png =780 center>)
 
 ### 9. Two-Layer Zoomable Viewport (`imgui.BeginZoomedViewport` / `ZoomViewportControls`)
 Renders unscaled `1.0x` header, toolbar, and footer chrome alongside a scrollable `Nx`-zoomed (`50% .. 250%`) inner child region with native `Ctrl+MouseWheel` (and `Cmd+MouseWheel` on macOS) zoom stepping:
