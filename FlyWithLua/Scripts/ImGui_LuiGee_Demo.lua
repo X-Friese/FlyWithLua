@@ -1688,7 +1688,7 @@ Verify **LOC** frequency `108.90 MHz` and inbound course `281°` prior to the in
 Maintain RNAV cross-track tolerance within `0.3 NM` during initial course alignment. Cross `WAYPT` at or above `5,000 ft MSL`.
 
 > [!NOTE]
-> Click the **Section** pulldown above or [Jump to Missed Approach](#3-missed-approach-holding) to test internal `#slug` anchor scrolling!
+> Click the **Section** pulldown above or [Jump to Missed Approach](#3-missed-approach--holding) to test internal `#slug` anchor scrolling!
 
 ## 2. Vertical Profile & Minima
 Intercept the electronic glideslope or VNAV advisory path at `3,200 ft MSL`. Set missed approach altitude in the MCP window once glideslope is captured.
