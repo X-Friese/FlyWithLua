@@ -582,7 +582,7 @@ function luigee_demo_on_build(wnd, x, y)
         elseif can_restore then
             imgui.TimedTooltip.TextMD(string.format("1-click toggle back to prior **%d%% zoom**.", math.floor(last_zoom * 100.0 + 0.5)))
         else
-            imgui.TimedTooltip.TextMD("Zoom is at **100%% baseline**.")
+            imgui.TimedTooltip.TextMD("Zoom is at **100% baseline**.")
         end
     end
 
@@ -1104,7 +1104,7 @@ if qnh < 29.92 then set_altimeter_std() end
                     if dim_changed then
                         instrument_dimmer = new_dim
                     end
-                    imgui.TimedTooltip.TextMD("Potentiometer dimmer with **2-step OFF detente**.\nRoll mouse wheel or drag; step past 5%% to click into **OFF** (double-click toggles OFF / 100%%).")
+                    imgui.TimedTooltip.TextMD("Potentiometer dimmer with **2-step OFF detente**.\nRoll mouse wheel or drag; step past 5% to click into **OFF** (double-click toggles OFF / 100%).")
 
                     imgui.Spacing()
                     local rvol_changed, new_rvol = imgui.KnobWithReset("Radio Volume", radio_volume, 0.0, 1.0, 0.70, "%.0f%%", 0, 0.02, "Reset radio volume to 70%")
@@ -1127,22 +1127,22 @@ if qnh < 29.92 then set_altimeter_std() end
 
                     local c1_chg, c1_val = imgui.DimmerKnob("COM1", mixer_com1, 0.05, 1.0, 0.85, "%.0f%%", 0, 0.02, true, 0.0, mixer_flags)
                     if c1_chg then mixer_com1 = c1_val end
-                    imgui.TimedTooltip.TextMD("**COM1 Audio** -- Roll wheel or drag. Step below 5%% to click into **OFF** (mute); double-click for 85%%.")
+                    imgui.TimedTooltip.TextMD("**COM1 Audio** -- Roll wheel or drag. Step below 5% to click into **OFF** (mute); double-click for 85%.")
 
                     imgui.SameLine(0, mixer_gap)
                     local n1_chg, n1_val = imgui.DimmerKnob("NAV1", mixer_nav1, 0.05, 1.0, 0.60, "%.0f%%", 0, 0.02, true, 0.0, mixer_flags)
                     if n1_chg then mixer_nav1 = n1_val end
-                    imgui.TimedTooltip.TextMD("**NAV1 Ident** -- Two-step mute detente below 5%%; double-click resets to 60%%.")
+                    imgui.TimedTooltip.TextMD("**NAV1 Ident** -- Two-step mute detente below 5%; double-click resets to 60%.")
 
                     imgui.SameLine(0, mixer_gap)
                     local eng_chg, eng_val = imgui.KnobPercent("ENG", mixer_engines, 0.75, 0.0, 1.0, "%.0f%%", 0, 0.02, mixer_flags)
                     if eng_chg then mixer_engines = eng_val end
-                    imgui.TimedTooltip.TextMD("**Engines** -- Continuous 0%%..100%% rotary pot; double-click resets to 75%%.")
+                    imgui.TimedTooltip.TextMD("**Engines** -- Continuous 0%..100% rotary pot; double-click resets to 75%.")
 
                     imgui.SameLine(0, mixer_gap)
                     local cab_chg, cab_val = imgui.KnobPercent("CABIN", mixer_cabin, 0.50, 0.0, 1.0, "%.0f%%", 0, 0.02, mixer_flags)
                     if cab_chg then mixer_cabin = cab_val end
-                    imgui.TimedTooltip.TextMD("**Cabin / Intercom** -- Continuous 0%%..100%% rotary pot; double-click resets to 50%%.")
+                    imgui.TimedTooltip.TextMD("**Cabin / Intercom** -- Continuous 0%..100% rotary pot; double-click resets to 50%.")
                     imgui.EndGroup()
 
                     imgui.Spacing()
