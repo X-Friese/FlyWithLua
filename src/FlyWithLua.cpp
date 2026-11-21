@@ -1065,9 +1065,9 @@ static XPLMDataRef FWLViewType          = XPLMFindDataRef("sim/graphics/view/vie
 // Don't want to use buttons? Here is a nice little menu
 void FlyWithLuaMenuHandler(void*, void*);
 
-XPLMMenuID flywithlua::FlyWithLuaMenuId = nullptr;
+XPLMMenuID FlyWithLuaMenuId = nullptr;
 int        FlyWithLuaMenuItem;
-int        flywithlua::LuiGeeGuideCheckedPosition = -1;
+int        LuiGeeGuideCheckedPosition = -1;
 
 XPLMMenuCheck DevMenuMode;
 int DevModeCheckedPosition = 10;
