@@ -206,7 +206,7 @@ imgui.RegisterStyleTag("cam", "green bold mono")
 imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
 imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
 
--- Use seamlessly inside any Markdown or StyledText:
+-- Use seamlessly inside any Markdown call:
 imgui.MD.Text("Camera Axis: <cam>roll</cam> | View: <viewmode>CHASE_CAM</viewmode>")
 imgui.MD.Text("<alert>PULL UP</alert> Terrain ahead!")
 ```

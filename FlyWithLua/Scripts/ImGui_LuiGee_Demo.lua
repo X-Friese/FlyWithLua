@@ -834,6 +834,18 @@ function luigee_demo_on_build(wnd, x, y)
                 imgui.MD.Text("  `<pill #2c3e50>LIGHT CONTRAST</pill>` (Auto-contrast light text)")
                 imgui.SameLine(390)
                 imgui.MD.Text("<pill #2c3e50>LIGHT CONTRAST</pill>")
+
+                imgui.Spacing()
+                imgui.MD.Text([[
+```lua
+imgui.RegisterStyleTag("cam", "green bold mono")
+imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
+imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
+imgui.RegisterTagAlias("tip", "<style yellow><b> Tip: </b></style> %s")
+imgui.RegisterTagAlias("axis", "**Axis: <style cyan bold>%s</style>**")
+imgui.MD.Text("<cam>roll</cam> / <cam>pitch</cam> | <viewmode>CHASE_CAM</viewmode>")
+```
+]])
             end
 
             imgui.Spacing()
@@ -1557,11 +1569,11 @@ end
                 imgui.Indent(20)
                 imgui.TextStyled("Flight Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono> | Target: <color gold>FL%03d</color>", 0.82, 380)
                 imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", 34000, "FT", 285.5)
-                imgui.TextStyled("Semantic Tags: <cam>yaw</cam> | View: <viewmode>COCKPIT_3D</viewmode>")
+                imgui.TextStyled("Keys & Icons: <kbd>Ctrl</kbd> + <kbd>G</kbd> | Gear: <icon green check /> <badge #27ae60>DOWN & LOCKED</badge>")
                 imgui.TextStyled("Annunciators: <pill green>AP1 ENGAGED</pill> <pill blue>LNAV / VNAV</pill> <pill warning>ICE DETECTED</pill>")
                 imgui.TextStyled("Alpha & Auto-Contrast: <pill #3498db88>TRANSLUCENT #rrggbbaa</pill> <pill #f1c40f>AUTO CONTRAST</pill>")
                 imgui.TextStyled("Inline Sizing: <tiny color=#888888>tiny (10px)</tiny> | <small>small (12px)</small> | <regular>regular (14px)</regular> | <big>big (16px)</big> | <huge color=orange>huge (16px+ bold)</huge>")
-                imgui.TextStyledWrapped("Wrapped Styled Text: <i>This is an inline styled paragraph</i> rendered with <b>imgui.TextStyledWrapped</b>. It flows smoothly across window boundaries and supports <color #3498db>custom hex colored highlights</color> on demand.")
+                imgui.TextStyledWrapped("Wrapped Styled Text: <i>This is an inline styled paragraph</i> rendered with <b>imgui.TextStyledWrapped</b>. It flows smoothly, wrapping automatically when it reaches the window boundary, and supports <color #3498db>custom hex-colored highlights</color> on demand.")
                 imgui.Unindent(20)
 
                 imgui.Spacing()
@@ -1571,7 +1583,7 @@ end
 imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", 34000, "FT", 285.5)
 imgui.TextStyled("Flight Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono>", 0.82)
 imgui.TextStyled("Inline Sizing: <tiny>tiny</tiny> | <small>small</small> | <regular>body</regular> | <big>big</big> | <huge>huge</huge>")
-imgui.TextStyled("Semantic Tags: <cam>yaw</cam> | View: <viewmode>COCKPIT_3D</viewmode>")
+imgui.TextStyled("Keys & Icons: <kbd>Ctrl</kbd> + <kbd>G</kbd> | Gear: <icon green check /> <badge #27ae60>DOWN & LOCKED</badge>")
 imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text</color>.")
 ```
 ]])
@@ -1676,7 +1688,7 @@ Verify **LOC** frequency `108.90 MHz` and inbound course `281°` prior to the in
 Maintain RNAV cross-track tolerance within `0.3 NM` during initial course alignment. Cross `WAYPT` at or above `5,000 ft MSL`.
 
 > [!NOTE]
-> Click the **Section** pulldown above or `[Jump to Missed Approach](#3-missed-approach-holding)` to test internal `#slug` anchor scrolling!
+> Click the **Section** pulldown above or [Jump to Missed Approach](#3-missed-approach-holding) to test internal `#slug` anchor scrolling!
 
 ## 2. Vertical Profile & Minima
 Intercept the electronic glideslope or VNAV advisory path at `3,200 ft MSL`. Set missed approach altitude in the MCP window once glideslope is captured.
