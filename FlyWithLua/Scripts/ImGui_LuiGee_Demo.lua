@@ -1732,15 +1732,63 @@ Execute immediately on reaching DA without visual contact, or if lateral deviati
             imgui.EndChild()
         end
         imgui.Separator()
-        if imgui.Button("  Close  ", 100, 0) then
+        imgui.Spacing()
+
+        local modal_w = (imgui.GetWindowWidth and imgui.GetWindowWidth()) or 640
+        local row_y = (imgui.GetCursorPosY and imgui.GetCursorPosY()) or nil
+
+        -- Centered primary Close button
+        local close_w = 120
+        local close_x = math.max(12, math.floor((modal_w - close_w) * 0.5))
+        if imgui.SetCursorPosX then
+            imgui.SetCursorPosX(close_x)
+        end
+        local close_clicked = false
+        if imgui.ButtonLink then
+            close_clicked = imgui.ButtonLink("  Close  ", close_w, 0)
+        else
+            close_clicked = imgui.Button("  Close  ", close_w, 0)
+        end
+        if close_clicked then
             imgui.CloseCurrentPopup()
         end
+
+        -- Subtle smaller-font User Guide button tucked into the bottom-right corner (Horatio / BLU-fx style)
         if imgui.DocWindow and imgui.DocWindow.Create then
-            imgui.SameLine()
-            if imgui.Button("  Open Live User Guide  ", 190, 0) then
+            if imgui.PushFont then imgui.PushFont("Roboto-Regular-13") end
+            local guide_label = "User Guide Window"
+            local guide_w = 122
+            if imgui.CalcTextSize then
+                local tw = imgui.CalcTextSize(guide_label)
+                if type(tw) == "number" and tw > 0 then
+                    guide_w = math.floor(tw + 14)
+                end
+            end
+            local right_x = math.max(close_x + close_w + 16, modal_w - guide_w - 14)
+            imgui.SameLine(right_x)
+            if row_y and imgui.SetCursorPosY then
+                imgui.SetCursorPosY(row_y + 3)
+            end
+            local guide_clicked = false
+            if imgui.SmallButtonLink then
+                guide_clicked = imgui.SmallButtonLink(guide_label .. "##about_guide_btn")
+            elseif imgui.SmallButton then
+                guide_clicked = imgui.SmallButton(guide_label .. "##about_guide_btn")
+            else
+                guide_clicked = imgui.Button(guide_label .. "##about_guide_btn")
+            end
+            if guide_clicked then
                 imgui.CloseCurrentPopup()
                 open_luigee_user_guide()
             end
+            if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
+                imgui.TimedTooltip.TextMD(
+                    "**LuiGee User Guide Window:**\n\n" ..
+                    "Opens the interactive, illustrated user manual right here inside X-Plane as a window -- " ..
+                    "no need to leave the simulator or open an external PDF viewer!"
+                )
+            end
+            if imgui.PopFont then imgui.PopFont() end
         end
         imgui.EndPopup()
     end
