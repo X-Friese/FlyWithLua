@@ -114,4 +114,4 @@ v2.8.20 Updatable add-ons in "Scripts/" (e.g. via Skunkcrafts Updater)
 
 v2.8.21 ImgWindow v2.3.0 & Contrib UX Extensions Suite (phase 2)
 
-v2.8.22 ImgWindow v2.4.0 & LuiGee Modern UI Suite (Phase 3) & Multi-Channel SkunkCrafts Updater
+v2.8.22 ImgWindow v2.4.0 & LuiGee Modern UI Suite (Phase 3) & Multi-Channel SkunkCrafts Updater Dynamically load libglut Simplify SkunkCrafts Beta Bootstrap to Single-File skunkcrafts_updater.cfg Wire missing LuiGee rotary knob bindings (imgui_knobs.h) & sync ImgWindow v2.4.1
