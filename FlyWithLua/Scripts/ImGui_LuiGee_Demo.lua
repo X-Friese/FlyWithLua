@@ -614,7 +614,7 @@ function luigee_demo_on_build(wnd, x, y)
         -- ====================================================================
         -- TAB 1: Markdown Extension (Pinned TabBar with Scrolling Child Region)
         -- ====================================================================
-        if imgui.BeginTabItem("Rich Markdown (MD)") then
+        if imgui.BeginTabItem("Rich Markdown") then
             if imgui.BeginChild and imgui.BeginChild("##tab1_content_scroll", 0, 0, false) then
                 if imgui.SetWindowFontScale then
                     imgui.SetWindowFontScale(content_zoom)
@@ -1060,7 +1060,9 @@ if qnh < 29.92 then set_altimeter_std() end
         end
 
         -- ====================================================================
-        -- TAB 3: Tactile Controls, Rotary Knobs & Sliders
+        -- TAB 3: Tactile Controls (Toggles, Resettable Sliders/Combos & Chasers)
+        -- Sized to fit comfortably at default 860x620 with NO scrollbar so all
+        -- mouse-wheel controls work immediately without triggering scroll-defeat.
         -- ====================================================================
         if imgui.BeginTabItem("Tactile Controls") then
             local tab3_vis = true
@@ -1072,8 +1074,8 @@ if qnh < 29.92 then set_altimeter_std() end
                     imgui.SetWindowFontScale(content_zoom)
                 end
                 imgui.Spacing()
-                imgui.MD.TextWrapped("### Smooth Animated & Mouse-Wheel Adjusted Controls")
-                imgui.MD.TextWrapped("*(Tip: Mouse-wheel directly over switches and knobs adjusts states; double-click knobs to reset)*")
+                imgui.MD.TextWrapped("### Smooth Animated & Mouse-Wheel Controls")
+                imgui.MD.TextWrapped("*(Hover any toggle, slider, drag, combo, or chaser and roll the mouse wheel -- Shift for fine, Ctrl for coarse)*")
                 imgui.Spacing()
 
                 -- Row 1: Avionics Master & De-Ice System (Side-by-side)
@@ -1101,10 +1103,97 @@ if qnh < 29.92 then set_altimeter_std() end
 
                 imgui.Spacing()
                 imgui.Separator()
+                imgui.Spacing()
 
-                -- Row 2: Avionics Rotary Knobs & Compact Sound Mixer Strip
+                -- Row 2: Sliders, Drags & Combos with 1-Click Reset / Undo
+                local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
+                if trim_changed then
+                    throttle_trim = new_trim
+                end
+                imgui.TimedTooltip.TextMD("Click the reset button (<icon undo />) to snap trim back to neutral (0.00).")
+
+                local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
+                if flaps_changed then
+                    flaps_pct = new_flaps
+                end
+                imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
+
+                local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
+                if hud_changed then
+                    hud_brightness = new_hud
+                end
+                imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
+
+                if imgui.DragIntWithReset and imgui.ComboWithReset and imgui.MouseWheelCheckbox then
+                    local alt_chg, new_alt = imgui.DragIntWithReset("MCP Target Altitude", autopilot_alt_ft, 100.0, 1000, 45000, 10000, "%d ft", 0, 500, "Reset target altitude to 10,000 ft")
+                    if alt_chg then
+                        autopilot_alt_ft = new_alt
+                    end
+                    imgui.TimedTooltip.TextMD("Mouse-wheel & drag integer selector (`DragIntWithReset`) -- roll wheel to step by **500 ft**, or click <icon undo /> to reset/undo.")
+
+                    local baro_chg, new_baro = imgui.ComboWithReset("Baro Reference", baro_preset_idx, 0, baro_presets, false, "Reset baro reference to STD (29.92)", baro_tooltips)
+                    if baro_chg then
+                        baro_preset_idx = new_baro
+                    end
+                    imgui.TimedTooltip.TextMD("Dropdown combo with 1-click Reset/Undo (`ComboWithReset`) and per-option Lens UI tooltips when scrolling open.")
+
+                    local fd_chg, new_fd = imgui.MouseWheelCheckbox("Flight Director Coupled (Scroll or Click)", fd_coupled)
+                    if fd_chg then
+                        fd_coupled = new_fd
+                    end
+                    imgui.TimedTooltip.Text("Checkbox with Hand/ResizeNS hover affordance and mouse-wheel up/down state stepping.")
+                end
+
+                imgui.Spacing()
+                imgui.Separator()
+                imgui.Spacing()
+
+                -- Row 3: Mouse Wheel Chasers (Side-by-side)
+                imgui.MD.TextWrapped("### Mouse Wheel Chasers")
+                imgui.TextUnformatted("Hover over the buttons below and roll the mouse wheel:")
+
+                imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
+                local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
+                if freq_changed then
+                    com1_freq = new_freq
+                end
+                imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
+
+                imgui.SameLine(math.floor(400 * content_zoom))
+                local cur_view_name = camera_views[camera_view_idx] or "Unknown"
+                imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
+                local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
+                if cam_changed then
+                    camera_view_idx = new_cam
+                end
+                imgui.TimedTooltip.Text("Scroll mouse wheel over this button to cycle through camera views!")
+            end
+            if imgui.BeginChild and imgui.EndChild then
+                imgui.EndChild()
+            end
+
+            imgui.EndTabItem()
+        end
+
+        -- ====================================================================
+        -- TAB 4: Knobs & Dials (Rotary Potentiometers, Audio Mixer & Sweep Dials)
+        -- Dedicated non-scrolling tab at default 860x620 so mouse-wheel rotary
+        -- tuning works immediately without parent scrollbar auto-defeat.
+        -- ====================================================================
+        if imgui.BeginTabItem("Knobs & Dials") then
+            local tab_knobs_vis = true
+            if imgui.BeginChild then
+                tab_knobs_vis = imgui.BeginChild("##tab_knobs_content_scroll", 0, 0, false)
+            end
+            if tab_knobs_vis then
+                if imgui.SetWindowFontScale then
+                    imgui.SetWindowFontScale(content_zoom)
+                end
+                imgui.Spacing()
+
                 if imgui.Knob and imgui.DimmerKnob and imgui.KnobWithReset then
                     imgui.MD.TextWrapped("### Avionics Rotary Knobs & Compact Sound Mixer")
+                    imgui.MD.TextWrapped("*(Roll mouse wheel or drag to adjust; Shift for fine, Ctrl for coarse; double-click to reset or toggle OFF detente)*")
                     imgui.Spacing()
 
                     -- Left column: Inline Cockpit Dimmer (with 2-step OFF detente) + KnobWithReset
@@ -1156,77 +1245,12 @@ if qnh < 29.92 then set_altimeter_std() end
 
                     imgui.Spacing()
                     imgui.Separator()
-                end
-
-                -- Row 3: Sliders with Reset and Normalized Percentage
-                local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
-                if trim_changed then
-                    throttle_trim = new_trim
-                end
-                imgui.TimedTooltip.TextMD("Click the reset button (<icon undo />) to snap trim back to neutral (0.00).")
-
-                local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
-                if flaps_changed then
-                    flaps_pct = new_flaps
-                end
-                imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
-
-                local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
-                if hud_changed then
-                    hud_brightness = new_hud
-                end
-                imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
-
-                if imgui.DragIntWithReset and imgui.ComboWithReset and imgui.MouseWheelCheckbox then
                     imgui.Spacing()
-                    local alt_chg, new_alt = imgui.DragIntWithReset("MCP Target Altitude", autopilot_alt_ft, 100.0, 1000, 45000, 10000, "%d ft", 0, 500, "Reset target altitude to 10,000 ft")
-                    if alt_chg then
-                        autopilot_alt_ft = new_alt
-                    end
-                    imgui.TimedTooltip.TextMD("Mouse-wheel & drag integer selector (`DragIntWithReset`) -- roll wheel to step by **500 ft**, or click <icon undo /> to reset/undo.")
-
-                    local baro_chg, new_baro = imgui.ComboWithReset("Baro Reference", baro_preset_idx, 0, baro_presets, false, "Reset baro reference to STD (29.92)", baro_tooltips)
-                    if baro_chg then
-                        baro_preset_idx = new_baro
-                    end
-                    imgui.TimedTooltip.TextMD("Dropdown combo with 1-click Reset/Undo (`ComboWithReset`) and per-option Lens UI tooltips when scrolling open.")
-
-                    local fd_chg, new_fd = imgui.MouseWheelCheckbox("Flight Director Coupled (Scroll or Click)", fd_coupled)
-                    if fd_chg then
-                        fd_coupled = new_fd
-                    end
-                    imgui.TimedTooltip.Text("Checkbox with Hand/ResizeNS hover affordance and mouse-wheel up/down state stepping.")
                 end
 
-                imgui.Spacing()
-                imgui.Separator()
-
-                -- Row 4: Mouse Wheel Chasers (Side-by-side)
-                imgui.MD.TextWrapped("### Mouse Wheel Chasers")
-                imgui.TextUnformatted("Hover your mouse cursor over the boxes below and scroll the mouse wheel:")
-
-                imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
-                local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
-                if freq_changed then
-                    com1_freq = new_freq
-                end
-                imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
-
-                imgui.SameLine(math.floor(400 * content_zoom))
-                local cur_view_name = camera_views[camera_view_idx] or "Unknown"
-                imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
-                local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
-                if cam_changed then
-                    camera_view_idx = new_cam
-                end
-                imgui.TimedTooltip.Text("Scroll mouse wheel over this button to cycle through camera views!")
-
-                imgui.Spacing()
-                imgui.Separator()
-
-                -- Row 5: Procedural Sweeping Dials (Adjustable via Sliders)
+                -- Procedural Sweeping Dials (Adjustable via Sliders or Mouse Wheel)
                 imgui.MD.TextWrapped("### Sweeping Progress & Countdown Dials")
-                imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or scroll mouse wheel:")
+                imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or roll mouse wheel:")
                 imgui.Spacing()
 
                 -- Radial Timer Dial: Sweeps progress clockwise from 12 o'clock
@@ -1257,9 +1281,9 @@ if qnh < 29.92 then set_altimeter_std() end
         end
 
         -- ====================================================================
-        -- TAB 4: Badges, Spinners & Links
+        -- TAB 5: Badges, Spinners & Links
         -- ====================================================================
-        if imgui.BeginTabItem("Badges, Spinners & Links") then
+        if imgui.BeginTabItem("Badges & Links") then
             imgui.Spacing()
             imgui.MD.TextWrapped("### Standalone First-Class Widgets (No Markdown Parsing)")
             imgui.MD.TextWrapped("Call directly in pure ImGui panels without Markdown string wrapping:")
