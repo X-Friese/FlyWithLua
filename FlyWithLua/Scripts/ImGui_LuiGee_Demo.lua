@@ -64,14 +64,14 @@ local theme_names = {
     "Rusty (Aviation)",
     "ImGui Dark",
     "ImGui Classic",
-    "ImGui Light"
+    "Paper Light"
 }
 local theme_tips = {
     "**Charcoal (Default)**\nSleek modern slate/graphite flight deck palette.",
     "**Rusty (Aviation)**\nWarm aviation bronze & terracotta palette (ABC classic).",
     "**ImGui Dark**\nStock Dear ImGui dark gray color scheme.",
     "**ImGui Classic**\nLegacy Dear ImGui purplish-blue color scheme.",
-    "**ImGui Light**\nHigh-contrast light daytime color scheme."
+    "**Paper Light**\nClean, publication-grade light palette for daytime flight & manuals."
 }
 
 local function apply_theme(idx)
@@ -85,7 +85,8 @@ local function apply_theme(idx)
     elseif idx == 3 then
         if imgui.StyleColorsClassic then imgui.StyleColorsClassic() end
     elseif idx == 4 then
-        if imgui.StyleColorsLight then imgui.StyleColorsLight() end
+        if imgui.StyleColorsPaperLight then imgui.StyleColorsPaperLight()
+        elseif imgui.StyleColorsLight then imgui.StyleColorsLight() end
     end
 end
 
@@ -199,8 +200,12 @@ function show_luigee_demo()
     local wnd_y = saved_wnd_y or demo_y
 
     luigee_demo_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
-    float_wnd_set_position(luigee_demo_wnd, wnd_x, wnd_y)
-    float_wnd_set_title(luigee_demo_wnd, "FlyWithLua LuiGee Modern UI Demo")
+    if saved_wnd_x and saved_wnd_y and float_wnd_set_geometry then
+        float_wnd_set_geometry(luigee_demo_wnd, saved_wnd_x, saved_wnd_y + wnd_h, saved_wnd_x + wnd_w, saved_wnd_y)
+    else
+        float_wnd_set_position(luigee_demo_wnd, wnd_x, wnd_y)
+    end
+    float_wnd_set_title(luigee_demo_wnd, "LuiGee Modern UI Demo")
     float_wnd_set_imgui_builder(luigee_demo_wnd, "luigee_demo_on_build")
     float_wnd_set_onclose(luigee_demo_wnd, "luigee_demo_on_close")
 
@@ -281,7 +286,7 @@ local demo_spinner_speed    = 1.0
 local demo_timer_val        = 0.65
 local demo_countdown_cur    = 42.0
 local demo_countdown_max    = 60.0
-local baro_preset_idx       = 1
+local baro_preset_idx       = 0  -- 0-based for ComboWithReset / MouseWheelCombo
 local baro_presets          = { "STD (29.92 inHg)", "QNH 1013 hPa", "Local (30.04 inHg)", "Low (29.58 inHg)" }
 local baro_tooltips         = {
     "Standard pressure datum above transition altitude (**29.92 inHg**)",
@@ -371,7 +376,7 @@ function luigee_demo_on_build(wnd, x, y)
 
     -- Title using Roboto-Medium-20 if available
     if imgui.PushFont then imgui.PushFont("Roboto-Medium-20") end
-    imgui.TextUnformatted("FlyWithLua LuiGee Modern UI Demo")
+    imgui.TextUnformatted("LuiGee Modern UI Demo")
     if imgui.PopFont then imgui.PopFont() end
 
     imgui.SameLine(0, 10)
@@ -438,7 +443,8 @@ function luigee_demo_on_build(wnd, x, y)
             "**ImGee Theme Presets** (Click dropdown or roll mouse wheel):\n" ..
             "• **Charcoal**: Sleek modern slate/graphite flight deck palette (default).\n" ..
             "• **Rusty**: Warm aviation bronze & terracotta palette (ABC classic).\n" ..
-            "• **ImGui Dark / Classic / Light**: Stock Dear ImGui fallback schemes.\n\n" ..
+            "• **Paper Light**: Clean, publication-grade daytime manual palette.\n" ..
+            "• **ImGui Dark / Classic**: Stock Dear ImGui fallback schemes.\n\n" ..
             "*(Synchronized across active FlyWithLua windows)*"
         )
     end
@@ -703,21 +709,22 @@ function luigee_demo_on_build(wnd, x, y)
                 imgui.MD.Text("<color #e74c3c>Crimson Warning</color>")
 
                 imgui.Spacing()
+                local icon_col2_x = math.floor(475 * content_zoom)
                 imgui.MD.Text("Embedded Icons & Unary Annunciators:")
                 imgui.MD.Text("  `<pill icon=avionics_beacon color=#3498db>NAV / ALT</pill>`")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<pill icon=avionics_beacon color=#3498db>NAV / ALT</pill>")
 
                 imgui.MD.Text("  `<badge icon=avionics_beacon>v2.3.0</badge>`")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<badge icon=avionics_beacon>v2.3.0</badge>")
 
                 imgui.MD.Text("  `<pill icon=avionics_beacon orange>ON</pill>`")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<pill icon=avionics_beacon orange>ON</pill>")
 
                 imgui.MD.Text("  `<pill icon=avionics_beacon color=#e74c3c />` (Unary Capsule)")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<pill icon=avionics_beacon color=#e74c3c />")
             end
 
@@ -792,47 +799,49 @@ function luigee_demo_on_build(wnd, x, y)
                 imgui.MD.TextWrapped("Define declarative semantic typography tags, macro template aliases, and interactive Lua callbacks:")
                 imgui.Spacing()
 
+                local sem_col2_x = math.floor(470 * content_zoom)
+
                 imgui.MD.Text("Semantic Style Tags (`imgui.RegisterStyleTag`):")
                 imgui.MD.Text("  `<cam>roll</cam>` & `<cam>pitch</cam>` (green bold mono)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<cam>roll</cam> / <cam>pitch</cam>")
 
                 imgui.MD.Text("  `<viewmode>CHASE_CAM</viewmode>` (mono with tinted backdrop)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<viewmode>CHASE_CAM</viewmode>")
 
                 imgui.MD.Text("  `<alert>PULL UP</alert>` (red backdrop white bold)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<alert>PULL UP</alert>")
 
                 imgui.Spacing()
                 imgui.MD.Text("Macro Template Aliases (`imgui.RegisterTagAlias`):")
                 imgui.MD.Text("  `<tip>Check altimeter setting.</tip>`")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<tip>Check altimeter setting.</tip>")
 
                 imgui.MD.Text("  `<axis>RUDDER</axis>`")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<axis>RUDDER</axis>")
 
                 imgui.Spacing()
                 imgui.MD.Text("Dynamic Lua Callback Tag (`imgui.RegisterTag`):")
                 imgui.MD.Text("  `<metric ft>10,500</metric>`")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<metric ft>10,500</metric>")
 
                 imgui.Spacing()
                 imgui.MD.Text("Alpha Hex Transparency & Smart Auto-Contrast:")
                 imgui.MD.Text("  `<pill #3498db88>TRANSLUCENT PILL</pill>` (Hex alpha #rrggbbaa)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<pill #3498db88>TRANSLUCENT PILL</pill>")
 
                 imgui.MD.Text("  `<pill #f1c40f>DARK CONTRAST</pill>` (Auto-contrast dark text)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<pill #f1c40f>DARK CONTRAST</pill>")
 
                 imgui.MD.Text("  `<pill #2c3e50>LIGHT CONTRAST</pill>` (Auto-contrast light text)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<pill #2c3e50>LIGHT CONTRAST</pill>")
 
                 imgui.Spacing()
@@ -1176,7 +1185,7 @@ if qnh < 29.92 then set_altimeter_std() end
                     end
                     imgui.TimedTooltip.TextMD("Mouse-wheel & drag integer selector (`DragIntWithReset`) -- roll wheel to step by **500 ft**, or click <icon undo /> to reset/undo.")
 
-                    local baro_chg, new_baro = imgui.ComboWithReset("Baro Reference", baro_preset_idx, 1, baro_presets, false, "Reset baro reference to STD (29.92)", nil, baro_tooltips)
+                    local baro_chg, new_baro = imgui.ComboWithReset("Baro Reference", baro_preset_idx, 0, baro_presets, false, "Reset baro reference to STD (29.92)", baro_tooltips)
                     if baro_chg then
                         baro_preset_idx = new_baro
                     end

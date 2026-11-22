@@ -95,14 +95,14 @@ local theme_names = {
     "Rusty (Aviation)",
     "ImGui Dark",
     "ImGui Classic",
-    "ImGui Light"
+    "Paper Light"
 }
 local theme_tips = {
     "**Charcoal (Default)**\nSleek modern slate/graphite flight deck palette.",
     "**Rusty (Aviation)**\nWarm aviation bronze & terracotta palette (ABC classic).",
     "**ImGui Dark**\nStock Dear ImGui dark gray color scheme.",
     "**ImGui Classic**\nLegacy Dear ImGui purplish-blue color scheme.",
-    "**ImGui Light**\nHigh-contrast light daytime color scheme."
+    "**Paper Light**\nClean, publication-grade light palette for daytime flight & manuals."
 }
 local current_applied_theme_idx = nil
 
@@ -117,7 +117,8 @@ local function apply_theme(idx)
     elseif idx == 3 then
         if imgui.StyleColorsClassic then imgui.StyleColorsClassic() end
     elseif idx == 4 then
-        if imgui.StyleColorsLight then imgui.StyleColorsLight() end
+        if imgui.StyleColorsPaperLight then imgui.StyleColorsPaperLight()
+        elseif imgui.StyleColorsLight then imgui.StyleColorsLight() end
     end
 end
 
@@ -1879,7 +1880,11 @@ function show_cockpit_notes()
 
     -- Create ImGui floating window (4th arg MUST be true for withImgui)
     editor_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
-    float_wnd_set_position(editor_wnd, wnd_x, wnd_y)
+    if saved_wnd_x and saved_wnd_y and float_wnd_set_geometry then
+        float_wnd_set_geometry(editor_wnd, saved_wnd_x, saved_wnd_y + wnd_h, saved_wnd_x + wnd_w, saved_wnd_y)
+    else
+        float_wnd_set_position(editor_wnd, wnd_x, wnd_y)
+    end
     float_wnd_set_title(editor_wnd, "Cockpit Notes v1.0.2 [Beta]")
     float_wnd_set_imgui_builder(editor_wnd, "md_editor_on_build")
     float_wnd_set_onclose(editor_wnd, "md_editor_on_close")

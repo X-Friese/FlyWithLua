@@ -329,9 +329,11 @@ imgui.TimedTooltip.MD.Text("### Pitot Tube Heating System\n\n" ..
 - `imgui.TimedTooltip.TextLink(fmt, ...)` / `imgui.TimedTooltip.TextMDLink(fmt, ...)`: Attaches a hand cursor and click-to-toggle tooltip behavior to the preceding item.
 - `imgui.TimedTooltip.ToggleOnClick()`: Marks the preceding widget eligible for click-to-pin / click-to-dismiss tooltip toggling.
 - `imgui.TimedTooltip.TextProxy(item_id, is_hovered, fmt, ...)` / `TextMDProxy(...)`: Drives a stationary tooltip from a synthetic widget ID and explicit hover boolean (used for custom canvas regions or open-menu Lens UI items).
+- `if imgui.TimedTooltip.Begin("##custom_tip") then ... imgui.TimedTooltip.End() end` (and `BeginProxy("##id", is_hovered)`): Opens an isolated stationary tooltip container so you can compose multi-widget tooltips (gauges, tables, icons, and badges) directly.
 
 #### Dwell, Dimension, Color & Font-Scale Controls
 Configure tooltip behavior globally or per session:
+- `imgui.TimedTooltip.Configure(options_table)`, `GetConfig() -> table`, and `ResetConfig()` -- Bulk configure or inspect `hover_delay_cycles`, `max_display_cycles`, `grace_period_cycles`, `default_wrap_width`, `padding`, `bullet_spacing`, `font_scale_policy`, and colors.
 - `imgui.TimedTooltip.SetHoverDelay(cycles)` (`SetDelay`) -- Frames cursor must hover before tooltip appears.
 - `imgui.TimedTooltip.SetMaxDisplay(cycles)` -- Base display timeout in frames.
 - `imgui.TimedTooltip.SetGracePeriod(cycles)` -- Fast re-entry grace window when scanning across adjacent controls.
@@ -370,17 +372,17 @@ if m_chg then light_mode = new_mode end
 
 <img src="images/fig_sliders_reset.png" align="right" width="460" alt="Mouse-Wheel Sliders & Combos with Reset: Natural wheel stepping and flush 1-click A/B undo chasers"/>
 
-All scalar and preset controls support hover-and-scroll mouse-wheel adjustment (`Shift` for fine, `Ctrl` for coarse) and optional 1-click Reset/Undo memory (`imgui.SetResetButtonUndoEnabled(true)`):
-- `changed, new_val = imgui.SliderWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
-- `changed, new_val = imgui.SliderIntWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
+All scalar and preset controls support hover-and-scroll mouse-wheel adjustment (`Shift` for fine, `Ctrl` for coarse) and optional 1-click Reset/Undo memory (`imgui.SetResetButtonUndoEnabled(true)`). Every `*WithReset` control also returns the prior pre-reset value as an optional 3rd return value (`changed, new_val, last_val`):
+- `changed, new_val [, last_val] = imgui.SliderWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
+- `changed, new_val [, last_val] = imgui.SliderIntWithReset(label, val, min, max, default_val, [format], [flags], [wheel_step], [reset_tooltip])`
 - `changed, new_val = imgui.PercentSlider(label, val, [min], [max], [format], [flags], [wheel_step])`
-- `changed, new_val = imgui.PercentSliderWithReset(label, val, [default_val], [min], [max], [format], [flags], [wheel_step], [reset_tooltip])`
+- `changed, new_val [, last_val] = imgui.PercentSliderWithReset(label, val, [default_val], [min], [max], [format], [flags], [wheel_step], [reset_tooltip])`
 - `changed, new_val = imgui.MouseWheelSlider(label, val, min, max, [format], [flags], [wheel_step])` (and `MouseWheelSliderInt`)
 - `changed, new_val = imgui.MouseWheelDrag(label, val, [speed], [min], [max], [format], [flags], [wheel_step])` (and `MouseWheelDragInt`)
-- `changed, new_val = imgui.DragWithReset(label, val, [speed], [min], [max], [default_val], [format], [flags], [wheel_step], [reset_tooltip])` (and `DragIntWithReset`)
-- `changed, new_idx = imgui.MouseWheelCombo(label, current_idx, items_table, [wrap], [popup_max_height_in_items], [arrow_style], [item_tooltips])` (1-based `current_idx`)
-- `changed, new_idx = imgui.ComboWithReset(label, current_idx, default_idx, items_table, [wrap], [reset_tooltip], [arrow_style], [item_tooltips])` (1-based `current_idx`; also accepts `(label, current_idx, items_table, default_idx, ...)`)
-- `changed, new_bool = imgui.MouseWheelCheckbox(label, bool_val, [hover_cursor])`
+- `changed, new_val [, last_val] = imgui.DragWithReset(label, val, [speed], [min], [max], [default_val], [format], [flags], [wheel_step], [reset_tooltip])` (and `DragIntWithReset`)
+- `changed, new_idx = imgui.MouseWheelCombo(label, current_idx, items_table, [wrap], [item_tooltips])` (0-based `current_idx`, matching `imgui.Combo` and `SelectPulldown`; also accepts `popup_max_height` before `wrap`)
+- `changed, new_idx [, last_idx] = imgui.ComboWithReset(label, current_idx, default_idx, items_table, [wrap], [reset_tooltip], [item_tooltips])` (0-based `current_idx` and `default_idx`; also accepts `(label, current_idx, items_table, default_idx, ...)`)
+- `changed, new_bool = imgui.MouseWheelCheckbox(label, bool_val, [wrap], [only_over_box], [hover_cursor])`
 
 Global combo & reset helpers:
 - `imgui.SetMouseWheelAutoDefeat(enabled)` / `GetMouseWheelAutoDefeat()` -- Prevents wheel controls from hijacking an actively scrolling parent panel.
@@ -397,7 +399,7 @@ if changed then aileron_trim = new_trim end
 local alt_chg, new_alt = imgui.DragIntWithReset("Target Altitude", mcp_alt, 100.0, 1000, 45000, 10000, "%d ft", 0, 500)
 if alt_chg then mcp_alt = new_alt end
 
-local baro_chg, new_baro = imgui.ComboWithReset("Baro Mode", baro_idx, 1, { "STD 29.92", "QNH 1013", "Local" })
+local baro_chg, new_baro = imgui.ComboWithReset("Baro Mode", baro_idx, 0, { "STD 29.92", "QNH 1013", "Local" })
 if baro_chg then baro_idx = new_baro end
 ```
 
@@ -777,9 +779,10 @@ Direct immediate-mode text rendering helpers mapped to the typography hierarchy:
 - `imgui.MonoText("Dataref: %s", dref_name)` / `imgui.MonoTextUnformatted(str)`
 - `imgui.BoldItalicText("Advisory: %s", note)` / `imgui.BoldItalicTextUnformatted(str)`
 
-### 5. Semantic Font Roles (`imgui.PushFontRole` / `imgui.PopFontRole`)
-Pushes an explicit typography role from the semantic registry:
-- Roles: `imgui.FontRole.Regular`, `Title`, `Small`, `Bold`, `BoldLarge`, `Monospace`, `Italic`, `MonospaceMedium`, `BoldItalic`, `Heading1`, `Heading2`, `Heading3`, `Tiny`.
+### 5. Semantic Font Roles (`imgui.PushFontRole` / `PopFontRole` / `SetFontRole`)
+Pushes or customizes an explicit typography role from the semantic registry:
+- Roles: `imgui.FontRole.Regular`, `Title`, `Small`, `Bold`, `BoldLarge`, `Monospace`, `Italic`, `MonospaceMedium`, `BoldItalic`, `Heading1`, `Heading2`, `Heading3`, `Tiny` (or pass role names such as `"monospace"`, `"small"`, `"title"`).
+- Override or restore roles dynamically via `imgui.SetFontRole(role, font_name_or_index)` and `imgui.ResetFontRoles()` (`ClearFontRoles()`).
 
 ```lua
 imgui.PushFontRole(imgui.FontRole.Monospace)
@@ -798,9 +801,10 @@ imgui.BadgeNamed("avionics_beacon", "v2.3.0")
 ### 7. In-Memory Image Service (`imgui.RegisterMemoryImage`)
 Decode and register raw image files (PNG, JPEG, etc.) directly from memory byte strings into GPU VRAM with **zero disk I/O, zero file permissions issues, and zero temp files**:
 - `success, width, height = imgui.RegisterMemoryImage(name, binary_string_data)`
-- `imgui.UnregisterMemoryImage(name)` / `imgui.DeleteMemoryImage(name)`
+- `ok = imgui.RegisterNamedTexture(name, tex_id, [width, height], [uv0_x, uv0_y, uv1_x, uv1_y], [tint_col], [border_col])` -- Registers an existing `float_wnd_load_image` texture ID into the named registry for Markdown `![](name)`, `<pill icon=name>`, and `ImageNamed`.
+- `imgui.UnregisterMemoryImage(name)` / `imgui.UnregisterNamedTexture(name)` / `imgui.DeleteMemoryImage(name)`
 - `exists, width, height = imgui.GetNamedTexture(name)` / `imgui.HasMemoryImage(name)`
-- `imgui.ImageNamed(name, [width, height])`
+- `imgui.ImageNamed(name, [width, height], [uv0_x, uv0_y, uv1_x, uv1_y], [tint_col], [border_col])`
 
 Once registered via `imgui.RegisterMemoryImage("my_chart", png_bytes)`:
 - **Pure ImGui Lua:** `imgui.ImageNamed("my_chart", 300, 200)`
@@ -820,6 +824,7 @@ end
 Switch curated ImGee cockpit color themes per window context, or launch external URLs and local manuals cleanly across macOS, Windows, and Linux:
 - `imgui.StyleColorsCharcoal()` / `imgui.ApplyDefaultTheme()` -- Low-glare Charcoal studio slate palette (default).
 - `imgui.StyleColorsRusty()` -- Warm bronze / terracotta aviation palette.
+- `imgui.StyleColorsPaperLight()` -- Clean, publication-grade light palette for daytime flight & manuals.
 - `imgui.StyleColorsDark()`, `imgui.StyleColorsLight()`, `imgui.StyleColorsClassic()` -- Standard Dear ImGui palettes.
 - `ok = imgui.OpenURL(url_or_path)` and `ok = imgui.OpenDocument(local_path)` -- Opens web URLs or simulator-relative PDF/text documents in the user's native viewer.
 
@@ -929,6 +934,7 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **TimedTooltip Plain** | `imgui.TimedTooltip.Text` | `imgui.TimedTooltip.text` | `TimedTooltip.Text` | -- |
 | **TimedTooltip MD** | `imgui.TimedTooltip.MD.Text` | `imgui.TimedTooltip.TextMD` | `TimedTooltip.MD.Text` | `TimedTooltip.TextMD` |
 | **TimedTooltip Link/Proxy** | `imgui.TimedTooltip.TextMDLink` | `imgui.TimedTooltip.TextLink` | `TimedTooltip.TextMDProxy` | `TimedTooltip.ToggleOnClick` |
+| **TimedTooltip Custom Scope** | `imgui.TimedTooltip.Begin` | `imgui.TimedTooltip.BeginProxy` | `TimedTooltip.End` | `TimedTooltip.Configure` |
 | **Toggle Button** | `imgui.ToggleButton` | `imgui.toggle_button` | -- | -- |
 | **Segmented Toggles** | `imgui.ToggleButtons` | `imgui.toggle_buttons` | -- | -- |
 | **Wheel Checkbox** | `imgui.MouseWheelCheckbox` | `imgui.mouse_wheel_checkbox` | -- | `imgui.ToggleItemOnMouseWheel` |
@@ -986,14 +992,14 @@ FlyWithLua provides comprehensive alias coverage matching both standard Dear ImG
 | **Title Text** | `imgui.TitleText` | `imgui.title_text` | `imgui.TitleTextUnformatted` | -- |
 | **Mono Text** | `imgui.MonoText` | `imgui.mono_text` | `imgui.MonoTextUnformatted` | -- |
 | **Bold-Italic Text** | `imgui.BoldItalicText` | `imgui.bold_italic_text` | `imgui.BoldItalicTextUnformatted` | -- |
-| **Font Role Push** | `imgui.PushFontRole` | `imgui.push_font_role` | -- | -- |
-| **Font Role Pop** | `imgui.PopFontRole` | `imgui.pop_font_role` | -- | -- |
-| **Cockpit Themes** | `imgui.StyleColorsCharcoal` | `imgui.StyleColorsRusty` | `imgui.ApplyDefaultTheme` | `imgui.style_colors_charcoal` |
+| **Font Role Push** | `imgui.PushFontRole` | `imgui.push_font_role` | `imgui.SetFontRole` | `imgui.ResetFontRoles` |
+| **Font Role Pop** | `imgui.PopFontRole` | `imgui.pop_font_role` | `imgui.ClearFontRoles` | -- |
+| **Cockpit Themes** | `imgui.StyleColorsCharcoal` | `imgui.StyleColorsRusty` | `imgui.StyleColorsPaperLight` | `imgui.ApplyDefaultTheme` |
 | **URL / Doc Opener** | `imgui.OpenURL` | `imgui.open_url` | `imgui.OpenDocument` | `imgui.open_document` |
 | **Zoomed Viewport** | `imgui.BeginZoomedViewport` | `imgui.EndZoomedViewport` | `imgui.ZoomViewportControls` | `imgui.SetViewportZoom` |
 | **Document Viewer** | `imgui.DocumentViewer` | `imgui.DocViewer.Render` | `DocViewer.Render` | `imgui.ParseMarkdownToc` |
 | **Prefab Doc Window** | `imgui.DocWindow.Create` | `imgui.CreateDocWindow` | `DocWindow.Create` | `float_wnd_create_doc` |
-| **Memory Image Register**| `imgui.RegisterMemoryImage` | `imgui.register_memory_image` | -- | -- |
+| **Memory Image Register**| `imgui.RegisterMemoryImage` | `imgui.register_memory_image` | `imgui.RegisterNamedTexture` | `imgui.register_named_texture` |
 | **Memory Image Delete**| `imgui.UnregisterMemoryImage`| `imgui.DeleteMemoryImage` | -- | `imgui.delete_memory_image` |
 | **Memory Image Query** | `imgui.GetNamedTexture` | `imgui.HasMemoryImage` | -- | `imgui.has_memory_image` |
 | **Image Render by Name**| `imgui.ImageNamed` | `imgui.image_named` | -- | -- |
