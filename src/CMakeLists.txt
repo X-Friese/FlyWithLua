@@ -217,22 +217,10 @@ add_subdirectory(third_party/sol2)
 target_link_libraries(FlyWithLua sol2::sol2)
 
 
-# Link Fmod related libraries.
-# Windows will not find the dll so we have to do this dance
-if (APPLE OR UNIX)
-    if (APPLE)
-       find_library(FMOD_LIBRARY NAMES libfmod.dylib)
-       find_library(FMOD_STUDIO_LIBRARY NAMES libfmodstudio.dylib)
-    elseif (UNIX)
-       find_library(FMOD_LIBRARY NAMES libfmod.so.13.10)
-       find_library(FMOD_STUDIO_LIBRARY NAMES libfmodstudio.so.13.10)
-    endif ()
-    target_link_libraries(FlyWithLua ${FMOD_LIBRARY} ${FMOD_STUDIO_LIBRARY})
-elseif (WIN32)
-    target_link_libraries(FlyWithLua "${CMAKE_SOURCE_DIR}/Fmod_api/core/lib/fmod.dll")
-    target_link_libraries(FlyWithLua "${CMAKE_SOURCE_DIR}/Fmod_api/studio/lib/fmodstudio.dll")    
-    
-endif ()    
+# FMOD Core & Studio symbols are resolved dynamically at runtime in Fmod/FmodIntegration.cpp
+# (via dlsym / GetProcAddress against X-Plane's loaded FMOD runtime) so a single FlyWithLua.xpl
+# loads cleanly across X-Plane 11 (libfmod.so.8 / fmod64.dll), X-Plane 12 (libfmod.so.13 / fmod.dll),
+# and future FMOD SONAME updates without hard DT_NEEDED / DLL import-table coupling.
     
 
 # Link X-Plane plugin system libraries. They are only provided for OS X and Windows.

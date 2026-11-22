@@ -36,13 +36,12 @@ public:
         bool cursors = (flywithlua::imgui_mouse_cursors != 0))
         : ImgDocWindow(
               windowTitle,
-              MakeDefaultDocGeometry(width, height),
+              MakeDefaultDocGeometry(width, height, static_cast<XPLMWindowDecoration>(decoration)),
               static_cast<XPLMWindowDecoration>(decoration),
               xplm_WindowLayerFloatingWindows,
               cursors)
     {
         SetVisible(true);
-        SetCaptureKeyboardOnMouseFocus(true);
     }
 
     ~FWLDocWindow() override = default;
@@ -90,7 +89,7 @@ public:
     void setPosition(int posx, int posy) override {
         if (!IsInVR()) {
             int winLeft = 0, winTop = 0, winRight = 0, winBot = 0;
-            XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+            ImgWindow::GetMainMonitorBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
             int curLeft = 0, curTop = 0, curRight = 0, curBottom = 0;
             GetWindowGeometry(curLeft, curTop, curRight, curBottom);
             int w = curRight - curLeft;
@@ -213,10 +212,8 @@ private:
             st.Colors[ImGuiCol_Border].w   = 1.0f;
         }
     }
-    static WindowGeometry MakeDefaultDocGeometry(int width, int height) {
-        int sl = 0, st = 0;
-        XPLMGetScreenBoundsGlobal(&sl, &st, nullptr, nullptr);
-        return WindowGeometry::FromTopLeft(sl + 120, st - 90, width, height);
+    static WindowGeometry MakeDefaultDocGeometry(int width, int height, XPLMWindowDecoration decoration) {
+        return WindowGeometry::Centered(width, height, decoration);
     }
 
     static std::string JoinScriptPath(const std::string& dir, const std::string& rel) {
