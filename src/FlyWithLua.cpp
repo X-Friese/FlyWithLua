@@ -189,6 +189,7 @@
  *                    Simplify SkunkCrafts Beta Bootstrap to Single-File skunkcrafts_updater.cfg
  *                    Wire missing LuiGee rotary knob bindings (imgui_knobs.h) & sync ImgWindow v2.4.1
  *  v2.8.23 [changed] ImgWindow v2.5 + LuiGee v1.1.0 Parity, Dynamic FMOD Loader (XP11/XP12), and Command-Backed Menus
+ *                    fix(mac,arm64): update macOS Universal libluajit.a to v2.1 (fixes ARM64 LDP SIGILL, LuaJIT#1028)
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found
