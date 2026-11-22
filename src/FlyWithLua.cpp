@@ -449,11 +449,13 @@ static int                   DataRefTableLastElement = -1;
 
 struct MacroTableStructure
 {
-    bool        IsSwitch{};
-    std::string MacroName;
-    std::string ActivateCommand;
-    std::string DeactivateCommand;
-    int         XPLM_Index{};
+    bool           IsSwitch{};
+    bool           IsATC{};
+    std::string    MacroName;
+    std::string    ActivateCommand;
+    std::string    DeactivateCommand;
+    int            XPLM_Index{};
+    XPLMCommandRef CommandRef{};
 };
 
 static MacroTableStructure MacroTable[MAXMACROS];
@@ -572,10 +574,12 @@ void EraseDataRefTable()
     for (auto& macro : MacroTable)
     {
         macro.IsSwitch = false;
+        macro.IsATC    = false;
         macro.MacroName.clear();
         macro.ActivateCommand.clear();
         macro.DeactivateCommand.clear();
         macro.XPLM_Index = 0;
+        macro.CommandRef = nullptr;
     }
 
     MacroTableLastElement = -1;
@@ -961,10 +965,14 @@ bool ReadPrefFile();
 
 // The user will be able to handle the plugin with commands
 XPLMCommandRef MyReloadScriptsCommand = nullptr;
+XPLMCommandRef MyToggleLuiGeeGuideCommand = nullptr;
 
 int MyReloadScriptsCommandHandler(XPLMCommandRef inCommand,
                                   XPLMCommandPhase inPhase,
                                   void* inRefcon);
+int MyToggleLuiGeeGuideCommandHandler(XPLMCommandRef inCommand,
+                                      XPLMCommandPhase inPhase,
+                                      void* inRefcon);
 
 void initPluginDirectory(); // snagar
 
@@ -1064,8 +1072,9 @@ static XPLMDataRef FWLViewType          = XPLMFindDataRef("sim/graphics/view/vie
 // Don't want to use buttons? Here is a nice little menu
 void FlyWithLuaMenuHandler(void*, void*);
 
-XPLMMenuID FlyWithLuaMenuId;
+XPLMMenuID FlyWithLuaMenuId = nullptr;
 int        FlyWithLuaMenuItem;
+int        LuiGeeGuideCheckedPosition = -1;
 
 XPLMMenuCheck DevMenuMode;
 int DevModeCheckedPosition = 10;
@@ -2763,6 +2772,142 @@ static int LuaCommandEnd(lua_State* L)
     return 0;
 }
 
+static std::string TrimLuaMacroExpr(const std::string& s)
+{
+    std::size_t start = 0;
+    while (start < s.size() && (s[start] == ' ' || s[start] == '\t' || s[start] == '\r' || s[start] == '\n'))
+        ++start;
+    std::size_t end = s.size();
+    while (end > start && (s[end - 1] == ' ' || s[end - 1] == '\t' || s[end - 1] == '\r' || s[end - 1] == '\n' || s[end - 1] == ';'))
+        --end;
+    return s.substr(start, end - start);
+}
+
+static bool ExtractCommandOnceArg(const std::string& expr, std::string& outCmdName)
+{
+    std::string t = TrimLuaMacroExpr(expr);
+    if (t.rfind("command_once", 0) != 0)
+        return false;
+    std::size_t pos = 12;
+    while (pos < t.size() && (t[pos] == ' ' || t[pos] == '\t'))
+        ++pos;
+    if (pos >= t.size() || t[pos] != '(')
+        return false;
+    ++pos;
+    while (pos < t.size() && (t[pos] == ' ' || t[pos] == '\t'))
+        ++pos;
+    if (pos >= t.size() || (t[pos] != '\'' && t[pos] != '"'))
+        return false;
+    char quote = t[pos++];
+    std::size_t closeQuote = t.find(quote, pos);
+    if (closeQuote == std::string::npos)
+        return false;
+    std::string candidate = t.substr(pos, closeQuote - pos);
+    std::size_t after = closeQuote + 1;
+    while (after < t.size() && (t[after] == ' ' || t[after] == '\t'))
+        ++after;
+    if (after + 1 != t.size() || t[after] != ')')
+        return false;
+    if (candidate.empty())
+        return false;
+    outCmdName = candidate;
+    return true;
+}
+
+static XPLMCommandRef ResolveMacroCommandRef(const std::string& activateExpr)
+{
+    std::string trimmed = TrimLuaMacroExpr(activateExpr);
+    if (trimmed.empty())
+        return nullptr;
+
+    // 1. Check for command_once('cmd/path') or command_once("cmd/path")
+    std::string cmdOnceTarget;
+    if (ExtractCommandOnceArg(trimmed, cmdOnceTarget))
+    {
+        for (int i = 0; i <= CommandTableLastElement; ++i)
+        {
+            if (CommandTable[i].Name == cmdOnceTarget && CommandTable[i].Reference != nullptr)
+                return CommandTable[i].Reference;
+        }
+        return XPLMFindCommand(cmdOnceTarget.c_str());
+    }
+
+    // 2. Check if activateExpr matches the BeginCommand of a create_command() entry in CommandTable
+    for (int i = 0; i <= CommandTableLastElement; ++i)
+    {
+        if (CommandTable[i].Reference != nullptr &&
+            CommandTable[i].ContinueCommand.empty() &&
+            CommandTable[i].EndCommand.empty() &&
+            !CommandTable[i].BeginCommand.empty() &&
+            TrimLuaMacroExpr(CommandTable[i].BeginCommand) == trimmed)
+        {
+            return CommandTable[i].Reference;
+        }
+    }
+
+    // 3. Check if activateExpr is itself a direct X-Plane command path (e.g. "FlyWithLua/foo/bar")
+    if (trimmed.find('/') != std::string::npos &&
+        trimmed.find('(') == std::string::npos &&
+        trimmed.find(')') == std::string::npos &&
+        trimmed.find('=') == std::string::npos &&
+        trimmed.find(' ') == std::string::npos)
+    {
+        for (int i = 0; i <= CommandTableLastElement; ++i)
+        {
+            if (CommandTable[i].Name == trimmed && CommandTable[i].Reference != nullptr)
+                return CommandTable[i].Reference;
+        }
+        return XPLMFindCommand(trimmed.c_str());
+    }
+
+    return nullptr;
+}
+
+static void RebuildMacroSubmenu(XPLMMenuID menuId, bool isATC)
+{
+    if (!menuId)
+        return;
+
+    std::vector<XPLMMenuCheck> savedChecks(static_cast<std::size_t>(MacroTableLastElement + 1), xplm_Menu_NoCheck);
+    for (int i = 0; i <= MacroTableLastElement; ++i)
+    {
+        if (MacroTable[i].IsATC == isATC && MacroTable[i].IsSwitch && MacroTable[i].XPLM_Index >= 0)
+        {
+            XPLMMenuCheck st = xplm_Menu_Unchecked;
+            XPLMCheckMenuItemState(menuId, MacroTable[i].XPLM_Index, &st);
+            savedChecks[static_cast<std::size_t>(i)] = st;
+        }
+    }
+
+    XPLMClearAllMenuItems(menuId);
+
+    for (int i = 0; i <= MacroTableLastElement; ++i)
+    {
+        if (MacroTable[i].IsATC != isATC)
+            continue;
+
+        if (!MacroTable[i].IsSwitch && MacroTable[i].CommandRef != nullptr)
+        {
+            MacroTable[i].XPLM_Index = XPLMAppendMenuItemWithCommand(
+                menuId,
+                MacroTable[i].MacroName.c_str(),
+                MacroTable[i].CommandRef);
+        }
+        else
+        {
+            MacroTable[i].XPLM_Index = XPLMAppendMenuItem(
+                menuId,
+                MacroTable[i].MacroName.c_str(),
+                (void*) static_cast<std::size_t>(i),
+                isATC ? 1 : 0);
+            if (MacroTable[i].IsSwitch)
+            {
+                XPLMCheckMenuItem(menuId, MacroTable[i].XPLM_Index, savedChecks[static_cast<std::size_t>(i)]);
+            }
+        }
+    }
+}
+
 static int LuaAddMacro(lua_State* L)
 {
     if (++MacroTableLastElement >= MAXMACROS)
@@ -2777,9 +2922,11 @@ static int LuaAddMacro(lua_State* L)
         MacroTable[MacroTableLastElement].MacroName = MacroName;
         MacroTable[MacroTableLastElement].ActivateCommand.append(lua_tostring(L, 2));
         MacroTable[MacroTableLastElement].DeactivateCommand.append(lua_tostring(L, 3));
-        MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(MacroMenuId, MacroName.c_str(),
-                                                                          (void*) MacroTableLastElement, 0);
         MacroTable[MacroTableLastElement].IsSwitch   = true;
+        MacroTable[MacroTableLastElement].IsATC      = false;
+        MacroTable[MacroTableLastElement].CommandRef = nullptr;
+        MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(MacroMenuId, MacroName.c_str(),
+                                                                          (void*) static_cast<std::size_t>(MacroTableLastElement), 0);
         std::string StartActive;
         if (lua_isstring(L, 4))
         {
@@ -2794,20 +2941,35 @@ static int LuaAddMacro(lua_State* L)
             XPLMCheckMenuItem(MacroMenuId, MacroTable[MacroTableLastElement].XPLM_Index, xplm_Menu_Unchecked);
             RunLuaString(MacroTable[MacroTableLastElement].DeactivateCommand);
         }
-        MacroTable[MacroTableLastElement].IsSwitch = true;
         return 0;
     }
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
     {
         logMsg(logToDevCon, "FlyWithLua Error: wrong parameters to AddMacro function.");
+        MacroTableLastElement--;
         return 0;
     }
     std::string MacroName = lua_tostring(L, 1);
     MacroTable[MacroTableLastElement].MacroName = MacroName;
     MacroTable[MacroTableLastElement].ActivateCommand.append(lua_tostring(L, 2));
-    MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(MacroMenuId, MacroName.c_str(),
-                                                                      (void*) MacroTableLastElement, 0);
     MacroTable[MacroTableLastElement].IsSwitch   = false;
+    MacroTable[MacroTableLastElement].IsATC      = false;
+    MacroTable[MacroTableLastElement].CommandRef = ResolveMacroCommandRef(MacroTable[MacroTableLastElement].ActivateCommand);
+    if (MacroTable[MacroTableLastElement].CommandRef != nullptr)
+    {
+        MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItemWithCommand(
+            MacroMenuId,
+            MacroName.c_str(),
+            MacroTable[MacroTableLastElement].CommandRef);
+    }
+    else
+    {
+        MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(
+            MacroMenuId,
+            MacroName.c_str(),
+            (void*) static_cast<std::size_t>(MacroTableLastElement),
+            0);
+    }
     return 0;
 }
 
@@ -2823,14 +2985,30 @@ static int LuaAddATCMacro(lua_State* L)
     if (!(lua_isstring(L, 1) && lua_isstring(L, 2)))
     {
         logMsg(logToDevCon, "FlyWithLua Error: wrong parameters to AddATCMacro function.");
+        MacroTableLastElement--;
         return 0;
     }
     std::string MacroName = lua_tostring(L, 1);
     MacroTable[MacroTableLastElement].MacroName = MacroName;
     MacroTable[MacroTableLastElement].ActivateCommand.append(lua_tostring(L, 2));
-    MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(ATCMenuId, MacroName.c_str(),
-                                                                      (void*) MacroTableLastElement, 1);
     MacroTable[MacroTableLastElement].IsSwitch   = false;
+    MacroTable[MacroTableLastElement].IsATC      = true;
+    MacroTable[MacroTableLastElement].CommandRef = ResolveMacroCommandRef(MacroTable[MacroTableLastElement].ActivateCommand);
+    if (MacroTable[MacroTableLastElement].CommandRef != nullptr)
+    {
+        MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItemWithCommand(
+            ATCMenuId,
+            MacroName.c_str(),
+            MacroTable[MacroTableLastElement].CommandRef);
+    }
+    else
+    {
+        MacroTable[MacroTableLastElement].XPLM_Index = XPLMAppendMenuItem(
+            ATCMenuId,
+            MacroName.c_str(),
+            (void*) static_cast<std::size_t>(MacroTableLastElement),
+            1);
+    }
     return 0;
 }
 
@@ -5775,6 +5953,27 @@ static int LuaCreateCommand(lua_State* L)
             CommandTable[CommandTableLastElement].Description.c_str());
     XPLMRegisterCommandHandler(CommandTable[CommandTableLastElement].Reference, FWLCommandCallback, 1,
                                (void*) "FlyWithLuaCommand");
+
+    // If any previously registered 2-arg macro in MacroTable matches this command (e.g. script called
+    // add_macro before create_command), upgrade that macro menu item to XPLMAppendMenuItemWithCommand:
+    bool rebuildMacros = false;
+    bool rebuildATC    = false;
+    for (int m = 0; m <= MacroTableLastElement; ++m)
+    {
+        if (!MacroTable[m].IsSwitch && MacroTable[m].CommandRef == nullptr)
+        {
+            XPLMCommandRef resolved = ResolveMacroCommandRef(MacroTable[m].ActivateCommand);
+            if (resolved != nullptr)
+            {
+                MacroTable[m].CommandRef = resolved;
+                if (MacroTable[m].IsATC) rebuildATC = true;
+                else                     rebuildMacros = true;
+            }
+        }
+    }
+    if (rebuildMacros) RebuildMacroSubmenu(MacroMenuId, false);
+    if (rebuildATC)    RebuildMacroSubmenu(ATCMenuId, true);
+
     return 0;
 }
 
@@ -6860,11 +7059,16 @@ void ResetLuaEngine()
     // Mid-flight font atlas rebuild on script reload (ABC pattern)
     if (LuaResetCount > 0)
     {
+        flwnd::SaveAndCloseBuiltInDocWindowsForReload();
         TeardownImGui();
         ReadPrefFile();
         if (!InitializeImGui())
         {
             logMsg(logToDevCon, "FlyWithLua Error: Unable to re-initialize the shared ImGui font atlas on reload.");
+        }
+        else
+        {
+            flwnd::RestoreBuiltInDocWindowsAfterReload();
         }
     }
 
@@ -7870,6 +8074,10 @@ PLUGIN_API void XPluginDisable(void)
     XPLMUnregisterDrawCallback(FWLDrawWindowCallback, xplm_Phase_Window, 0, (void*) "FWLWindowDrawer");
     XPLMUnregisterKeySniffer(FWLKeySniffer, 0, (void*) "FWLKeySniffer");
     XPLMUnregisterCommandHandler(MyReloadScriptsCommand, MyReloadScriptsCommandHandler, 0, nullptr);
+    if (MyToggleLuiGeeGuideCommand != nullptr)
+    {
+        XPLMUnregisterCommandHandler(MyToggleLuiGeeGuideCommand, MyToggleLuiGeeGuideCommandHandler, 0, nullptr);
+    }
     XPLMUnregisterFlightLoopCallback(MyFastLoopCallback, nullptr);
     XPLMUnregisterFlightLoopCallback(MySlowLoopCallback, nullptr);
     XPLMUnregisterFlightLoopCallback(MyEveryFrameLoopCallback, nullptr);
@@ -7919,6 +8127,7 @@ PLUGIN_API int XPluginEnable(void)
 
     // The commands
     MyReloadScriptsCommand = XPLMCreateCommand("FlyWithLua/debugging/reload_scripts", "Reload all Lua script files.");
+    MyToggleLuiGeeGuideCommand = XPLMCreateCommand("FlyWithLua/LuiGee/toggle_guide", "Toggle FlyWithLua LuiGee UX Guide window.");
 
 
     // Now tell X-Plane about our commands
@@ -7926,6 +8135,10 @@ PLUGIN_API int XPluginEnable(void)
                                MyReloadScriptsCommandHandler,     // in Handler
                                0,                                 // Receive input when plugin windows.
                                nullptr);                       // inRefcon.
+    XPLMRegisterCommandHandler(MyToggleLuiGeeGuideCommand,
+                               MyToggleLuiGeeGuideCommandHandler,
+                               0,
+                               nullptr);
 
     // Check in the main functions
     XPLMRegisterFlightLoopCallback(
@@ -7955,7 +8168,7 @@ PLUGIN_API int XPluginEnable(void)
     FlyWithLuaMenuId       = XPLMCreateMenu("FlyWithLua", XPLMFindPluginsMenu(), FlyWithLuaMenuItem,
                                             FlyWithLuaMenuHandler,
                                             nullptr);
-    XPLMAppendMenuItem(FlyWithLuaMenuId, "Reload all Lua script files", (void*) "Reload", 1);
+    XPLMAppendMenuItemWithCommand(FlyWithLuaMenuId, "Reload all Lua script files", MyReloadScriptsCommand);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
 
     // create the macro and ATC menus inside the FlyWithLua menu
@@ -7978,6 +8191,8 @@ PLUGIN_API int XPluginEnable(void)
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Enable Verbose Logging Mode", (void*) "VerboseMode", 1);
     XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 1);
     XPLMAppendMenuSeparator(FlyWithLuaMenuId);
+    LuiGeeGuideCheckedPosition = XPLMAppendMenuItemWithCommand(FlyWithLuaMenuId, "LuiGee UX Guide", MyToggleLuiGeeGuideCommand);
+    XPLMCheckMenuItem(FlyWithLuaMenuId, LuiGeeGuideCheckedPosition, xplm_Menu_Unchecked);
     XPLMAppendMenuItem(FlyWithLuaMenuId, "Check for FlyWithLua Updates...", (void*) "CheckUpdates", 1);
 
     // init the XSB connection
@@ -8008,7 +8223,7 @@ PLUGIN_API int XPluginEnable(void)
     // Only re-initialize if the sim is already running mid-flight (XPLMGetCycleNumber() > 0 or LuaResetCount > 0).
     // On cold boot (cycle == 0), the sound banks are not loaded yet; X-Plane will load them
     // and send XPLM_MSG_FMOD_BANK_LOADED when the aircraft is ready.
-    if ((XPLMGetCycleNumber() > 0 || LuaResetCount > 0) && XPLMGetFMODStudio() != nullptr)
+    if ((XPLMGetCycleNumber() > 0 || LuaResetCount > 0) && fmodint::isFmodStudioActive())
     {
         fmodint::fmod_initialization();
     }
@@ -8689,6 +8904,8 @@ int MyReloadScriptsCommandHandler(XPLMCommandRef /*inCommand*/,
 {
     if (inPhase == xplm_CommandBegin)
     {
+        logMsg(logToDevCon, "FlyWithLua: User forced a script reload.");
+        first_pass = 0;
         ReadAllScriptFiles();
         if  (developer_mode == 0)
         {
@@ -8696,6 +8913,17 @@ int MyReloadScriptsCommandHandler(XPLMCommandRef /*inCommand*/,
         }
     }
     return 0; // we resume the command
+}
+
+int MyToggleLuiGeeGuideCommandHandler(XPLMCommandRef /*inCommand*/,
+                                      XPLMCommandPhase inPhase,
+                                      void* /*inRefcon*/)
+{
+    if (inPhase == xplm_CommandBegin)
+    {
+        flwnd::ToggleBuiltInLuiGeeGuide();
+    }
+    return 0;
 }
 
 // execute the macro by setting a mission level
@@ -8786,6 +9014,12 @@ void FlyWithLuaMenuHandler(void* /*mRef*/, void* iRef)
             XPLMCheckMenuItem(FlyWithLuaMenuId, VerboseModeCheckedPosition, 2);
             verbose_logging_mode = 1;
         }
+        return;
+    }
+
+    if (!strcmp((char*) iRef, "LuiGeeGuide"))
+    {
+        flwnd::ToggleBuiltInLuiGeeGuide();
         return;
     }
 

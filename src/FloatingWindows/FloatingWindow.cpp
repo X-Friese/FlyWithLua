@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include "FloatingWindow.h"
 #include "../FlyWithLua.h"
+#include "ImgWindow.h"
 
 namespace {
 
@@ -43,7 +44,7 @@ LegacyFloatingWindow::LegacyFloatingWindow(int winWidth, int winHeight, int winD
 
 void LegacyFloatingWindow::createWindow() {
     int winLeft, winTop, winRight, winBot;
-    XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+    ImgWindow::GetMainMonitorBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
     XPLMCreateWindow_t params;
     params.structSize = sizeof(params);
@@ -114,7 +115,7 @@ void LegacyFloatingWindow::setPosition(int posx, int posy) {
 
     if (!vrEnabled) {
         int winLeft, winTop, winRight, winBot;
-        XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+        ImgWindow::GetMainMonitorBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
         XPLMSetWindowGeometry(window, winLeft + posx, winBot + posy + height, winLeft + posx + width, winBot + posy);
     }
@@ -211,7 +212,7 @@ void LegacyFloatingWindow::moveFromOrToVR() {
         isInVR = false;
         
         int winLeft, winTop, winRight, winBot;
-        XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+        ImgWindow::GetMainMonitorBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
 
         XPLMSetWindowGeometry(window, winLeft + 100, winBot + 100 + height, winLeft + 100 + width, winBot + 100);
     }

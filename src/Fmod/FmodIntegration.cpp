@@ -12,7 +12,23 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstring>
 #include <string.h>
+
+#if IBM
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#if LIN
+#include <glob.h>
+#endif
+#endif
 
 #include <XPLMDataAccess.h>
 #include <XPLMUtilities.h>
@@ -72,6 +88,258 @@ FMOD_CHANNELGROUP *cg_sdk_master = nullptr;
 // FMOD Studio ------------------------------------------------------------------
 FMOD_STUDIO_SYSTEM *fmod_studio_system_pointer = nullptr;
 FMOD_STUDIO_SYSTEM *fmod_studio_sdk = nullptr;
+
+// Dynamic runtime lookup for X-Plane FMOD Core & Studio symbols across XP11, XP12+, and all OS SONAMEs/DLL names
+// (Eliminates hard link-time dependencies on libfmod.so.13 / fmod.dll so a single binary loads on XP11 & XP12+.)
+typedef FMOD_STUDIO_SYSTEM* (*XPLMGetFMODStudio_f)(void);
+typedef FMOD_CHANNELGROUP* (*XPLMGetFMODChannelGroup_f)(XPLMAudioBus audioType);
+
+static XPLMGetFMODStudio_f                          s_XPLMGetFMODStudio              = nullptr;
+static XPLMGetFMODChannelGroup_f                    s_XPLMGetFMODChannelGroup        = nullptr;
+static decltype(&FMOD_Studio_System_GetCoreSystem)  s_FMOD_Studio_System_GetCoreSystem = nullptr;
+static decltype(&FMOD_Studio_System_Update)         s_FMOD_Studio_System_Update      = nullptr;
+static decltype(&FMOD_System_CreateChannelGroup)    s_FMOD_System_CreateChannelGroup = nullptr;
+static decltype(&FMOD_System_CreateSound)           s_FMOD_System_CreateSound        = nullptr;
+static decltype(&FMOD_System_PlaySound)             s_FMOD_System_PlaySound          = nullptr;
+static decltype(&FMOD_System_Update)                s_FMOD_System_Update             = nullptr;
+static decltype(&FMOD_ChannelGroup_AddGroup)        s_FMOD_ChannelGroup_AddGroup     = nullptr;
+static decltype(&FMOD_ChannelGroup_Release)         s_FMOD_ChannelGroup_Release      = nullptr;
+static decltype(&FMOD_ChannelGroup_SetMute)         s_FMOD_ChannelGroup_SetMute      = nullptr;
+static decltype(&FMOD_ChannelGroup_SetVolume)       s_FMOD_ChannelGroup_SetVolume    = nullptr;
+static decltype(&FMOD_ChannelGroup_Stop)            s_FMOD_ChannelGroup_Stop         = nullptr;
+static decltype(&FMOD_Channel_GetCurrentSound)      s_FMOD_Channel_GetCurrentSound   = nullptr;
+static decltype(&FMOD_Channel_GetDSPClock)          s_FMOD_Channel_GetDSPClock       = nullptr;
+static decltype(&FMOD_Channel_GetFrequency)         s_FMOD_Channel_GetFrequency      = nullptr;
+static decltype(&FMOD_Sound_GetLength)              s_FMOD_Sound_GetLength           = nullptr;
+static decltype(&FMOD_Sound_Release)                s_FMOD_Sound_Release             = nullptr;
+
+static bool s_fmod_symbols_resolved = false;
+static bool s_fmod_core_ready       = false;
+#if IBM
+static HMODULE s_fmod_core_handle   = nullptr;
+static HMODULE s_fmod_studio_handle = nullptr;
+#else
+static void*   s_fmod_core_handle   = nullptr;
+static void*   s_fmod_studio_handle = nullptr;
+#endif
+
+template <typename FnPtr>
+static bool assignRawSymbol(void* raw, FnPtr& outFn)
+{
+    static_assert(sizeof(FnPtr) == sizeof(void*), "Function pointer size mismatch");
+    if (raw == nullptr) {
+        outFn = nullptr;
+        return false;
+    }
+    std::memcpy(&outFn, &raw, sizeof(FnPtr));
+    return true;
+}
+
+#if IBM
+static void* findWinFmodSymbol(HMODULE& cachedHandle,
+                               const char* const* moduleNames,
+                               const char* const* fallbackPaths,
+                               const char* symName)
+{
+    if (cachedHandle != nullptr) {
+        FARPROC proc = GetProcAddress(cachedHandle, symName);
+        if (proc != nullptr) {
+            return reinterpret_cast<void*>(proc);
+        }
+    }
+    for (int i = 0; moduleNames[i] != nullptr; ++i) {
+        HMODULE hMod = GetModuleHandleA(moduleNames[i]);
+        if (hMod != nullptr) {
+            FARPROC proc = GetProcAddress(hMod, symName);
+            if (proc != nullptr) {
+                cachedHandle = hMod;
+                return reinterpret_cast<void*>(proc);
+            }
+        }
+    }
+    for (int i = 0; fallbackPaths[i] != nullptr; ++i) {
+        HMODULE hMod = LoadLibraryA(fallbackPaths[i]);
+        if (hMod != nullptr) {
+            FARPROC proc = GetProcAddress(hMod, symName);
+            if (proc != nullptr) {
+                cachedHandle = hMod;
+                return reinterpret_cast<void*>(proc);
+            }
+        }
+    }
+    return nullptr;
+}
+#else
+static void* findPosixFmodSymbol(void*& cachedHandle,
+                                 const char* const* candidateNames,
+                                 const char* globPattern,
+                                 const char* symName)
+{
+    if (cachedHandle != nullptr) {
+        if (void* fn = dlsym(cachedHandle, symName)) {
+            return fn;
+        }
+    }
+#ifdef RTLD_DEFAULT
+    if (void* fn = dlsym(RTLD_DEFAULT, symName)) {
+        return fn;
+    }
+#endif
+#ifdef RTLD_NOLOAD
+    for (int i = 0; candidateNames[i] != nullptr; ++i) {
+        void* h = dlopen(candidateNames[i], RTLD_LAZY | RTLD_NOLOAD);
+        if (h != nullptr) {
+            void* fn = dlsym(h, symName);
+            if (fn != nullptr) {
+                cachedHandle = h;
+                return fn;
+            }
+            dlclose(h);
+        }
+    }
+#endif
+    for (int i = 0; candidateNames[i] != nullptr; ++i) {
+        void* h = dlopen(candidateNames[i], RTLD_LAZY | RTLD_LOCAL);
+        if (h != nullptr) {
+            void* fn = dlsym(h, symName);
+            if (fn != nullptr) {
+                cachedHandle = h;
+                return fn;
+            }
+            dlclose(h);
+        }
+    }
+#if LIN
+    if (globPattern != nullptr) {
+        glob_t gl = {};
+        if (glob(globPattern, 0, nullptr, &gl) == 0) {
+            for (size_t i = 0; i < gl.gl_pathc; ++i) {
+                void* h = dlopen(gl.gl_pathv[i], RTLD_LAZY | RTLD_LOCAL);
+                if (h != nullptr) {
+                    void* fn = dlsym(h, symName);
+                    if (fn != nullptr) {
+                        cachedHandle = h;
+                        globfree(&gl);
+                        return fn;
+                    }
+                    dlclose(h);
+                }
+            }
+            globfree(&gl);
+        }
+    }
+#else
+    (void)globPattern;
+#endif
+    return nullptr;
+}
+#endif
+
+static void* findFmodStudioSymbol(const char* symName)
+{
+    if (void* fn = XPLMFindSymbol(symName)) {
+        return fn;
+    }
+#if IBM
+    static const char* const kStudioMods[] = { "fmodstudio.dll", "fmodstudio64.dll", nullptr };
+    static const char* const kStudioPaths[] = {
+        "Resources\\dlls\\64\\fmodstudio.dll",
+        "Resources\\dlls\\64\\fmodstudio64.dll",
+        "fmodstudio.dll",
+        "fmodstudio64.dll",
+        nullptr
+    };
+    return findWinFmodSymbol(s_fmod_studio_handle, kStudioMods, kStudioPaths, symName);
+#elif APL
+    static const char* const kStudioMods[] = {
+        "@executable_path/../Frameworks/libfmodstudio.dylib",
+        "libfmodstudio.dylib",
+        nullptr
+    };
+    return findPosixFmodSymbol(s_fmod_studio_handle, kStudioMods, nullptr, symName);
+#else
+    static const char* const kStudioMods[] = {
+        "libfmodstudio.so.13",
+        "libfmodstudio.so.13.10",
+        "libfmodstudio.so",
+        "libfmodstudio.so.8",
+        "./Resources/dlls/64/libfmodstudio.so.13",
+        "./Resources/dlls/64/libfmodstudio.so.13.10",
+        "./Resources/dlls/64/libfmodstudio.so.8",
+        nullptr
+    };
+    return findPosixFmodSymbol(s_fmod_studio_handle, kStudioMods, "./Resources/dlls/64/libfmodstudio.so*", symName);
+#endif
+}
+
+static void* findFmodCoreSymbol(const char* symName)
+{
+#if IBM
+    static const char* const kCoreMods[] = { "fmod.dll", "fmod64.dll", nullptr };
+    static const char* const kCorePaths[] = {
+        "Resources\\dlls\\64\\fmod.dll",
+        "Resources\\dlls\\64\\fmod64.dll",
+        "fmod.dll",
+        "fmod64.dll",
+        nullptr
+    };
+    return findWinFmodSymbol(s_fmod_core_handle, kCoreMods, kCorePaths, symName);
+#elif APL
+    static const char* const kCoreMods[] = {
+        "@executable_path/../Frameworks/libfmod.dylib",
+        "libfmod.dylib",
+        nullptr
+    };
+    return findPosixFmodSymbol(s_fmod_core_handle, kCoreMods, nullptr, symName);
+#else
+    static const char* const kCoreMods[] = {
+        "libfmod.so.13",
+        "libfmod.so.13.10",
+        "libfmod.so",
+        "libfmod.so.8",
+        "./Resources/dlls/64/libfmod.so.13",
+        "./Resources/dlls/64/libfmod.so.13.10",
+        "./Resources/dlls/64/libfmod.so.8",
+        nullptr
+    };
+    return findPosixFmodSymbol(s_fmod_core_handle, kCoreMods, "./Resources/dlls/64/libfmod.so*", symName);
+#endif
+}
+
+static void resolveFmodSymbols()
+{
+    if (s_fmod_symbols_resolved) {
+        return;
+    }
+    s_fmod_symbols_resolved = true;
+
+    assignRawSymbol(XPLMFindSymbol("XPLMGetFMODStudio"), s_XPLMGetFMODStudio);
+    assignRawSymbol(XPLMFindSymbol("XPLMGetFMODChannelGroup"), s_XPLMGetFMODChannelGroup);
+
+    if (!assignRawSymbol(findFmodStudioSymbol("FMOD_Studio_System_GetCoreSystem"), s_FMOD_Studio_System_GetCoreSystem)) {
+        // Fallback for FMOD 1.08 (X-Plane 11), where GetCoreSystem was named GetLowLevelSystem
+        assignRawSymbol(findFmodStudioSymbol("FMOD_Studio_System_GetLowLevelSystem"), s_FMOD_Studio_System_GetCoreSystem);
+    }
+    assignRawSymbol(findFmodStudioSymbol("FMOD_Studio_System_Update"), s_FMOD_Studio_System_Update);
+
+    bool ok = true;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_System_CreateChannelGroup"), s_FMOD_System_CreateChannelGroup) && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_System_CreateSound"),        s_FMOD_System_CreateSound)        && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_System_PlaySound"),          s_FMOD_System_PlaySound)          && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_System_Update"),             s_FMOD_System_Update)             && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_ChannelGroup_AddGroup"),     s_FMOD_ChannelGroup_AddGroup)     && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_ChannelGroup_Release"),      s_FMOD_ChannelGroup_Release)      && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_ChannelGroup_SetMute"),      s_FMOD_ChannelGroup_SetMute)      && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_ChannelGroup_SetVolume"),    s_FMOD_ChannelGroup_SetVolume)    && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_ChannelGroup_Stop"),         s_FMOD_ChannelGroup_Stop)         && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_Channel_GetCurrentSound"),   s_FMOD_Channel_GetCurrentSound)   && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_Channel_GetDSPClock"),       s_FMOD_Channel_GetDSPClock)       && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_Channel_GetFrequency"),      s_FMOD_Channel_GetFrequency)      && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_Sound_GetLength"),           s_FMOD_Sound_GetLength)           && ok;
+    ok = assignRawSymbol(findFmodCoreSymbol("FMOD_Sound_Release"),             s_FMOD_Sound_Release)             && ok;
+
+    s_fmod_core_ready = ok && (s_FMOD_Studio_System_Update != nullptr);
+}
 
 void FMODErrorHandler(const string &file, int line, FMOD_RESULT result)
 {
@@ -163,7 +431,7 @@ static int LuaLoadFmodSound(lua_State* L)
 unsigned long long fmod_get_delay_to_current_sound_end(int fmod_output_rate, FMOD_CHANNEL *fmod_playing_channel)
 {
     // From the example granular_synth.cpp
-    if(fmod_playing_channel != nullptr)
+    if(fmod_playing_channel != nullptr && s_fmod_core_ready)
     {
         unsigned long long fmod_start_delay = 0;
         unsigned int fmod_sound_length = 0;
@@ -173,15 +441,15 @@ unsigned long long fmod_get_delay_to_current_sound_end(int fmod_output_rate, FMO
         FMOD_RESULT fwl_result;
 
         // Get the channel DSP clock, which serves as a reference
-        fwl_result = FMOD_Channel_GetDSPClock(fmod_playing_channel, 0, &fmod_start_delay);
+        fwl_result = s_FMOD_Channel_GetDSPClock(fmod_playing_channel, 0, &fmod_start_delay);
         fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
 
         // Grab the length of the playing sound, and its frequency, so we can caluate where to place the new sound on the time line.
-        fwl_result = FMOD_Channel_GetCurrentSound(fmod_playing_channel, &fmod_playing_sound);
+        fwl_result = s_FMOD_Channel_GetCurrentSound(fmod_playing_channel, &fmod_playing_sound);
         fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
-        fwl_result = FMOD_Sound_GetLength(fmod_playing_sound, &fmod_sound_length, FMOD_TIMEUNIT_PCM);
+        fwl_result = s_FMOD_Sound_GetLength(fmod_playing_sound, &fmod_sound_length, FMOD_TIMEUNIT_PCM);
         fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
-        fwl_result = FMOD_Channel_GetFrequency(fmod_playing_channel, &fmod_sound_frequency);
+        fwl_result = s_FMOD_Channel_GetFrequency(fmod_playing_channel, &fmod_sound_frequency);
         fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
 
         /*
@@ -247,14 +515,14 @@ static int LuaPlaySoundOnCom1Bus(lua_State* L)
             // We are using fwl_soundFMod[Fmod_IndexNo] so we know which sound file to play
             // Still working on if the is the best approach
 
-            fwl_result = FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
+            fwl_result = s_FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
 
             // The channel on which the sound will be played
             // We are passing nullptr because this feature is not being used.
             FMOD_CHANNEL* flywithlua_channel_pointer = nullptr;
             // Actually play the sound on the FlyWithLua Channel Group
-            fwl_result = FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_com1_channel_group, false, &flywithlua_channel_pointer);
+            fwl_result = s_FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_com1_channel_group, false, &flywithlua_channel_pointer);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
         }
     }
@@ -275,10 +543,10 @@ static int LuaStopSoundOnCom1Bus(lua_State* L)
     {
         FMOD_RESULT fwl_result;
 
-        if(flywithlua_com1_channel_group != nullptr)
+        if(flywithlua_com1_channel_group != nullptr && s_FMOD_ChannelGroup_Stop != nullptr)
         {
             // Stop the sound for the FlyWithLua radio channel group
-            fwl_result = FMOD_ChannelGroup_Stop(flywithlua_com1_channel_group);
+            fwl_result = s_FMOD_ChannelGroup_Stop(flywithlua_com1_channel_group);
         }
     }
     catch (exception const& e)
@@ -295,7 +563,7 @@ static int LuaStopSoundOnCom1Bus(lua_State* L)
 void setCom1Volume(float com1_channel_group_volume)
 {
     // Set the volume for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetVolume(flywithlua_com1_channel_group, com1_channel_group_volume);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetVolume(flywithlua_com1_channel_group, com1_channel_group_volume);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetVolume: " + FMOD_ErrorString(fwl_result);
@@ -307,7 +575,7 @@ void setCom1Volume(float com1_channel_group_volume)
 void setCom1Mute(bool mute_com1_channel_group)
 {
     // Mute the sound for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetMute(flywithlua_com1_channel_group, mute_com1_channel_group);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetMute(flywithlua_com1_channel_group, mute_com1_channel_group);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetMute: " + FMOD_ErrorString(fwl_result);
@@ -364,14 +632,14 @@ static int LuaPlaySoundOnInteriorBus(lua_State* L)
             // We are using fwl_soundFMod[Fmod_IndexNo] so we know which sound file to play
             // Still working on if the is the best approach
 
-            fwl_result = FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
+            fwl_result = s_FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
 
             // The channel on which the sound will be played
             // We are passing nullptr because this feature is not being used.
             FMOD_CHANNEL* flywithlua_channel_pointer = nullptr;
             // Actually play the sound on the FlyWithLua Channel Group
-            fwl_result = FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_interior_channel_group, false, &flywithlua_channel_pointer);
+            fwl_result = s_FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_interior_channel_group, false, &flywithlua_channel_pointer);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
         }
     }
@@ -392,10 +660,10 @@ static int LuaStopSoundOnInteriorBus(lua_State* L)
     {
         FMOD_RESULT fwl_result;
 
-        if(flywithlua_interior_channel_group != nullptr)
+        if(flywithlua_interior_channel_group != nullptr && s_FMOD_ChannelGroup_Stop != nullptr)
         {
             // Stop the sound for the FlyWithLua interior channel group
-            fwl_result = FMOD_ChannelGroup_Stop(flywithlua_interior_channel_group);
+            fwl_result = s_FMOD_ChannelGroup_Stop(flywithlua_interior_channel_group);
         }
     }
     catch (exception const& e)
@@ -412,7 +680,7 @@ static int LuaStopSoundOnInteriorBus(lua_State* L)
 void setInteriorVolume(float interior_channel_group_volume)
 {
     // Set the volume for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetVolume(flywithlua_interior_channel_group, interior_channel_group_volume);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetVolume(flywithlua_interior_channel_group, interior_channel_group_volume);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetVolume: " + FMOD_ErrorString(fwl_result);
@@ -424,7 +692,7 @@ void setInteriorVolume(float interior_channel_group_volume)
 void setInteriorMute(bool mute_interior_channel_group)
 {
     // Mute the sound for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetMute(flywithlua_interior_channel_group, mute_interior_channel_group);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetMute(flywithlua_interior_channel_group, mute_interior_channel_group);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetMute: " + FMOD_ErrorString(fwl_result);
@@ -482,14 +750,14 @@ static int LuaPlaySoundOnUiBus(lua_State* L)
             // We are using fwl_soundFMod[Fmod_IndexNo] so we know which sound file to play
             // Still working on if the is the best approach
 
-            fwl_result = FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
+            fwl_result = s_FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
 
             // The channel on which the sound will be played
             // We are passing nullptr because this feature is not being used.
             FMOD_CHANNEL* flywithlua_channel_pointer = nullptr;
             // Actually play the sound on the FlyWithLua Channel Group
-            fwl_result = FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_ui_channel_group, false, &flywithlua_channel_pointer);
+            fwl_result = s_FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_ui_channel_group, false, &flywithlua_channel_pointer);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
         }
     }
@@ -510,10 +778,10 @@ static int LuaStopSoundOnUiBus(lua_State* L)
     {
         FMOD_RESULT fwl_result;
 
-        if(flywithlua_ui_channel_group != nullptr)
+        if(flywithlua_ui_channel_group != nullptr && s_FMOD_ChannelGroup_Stop != nullptr)
         {
             // Stop the sound for the FlyWithLua radio channel group
-            fwl_result = FMOD_ChannelGroup_Stop(flywithlua_ui_channel_group);
+            fwl_result = s_FMOD_ChannelGroup_Stop(flywithlua_ui_channel_group);
         }
     }
     catch (exception const& e)
@@ -530,7 +798,7 @@ static int LuaStopSoundOnUiBus(lua_State* L)
 void setUiVolume(float ui_channel_group_volume)
 {
     // Set the volume for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetVolume(flywithlua_ui_channel_group, ui_channel_group_volume);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetVolume(flywithlua_ui_channel_group, ui_channel_group_volume);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetVolume: " + FMOD_ErrorString(fwl_result);
@@ -542,7 +810,7 @@ void setUiVolume(float ui_channel_group_volume)
 void setUiMute(bool mute_ui_channel_group)
 {
     // Mute the sound for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetMute(flywithlua_ui_channel_group, mute_ui_channel_group);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetMute(flywithlua_ui_channel_group, mute_ui_channel_group);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetMute: " + FMOD_ErrorString(fwl_result);
@@ -600,14 +868,14 @@ static int LuaPlaySoundOnMasterBus(lua_State* L)
             // We are using fwl_soundFMod[Fmod_IndexNo] so we know which sound file to play
             // Still working on if the is the best approach
 
-            fwl_result = FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
+            fwl_result = s_FMOD_System_CreateSound(fmod_system_sdk, fmod_sound_path.c_str(), FMOD_DEFAULT, nullptr, &fmod_sound_pointer[fmod_index_num]);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
 
             // The channel on which the sound will be played
             // We are passing nullptr because this feature is not being used.
             FMOD_CHANNEL* flywithlua_channel_pointer = nullptr;
             // Actually play the sound on the FlyWithLua Channel Group
-            fwl_result = FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_master_channel_group, false, &flywithlua_channel_pointer);
+            fwl_result = s_FMOD_System_PlaySound(fmod_system_sdk, fmod_sound_pointer[fmod_index_num], flywithlua_master_channel_group, false, &flywithlua_channel_pointer);
             fmod_error_handler(__FILE__, __LINE__-1, fwl_result);
         }
     }
@@ -628,10 +896,10 @@ static int LuaStopSoundOnMasterBus(lua_State* L)
     {
         FMOD_RESULT fwl_result;
 
-        if(flywithlua_master_channel_group != nullptr)
+        if(flywithlua_master_channel_group != nullptr && s_FMOD_ChannelGroup_Stop != nullptr)
         {
             // Stop the sound for the FlyWithLua radio channel group
-            fwl_result = FMOD_ChannelGroup_Stop(flywithlua_master_channel_group);
+            fwl_result = s_FMOD_ChannelGroup_Stop(flywithlua_master_channel_group);
         }
     }
     catch (exception const& e)
@@ -648,7 +916,7 @@ static int LuaStopSoundOnMasterBus(lua_State* L)
 void setMasterVolume(float master_channel_group_volume)
 {
     // Set the volume for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetVolume(flywithlua_master_channel_group, master_channel_group_volume);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetVolume(flywithlua_master_channel_group, master_channel_group_volume);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetVolume: " + FMOD_ErrorString(fwl_result);
@@ -660,7 +928,7 @@ void setMasterVolume(float master_channel_group_volume)
 void setMasterMute(bool mute_master_channel_group)
 {
     // Mute the sound for the FlyWithLua channel group
-    FMOD_RESULT fwl_result = FMOD_ChannelGroup_SetMute(flywithlua_master_channel_group, mute_master_channel_group);
+    FMOD_RESULT fwl_result = s_FMOD_ChannelGroup_SetMute(flywithlua_master_channel_group, mute_master_channel_group);
     if(FMOD_OK != fwl_result)
     {
         string errorMsg = "Error in " + string(__FUNCTION__) + ", calling FMOD_ChannelGroup_SetMute: " + FMOD_ErrorString(fwl_result);
@@ -710,6 +978,13 @@ void UnRegisterAccessor()
 }
 
 
+bool isFmodStudioActive()
+{
+    resolveFmodSymbols();
+    return (s_fmod_core_ready && s_XPLMGetFMODStudio != nullptr && s_XPLMGetFMODStudio() != nullptr);
+}
+
+
 int fmod_initialization()
 {
     // Check if already initialized to avoid duplicate channel groups
@@ -718,8 +993,15 @@ int fmod_initialization()
         return 0;
     }
 
+    resolveFmodSymbols();
+    if (!s_fmod_core_ready || s_XPLMGetFMODStudio == nullptr || s_XPLMGetFMODChannelGroup == nullptr || s_FMOD_Studio_System_GetCoreSystem == nullptr)
+    {
+        XPLMDebugString("FlyWithLua Info: X-Plane 12 FMOD SDK symbols not available on this simulator version; FMOD integration disabled.\n");
+        return 0;
+    }
+
     // Use the X-Plane 12 SDK sound API to get a pointer to the FMOD studio system
-    fmod_studio_sdk = XPLMGetFMODStudio();
+    fmod_studio_sdk = s_XPLMGetFMODStudio();
     if(nullptr == fmod_studio_sdk)
     {
         XPLMDebugString("FlyWithLua Info: No pointer from SDK for Studio system\n");
@@ -730,63 +1012,63 @@ int fmod_initialization()
         FMOD_RESULT fwl_result;
 
         // Get a pointer to the FMOD core system
-        fwl_result = FMOD_Studio_System_GetCoreSystem(fmod_studio_sdk, &fmod_system_sdk);
+        fwl_result = s_FMOD_Studio_System_GetCoreSystem(fmod_studio_sdk, &fmod_system_sdk);
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
 
         // Create a custom flywithlua com1 channel
-        fwl_result = FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Com1_Channel", &flywithlua_com1_channel_group);
+        fwl_result = s_FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Com1_Channel", &flywithlua_com1_channel_group);
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
-        cg_sdk_audio_radio_com1 = XPLMGetFMODChannelGroup(xplm_AudioRadioCom1);
+        cg_sdk_audio_radio_com1 = s_XPLMGetFMODChannelGroup(xplm_AudioRadioCom1);
         if (cg_sdk_audio_radio_com1 != nullptr)
         {
-            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_radio_com1, flywithlua_com1_channel_group, true, nullptr);
+            fwl_result = s_FMOD_ChannelGroup_AddGroup(cg_sdk_audio_radio_com1, flywithlua_com1_channel_group, true, nullptr);
             FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
         }
 
 
         // Create a custom flywithlua interior channel
-        fwl_result = FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Interior_Channel", &flywithlua_interior_channel_group);
+        fwl_result = s_FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Interior_Channel", &flywithlua_interior_channel_group);
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
-        cg_sdk_audio_interior = XPLMGetFMODChannelGroup(xplm_AudioInterior);
+        cg_sdk_audio_interior = s_XPLMGetFMODChannelGroup(xplm_AudioInterior);
         if (cg_sdk_audio_interior != nullptr)
         {
-            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_interior, flywithlua_interior_channel_group, true, nullptr);
+            fwl_result = s_FMOD_ChannelGroup_AddGroup(cg_sdk_audio_interior, flywithlua_interior_channel_group, true, nullptr);
             FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
         }
 
 
         // Create a custom flywithlua ui channel
-        fwl_result = FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Ui_Channel", &flywithlua_ui_channel_group);
+        fwl_result = s_FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Ui_Channel", &flywithlua_ui_channel_group);
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
-        cg_sdk_audio_ui = XPLMGetFMODChannelGroup(xplm_AudioUI);
+        cg_sdk_audio_ui = s_XPLMGetFMODChannelGroup(xplm_AudioUI);
         if (cg_sdk_audio_ui != nullptr)
         {
-            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_audio_ui, flywithlua_ui_channel_group, true, nullptr);
+            fwl_result = s_FMOD_ChannelGroup_AddGroup(cg_sdk_audio_ui, flywithlua_ui_channel_group, true, nullptr);
             FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
         }
 
 
         // Create a custom flywithlua master channel
-        fwl_result = FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Master_Channel", &flywithlua_master_channel_group);
+        fwl_result = s_FMOD_System_CreateChannelGroup(fmod_system_sdk, "FlyWithLua_Master_Channel", &flywithlua_master_channel_group);
         FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
 
-        cg_sdk_master = XPLMGetFMODChannelGroup(xplm_Master);
+        cg_sdk_master = s_XPLMGetFMODChannelGroup(xplm_Master);
         if (cg_sdk_master != nullptr)
         {
-            fwl_result = FMOD_ChannelGroup_AddGroup(cg_sdk_master, flywithlua_master_channel_group, true, nullptr);
+            fwl_result = s_FMOD_ChannelGroup_AddGroup(cg_sdk_master, flywithlua_master_channel_group, true, nullptr);
             FMODErrorHandler(__FILE__, __LINE__-1, fwl_result);
         }
 
         // Synchronously flush the newly created channel groups to the FMOD mixer
-        if (fmod_system_sdk != nullptr) {
-            FMOD_System_Update(fmod_system_sdk);
+        if (fmod_system_sdk != nullptr && s_FMOD_System_Update != nullptr) {
+            s_FMOD_System_Update(fmod_system_sdk);
         }
-        if (fmod_studio_sdk != nullptr) {
-            FMOD_Studio_System_Update(fmod_studio_sdk);
+        if (fmod_studio_sdk != nullptr && s_FMOD_Studio_System_Update != nullptr) {
+            s_FMOD_Studio_System_Update(fmod_studio_sdk);
         }
     }
     catch (exception const& e)
@@ -816,7 +1098,9 @@ int fmod_uninitialize()
         XPLMDebugString(buf4);
         for (int i = 1; i <= int(FmodSounds.size()); ++i) {
             if (fmod_sound_pointer[i] != nullptr) {
-                FMOD_Sound_Release(fmod_sound_pointer[i]);
+                if (s_FMOD_Sound_Release != nullptr) {
+                    s_FMOD_Sound_Release(fmod_sound_pointer[i]);
+                }
                 fmod_sound_pointer[i] = nullptr;
             }
         }
@@ -828,8 +1112,12 @@ int fmod_uninitialize()
     // asynchronous mixer thread dereferencing half-deallocated DSP graph nodes.
     auto safe_release_cg = [](FMOD_CHANNELGROUP*& cg) {
         if (cg != nullptr) {
-            FMOD_ChannelGroup_Stop(cg);
-            FMOD_ChannelGroup_Release(cg);
+            if (s_FMOD_ChannelGroup_Stop != nullptr) {
+                s_FMOD_ChannelGroup_Stop(cg);
+            }
+            if (s_FMOD_ChannelGroup_Release != nullptr) {
+                s_FMOD_ChannelGroup_Release(cg);
+            }
             cg = nullptr;
         }
     };
@@ -841,11 +1129,11 @@ int fmod_uninitialize()
 
     // Synchronously flush the FMOD command queue to ensure the background mixer
     // thread processes the channel group detachments and releases before uninitialize returns.
-    if (fmod_system_sdk != nullptr) {
-        FMOD_System_Update(fmod_system_sdk);
+    if (fmod_system_sdk != nullptr && s_FMOD_System_Update != nullptr) {
+        s_FMOD_System_Update(fmod_system_sdk);
     }
-    if (fmod_studio_sdk != nullptr) {
-        FMOD_Studio_System_Update(fmod_studio_sdk);
+    if (fmod_studio_sdk != nullptr && s_FMOD_Studio_System_Update != nullptr) {
+        s_FMOD_Studio_System_Update(fmod_studio_sdk);
     }
 
     fmod_studio_sdk = nullptr;
@@ -937,7 +1225,9 @@ void deinitFmodSupport() {
     XPLMDebugString(buf3);
     for (int i = 1; i <= int(FmodSounds.size()); ++i) {
         if (fmod_sound_pointer[i] != nullptr) {
-            FMOD_Sound_Release(fmod_sound_pointer[i]);
+            if (s_FMOD_Sound_Release != nullptr) {
+                s_FMOD_Sound_Release(fmod_sound_pointer[i]);
+            }
             fmod_sound_pointer[i] = nullptr;
         }
     }

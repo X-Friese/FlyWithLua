@@ -17,6 +17,7 @@
 #include "FmodIntegration.h"
 
 #include "XPLMSound.h"
+#include "XPLMMenus.h"
 
 //Teddii: Enum fuer "logMsg"
 enum ELogType
@@ -73,6 +74,8 @@ extern long long remind_update_after_epoch;
 extern std::string imgui_custom_font1;
 extern std::string imgui_custom_font2;
 extern std::string imgui_custom_font3;
+extern XPLMMenuID FlyWithLuaMenuId;
+extern int LuiGeeGuideCheckedPosition;
 }
 
 #endif

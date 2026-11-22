@@ -390,6 +390,8 @@ void TeardownImGui()
 {
     // Step 0: close every floating window first, so none can draw against a dead atlas.
     flywithlua::scu::CloseAlertWindow();
+    flwnd::CloseBuiltInDocWindows();
+    flywithlua::ClearImGeeMarkdownTextures();
     flwnd::deinitFloatingWindowSupport();
 
     // Step 1: delete custom loaded textures (ImgWindow::DeleteTexture()).

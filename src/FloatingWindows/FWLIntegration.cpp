@@ -16,6 +16,7 @@
 #include "FWLIntegration.h"
 #include "FloatingWindow.h"
 #include "FlyWithLuaWindow.h"
+#include "FWLDocWindow.h"
 #include "../FlyWithLuaImGui.h"
 #include "../FlyWithLua.h"
 #include "imgui/imgui_internal.h"
@@ -48,7 +49,180 @@ typedef void(CallbackSetter)(sol::light<FloatingWindow>, CallbackProvider const&
 std::vector<std::shared_ptr<FloatingWindow>> floatingWindows;
 std::vector<ImTextureID> textureIDs;
 
-inline FloatingWindow* GetValidFloatingWindow(void* ptr) {
+#if defined(IMGUI_DOC_VIEWER_H)
+namespace {
+
+struct SavedBuiltInDocState {
+    bool  valid           = false;
+    bool  wasVisible      = false;
+    bool  hasSimRect      = false;
+    int   left            = 0;
+    int   top             = 0;
+    int   right           = 0;
+    int   bottom          = 0;
+    float zoom            = 1.0f;
+    float lastZoom        = 1.0f;
+    int   themeIndex      = 0;
+    bool  transparentHud  = true;
+    float windowOpacity   = 0.90f;
+    float prevOpacity     = 0.90f;
+    float scrollY         = 0.0f;
+    float savedScrollY    = 0.0f;
+    int   activeTocIndex  = 0;
+    bool  cursorsEnabled  = true;
+};
+
+std::shared_ptr<FWLDocWindow> s_BuiltInLuiGeeGuide;
+SavedBuiltInDocState          s_ReloadDocSnapshot;
+
+std::shared_ptr<FWLDocWindow> EnsureBuiltInLuiGeeGuideCreated() {
+    if (!ImgWindow::sFontAtlas) {
+        return nullptr;
+    }
+    if (!s_BuiltInLuiGeeGuide) {
+        s_BuiltInLuiGeeGuide = std::make_shared<FWLDocWindow>(
+            "FlyWithLua LuiGee UX Guide",
+            880,
+            720,
+            xplm_WindowDecorationSelfDecoratedResizable,
+            (flywithlua::imgui_mouse_cursors != 0));
+        s_BuiltInLuiGeeGuide->SetFallbackMarkdown(
+            "# FlyWithLua LuiGee UX Guide\n\n"
+            "> [!WARNING]\n"
+            "> `Documentation/FlyWithLua_LuiGee_UX_Guide.md` was not found inside the FlyWithLua plugin folder.");
+        std::string mdRel  = "Documentation/FlyWithLua_LuiGee_UX_Guide.md";
+        std::string pdfRel = "Documentation/FlyWithLua_LuiGee_UX_Guide.pdf";
+        if (!s_BuiltInLuiGeeGuide->LoadMarkdownFileWithScriptDir(mdRel, flywithlua::pluginMainDir)) {
+            s_BuiltInLuiGeeGuide->LoadMarkdownFile(mdRel);
+        }
+        s_BuiltInLuiGeeGuide->SetCompanionPdfWithScriptDir(pdfRel, flywithlua::pluginMainDir);
+        s_BuiltInLuiGeeGuide->SetWindowOpacity(0.90f);
+    }
+    return s_BuiltInLuiGeeGuide;
+}
+
+} // namespace
+#endif // defined(IMGUI_DOC_VIEWER_H)
+
+bool IsBuiltInLuiGeeGuideVisible() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    return (s_BuiltInLuiGeeGuide && s_BuiltInLuiGeeGuide->isVisible());
+#else
+    return false;
+#endif
+}
+
+void SyncBuiltInDocMenuCheckmarks() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (flywithlua::FlyWithLuaMenuId && flywithlua::LuiGeeGuideCheckedPosition >= 0) {
+        bool vis = IsBuiltInLuiGeeGuideVisible();
+        XPLMCheckMenuItem(
+            flywithlua::FlyWithLuaMenuId,
+            flywithlua::LuiGeeGuideCheckedPosition,
+            vis ? xplm_Menu_Checked : xplm_Menu_Unchecked);
+    }
+#endif
+}
+
+void OpenBuiltInLuiGeeGuide() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    auto wnd = EnsureBuiltInLuiGeeGuideCreated();
+    if (wnd) {
+        wnd->SetVisible(true);
+        wnd->bringToFront();
+        SyncBuiltInDocMenuCheckmarks();
+    }
+#endif
+}
+
+void ToggleBuiltInLuiGeeGuide() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (!s_BuiltInLuiGeeGuide || !s_BuiltInLuiGeeGuide->isVisible()) {
+        OpenBuiltInLuiGeeGuide();
+    } else {
+        s_BuiltInLuiGeeGuide->SetVisible(false);
+        SyncBuiltInDocMenuCheckmarks();
+    }
+#endif
+}
+
+void CloseBuiltInDocWindows() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (s_BuiltInLuiGeeGuide) {
+        s_BuiltInLuiGeeGuide->SetVisible(false);
+        s_BuiltInLuiGeeGuide.reset();
+    }
+    SyncBuiltInDocMenuCheckmarks();
+#endif
+}
+
+void SaveAndCloseBuiltInDocWindowsForReload() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    s_ReloadDocSnapshot = SavedBuiltInDocState{};
+    if (s_BuiltInLuiGeeGuide) {
+        s_ReloadDocSnapshot.valid          = true;
+        s_ReloadDocSnapshot.wasVisible     = s_BuiltInLuiGeeGuide->GetVisible();
+        const auto& st                     = s_BuiltInLuiGeeGuide->GetViewerState();
+        s_ReloadDocSnapshot.zoom           = st.viewport.zoom;
+        s_ReloadDocSnapshot.lastZoom       = st.viewport.last_zoom;
+        s_ReloadDocSnapshot.themeIndex     = st.theme_index;
+        s_ReloadDocSnapshot.transparentHud = st.transparent_hud;
+        s_ReloadDocSnapshot.windowOpacity  = st.window_opacity;
+        s_ReloadDocSnapshot.prevOpacity    = st.prev_window_opacity;
+        s_ReloadDocSnapshot.scrollY        = st.last_scroll_y;
+        s_ReloadDocSnapshot.savedScrollY   = st.saved_scroll_y;
+        s_ReloadDocSnapshot.activeTocIndex = st.active_toc_index;
+        s_ReloadDocSnapshot.cursorsEnabled = st.dynamic_cursors_enabled;
+        if (s_BuiltInLuiGeeGuide->IsInsideSim()) {
+            int l = 0, t = 0, r = 0, b = 0;
+            s_BuiltInLuiGeeGuide->GetWindowGeometry(l, t, r, b);
+            if (r > l && t > b) {
+                s_ReloadDocSnapshot.hasSimRect = true;
+                s_ReloadDocSnapshot.left       = l;
+                s_ReloadDocSnapshot.top        = t;
+                s_ReloadDocSnapshot.right      = r;
+                s_ReloadDocSnapshot.bottom     = b;
+            }
+        }
+        CloseBuiltInDocWindows();
+    }
+#endif
+}
+
+void RestoreBuiltInDocWindowsAfterReload() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (!s_ReloadDocSnapshot.valid) {
+        return;
+    }
+    const SavedBuiltInDocState snap = s_ReloadDocSnapshot;
+    s_ReloadDocSnapshot = SavedBuiltInDocState{};
+    if (!snap.wasVisible) {
+        return;
+    }
+    auto wnd = EnsureBuiltInLuiGeeGuideCreated();
+    if (!wnd) {
+        return;
+    }
+    auto& st                   = wnd->GetViewerState();
+    st.viewport.last_zoom      = snap.lastZoom;
+    st.prev_window_opacity     = snap.prevOpacity;
+    st.saved_scroll_y          = snap.savedScrollY;
+    st.active_toc_index        = snap.activeTocIndex;
+    st.pending_raw_scroll_y    = snap.scrollY;
+    st.dynamic_cursors_enabled = snap.cursorsEnabled;
+    wnd->setImguiCursorHandling(snap.cursorsEnabled);
+    wnd->SetTheme(snap.themeIndex);
+    wnd->SetTransparentHud(snap.transparentHud);
+    wnd->SetWindowOpacity(snap.windowOpacity);
+    wnd->SetZoom(snap.zoom, false);
+    if (snap.hasSimRect && wnd->IsInsideSim()) {
+        wnd->SetWindowGeometry(snap.left, snap.top, snap.right, snap.bottom);
+    }
+    wnd->SetVisible(true);
+#endif
+}
+
+FloatingWindow* GetValidFloatingWindow(void* ptr) {
     if (!ptr) return nullptr;
     for (const auto& wndPtr : floatingWindows) {
         if (wndPtr.get() == ptr) {
@@ -56,6 +230,12 @@ inline FloatingWindow* GetValidFloatingWindow(void* ptr) {
         }
     }
     return nullptr;
+}
+
+void RegisterManagedFloatingWindow(const std::shared_ptr<FloatingWindow>& wnd) {
+    if (wnd) {
+        floatingWindows.push_back(wnd);
+    }
 }
 
 ImTextureID loadImage(const std::string& fileName) {
@@ -826,6 +1006,38 @@ void LuaSetImguiBuilder(sol::light<FloatingWindow> fwnd, CallbackProvider const&
             return;
         }
 
+        // Lazily resolve the owning script directory from the builder closure's Lua debug info (@.../Scripts/Subfolder/Script.lua)
+        // since FlyWithLua resets global SCRIPT_DIRECTORY back to root Scripts/ after boot.
+        if (iwnd.getAutoMarkdownBaseDir().empty() && flywithlua::FWLLua != nullptr) {
+            lua_State* L = flywithlua::FWLLua;
+            std::string resolved_dir;
+            builder.push(L);
+            lua_Debug ar = {};
+            if (lua_getinfo(L, ">S", &ar) != 0 && ar.source != nullptr && ar.source[0] == '@') {
+                std::string src(ar.source + 1);
+                size_t sep = src.find_last_of("/\\");
+                if (sep != std::string::npos) {
+                    resolved_dir = src.substr(0, sep + 1);
+                }
+            }
+            if (resolved_dir.empty()) {
+                lua_getglobal(L, "SCRIPT_DIRECTORY");
+                if (lua_isstring(L, -1)) {
+                    resolved_dir = lua_tostring(L, -1);
+                }
+                lua_pop(L, 1);
+            }
+            if (!resolved_dir.empty()) {
+                iwnd.setAutoMarkdownBaseDir(resolved_dir);
+            }
+        }
+
+        const char* auto_base_dir = iwnd.getAutoMarkdownBaseDir().empty() ? nullptr : iwnd.getAutoMarkdownBaseDir().c_str();
+        const char* explicit_base_dir = iwnd.hasExplicitMarkdownBaseDir()
+            ? (iwnd.getExplicitMarkdownBaseDir().empty() ? "" : iwnd.getExplicitMarkdownBaseDir().c_str())
+            : nullptr;
+        flywithlua::ScopedMarkdownWindowBaseDir mdBaseDirScope(auto_base_dir, explicit_base_dir);
+
         int left, top, right, bottom;
         XPLMGetWindowGeometry(iwnd.getXWindow(), &left, &top, &right, &bottom);
 
@@ -1031,6 +1243,12 @@ void onFlightLoop() {
             ++it;
         }
     }
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (s_BuiltInLuiGeeGuide && s_BuiltInLuiGeeGuide->isVisible()) {
+        s_BuiltInLuiGeeGuide->moveFromOrToVR();
+    }
+    SyncBuiltInDocMenuCheckmarks();
+#endif
 }
 
 } // namespace flwnd

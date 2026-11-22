@@ -23,6 +23,7 @@ extern lua_State* lState;
 
 namespace fmodint {
 
+bool isFmodStudioActive();
 int fmod_initialization();
 int fmod_uninitialize();
 int fmod_data_update();
