@@ -49,8 +49,35 @@ typedef void(CallbackSetter)(sol::light<FloatingWindow>, CallbackProvider const&
 std::vector<std::shared_ptr<FloatingWindow>> floatingWindows;
 std::vector<ImTextureID> textureIDs;
 
+namespace {
+
+// ImgWindow's constructor activates the newly created ImGuiContext without restoring the
+// caller's context. Whenever a window is constructed while another ImGui window is mid-frame
+// (e.g. from a Lua imgui builder callback), leaving GImGui pointed at the unstarted context
+// causes the next ImGui call to dereference CurrentWindow == nullptr (EXC_BAD_ACCESS).
+struct ScopedRestoreImGuiContext {
+    ImGuiContext* prev;
+    ScopedRestoreImGuiContext() : prev(ImGui::GetCurrentContext()) {}
+    ~ScopedRestoreImGuiContext() { ImGui::SetCurrentContext(prev); }
+    ScopedRestoreImGuiContext(const ScopedRestoreImGuiContext&) = delete;
+    ScopedRestoreImGuiContext& operator=(const ScopedRestoreImGuiContext&) = delete;
+};
+
+} // namespace
+
 #if defined(IMGUI_DOC_VIEWER_H)
 namespace {
+
+bool IsInsideActiveImGuiFrame() {
+    ImGuiContext* ctx = ImGui::GetCurrentContext();
+    return (ctx != nullptr && ctx->WithinFrameScope);
+}
+
+enum class PendingBuiltInGuideAction {
+    None,
+    Open,
+    Toggle
+};
 
 struct SavedBuiltInDocState {
     bool  valid           = false;
@@ -74,12 +101,14 @@ struct SavedBuiltInDocState {
 
 std::shared_ptr<FWLDocWindow> s_BuiltInLuiGeeGuide;
 SavedBuiltInDocState          s_ReloadDocSnapshot;
+PendingBuiltInGuideAction     s_PendingBuiltInGuideAction = PendingBuiltInGuideAction::None;
 
 std::shared_ptr<FWLDocWindow> EnsureBuiltInLuiGeeGuideCreated() {
     if (!ImgWindow::sFontAtlas) {
         return nullptr;
     }
     if (!s_BuiltInLuiGeeGuide) {
+        ScopedRestoreImGuiContext ctxGuard;
         s_BuiltInLuiGeeGuide = std::make_shared<FWLDocWindow>(
             "FlyWithLua LuiGee UX Guide",
             880,
@@ -99,6 +128,24 @@ std::shared_ptr<FWLDocWindow> EnsureBuiltInLuiGeeGuideCreated() {
         s_BuiltInLuiGeeGuide->SetWindowOpacity(0.90f);
     }
     return s_BuiltInLuiGeeGuide;
+}
+
+void ExecuteBuiltInGuideAction(PendingBuiltInGuideAction action) {
+    if (action == PendingBuiltInGuideAction::Open) {
+        auto wnd = EnsureBuiltInLuiGeeGuideCreated();
+        if (wnd) {
+            wnd->SetVisible(true);
+            wnd->bringToFront();
+            SyncBuiltInDocMenuCheckmarks();
+        }
+    } else if (action == PendingBuiltInGuideAction::Toggle) {
+        if (!s_BuiltInLuiGeeGuide || !s_BuiltInLuiGeeGuide->isVisible()) {
+            ExecuteBuiltInGuideAction(PendingBuiltInGuideAction::Open);
+        } else {
+            s_BuiltInLuiGeeGuide->SetVisible(false);
+            SyncBuiltInDocMenuCheckmarks();
+        }
+    }
 }
 
 } // namespace
@@ -126,28 +173,27 @@ void SyncBuiltInDocMenuCheckmarks() {
 
 void OpenBuiltInLuiGeeGuide() {
 #if defined(IMGUI_DOC_VIEWER_H)
-    auto wnd = EnsureBuiltInLuiGeeGuideCreated();
-    if (wnd) {
-        wnd->SetVisible(true);
-        wnd->bringToFront();
-        SyncBuiltInDocMenuCheckmarks();
+    if (IsInsideActiveImGuiFrame()) {
+        s_PendingBuiltInGuideAction = PendingBuiltInGuideAction::Open;
+        return;
     }
+    ExecuteBuiltInGuideAction(PendingBuiltInGuideAction::Open);
 #endif
 }
 
 void ToggleBuiltInLuiGeeGuide() {
 #if defined(IMGUI_DOC_VIEWER_H)
-    if (!s_BuiltInLuiGeeGuide || !s_BuiltInLuiGeeGuide->isVisible()) {
-        OpenBuiltInLuiGeeGuide();
-    } else {
-        s_BuiltInLuiGeeGuide->SetVisible(false);
-        SyncBuiltInDocMenuCheckmarks();
+    if (IsInsideActiveImGuiFrame()) {
+        s_PendingBuiltInGuideAction = PendingBuiltInGuideAction::Toggle;
+        return;
     }
+    ExecuteBuiltInGuideAction(PendingBuiltInGuideAction::Toggle);
 #endif
 }
 
 void CloseBuiltInDocWindows() {
 #if defined(IMGUI_DOC_VIEWER_H)
+    s_PendingBuiltInGuideAction = PendingBuiltInGuideAction::None;
     if (s_BuiltInLuiGeeGuide) {
         s_BuiltInLuiGeeGuide->SetVisible(false);
         s_BuiltInLuiGeeGuide.reset();
@@ -286,6 +332,7 @@ int LuaCreateFloatingWindow(lua_State *L) {
 
     try {
         if (withImgui) {
+            ScopedRestoreImGuiContext ctxGuard;
             auto fwlWnd = std::make_shared<FlyWithLuaWindow>(width, height, decoration);
             // Allow optional 5th argument to explicitly override mouse cursor handling
             if (lua_gettop(L) >= 5 && (lua_isboolean(L, 5) || lua_isnumber(L, 5))) {
@@ -1233,6 +1280,13 @@ bool FindAndQuarantine (lua_State *L)
 }
 
 void onFlightLoop() {
+#if defined(IMGUI_DOC_VIEWER_H)
+    if (s_PendingBuiltInGuideAction != PendingBuiltInGuideAction::None) {
+        PendingBuiltInGuideAction action = s_PendingBuiltInGuideAction;
+        s_PendingBuiltInGuideAction = PendingBuiltInGuideAction::None;
+        ExecuteBuiltInGuideAction(action);
+    }
+#endif
     for (auto it = floatingWindows.begin(); it != floatingWindows.end(); ) {
         auto wnd = *it;
         if (!wnd->getIsCmdVisible() && !wnd->isVisible()) {

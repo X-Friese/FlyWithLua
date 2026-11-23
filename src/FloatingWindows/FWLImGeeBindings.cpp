@@ -3903,6 +3903,14 @@ static int LuaDocWindowCreate(lua_State* L) {
     }
 
     try {
+        struct ScopedRestoreImGuiContext {
+            ImGuiContext* prev;
+            ScopedRestoreImGuiContext() : prev(ImGui::GetCurrentContext()) {}
+            ~ScopedRestoreImGuiContext() { ImGui::SetCurrentContext(prev); }
+            ScopedRestoreImGuiContext(const ScopedRestoreImGuiContext&) = delete;
+            ScopedRestoreImGuiContext& operator=(const ScopedRestoreImGuiContext&) = delete;
+        } ctxGuard;
+
         auto docWnd = std::make_shared<flwnd::FWLDocWindow>(title, width, height, decoration, cursors);
         if (!fallback_markdown.empty()) {
             docWnd->SetFallbackMarkdown(fallback_markdown);
