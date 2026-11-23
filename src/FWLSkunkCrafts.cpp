@@ -1463,6 +1463,13 @@ void EnsureAlertWindowOpen() {
         return;
     }
     if (!gAlertWindow) {
+        struct ScopedRestoreImGuiContext {
+            ImGuiContext* prev;
+            ScopedRestoreImGuiContext() : prev(ImGui::GetCurrentContext()) {}
+            ~ScopedRestoreImGuiContext() { ImGui::SetCurrentContext(prev); }
+            ScopedRestoreImGuiContext(const ScopedRestoreImGuiContext&) = delete;
+            ScopedRestoreImGuiContext& operator=(const ScopedRestoreImGuiContext&) = delete;
+        } ctxGuard;
         gAlertWindow = std::make_shared<FWLUpdateAlertWindow>();
     } else {
         gAlertWindow->SetVisible(true);
