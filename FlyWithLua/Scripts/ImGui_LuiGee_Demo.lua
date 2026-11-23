@@ -64,14 +64,14 @@ local theme_names = {
     "Rusty (Aviation)",
     "ImGui Dark",
     "ImGui Classic",
-    "ImGui Light"
+    "Paper Light"
 }
 local theme_tips = {
     "**Charcoal (Default)**\nSleek modern slate/graphite flight deck palette.",
     "**Rusty (Aviation)**\nWarm aviation bronze & terracotta palette (ABC classic).",
     "**ImGui Dark**\nStock Dear ImGui dark gray color scheme.",
     "**ImGui Classic**\nLegacy Dear ImGui purplish-blue color scheme.",
-    "**ImGui Light**\nHigh-contrast light daytime color scheme."
+    "**Paper Light**\nClean, publication-grade light palette for daytime flight & manuals."
 }
 
 local function apply_theme(idx)
@@ -85,7 +85,8 @@ local function apply_theme(idx)
     elseif idx == 3 then
         if imgui.StyleColorsClassic then imgui.StyleColorsClassic() end
     elseif idx == 4 then
-        if imgui.StyleColorsLight then imgui.StyleColorsLight() end
+        if imgui.StyleColorsPaperLight then imgui.StyleColorsPaperLight()
+        elseif imgui.StyleColorsLight then imgui.StyleColorsLight() end
     end
 end
 
@@ -155,18 +156,19 @@ local function resize_window_to_zoom(target_zoom)
 end
 
 local about_luigee_markdown = [[# About FlyWithLua LuiGee
-<pill color=#f39c12>v1.0.0</pill> <badge green>Powered by ImGee</badge> <pill blue>FlyWithLua Phase 3</pill>
+<pill color=#f39c12>v1.1.0</pill> <badge green>Powered by ImGee</badge> <pill blue>ImgWindow v2.5</pill>
 
-**LuiGee** — *The Lua Companion to ImGee* — is the turnkey Dear ImGui avionics & flight-deck UI toolkit bundled with **FlyWithLua**.
+**LuiGee** -- *The Lua Companion to ImGee* -- is the turnkey Dear ImGui avionics & flight-deck UI toolkit bundled with **FlyWithLua**.
 
-It brings physical avionics controls, intelligent stationary tooltips, CommonMark 4.1 Markdown, sized typography, and zero-disk texture services directly to Lua script authors without low-level C++ boilerplate.
+It brings physical avionics controls, intelligent stationary tooltips, CommonMark 4.1 Markdown, GFM callouts & floated figures, two-layer zoomable viewports, sized typography, and zero-disk texture services directly to Lua script authors without low-level C++ boilerplate.
 
 ---
 
 ### Key Capabilities:
-* **Tactile Avionics Widgets:** Animated toggle switches, rotary dials, mouse-wheel stepped sliders with 1-click Reset/Undo memory, and upward-blossoming pulldown selectors.
-* **Smart Typography:** Inline sized text tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`), and dynamic multi-size font scaling.
-* **CommonMark 4.1 & GFM Tables:** Turnkey Markdown rendering with header anchors, drag-resizable data tables, inline status pills, release badges, keyboard shortcuts (`<kbd>`), and fenced code blocks with copy buttons.
+* **Tactile Avionics Widgets:** Animated toggle switches, rotary dials, mouse-wheel stepped sliders/drags/combos with 1-click Reset/Undo memory, and upward-blossoming pulldown selectors.
+* **Smart Typography:** Inline sized text tags (`<tiny>`, `<small>`, `<regular>`, `<big>`, `<huge>`), direct semantic text helpers (`imgui.SmallText`, `imgui.TinyText`, `imgui.TitleText`, `imgui.MonoText`, `imgui.BoldItalicText`), and dynamic multi-size font scaling.
+* **CommonMark 4.1, GFM Tables & Callout Cards:** Native blockquotes and all 5 GFM callout cards (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), drag-resizable sortable data tables, text-wrapping floated images (`float=left|right`), captions, and in-context modal lightboxes.
+* **Two-Layer Zoomable Viewports:** `imgui.BeginZoomedViewport` + `imgui.ZoomViewportControls` keep header/footer chrome crisp at 1.0x while scaling scrollable inner document bodies from 50% to 250% via toolbar steppers and 1-click A/B toggle.
 * **Stationary Adaptive Tooltips:** `imgui.TimedTooltip` provides jitter-free hover documentation with reading-delay adaptation and embedded Markdown.
 * **In-Memory Image Service:** Render raw compressed image bytes (PNG/JPEG) directly into GPU VRAM with zero temporary files and zero disk I/O.
 * **Proportional Canvas Zoom:** Seamlessly scale font sizes and window geometry from 50% to 200% with exact baseline preservation.
@@ -198,8 +200,12 @@ function show_luigee_demo()
     local wnd_y = saved_wnd_y or demo_y
 
     luigee_demo_wnd = float_wnd_create(wnd_w, wnd_h, 1, true)
-    float_wnd_set_position(luigee_demo_wnd, wnd_x, wnd_y)
-    float_wnd_set_title(luigee_demo_wnd, "FlyWithLua LuiGee Modern UI Demo")
+    if saved_wnd_x and saved_wnd_y and float_wnd_set_geometry then
+        float_wnd_set_geometry(luigee_demo_wnd, saved_wnd_x, saved_wnd_y + wnd_h, saved_wnd_x + wnd_w, saved_wnd_y)
+    else
+        float_wnd_set_position(luigee_demo_wnd, wnd_x, wnd_y)
+    end
+    float_wnd_set_title(luigee_demo_wnd, "LuiGee Modern UI Demo")
     float_wnd_set_imgui_builder(luigee_demo_wnd, "luigee_demo_on_build")
     float_wnd_set_onclose(luigee_demo_wnd, "luigee_demo_on_close")
 
@@ -240,6 +246,15 @@ function luigee_demo_on_close(wnd)
     hide_luigee_demo()
 end
 
+-- Live In-Sim User Guide Window (native C++ FlyWithLua built-in ImgDocWindow)
+function open_luigee_user_guide()
+    if imgui.OpenLuiGeeGuide then
+        imgui.OpenLuiGeeGuide()
+    elseif imgui.OpenDocument then
+        imgui.OpenDocument("Resources/plugins/FlyWithLua/Documentation/FlyWithLua_LuiGee_UX_Guide.pdf")
+    end
+end
+
 -- Command & Macro Menu Registration (Never pops up at startup uninvited)
 create_command(
     "FlyWithLua/LuiGee/toggle",
@@ -271,6 +286,17 @@ local demo_spinner_speed    = 1.0
 local demo_timer_val        = 0.65
 local demo_countdown_cur    = 42.0
 local demo_countdown_max    = 60.0
+local baro_preset_idx       = 0  -- 0-based for ComboWithReset / MouseWheelCombo
+local baro_presets          = { "STD (29.92 inHg)", "QNH 1013 hPa", "Local (30.04 inHg)", "Low (29.58 inHg)" }
+local baro_tooltips         = {
+    "Standard pressure datum above transition altitude (**29.92 inHg**)",
+    "ICAO standard hectopascal datum (**1013.25 hPa**)",
+    "Reported local station altimeter setting",
+    "Low-pressure frontal trough reference"
+}
+local autopilot_alt_ft      = 12000
+local fd_coupled            = true
+local seatbelt_sign         = true
 
 -- Avionics Rotary Knobs & Compact Sound Mixer state
 local instrument_dimmer     = 0.85
@@ -285,6 +311,8 @@ local nav_source_idx        = 0  -- 0-based for SelectPulldown
 local nav_sources           = { "GPS 1 (Primary / WAAS)", "VOR 1 (114.70 OAK)", "LOC / ILS (Rwy 28R)", "FMS 1 (Internal RNAV)", "TACAN (Ch 47X)" }
 local nav_tooltips          = { "Garmin GPS 1 with SBAS/WAAS precision guidance", "Oakland VOR/DME 114.70 MHz", "Instrument Landing System Localizer", "Flight Management System lateral route", "Tactical Air Navigation tactical channel" }
 local selected_view_action  = "Cockpit 3D"
+local doc_vp_zoom           = { zoom = 1.0, min_zoom = 0.5, max_zoom = 2.5, border = true }
+local embedded_doc_state    = { zoom = 1.0, transparent_hud = false, theme_index = 0 }
 
 function luigee_demo_on_build(wnd, x, y)
     -- Synchronize active theme preset across FlyWithLua windows
@@ -348,7 +376,7 @@ function luigee_demo_on_build(wnd, x, y)
 
     -- Title using Roboto-Medium-20 if available
     if imgui.PushFont then imgui.PushFont("Roboto-Medium-20") end
-    imgui.TextUnformatted("FlyWithLua LuiGee Modern UI Demo")
+    imgui.TextUnformatted("LuiGee Modern UI Demo")
     if imgui.PopFont then imgui.PopFont() end
 
     imgui.SameLine(0, 10)
@@ -363,6 +391,22 @@ function luigee_demo_on_build(wnd, x, y)
     end
     if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
         imgui.TimedTooltip.TextMD("**About LuiGee**\n\nView toolkit capabilities, version info, and architecture credits.")
+    end
+
+    if imgui.DocWindow and imgui.DocWindow.Create then
+        imgui.SameLine(0, 6)
+        local guide_clicked = false
+        if imgui.SmallButton then
+            guide_clicked = imgui.SmallButton("User Guide##btn_live_guide")
+        else
+            guide_clicked = imgui.Button("User Guide##btn_live_guide")
+        end
+        if guide_clicked then
+            open_luigee_user_guide()
+        end
+        if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
+            imgui.TimedTooltip.TextMD("**Open Live In-Sim User Guide (`ImgDocWindow`)**\n\nOpens `FlyWithLua_LuiGee_UX_Guide.md` directly inside X-Plane with TOC section jumping, 2x Retina floated figures, zoom/pan lightboxes, opacity & theme controls.")
+        end
     end
 
     imgui.SameLine(0, 6)
@@ -399,7 +443,8 @@ function luigee_demo_on_build(wnd, x, y)
             "**ImGee Theme Presets** (Click dropdown or roll mouse wheel):\n" ..
             "• **Charcoal**: Sleek modern slate/graphite flight deck palette (default).\n" ..
             "• **Rusty**: Warm aviation bronze & terracotta palette (ABC classic).\n" ..
-            "• **ImGui Dark / Classic / Light**: Stock Dear ImGui fallback schemes.\n\n" ..
+            "• **Paper Light**: Clean, publication-grade daytime manual palette.\n" ..
+            "• **ImGui Dark / Classic**: Stock Dear ImGui fallback schemes.\n\n" ..
             "*(Synchronized across active FlyWithLua windows)*"
         )
     end
@@ -543,7 +588,7 @@ function luigee_demo_on_build(wnd, x, y)
         elseif can_restore then
             imgui.TimedTooltip.TextMD(string.format("1-click toggle back to prior **%d%% zoom**.", math.floor(last_zoom * 100.0 + 0.5)))
         else
-            imgui.TimedTooltip.TextMD("Zoom is at **100%% baseline**.")
+            imgui.TimedTooltip.TextMD("Zoom is at **100% baseline**.")
         end
     end
 
@@ -569,7 +614,7 @@ function luigee_demo_on_build(wnd, x, y)
         -- ====================================================================
         -- TAB 1: Markdown Extension (Pinned TabBar with Scrolling Child Region)
         -- ====================================================================
-        if imgui.BeginTabItem("Rich Markdown (MD)") then
+        if imgui.BeginTabItem("Rich Markdown") then
             if imgui.BeginChild and imgui.BeginChild("##tab1_content_scroll", 0, 0, false) then
                 if imgui.SetWindowFontScale then
                     imgui.SetWindowFontScale(content_zoom)
@@ -664,21 +709,22 @@ function luigee_demo_on_build(wnd, x, y)
                 imgui.MD.Text("<color #e74c3c>Crimson Warning</color>")
 
                 imgui.Spacing()
+                local icon_col2_x = math.floor(475 * content_zoom)
                 imgui.MD.Text("Embedded Icons & Unary Annunciators:")
                 imgui.MD.Text("  `<pill icon=avionics_beacon color=#3498db>NAV / ALT</pill>`")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<pill icon=avionics_beacon color=#3498db>NAV / ALT</pill>")
 
                 imgui.MD.Text("  `<badge icon=avionics_beacon>v2.3.0</badge>`")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<badge icon=avionics_beacon>v2.3.0</badge>")
 
                 imgui.MD.Text("  `<pill icon=avionics_beacon orange>ON</pill>`")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<pill icon=avionics_beacon orange>ON</pill>")
 
                 imgui.MD.Text("  `<pill icon=avionics_beacon color=#e74c3c />` (Unary Capsule)")
-                imgui.SameLine(360)
+                imgui.SameLine(icon_col2_x)
                 imgui.MD.Text("<pill icon=avionics_beacon color=#e74c3c />")
             end
 
@@ -753,48 +799,62 @@ function luigee_demo_on_build(wnd, x, y)
                 imgui.MD.TextWrapped("Define declarative semantic typography tags, macro template aliases, and interactive Lua callbacks:")
                 imgui.Spacing()
 
+                local sem_col2_x = math.floor(470 * content_zoom)
+
                 imgui.MD.Text("Semantic Style Tags (`imgui.RegisterStyleTag`):")
                 imgui.MD.Text("  `<cam>roll</cam>` & `<cam>pitch</cam>` (green bold mono)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<cam>roll</cam> / <cam>pitch</cam>")
 
                 imgui.MD.Text("  `<viewmode>CHASE_CAM</viewmode>` (mono with tinted backdrop)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<viewmode>CHASE_CAM</viewmode>")
 
                 imgui.MD.Text("  `<alert>PULL UP</alert>` (red backdrop white bold)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<alert>PULL UP</alert>")
 
                 imgui.Spacing()
                 imgui.MD.Text("Macro Template Aliases (`imgui.RegisterTagAlias`):")
                 imgui.MD.Text("  `<tip>Check altimeter setting.</tip>`")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<tip>Check altimeter setting.</tip>")
 
                 imgui.MD.Text("  `<axis>RUDDER</axis>`")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<axis>RUDDER</axis>")
 
                 imgui.Spacing()
                 imgui.MD.Text("Dynamic Lua Callback Tag (`imgui.RegisterTag`):")
                 imgui.MD.Text("  `<metric ft>10,500</metric>`")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<metric ft>10,500</metric>")
 
                 imgui.Spacing()
                 imgui.MD.Text("Alpha Hex Transparency & Smart Auto-Contrast:")
                 imgui.MD.Text("  `<pill #3498db88>TRANSLUCENT PILL</pill>` (Hex alpha #rrggbbaa)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<pill #3498db88>TRANSLUCENT PILL</pill>")
 
                 imgui.MD.Text("  `<pill #f1c40f>DARK CONTRAST</pill>` (Auto-contrast dark text)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<pill #f1c40f>DARK CONTRAST</pill>")
 
                 imgui.MD.Text("  `<pill #2c3e50>LIGHT CONTRAST</pill>` (Auto-contrast light text)")
-                imgui.SameLine(390)
+                imgui.SameLine(sem_col2_x)
                 imgui.MD.Text("<pill #2c3e50>LIGHT CONTRAST</pill>")
+
+                imgui.Spacing()
+                imgui.MD.Text([[
+```lua
+imgui.RegisterStyleTag("cam", "green bold mono")
+imgui.RegisterStyleTag("viewmode", "mono bg=#88888840")
+imgui.RegisterStyleTag("alert", "bg=#ff4444 fg=#ffffff bold")
+imgui.RegisterTagAlias("tip", "<style yellow><b> Tip: </b></style> %s")
+imgui.RegisterTagAlias("axis", "**Axis: <style cyan bold>%s</style>**")
+imgui.MD.Text("<cam>roll</cam> / <cam>pitch</cam> | <viewmode>CHASE_CAM</viewmode>")
+```
+]])
             end
 
             imgui.Spacing()
@@ -916,6 +976,31 @@ if qnh < 29.92 then set_altimeter_std() end
                 imgui.Unindent(40)
             end
 
+            imgui.Spacing()
+            if imgui.CollapsingHeader("Blockquotes, GFM Callout Cards & Floated Figures (v1.1)", 32) then
+                imgui.MD.TextWrapped([=[
+> **Standard Blockquote:** Clearance delivery on `121.75 MHz` -- advise receipt of Information **BRAVO** on initial contact.
+> > **Nested Quote:** Read back runway assignment and initial altitude verbatim.
+
+> [!NOTE]
+> Relative Markdown image paths automatically resolve against the owning script's subfolder (`GetWindowBaseDir`) with zero configuration.
+
+> [!TIP]
+> Hold <kbd>Ctrl</kbd> (or <kbd>Cmd</kbd> on macOS) + Mouse Wheel inside a `ZoomableViewport` to scale briefing documents smoothly.
+
+> [!IMPORTANT]
+> Cross-check barometric altimeters (`29.92 inHg` / `1013 hPa`) passing transition altitude.
+
+> [!WARNING]
+> Pitot heat must be **ON** prior to entering visible moisture below `+10 C` RAT.
+
+> [!CAUTION]
+> Terrain closure alert -- verify minimum safe altitude before descending below `4,000 ft MSL`.
+
+<img src="avionics_beacon" width="32" height="32" float="left" lightbox /> **Text-Wrapping Floated Figure (`float="left" lightbox`):** Paragraph lines wrap cleanly beside the floated beacon texture and reclaim full column width beneath it. Click the icon to open its high-contrast in-context lightbox!
+]=])
+            end
+
             if imgui.EndChild then imgui.EndChild() end
             end
             imgui.EndTabItem()
@@ -975,7 +1060,9 @@ if qnh < 29.92 then set_altimeter_std() end
         end
 
         -- ====================================================================
-        -- TAB 3: Tactile Controls, Rotary Knobs & Sliders
+        -- TAB 3: Tactile Controls (Toggles, Resettable Sliders/Combos & Chasers)
+        -- Sized to fit comfortably at default 860x620 with NO scrollbar so all
+        -- mouse-wheel controls work immediately without triggering scroll-defeat.
         -- ====================================================================
         if imgui.BeginTabItem("Tactile Controls") then
             local tab3_vis = true
@@ -987,8 +1074,8 @@ if qnh < 29.92 then set_altimeter_std() end
                     imgui.SetWindowFontScale(content_zoom)
                 end
                 imgui.Spacing()
-                imgui.MD.TextWrapped("### Smooth Animated & Mouse-Wheel Adjusted Controls")
-                imgui.MD.TextWrapped("*(Tip: Mouse-wheel directly over switches and knobs adjusts states; double-click knobs to reset)*")
+                imgui.MD.TextWrapped("### Smooth Animated & Mouse-Wheel Controls")
+                imgui.MD.TextWrapped("*(Hover any toggle, slider, drag, combo, or chaser and roll the mouse wheel -- Shift for fine, Ctrl for coarse)*")
                 imgui.Spacing()
 
                 -- Row 1: Avionics Master & De-Ice System (Side-by-side)
@@ -1016,10 +1103,97 @@ if qnh < 29.92 then set_altimeter_std() end
 
                 imgui.Spacing()
                 imgui.Separator()
+                imgui.Spacing()
 
-                -- Row 2: Avionics Rotary Knobs & Compact Sound Mixer Strip
+                -- Row 2: Sliders, Drags & Combos with 1-Click Reset / Undo
+                local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
+                if trim_changed then
+                    throttle_trim = new_trim
+                end
+                imgui.TimedTooltip.TextMD("Click the reset button (<icon undo />) to snap trim back to neutral (0.00).")
+
+                local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
+                if flaps_changed then
+                    flaps_pct = new_flaps
+                end
+                imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
+
+                local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
+                if hud_changed then
+                    hud_brightness = new_hud
+                end
+                imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
+
+                if imgui.DragIntWithReset and imgui.ComboWithReset and imgui.MouseWheelCheckbox then
+                    local alt_chg, new_alt = imgui.DragIntWithReset("MCP Target Altitude", autopilot_alt_ft, 100.0, 1000, 45000, 10000, "%d ft", 0, 500, "Reset target altitude to 10,000 ft")
+                    if alt_chg then
+                        autopilot_alt_ft = new_alt
+                    end
+                    imgui.TimedTooltip.TextMD("Mouse-wheel & drag integer selector (`DragIntWithReset`) -- roll wheel to step by **500 ft**, or click <icon undo /> to reset/undo.")
+
+                    local baro_chg, new_baro = imgui.ComboWithReset("Baro Reference", baro_preset_idx, 0, baro_presets, false, "Reset baro reference to STD (29.92)", baro_tooltips)
+                    if baro_chg then
+                        baro_preset_idx = new_baro
+                    end
+                    imgui.TimedTooltip.TextMD("Dropdown combo with 1-click Reset/Undo (`ComboWithReset`) and per-option Lens UI tooltips when scrolling open.")
+
+                    local fd_chg, new_fd = imgui.MouseWheelCheckbox("Flight Director Coupled (Scroll or Click)", fd_coupled)
+                    if fd_chg then
+                        fd_coupled = new_fd
+                    end
+                    imgui.TimedTooltip.Text("Checkbox with Hand/ResizeNS hover affordance and mouse-wheel up/down state stepping.")
+                end
+
+                imgui.Spacing()
+                imgui.Separator()
+                imgui.Spacing()
+
+                -- Row 3: Mouse Wheel Chasers (Side-by-side)
+                imgui.MD.TextWrapped("### Mouse Wheel Chasers")
+                imgui.TextUnformatted("Hover over the buttons below and roll the mouse wheel:")
+
+                imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
+                local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
+                if freq_changed then
+                    com1_freq = new_freq
+                end
+                imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
+
+                imgui.SameLine(math.floor(400 * content_zoom))
+                local cur_view_name = camera_views[camera_view_idx] or "Unknown"
+                imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
+                local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
+                if cam_changed then
+                    camera_view_idx = new_cam
+                end
+                imgui.TimedTooltip.Text("Scroll mouse wheel over this button to cycle through camera views!")
+            end
+            if imgui.BeginChild and imgui.EndChild then
+                imgui.EndChild()
+            end
+
+            imgui.EndTabItem()
+        end
+
+        -- ====================================================================
+        -- TAB 4: Knobs & Dials (Rotary Potentiometers, Audio Mixer & Sweep Dials)
+        -- Dedicated non-scrolling tab at default 860x620 so mouse-wheel rotary
+        -- tuning works immediately without parent scrollbar auto-defeat.
+        -- ====================================================================
+        if imgui.BeginTabItem("Knobs & Dials") then
+            local tab_knobs_vis = true
+            if imgui.BeginChild then
+                tab_knobs_vis = imgui.BeginChild("##tab_knobs_content_scroll", 0, 0, false)
+            end
+            if tab_knobs_vis then
+                if imgui.SetWindowFontScale then
+                    imgui.SetWindowFontScale(content_zoom)
+                end
+                imgui.Spacing()
+
                 if imgui.Knob and imgui.DimmerKnob and imgui.KnobWithReset then
                     imgui.MD.TextWrapped("### Avionics Rotary Knobs & Compact Sound Mixer")
+                    imgui.MD.TextWrapped("*(Roll mouse wheel or drag to adjust; Shift for fine, Ctrl for coarse; double-click to reset or toggle OFF detente)*")
                     imgui.Spacing()
 
                     -- Left column: Inline Cockpit Dimmer (with 2-step OFF detente) + KnobWithReset
@@ -1028,7 +1202,7 @@ if qnh < 29.92 then set_altimeter_std() end
                     if dim_changed then
                         instrument_dimmer = new_dim
                     end
-                    imgui.TimedTooltip.TextMD("Potentiometer dimmer with **2-step OFF detente**.\nRoll mouse wheel or drag; step past 5%% to click into **OFF** (double-click toggles OFF / 100%%).")
+                    imgui.TimedTooltip.TextMD("Potentiometer dimmer with **2-step OFF detente**.\nRoll mouse wheel or drag; step past 5% to click into **OFF** (double-click toggles OFF / 100%).")
 
                     imgui.Spacing()
                     local rvol_changed, new_rvol = imgui.KnobWithReset("Radio Volume", radio_volume, 0.0, 1.0, 0.70, "%.0f%%", 0, 0.02, "Reset radio volume to 70%")
@@ -1051,76 +1225,32 @@ if qnh < 29.92 then set_altimeter_std() end
 
                     local c1_chg, c1_val = imgui.DimmerKnob("COM1", mixer_com1, 0.05, 1.0, 0.85, "%.0f%%", 0, 0.02, true, 0.0, mixer_flags)
                     if c1_chg then mixer_com1 = c1_val end
-                    imgui.TimedTooltip.TextMD("**COM1 Audio** -- Roll wheel or drag. Step below 5%% to click into **OFF** (mute); double-click for 85%%.")
+                    imgui.TimedTooltip.TextMD("**COM1 Audio** -- Roll wheel or drag. Step below 5% to click into **OFF** (mute); double-click for 85%.")
 
                     imgui.SameLine(0, mixer_gap)
                     local n1_chg, n1_val = imgui.DimmerKnob("NAV1", mixer_nav1, 0.05, 1.0, 0.60, "%.0f%%", 0, 0.02, true, 0.0, mixer_flags)
                     if n1_chg then mixer_nav1 = n1_val end
-                    imgui.TimedTooltip.TextMD("**NAV1 Ident** -- Two-step mute detente below 5%%; double-click resets to 60%%.")
+                    imgui.TimedTooltip.TextMD("**NAV1 Ident** -- Two-step mute detente below 5%; double-click resets to 60%.")
 
                     imgui.SameLine(0, mixer_gap)
                     local eng_chg, eng_val = imgui.KnobPercent("ENG", mixer_engines, 0.75, 0.0, 1.0, "%.0f%%", 0, 0.02, mixer_flags)
                     if eng_chg then mixer_engines = eng_val end
-                    imgui.TimedTooltip.TextMD("**Engines** -- Continuous 0%%..100%% rotary pot; double-click resets to 75%%.")
+                    imgui.TimedTooltip.TextMD("**Engines** -- Continuous 0%..100% rotary pot; double-click resets to 75%.")
 
                     imgui.SameLine(0, mixer_gap)
                     local cab_chg, cab_val = imgui.KnobPercent("CABIN", mixer_cabin, 0.50, 0.0, 1.0, "%.0f%%", 0, 0.02, mixer_flags)
                     if cab_chg then mixer_cabin = cab_val end
-                    imgui.TimedTooltip.TextMD("**Cabin / Intercom** -- Continuous 0%%..100%% rotary pot; double-click resets to 50%%.")
+                    imgui.TimedTooltip.TextMD("**Cabin / Intercom** -- Continuous 0%..100% rotary pot; double-click resets to 50%.")
                     imgui.EndGroup()
 
                     imgui.Spacing()
                     imgui.Separator()
+                    imgui.Spacing()
                 end
 
-                -- Row 3: Sliders with Reset and Normalized Percentage
-                local trim_changed, new_trim = imgui.SliderWithReset("Elevator Trim", throttle_trim, -1.0, 1.0, 0.0)
-                if trim_changed then
-                    throttle_trim = new_trim
-                end
-                imgui.TimedTooltip.TextMD("Click the reset button (<icon undo />) to snap trim back to neutral (0.00).")
-
-                local flaps_changed, new_flaps = imgui.PercentSlider("Flaps Position", flaps_pct)
-                if flaps_changed then
-                    flaps_pct = new_flaps
-                end
-                imgui.TimedTooltip.Text("Renders values normalized between 0.0 and 1.0 formatted as a clean percentage (0%..100%).")
-
-                local hud_changed, new_hud = imgui.PercentSliderWithReset("HUD Brightness", hud_brightness, 0.50)
-                if hud_changed then
-                    hud_brightness = new_hud
-                end
-                imgui.TimedTooltip.Text("Percent slider with built-in reset button defaulting to 50%.")
-
-                imgui.Spacing()
-                imgui.Separator()
-
-                -- Row 4: Mouse Wheel Chasers (Side-by-side)
-                imgui.MD.TextWrapped("### Mouse Wheel Chasers")
-                imgui.TextUnformatted("Hover your mouse cursor over the boxes below and scroll the mouse wheel:")
-
-                imgui.Button(string.format("COM1 Active: %.3f MHz (Scroll Wheel)##combtn", com1_freq), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
-                local freq_changed, new_freq = imgui.AdjustItemOnMouseWheel(com1_freq, 118.00, 136.975, 0.025)
-                if freq_changed then
-                    com1_freq = new_freq
-                end
-                imgui.TimedTooltip.Text("Scroll up/down with mouse wheel over this button to tune COM1 by 25 kHz!")
-
-                imgui.SameLine(math.floor(400 * content_zoom))
-                local cur_view_name = camera_views[camera_view_idx] or "Unknown"
-                imgui.Button(string.format("Camera: [%s] (Scroll to Cycle)##cambtn", cur_view_name), math.floor(360 * content_zoom), math.floor(32 * content_zoom))
-                local cam_changed, new_cam = imgui.CycleItemOnMouseWheel(camera_view_idx, #camera_views, true)
-                if cam_changed then
-                    camera_view_idx = new_cam
-                end
-                imgui.TimedTooltip.Text("Scroll mouse wheel over this button to cycle through camera views!")
-
-                imgui.Spacing()
-                imgui.Separator()
-
-                -- Row 5: Procedural Sweeping Dials (Adjustable via Sliders)
+                -- Procedural Sweeping Dials (Adjustable via Sliders or Mouse Wheel)
                 imgui.MD.TextWrapped("### Sweeping Progress & Countdown Dials")
-                imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or scroll mouse wheel:")
+                imgui.TextUnformatted("Procedural vector antialiased arcs -- drag sliders or roll mouse wheel:")
                 imgui.Spacing()
 
                 -- Radial Timer Dial: Sweeps progress clockwise from 12 o'clock
@@ -1151,9 +1281,9 @@ if qnh < 29.92 then set_altimeter_std() end
         end
 
         -- ====================================================================
-        -- TAB 4: Badges, Spinners & Links
+        -- TAB 5: Badges, Spinners & Links
         -- ====================================================================
-        if imgui.BeginTabItem("Badges, Spinners & Links") then
+        if imgui.BeginTabItem("Badges & Links") then
             imgui.Spacing()
             imgui.MD.TextWrapped("### Standalone First-Class Widgets (No Markdown Parsing)")
             imgui.MD.TextWrapped("Call directly in pure ImGui panels without Markdown string wrapping:")
@@ -1161,11 +1291,32 @@ if qnh < 29.92 then set_altimeter_std() end
 
             imgui.TextUnformatted("Status Badges & Tags:")
             imgui.SameLine()
-            imgui.Badge("ONLINE", "success")
+            imgui.Badge("ONLINE", "success", nil, "check")
             imgui.SameLine()
-            imgui.Badge("EXPIRING", "warning")
+            imgui.Badge("EXPIRING", "warning", nil, "warning")
             imgui.SameLine()
             imgui.Tag("FAULT", "danger")
+
+            if imgui.Icon then
+                imgui.Spacing()
+                imgui.TextUnformatted("Procedural Vector Icons:")
+                imgui.SameLine()
+                imgui.Icon("plane", 16, "#5dade2", "Aircraft vector glyph (click to pin/dismiss tooltip)")
+                imgui.SameLine()
+                imgui.Icon("compass", 16, "#48c9b0", "Heading / Navigation glyph")
+                imgui.SameLine()
+                imgui.Icon("gear", 16, nil, "Settings / Systems glyph")
+                imgui.SameLine()
+                imgui.Icon("lightbulb", 16, "#2ecc71", "Tip / Lightbulb glyph")
+                imgui.SameLine()
+                imgui.Icon("important", 16, "#a569bd", "Important / Report glyph")
+                imgui.SameLine()
+                imgui.Icon("warning", 16, "#f39c12", "Warning triangle glyph")
+                imgui.SameLine()
+                imgui.Icon("caution", 16, "#e74c3c", "Caution octagon glyph")
+                imgui.SameLine()
+                imgui.Icon("star", 16, "#f1c40f", "Favorite / Preset glyph")
+            end
 
             imgui.Spacing()
             imgui.TextUnformatted("Pills & Dual Colors:")
@@ -1222,13 +1373,26 @@ if qnh < 29.92 then set_altimeter_std() end
             imgui.Spacing()
             imgui.TextUnformatted("Hyperlinks & Affordances:")
             imgui.SameLine()
-            imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
+            if imgui.ExternalTextLink then
+                imgui.ExternalTextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
+            else
+                imgui.TextLink("X-Plane Official Org Portal", "https://forums.x-plane.org")
+            end
             imgui.SameLine()
             imgui.TextUnformatted(" | ")
             imgui.SameLine()
             imgui.ButtonLink("FlyWithLua Issues", "https://github.com/sparker256/FlyWithLua/issues")
             imgui.SameLine()
             imgui.SmallButtonLink("SmallButtonLink Demo", "https://github.com/sparker256/FlyWithLua")
+
+            if imgui.CheckboxLink then
+                imgui.Spacing()
+                local sb_chg, new_sb = imgui.CheckboxLink("Fasten Seatbelt Sign (Hand Cursor)", seatbelt_sign)
+                if sb_chg then seatbelt_sign = new_sb end
+                imgui.SameLine(400)
+                imgui.TextLink("[Click to Toggle Preflight Note]")
+                imgui.TimedTooltip.TextMD("**Click-to-Toggle Tooltip:** Calling `imgui.TextLink(label)` with no URL preserves `LinkClickResult` toggle mode so clicking pins or dismisses this `TimedTooltip`!")
+            end
 
             imgui.EndTabItem()
         end
@@ -1438,11 +1602,11 @@ end
                 imgui.Indent(20)
                 imgui.TextStyled("Flight Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono> | Target: <color gold>FL%03d</color>", 0.82, 380)
                 imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", 34000, "FT", 285.5)
-                imgui.TextStyled("Semantic Tags: <cam>yaw</cam> | View: <viewmode>COCKPIT_3D</viewmode>")
+                imgui.TextStyled("Keys & Icons: <kbd>Ctrl</kbd> + <kbd>G</kbd> | Gear: <icon green check /> <badge #27ae60>DOWN & LOCKED</badge>")
                 imgui.TextStyled("Annunciators: <pill green>AP1 ENGAGED</pill> <pill blue>LNAV / VNAV</pill> <pill warning>ICE DETECTED</pill>")
                 imgui.TextStyled("Alpha & Auto-Contrast: <pill #3498db88>TRANSLUCENT #rrggbbaa</pill> <pill #f1c40f>AUTO CONTRAST</pill>")
                 imgui.TextStyled("Inline Sizing: <tiny color=#888888>tiny (10px)</tiny> | <small>small (12px)</small> | <regular>regular (14px)</regular> | <big>big (16px)</big> | <huge color=orange>huge (16px+ bold)</huge>")
-                imgui.TextStyledWrapped("Wrapped Styled Text: <i>This is an inline styled paragraph</i> rendered with <b>imgui.TextStyledWrapped</b>. It flows smoothly across window boundaries and supports <color #3498db>custom hex colored highlights</color> on demand.")
+                imgui.TextStyledWrapped("Wrapped Styled Text: <i>This is an inline styled paragraph</i> rendered with <b>imgui.TextStyledWrapped</b>. It flows smoothly, wrapping automatically when it reaches the window boundary, and supports <color #3498db>custom hex-colored highlights</color> on demand.")
                 imgui.Unindent(20)
 
                 imgui.Spacing()
@@ -1452,7 +1616,7 @@ end
 imgui.TextStyled("Altitude: <huge>%.0f</huge> <small>%s</small> | Speed: <mono>%.1f</mono> <small>KIAS</small>", 34000, "FT", 285.5)
 imgui.TextStyled("Flight Mode: <b><color #2ecc71>CRUISE</color></b> | Mach: <mono>%.2f</mono>", 0.82)
 imgui.TextStyled("Inline Sizing: <tiny>tiny</tiny> | <small>small</small> | <regular>body</regular> | <big>big</big> | <huge>huge</huge>")
-imgui.TextStyled("Semantic Tags: <cam>yaw</cam> | View: <viewmode>COCKPIT_3D</viewmode>")
+imgui.TextStyled("Keys & Icons: <kbd>Ctrl</kbd> + <kbd>G</kbd> | Gear: <icon green check /> <badge #27ae60>DOWN & LOCKED</badge>")
 imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text</color>.")
 ```
 ]])
@@ -1460,13 +1624,16 @@ imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text
 
             imgui.Spacing()
             -- 4. Direct Semantic Text Helpers
-            if imgui.CollapsingHeader("4. Direct Semantic Text Helpers (SmallText, TinyText, TitleText, MonoText)", 32) then
+            if imgui.CollapsingHeader("4. Direct Semantic Text Helpers (SmallText, TinyText, TitleText, MonoText, BoldItalicText)", 32) then
                 imgui.MD.TextWrapped("Direct immediate-mode text rendering helpers mapped to the typography hierarchy:")
                 imgui.Spacing()
 
                 imgui.Indent(20)
                 imgui.TitleText("TitleText: Avionics Nav Log & Route Plan")
                 imgui.TextUnformatted("Regular Text: Cruising at FL340 over DLL VOR.")
+                if imgui.BoldItalicText then
+                    imgui.BoldItalicText("BoldItalicText: Strong soft emphasis for callouts & advisory notes.")
+                end
                 imgui.SmallText("SmallText (12px): Standard caption, secondary annotations, and table subtext.")
                 imgui.TinyText("TinyText (10px): Micro annotations, build hashes, and footnote disclaimers.")
                 imgui.MonoText("MonoText: sim/cockpit2/radios/actuators/com1_frequency_hz = 121500")
@@ -1477,6 +1644,7 @@ imgui.TextStyledWrapped("Wrapped text with <b>bold</b> and <color gold>gold text
                 imgui.MD.Text([[
 ```lua
 imgui.TitleText("Avionics Status: %s", "NORMAL")
+imgui.BoldItalicText("Advisory: %s", "RNAV RNP 0.30 REQUIRED")
 imgui.SmallText("Last GPS update: %d seconds ago", 2)
 imgui.TinyText("Firmware build: %s", "v2.3.0-4268f3d")
 imgui.MonoText("Active Dataref: %s", "sim/flightmodel/position/latitude")
@@ -1510,6 +1678,77 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
 ]])
             end
 
+            if imgui.BeginZoomedViewport and imgui.ZoomViewportControls then
+                imgui.Spacing()
+                -- 6. Two-Layer Zoomable Viewport
+                if imgui.CollapsingHeader("6. Two-Layer Zoomable Viewport (BeginZoomedViewport)", 32) then
+                    imgui.AlignTextToFramePadding()
+                    imgui.TextUnformatted("1.0x Fixed Toolbar Chrome:")
+                    imgui.SameLine()
+                    imgui.ZoomViewportControls(doc_vp_zoom, "##demo_doc_vp")
+                    imgui.TimedTooltip.Text("Click [-] / [+] to step zoom, or click [100%] to toggle A/B zoom.")
+
+                    if imgui.BeginZoomedViewport("##DemoZoomBody", doc_vp_zoom, 0, 170) then
+                        imgui.MD.TextWrapped("### Scrollable Zoomed Briefing Viewport\n" ..
+                            "Header controls stay at **1.0x** while this inner child scales smoothly (`" ..
+                            tostring(doc_vp_zoom.zoom_percent or 100) .. "%`).\n\n" ..
+                            "> [!NOTE]\n" ..
+                            "> **Runway 28R Braking Action:** Reported medium-to-poor by preceding 737. Plan autobrake 3 or MAX reverse on touchdown.")
+                    end
+                    imgui.EndZoomedViewport()
+                end
+            end
+
+            if imgui.DocumentViewer and imgui.DocWindow then
+                imgui.Spacing()
+                -- 7. Turnkey In-Sim Manual Viewer (DocViewer & DocWindow)
+                if imgui.CollapsingHeader("7. Turnkey In-Sim Manual Viewer (DocViewer & DocWindow)", 32) then
+                    imgui.MD.TextWrapped("Open full illustrated Markdown manuals in a prefab glass X-Plane window (`imgui.DocWindow.Create`) or embed `imgui.DocumentViewer` directly inside any panel:")
+                    if imgui.ButtonIcon then
+                        if imgui.ButtonIcon("Open Illustrated LuiGee UX Guide Window", "external-link") then
+                            open_luigee_user_guide()
+                        end
+                    elseif imgui.Button("Open Illustrated LuiGee UX Guide Window") then
+                        open_luigee_user_guide()
+                    end
+                    imgui.TimedTooltip.TextMD("Launches `Documentation/FlyWithLua_LuiGee_UX_Guide.md` in a dedicated `ImgDocWindow` with TOC jump, opacity, themes, and Retina lightboxes.")
+
+                    imgui.Spacing()
+                    local sample_manual = [=[# Mini Approach Manual
+## 1. Lateral Guidance
+Verify **LOC** frequency `108.90 MHz` and inbound course `281°` prior to the intermediate approach fix (IAF).
+
+Maintain RNAV cross-track tolerance within `0.3 NM` during initial course alignment. Cross `WAYPT` at or above `5,000 ft MSL`.
+
+> [!NOTE]
+> Click the **Section** pulldown above or [Jump to Missed Approach](#3-missed-approach-holding) to test internal `#slug` anchor scrolling!
+
+## 2. Vertical Profile & Minima
+Intercept the electronic glideslope or VNAV advisory path at `3,200 ft MSL`. Set missed approach altitude in the MCP window once glideslope is captured.
+
+* **Decision Altitude (DA):** `250 ft MSL` (`200 ft AGL`).
+* **Approach Category:** CAT C/D minimums require `1/2 SM` visibility or `2400 RVR`.
+* **Temperature Compensation:** Apply cold weather altimetry corrections below `0°C`.
+
+## 3. Missed Approach & Holding
+Execute immediately on reaching DA without visual contact, or if lateral deviation exceeds 1 dot:
+
+1. Press TOGA, advance thrust to go-around limit, and call **"Flaps 15, positive rate, gear up"**.
+2. Climb straight ahead to `4,000 ft MSL`.
+3. At `1,500 ft`, turn right heading `280°` to intercept and track the `OAK VOR R-300` inbound to `HOLDX`.
+4. Hold northwest on the `120°` inbound course, 1-minute right-hand patterns, maintaining `4,000 ft MSL`.
+
+> [!IMPORTANT]
+> Confirm missed approach holding fuel reserves and advise ATC immediately if holding duration exceeds 15 minutes.
+]=]
+                    imgui.DocumentViewer("##EmbeddedMiniDoc", sample_manual, embedded_doc_state, {
+                        title = "Embedded DocumentViewer",
+                        show_opacity_controls = false,
+                        show_theme_picker = false,
+                    }, 0, 260)
+                end
+            end
+
             if imgui.EndChild then imgui.EndChild() end
             end
             imgui.EndTabItem()
@@ -1538,8 +1777,63 @@ imgui.MD.Text("Status: <pill icon=live_radar color=#3498db>ONLINE</pill>")
             imgui.EndChild()
         end
         imgui.Separator()
-        if imgui.Button("  Close  ", 100, 0) then
+        imgui.Spacing()
+
+        local modal_w = (imgui.GetWindowWidth and imgui.GetWindowWidth()) or 640
+        local row_y = (imgui.GetCursorPosY and imgui.GetCursorPosY()) or nil
+
+        -- Centered primary Close button
+        local close_w = 120
+        local close_x = math.max(12, math.floor((modal_w - close_w) * 0.5))
+        if imgui.SetCursorPosX then
+            imgui.SetCursorPosX(close_x)
+        end
+        local close_clicked = false
+        if imgui.ButtonLink then
+            close_clicked = imgui.ButtonLink("  Close  ", close_w, 0)
+        else
+            close_clicked = imgui.Button("  Close  ", close_w, 0)
+        end
+        if close_clicked then
             imgui.CloseCurrentPopup()
+        end
+
+        -- Subtle smaller-font User Guide button tucked into the bottom-right corner (Horatio / BLU-fx style)
+        if imgui.DocWindow and imgui.DocWindow.Create then
+            if imgui.PushFont then imgui.PushFont("Roboto-Regular-13") end
+            local guide_label = "User Guide Window"
+            local guide_w = 122
+            if imgui.CalcTextSize then
+                local tw = imgui.CalcTextSize(guide_label)
+                if type(tw) == "number" and tw > 0 then
+                    guide_w = math.floor(tw + 14)
+                end
+            end
+            local right_x = math.max(close_x + close_w + 16, modal_w - guide_w - 14)
+            imgui.SameLine(right_x)
+            if row_y and imgui.SetCursorPosY then
+                imgui.SetCursorPosY(row_y + 3)
+            end
+            local guide_clicked = false
+            if imgui.SmallButtonLink then
+                guide_clicked = imgui.SmallButtonLink(guide_label .. "##about_guide_btn")
+            elseif imgui.SmallButton then
+                guide_clicked = imgui.SmallButton(guide_label .. "##about_guide_btn")
+            else
+                guide_clicked = imgui.Button(guide_label .. "##about_guide_btn")
+            end
+            if guide_clicked then
+                imgui.CloseCurrentPopup()
+                open_luigee_user_guide()
+            end
+            if imgui.TimedTooltip and imgui.TimedTooltip.TextMD then
+                imgui.TimedTooltip.TextMD(
+                    "**LuiGee User Guide Window:**\n\n" ..
+                    "Opens the interactive, illustrated user manual right here inside X-Plane as a window -- " ..
+                    "no need to leave the simulator or open an external PDF viewer!"
+                )
+            end
+            if imgui.PopFont then imgui.PopFont() end
         end
         imgui.EndPopup()
     end

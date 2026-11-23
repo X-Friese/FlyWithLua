@@ -10,16 +10,14 @@
 namespace flwnd {
 
 namespace {
-    inline WindowGeometry GetDefaultFlyWithLuaGeometry(int width, int height) {
-        int sl = 0, st = 0;
-        XPLMGetScreenBoundsGlobal(&sl, &st, nullptr, nullptr);
-        return WindowGeometry::FromTopLeft(sl + 100, st - 100, width, height);
+    inline WindowGeometry GetDefaultFlyWithLuaGeometry(int width, int height, XPLMWindowDecoration decoration) {
+        return WindowGeometry::FromMainMonitorTopLeft(100, 70, width, height, decoration);
     }
 }
 
 FlyWithLuaWindow::FlyWithLuaWindow(int width, int height, int decoration) :
     ImgWindow(
-        GetDefaultFlyWithLuaGeometry(width, height),
+        GetDefaultFlyWithLuaGeometry(width, height, static_cast<XPLMWindowDecoration>(decoration)),
         static_cast<XPLMWindowDecoration>(decoration),
         xplm_WindowLayerFloatingWindows,
         flywithlua::imgui_mouse_cursors != 0),
@@ -27,7 +25,6 @@ FlyWithLuaWindow::FlyWithLuaWindow(int width, int height, int decoration) :
 {
     SetWindowTitle("FlyWithLua");
     SetVisible(true);
-    SetCaptureKeyboardOnMouseFocus(true);
 }
 
 void FlyWithLuaWindow::buildInterface() {
@@ -81,8 +78,8 @@ void FlyWithLuaWindow::setTitle(const char *title) {
 
 void FlyWithLuaWindow::setPosition(int posx, int posy) {
     if (!IsInVR()) {
-        int winLeft, winTop, winRight, winBot;
-        XPLMGetScreenBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
+        int winLeft = 0, winTop = 0, winRight = 0, winBot = 0;
+        ImgWindow::GetMainMonitorBoundsGlobal(&winLeft, &winTop, &winRight, &winBot);
         int curLeft, curTop, curRight, curBottom;
         GetWindowGeometry(curLeft, curTop, curRight, curBottom);
         int w = curRight - curLeft;

@@ -13,6 +13,17 @@ namespace flywithlua {
 
 void InitImGeeSupport(lua_State* L);
 void UpdateImGeeMarkdownFonts();
+void ClearImGeeMarkdownTextures();
+
+class ScopedMarkdownWindowBaseDir {
+public:
+    ScopedMarkdownWindowBaseDir(const char* auto_base_dir, const char* explicit_base_dir);
+    ~ScopedMarkdownWindowBaseDir();
+    ScopedMarkdownWindowBaseDir(const ScopedMarkdownWindowBaseDir&) = delete;
+    ScopedMarkdownWindowBaseDir& operator=(const ScopedMarkdownWindowBaseDir&) = delete;
+private:
+    const char* m_prev_base_dir = nullptr;
+};
 
 } // namespace flywithlua
 

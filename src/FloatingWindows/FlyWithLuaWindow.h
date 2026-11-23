@@ -68,6 +68,20 @@ public:
     void setScrollingAllowed(bool allow) { mAllowScrolling = allow; }
     bool isScrollingAllowed() const { return mAllowScrolling; }
 
+    void setAutoMarkdownBaseDir(const std::string& dir) { mAutoMarkdownBaseDir = dir; }
+    const std::string& getAutoMarkdownBaseDir() const { return mAutoMarkdownBaseDir; }
+
+    void setExplicitMarkdownBaseDir(const std::string& dir) {
+        mExplicitMarkdownBaseDir = dir;
+        mHasExplicitMarkdownBaseDir = true;
+    }
+    void clearExplicitMarkdownBaseDir() {
+        mExplicitMarkdownBaseDir.clear();
+        mHasExplicitMarkdownBaseDir = false;
+    }
+    bool hasExplicitMarkdownBaseDir() const { return mHasExplicitMarkdownBaseDir; }
+    const std::string& getExplicitMarkdownBaseDir() const { return mExplicitMarkdownBaseDir; }
+
     // ImgWindow overrides
     virtual void buildInterface() override;
     virtual ImGuiWindowFlags_ beforeBegin() override;
@@ -81,6 +95,9 @@ private:
     bool isCmdVisible = false;
     bool mUseImgCursors = true;
     bool mAllowScrolling = true;
+    bool mHasExplicitMarkdownBaseDir = false;
+    std::string mAutoMarkdownBaseDir;
+    std::string mExplicitMarkdownBaseDir;
 };
 
 } // namespace flwnd

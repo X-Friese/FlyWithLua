@@ -1430,7 +1430,7 @@ protected:
 private:
     static WindowGeometry MakeCenteredTopGeometry(int width, int height) {
         int sl = 0, st = 0, sr = 1920, sb = 0;
-        XPLMGetScreenBoundsGlobal(&sl, &st, &sr, &sb);
+        ImgWindow::GetMainMonitorBoundsGlobal(&sl, &st, &sr, &sb);
         int screenW = std::max(640, sr - sl);
         int left = sl + (screenW - width) / 2;
         int topClearance = std::max(90, ImgWindow::GetTopMargin(xplm_WindowDecorationRoundRectangle) + 35);
@@ -1463,6 +1463,13 @@ void EnsureAlertWindowOpen() {
         return;
     }
     if (!gAlertWindow) {
+        struct ScopedRestoreImGuiContext {
+            ImGuiContext* prev;
+            ScopedRestoreImGuiContext() : prev(ImGui::GetCurrentContext()) {}
+            ~ScopedRestoreImGuiContext() { ImGui::SetCurrentContext(prev); }
+            ScopedRestoreImGuiContext(const ScopedRestoreImGuiContext&) = delete;
+            ScopedRestoreImGuiContext& operator=(const ScopedRestoreImGuiContext&) = delete;
+        } ctxGuard;
         gAlertWindow = std::make_shared<FWLUpdateAlertWindow>();
     } else {
         gAlertWindow->SetVisible(true);

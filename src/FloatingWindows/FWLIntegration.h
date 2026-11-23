@@ -7,6 +7,7 @@
 #ifndef FLOATINGWINDOWS_FWLINTEGRATION_H_
 #define FLOATINGWINDOWS_FWLINTEGRATION_H_
 
+#include <memory>
 #include "lua.hpp"
 
 // globals for imgui lua bindings
@@ -15,10 +16,23 @@ void LoadImguiBindings();
 
 namespace flwnd {
 
+class FloatingWindow;
+
 void initFloatingWindowSupport();
 void deinitFloatingWindowSupport();
 void onFlightLoop();
 bool FindAndQuarantine (lua_State *L);
+FloatingWindow* GetValidFloatingWindow(void* ptr);
+void RegisterManagedFloatingWindow(const std::shared_ptr<FloatingWindow>& wnd);
+
+// Built-in native C++ documentation window(s) owned by FlyWithLua itself
+void OpenBuiltInLuiGeeGuide();
+void ToggleBuiltInLuiGeeGuide();
+void CloseBuiltInDocWindows();
+bool IsBuiltInLuiGeeGuideVisible();
+void SyncBuiltInDocMenuCheckmarks();
+void SaveAndCloseBuiltInDocWindowsForReload();
+void RestoreBuiltInDocWindowsAfterReload();
 
 }
 
