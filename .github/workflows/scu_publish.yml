@@ -207,6 +207,9 @@ jobs:
           FWL_VERSION: ${{ needs.build.outputs.fwl_version }}
         run: |
           mkdir -p build/dist
+          if [[ -f FlyWithLua/skunkcrafts_updater.cfg ]]; then
+            sed -i -E "s/^version\|.*/version|${FWL_VERSION}/" FlyWithLua/skunkcrafts_updater.cfg
+          fi
           zip -rq "build/dist/FlyWithLua_NG+_v${FWL_VERSION}.zip" FlyWithLua -x "*.DS_Store" "*/.gitkeep"
 
           git config user.name "github-actions[bot]"

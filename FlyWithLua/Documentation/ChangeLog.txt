@@ -119,3 +119,5 @@ v2.8.22 ImgWindow v2.4.0 & LuiGee Modern UI Suite (Phase 3) & Multi-Channel Skun
 v2.8.23 v2.8.23 ImgWindow v2.5 + LuiGee v1.1.0 Parity, Dynamic FMOD Loader (XP11/XP12), and Command-Backed Menus  fix(mac,arm64): update macOS Universal libluajit.a to v2.1 (fixes ARM64 LDP SIGILL, LuaJIT#1028)
 
 v2.8.23.1 Hotfix: Fix CTD when opening LuiGee UX Guide or creating an ImGui window from inside an active Lua ImGui callback; sync ImgWindow v2.5.0 final release tag.
+
+v2.8.23.2 Hotfix: Rename SkunkCrafts Updater channels to Stable / Latest (avoiding legacy SGES beta.cfg collisions), add clean legacy SCU v3 fallback, and dynamically stamp version into packaged ZIP skunkcrafts_updater.cfg.
