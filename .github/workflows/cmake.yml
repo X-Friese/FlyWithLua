@@ -154,6 +154,10 @@ jobs:
           echo "FWL_VERSION=$FWL_VER" >> "$GITHUB_ENV"
           echo "fwl_version=$FWL_VER" >> "$GITHUB_OUTPUT"
           echo "Resolved FlyWithLua version: $FWL_VER"
+          if [[ -f FlyWithLua/skunkcrafts_updater.cfg ]]; then
+            sed -i -E "s/^version\|.*/version|${FWL_VER}/" FlyWithLua/skunkcrafts_updater.cfg
+            echo "Stamped version|${FWL_VER} onto FlyWithLua/skunkcrafts_updater.cfg"
+          fi
 
       - name: Upload packaging artifact
         uses: actions/upload-artifact@v7

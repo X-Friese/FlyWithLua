@@ -2,7 +2,7 @@
 //  FlyWithLua Plugin for X-Plane 12
 // ----------------------------------
 
-#define PLUGIN_VERSION_NO "2.8.23.1"
+#define PLUGIN_VERSION_NO "2.8.23.2"
 #define PLUGIN_VERSION_BUILD __DATE__ " " __TIME__
 #define PLUGIN_VERSION PLUGIN_VERSION_NO " build " PLUGIN_VERSION_BUILD
 
@@ -191,6 +191,7 @@
  *  v2.8.23 [changed] ImgWindow v2.5 + LuiGee v1.1.0 Parity, Dynamic FMOD Loader (XP11/XP12), and Command-Backed Menus
  *                    fix(mac,arm64): update macOS Universal libluajit.a to v2.1 (fixes ARM64 LDP SIGILL, LuaJIT#1028)
  *  v2.8.23.1 [fixed] Fix CTD (EXC_BAD_ACCESS) when opening LuiGee UX Guide or creating an ImGui window from inside an active Lua ImGui callback; sync ImgWindow v2.5.0 final tag
+ *  v2.8.23.2 [fixed] Rename SkunkCrafts channels to Stable/Latest (avoiding legacy SGES beta.cfg collisions), add pure-v3 SCU fallback, and stamp version into packaged ZIP skunkcrafts_updater.cfg
  *
  *  Markus (Teddii):
  *  v2.1.20 [changed] bug fixed in Luahid_open() and Luahid_open_path(), setting last HID device index back if no device was found

@@ -670,19 +670,78 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
     const std::string channelCfg = JoinPath(skDir, "channel.cfg");
     const std::string betaRemoved = JoinPath(chDir, "beta.cfg.removed");
     const std::string betaWithdrawn = JoinPath(chDir, "beta.cfg.withdrawn");
+    const std::string latestRemoved = JoinPath(chDir, "Latest.cfg.removed");
+    const std::string latestWithdrawn = JoinPath(chDir, "Latest.cfg.withdrawn");
     const std::string legacyBetaCfg = JoinPath(pluginDir, "skunkcrafts_updater_beta.cfg");
 
+    const bool hasSkDir = PathExists(skDir);
     const bool hasChannelCfg = PathExists(channelCfg);
-    const bool legacyDisabled = PathExists(legacyBetaCfg) &&
+    const bool hasLegacyBetaCfg = PathExists(legacyBetaCfg);
+    const bool legacyDisabled = hasLegacyBetaCfg &&
                                 CfgValueFromFile(legacyBetaCfg, "enabled") == "false";
-    const bool shouldBootstrapBeta = !hasChannelCfg && !legacyDisabled &&
-                                     !PathExists(betaRemoved) && !PathExists(betaWithdrawn);
+    const bool shouldBootstrapLatest = !hasChannelCfg && !legacyDisabled &&
+                                       !PathExists(betaRemoved) && !PathExists(betaWithdrawn) &&
+                                       !PathExists(latestRemoved) && !PathExists(latestWithdrawn);
 
-    // Create skunkcrafts_updater.cfg if missing (e.g. partial manual zip extraction),
-    // or ensure public channel keys (and initial channel|beta bootstrap before SCU 4.x
-    // creates skunkcrafts/channel.cfg) exist when an older file is present.
-    // FlyWithLua never creates or modifies the skunkcrafts/ directory itself; SCU 4.x
-    // owns skunkcrafts/ and migrates channel|beta + channel.beta automatically on first run.
+    // Helper: write pure v3 skunkcrafts_updater.cfg (zero v4 keys so SCU v4 cleanly migrates
+    // skunkcrafts_updater_beta.cfg whenever the user eventually upgrades to v4).
+    auto writePureV3MainCfg = [&](const std::string& ver, const std::string& disabledVal, const std::string& lockedVal) {
+        std::ofstream ofs(mainCfg, std::ios::out | std::ios::trunc | std::ios::binary);
+        if (ofs) {
+            ofs << "zone|custom\n"
+                << "disabled|" << (disabledVal.empty() ? "false" : disabledVal) << "\n"
+                << "module|" << kDepotReleaseURL << "\n"
+                << "name|FlyWithLua\n"
+                << "version|" << (ver.empty() ? GetPluginVersionNo() : ver) << "\n"
+                << "locked|" << (lockedVal.empty() ? "false" : lockedVal) << "\n";
+            ofs.close();
+            return true;
+        }
+        return false;
+    };
+
+    auto writePureV3BetaCfg = [&]() {
+        std::ofstream ofs(legacyBetaCfg, std::ios::out | std::ios::trunc | std::ios::binary);
+        if (ofs) {
+            ofs << "enabled|true\n"
+                << "installed|true\n"
+                << "zone|custom\n"
+                << "module|" << kDepotBetaURL << "\n";
+            ofs.close();
+            return true;
+        }
+        return false;
+    };
+
+    // Case 1: Legacy SCU 3.x detected (no skunkcrafts/ dir yet), OR unknown updater with missing
+    // main config (@xyzzy): provision pure v3 layout so SCU 3.x works immediately and SCU 4.x
+    // cleanly auto-migrates skunkcrafts_updater_beta.cfg on first run.
+    // Never overwrite an existing skunkcrafts_updater_beta.cfg (respects user opt-out/choice).
+    const bool isDetectedV3 = updater.isInstalled && !updater.isV4OrNewer && !hasSkDir;
+    const bool isUnknownMissingCfg = !updater.isInstalled && !hasSkDir && !PathExists(mainCfg);
+    if (isDetectedV3 || isUnknownMissingCfg) {
+        if (!hasLegacyBetaCfg) {
+            std::string keepVer = PathExists(mainCfg) ? CfgValueFromFile(mainCfg, "version") : "";
+            std::string keepDis = PathExists(mainCfg) ? CfgValueFromFile(mainCfg, "disabled") : "";
+            std::string keepLck = PathExists(mainCfg) ? CfgValueFromFile(mainCfg, "locked") : "";
+            if (!writePureV3MainCfg(keepVer, keepDis, keepLck)) {
+                logMsg(logToDevCon,
+                       "FlyWithLua Error: Could not write v3 skunkcrafts_updater.cfg.");
+                return;
+            }
+            if (writePureV3BetaCfg()) {
+                logMsg(logToDevCon,
+                       "FlyWithLua Info: Provisioned pure v3 SkunkCrafts config with beta channel enabled.");
+            }
+        } else if (!PathExists(mainCfg)) {
+            writePureV3MainCfg("", "", "");
+        }
+        return;
+    }
+
+    // Case 2: SCU 4.x detected (or skunkcrafts/ already exists, or existing main config):
+    // FlyWithLua never creates or modifies skunkcrafts/ itself; SCU 4.x owns skunkcrafts/ and
+    // migrates channel|Latest + channel.Latest (and renames existing beta channels in-place by URL).
     if (!PathExists(mainCfg)) {
         std::ofstream ofs(mainCfg, std::ios::out | std::ios::trunc | std::ios::binary);
         if (ofs) {
@@ -692,10 +751,10 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
                 << "name|FlyWithLua\n"
                 << "version|" << GetPluginVersionNo() << "\n"
                 << "locked|false\n"
-                << "main_name|release\n"
-                << "channel.beta|" << kDepotBetaURL << "\n";
-            if (shouldBootstrapBeta) {
-                ofs << "channel|beta\n";
+                << "main_name|Stable\n"
+                << "channel.Latest|" << kDepotBetaURL << "\n";
+            if (shouldBootstrapLatest) {
+                ofs << "channel|Latest\n";
             }
             ofs.close();
             logMsg(logToDevCon,
@@ -707,21 +766,25 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
         }
     } else {
         bool missingMainName = CfgValueFromFile(mainCfg, "main_name").empty();
-        bool missingBetaKey = CfgValueFromFile(mainCfg, "channel.beta").empty();
-        bool missingBootstrapChannel = shouldBootstrapBeta &&
+        // Do not append channel.Latest if either channel.Latest or an existing SCU-managed
+        // channel.beta is already present (prevents duplicate-URL tug-of-war in SCU 4.x).
+        bool hasSecondaryKey = !CfgValueFromFile(mainCfg, "channel.Latest").empty() ||
+                               !CfgValueFromFile(mainCfg, "channel.beta").empty();
+        bool missingSecondaryKey = !hasSecondaryKey;
+        bool missingBootstrapChannel = shouldBootstrapLatest &&
                                        CfgValueFromFile(mainCfg, "channel").empty();
-        if (missingMainName || missingBetaKey || missingBootstrapChannel) {
+        if (missingMainName || missingSecondaryKey || missingBootstrapChannel) {
             EnsureEndsWithNewline(mainCfg);
             std::ofstream ofs(mainCfg, std::ios::out | std::ios::app | std::ios::binary);
             if (ofs) {
                 if (missingMainName) {
-                    ofs << "main_name|release\n";
+                    ofs << "main_name|Stable\n";
                 }
-                if (missingBetaKey) {
-                    ofs << "channel.beta|" << kDepotBetaURL << "\n";
+                if (missingSecondaryKey) {
+                    ofs << "channel.Latest|" << kDepotBetaURL << "\n";
                 }
                 if (missingBootstrapChannel) {
-                    ofs << "channel|beta\n";
+                    ofs << "channel|Latest\n";
                 }
             }
         }
@@ -729,6 +792,17 @@ void ShoreUpFlyWithLuaConfig(const std::string& pluginDir, const UpdaterAvailabi
 }
 
 std::string ResolveFollowedChannelURL(const std::string& pluginDir, bool& outIsBeta) {
+    auto toLowerAscii = [](std::string s) {
+        for (char& c : s) {
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        }
+        return s;
+    };
+    auto isPrimaryChannelName = [&](const std::string& name) {
+        std::string low = toLowerAscii(TrimWhitespace(name));
+        return low.empty() || low == "stable" || low == "release";
+    };
+
     const std::string mainCfg = JoinPath(pluginDir, "skunkcrafts_updater.cfg");
     std::string mainURL = CfgValueFromFile(mainCfg, "module");
     if (mainURL.empty()) {
@@ -739,7 +813,7 @@ std::string ResolveFollowedChannelURL(const std::string& pluginDir, bool& outIsB
     const std::string channelCfg = JoinPath(pluginDir, "skunkcrafts/channel.cfg");
     if (PathExists(channelCfg)) {
         std::string chName = CfgValueFromFile(channelCfg, "channel");
-        if (chName.empty() || chName == "stable") {
+        if (isPrimaryChannelName(chName)) {
             return mainURL;
         }
         const std::string chFile = JoinPath(pluginDir, "skunkcrafts/channels/" + chName + ".cfg");
@@ -761,7 +835,7 @@ std::string ResolveFollowedChannelURL(const std::string& pluginDir, bool& outIsB
     // Pre-first-run bootstrap key in skunkcrafts_updater.cfg (before SCU 4.x creates channel.cfg)
     std::string bootstrapCh = CfgValueFromFile(mainCfg, "channel");
     if (!bootstrapCh.empty()) {
-        if (bootstrapCh == "stable") {
+        if (isPrimaryChannelName(bootstrapCh)) {
             return mainURL;
         }
         std::string inlineURL = CfgValueFromFile(mainCfg, ("channel." + bootstrapCh).c_str());
@@ -1089,7 +1163,7 @@ void StartAsyncCheckInternal(bool forceManualCheck) {
         std::string remoteVer = ok ? CfgValueFromText(body, "version") : "";
 
         std::lock_guard<std::mutex> lock(gState.mtx);
-        const char* chLabel = isBeta ? "beta" : "release";
+        const char* chLabel = isBeta ? "Latest" : "Stable";
         if (!ok || remoteVer.empty() || (!remoteName.empty() && remoteName != "FlyWithLua")) {
             gState.phase = CheckPhase::Failed;
             gState.updateAvailable = false;
@@ -1180,8 +1254,8 @@ protected:
         if (!boldBodyFont) {
             boldBodyFont = flywithlua::GetFontByName("Roboto-Medium-16");
         }
-        const char* chName = isBeta ? "beta" : "release";
-        const char* chTitle = isBeta ? "Beta" : "Release";
+        const char* chName = isBeta ? "Latest" : "Stable";
+        const char* chTitle = isBeta ? "Latest" : "Stable";
         const ImVec4 chColor = isBeta
                                    ? ImVec4(0.96f, 0.78f, 0.35f, 1.0f)
                                    : ImVec4(0.62f, 0.84f, 1.0f, 1.0f);
